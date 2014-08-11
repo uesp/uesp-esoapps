@@ -8,6 +8,10 @@ TestZLib/**
 Old/**
 EsoLogParse/**
 
+# Ingore install archives
+EsoExtractData/Installs/**
+uespLogMonitor/Installs/**
+
 *.obj
 *.pdb
 *.user
@@ -15,6 +19,8 @@ EsoLogParse/**
 *.pch
 *.vspscc
 *.vssscc
+*.sdf
+*.opensdf
 *_i.c
 *_p.c
 *.ncb
@@ -30,6 +36,7 @@ EsoLogParse/**
 *.scc
 *.DotSettings
 [Bb]in
+ipch/**
 [Dd]ebug*/**
 obj/
 [Rr]elease*/**

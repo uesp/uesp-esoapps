@@ -11,6 +11,7 @@ EsoLogParse/**
 # Ingore install archives
 EsoExtractData/Installs/**
 uespLogMonitor/Installs/**
+uespLog/Installs/**
 
 *.obj
 *.pdb

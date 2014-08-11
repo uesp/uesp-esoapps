@@ -1,0 +1,8 @@
+## Title: UespLog
+## Title: UespLog
+## APIVersion: 100007
+## SavedVariables: uespLogSavedVars
+
+uespLog.lua
+uespLogTradeData.lua
+uespLog.xml

@@ -4,6 +4,12 @@
 		- Added the "Send Log File.." menu
 		- Log file is appended to and more things output to it
 		- Fixed issue with some log entries not being output due to a "blank" entry in the uespLog.lua saved variable file
+
+	v0.14?
+
+	v0.15 - 21 August 2014
+		- Added handling of split-line logs.
+		- Checks for the "liveeu" path for AddOns if "live" is not found.
  */
 
 #include "stdafx.h"
@@ -35,11 +41,15 @@ const char ULM_REGISTRY_KEY_LASTBACKUPTIMESTAMP[] = "LastBackupTimeStamp";
 const char ULM_REGISTRY_KEY_LOGLEVEL[] = "LogLevel";
 const char ULM_REGISTRY_KEY_BACKUPDATAFILENAME[] = "BackupDataFilename";
 
+const std::string ULM_LOGSTRING_JOIN("#STR#");
+const int  ULM_LOGSTRING_MAXLENGTH = 1900;
+
 const char ULM_SAVEDVAR_NAME[] = "uespLogSavedVars";
 const char ULM_SAVEDVAR_FILENAME[] = "uespLog.lua";
 const char ULM_SAVEDVAR_BASEPATH[] = "Elder Scrolls Online\\live\\SavedVariables\\";
+const char ULM_SAVEDVAR_ALTBASEPATH[] = "Elder Scrolls Online\\liveeu\\SavedVariables\\";
 
-const int ULM_SENDDATA_MAXPOSTSIZE = 200000;		/* Maximum desired size of post data in byte */
+const int ULM_SENDDATA_MAXPOSTSIZE = 200000;		/* Maximum desired size of post data in bytes */
 
 const int ULM_TIMER_ID = 5566;
 
@@ -313,6 +323,11 @@ __int64 CuespLogMonitorDlg::ParseTimeStampFromData (const std::string Data)
 
 bool CuespLogMonitorDlg::ParseSavedVarDataArray (CUlmLogDataArray& Output, const std::string Version)
 {
+	bool IsLastStringTruncated = false;
+	bool IsStringTruncatedRight = false;
+	bool IsStringTruncatedLeft = false;
+	ulm_sectiondata_t LastTruncatedData;
+
 	//Output.clear();
 	lua_getfield(m_pLuaState, -1, "data");
 
@@ -339,9 +354,65 @@ bool CuespLogMonitorDlg::ParseSavedVarDataArray (CUlmLogDataArray& Output, const
 		{
 			ulm_sectiondata_t NewData;
 			NewData.Data = lua_tostring(m_pLuaState, -1);
-			NewData.TimeStamp = ParseTimeStampFromData(NewData.Data);
+			IsStringTruncatedLeft = false;
+			IsStringTruncatedRight = false;
 
-			Output.push_back(NewData);
+			if (eso::StringEndsWith(NewData.Data, ULM_LOGSTRING_JOIN))
+			{
+				IsStringTruncatedRight = true;
+				NewData.Data.erase(NewData.Data.size() - ULM_LOGSTRING_JOIN.length());
+
+				PrintLogLine(ULM_LOGLEVEL_DEBUG, "Found right truncated log string.");
+			}
+
+			if (NewData.Data.compare(0, ULM_LOGSTRING_JOIN.length(), ULM_LOGSTRING_JOIN) == 0)
+			{
+				IsStringTruncatedLeft = true;
+				NewData.Data.erase(0, ULM_LOGSTRING_JOIN.length());
+				PrintLogLine(ULM_LOGLEVEL_DEBUG, "Found left truncated log string.");
+			}
+			 
+			if (!IsLastStringTruncated && IsStringTruncatedRight)
+			{
+				LastTruncatedData = NewData;
+				LastTruncatedData.TimeStamp = 0;
+				IsLastStringTruncated = true;
+				PrintLogLine(ULM_LOGLEVEL_DEBUG, "Found start of new truncated log string.");
+			}
+			else if (IsLastStringTruncated && IsStringTruncatedLeft && !IsStringTruncatedRight)
+			{
+				LastTruncatedData.Data += NewData.Data;
+
+				PrintLogLine(ULM_LOGLEVEL_DEBUG, "Found end of truncated log string (total length = %d).", LastTruncatedData.Data.length());
+				
+				LastTruncatedData.TimeStamp = ParseTimeStampFromData(LastTruncatedData.Data);
+				Output.push_back(LastTruncatedData);
+
+				LastTruncatedData.Data.clear();
+				LastTruncatedData.TimeStamp = 0;
+				IsLastStringTruncated = false;
+			}
+			else if (IsLastStringTruncated && IsStringTruncatedLeft && IsStringTruncatedRight)
+			{
+				PrintLogLine(ULM_LOGLEVEL_DEBUG, "Found middle truncated log string.");
+				LastTruncatedData.Data += NewData.Data;
+			}
+			else
+			{
+				if (IsLastStringTruncated) //Shouldn't happen
+				{
+					PrintLogLine(ULM_LOGLEVEL_DEBUG, "Warning: Found unterminated truncated log string.");
+
+					IsLastStringTruncated = false;
+					LastTruncatedData.TimeStamp = ParseTimeStampFromData(LastTruncatedData.Data);
+					Output.push_back(LastTruncatedData);
+					LastTruncatedData.Data.clear();
+					LastTruncatedData.TimeStamp = 0;
+				}
+
+				NewData.TimeStamp = ParseTimeStampFromData(NewData.Data);
+				Output.push_back(NewData);
+			}
 		}
 
 		lua_pop(m_pLuaState, 1);
@@ -935,6 +1006,16 @@ std::string CuespLogMonitorDlg::FindSavedVarPath (void)
 	if (!eso::DirectoryExists(SavedVarPath.c_str()))
 	{
 		eso::PrintError("WARNING: The default saved variable path '%s' does not exist!", SavedVarPath.c_str());
+
+		SavedVarPath = eso::TerminatePath(MyDocuments);
+		SavedVarPath += ULM_SAVEDVAR_ALTBASEPATH;
+
+		eso::PrintLog("SavedVars Alt Path = %s", SavedVarPath.c_str());
+
+		if (!eso::DirectoryExists(SavedVarPath.c_str()))
+		{
+			eso::PrintError("WARNING: The alternate saved variable path '%s' does not exist!", SavedVarPath.c_str());
+		}
 	}
 
 	return SavedVarPath;

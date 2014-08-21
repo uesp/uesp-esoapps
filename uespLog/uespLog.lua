@@ -117,6 +117,9 @@
 --			- Changed API version to 100007.
 --			- Added check to prevent NIL string outputs to log data.
 --
+--		- v0.19 - ?
+--			- Changed API version to 100008.
+--
 
 
 

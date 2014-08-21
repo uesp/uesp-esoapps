@@ -3,6 +3,7 @@ syntax: glob
 
 # Local files
 uespLog/localdeploy
+*/uespLog_backupData.txt
 
 # Old or test code projects
 SnappyLib/**

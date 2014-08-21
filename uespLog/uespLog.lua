@@ -117,7 +117,7 @@
 --			- Changed API version to 100007.
 --			- Added check to prevent NIL string outputs to log data.
 --
---		- v0.19 - 21 July 2014
+--		- v0.19 - 21 August 2014
 --			- Changed API version to 100008.
 --			- Fixed crash when using "/uespdump inventory" due to API change.
 --			- Fixed "nil string" crash bug due to strings over 1999 bytes being output to

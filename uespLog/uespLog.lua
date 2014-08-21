@@ -119,6 +119,7 @@
 --
 --		- v0.19 - ?
 --			- Changed API version to 100008.
+--			- Fixed crash when using "/uespdump inventory" due to API change.
 --
 
 
@@ -2840,7 +2841,7 @@ end
 
 
 function uespLog.DumpBag (bagId)
-	local bagIcon, bagSlots = GetBagInfo(bagId)
+	local bagSlots = GetBagSize(bagId)
 	local slotCount = 0
 		
 	for slotIndex = 1, bagSlots do

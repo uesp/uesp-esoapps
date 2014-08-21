@@ -85,7 +85,7 @@
 --			- In Testing: Added autolooting of provisioning ingredients:
 --				- Only loot ingredients more than a specific level
 --				- Auto loot all other items and money
---				- Turn off the autoloot in the game options to use
+--				- Turn off theloot in the game options to use
 --				- Use "/uespcraft autoloot on/off" to enable (initially disabled)
 --				- Use "/uespcraft minprovlevel [level]" to set which level of ingredients to autoloot
 --				- Normal ingredient level is 1-6, 100 for blue ingredients and 101 for purple
@@ -117,9 +117,11 @@
 --			- Changed API version to 100007.
 --			- Added check to prevent NIL string outputs to log data.
 --
---		- v0.19 - ?
+--		- v0.19 - 21 July 2014
 --			- Changed API version to 100008.
 --			- Fixed crash when using "/uespdump inventory" due to API change.
+--			- Fixed "nil string" crash bug due to strings over 1999 bytes being output to
+--            the saved variable file. Long strings are split.
 --
 
 
@@ -136,6 +138,10 @@ uespLog.enableTesting = false
 
 uespLog.version = "0.19"
 uespLog.releaseDate = "21 August 2014"
+
+
+	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
+uespLog.MAX_LOGSTRING_LENGTH = 1900
 
 uespLog.TAB_CHARACTER = "\t"
 uespLog.MIN_TARGET_CHANGE_TIMEMS = 2000
@@ -616,6 +622,14 @@ function uespLog.AppendStringToLog(section, logString)
 	
 	if (sv == nil) then
 		sv = { }
+	end
+	
+		-- Fix long strings being output as "nil"
+	while (#logString >= uespLog.MAX_LOGSTRING_LENGTH) do
+		local firstPart = string.sub(logString, 1, uespLog.MAX_LOGSTRING_LENGTH)
+		local secondPart = string.sub(logString, uespLog.MAX_LOGSTRING_LENGTH+1, -1)
+		sv[#sv+1] = firstPart .. "#STR#"
+		logString = "#STR#" .. secondPart
 	end
 	
 	sv[#sv+1] = logString
@@ -3389,7 +3403,6 @@ end
 
 
 SLASH_COMMANDS["/uesptest"] = function (cmd)
-
 	--uespLog.DebugMsg("Showing Test Time (noon)....")
 	--uespLog.ShowTime(1398882554)	-- 1398882554 = 14:30 April 30th 2014 which should be exactly noon in game time 
 	--uespLog.DebugMsg("Showing Test Time (sunset)....")

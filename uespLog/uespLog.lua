@@ -3403,6 +3403,18 @@ end
 
 
 SLASH_COMMANDS["/uesptest"] = function (cmd)
+
+	local logString = ""
+	
+	for i = 1, 500 do
+		logString = logString .. "test{123}  "
+	end
+	
+	logString = logString .. "timeStamp{".. Id64ToString(GetTimeStamp()) .. "}  "
+	logString = logString .. "gameTime{".. tostring(GetGameTimeMilliseconds()) .. "}  "
+	
+	--uespLog.AppendStringToLog("all", logString)
+	
 	--uespLog.DebugMsg("Showing Test Time (noon)....")
 	--uespLog.ShowTime(1398882554)	-- 1398882554 = 14:30 April 30th 2014 which should be exactly noon in game time 
 	--uespLog.DebugMsg("Showing Test Time (sunset)....")

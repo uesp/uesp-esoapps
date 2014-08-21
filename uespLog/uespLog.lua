@@ -134,8 +134,8 @@ uespLog.enableTesting = false
 	--require "test/uespLog_mock"
 --end
 
-uespLog.version = "0.18"
-uespLog.releaseDate = "2 July 2014"
+uespLog.version = "0.19"
+uespLog.releaseDate = "21 August 2014"
 
 uespLog.TAB_CHARACTER = "\t"
 uespLog.MIN_TARGET_CHANGE_TIMEMS = 2000

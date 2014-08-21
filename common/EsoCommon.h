@@ -37,7 +37,7 @@ std::string ReplaceStrings (std::string subject, const std::string& search, cons
 
 void PrintLog   (const char* pString, ...);
 bool PrintError (const char* pString, ...);
-void PrintLogA  (const char* pString, va_list Args);
+void PrintLogV  (const char* pString, va_list Args);
 bool OpenLog    (const char* pFilename);
 
 
@@ -68,6 +68,9 @@ double GetTimerMS (void);
 
 
 bool ConvertDDStoPNG (const byte* pData, const size_t Size, const std::string Filename);
+
+bool FileExists(const char* pFilename);
+bool GetFileSize (__int64& FileSize, const std::string Filename);
 
 };
 

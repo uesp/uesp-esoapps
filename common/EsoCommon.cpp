@@ -29,14 +29,14 @@ bool PrintError(const char* pString, ...)
 	printf("\n");
 	fflush(stdout);
 	
-	PrintLogA(pString, Args);
+	PrintLogV(pString, Args);
 
 	va_end(Args);
 	return false;
 }
 
 
-void PrintLogA(const char* pString, va_list Args)
+void PrintLogV(const char* pString, va_list Args)
 {
 	if (g_LogFile.GetFile() == nullptr) return;
 
@@ -63,7 +63,7 @@ void PrintLog(const char* pString, ...)
 	va_list Args;
 
 	va_start(Args, pString);
-	PrintLogA(pString, Args);
+	PrintLogV(pString, Args);
 	va_end(Args);
 }
 
@@ -544,5 +544,42 @@ std::string ReplaceStrings (std::string subject, const std::string& search, cons
     }
     return subject;
 }
+
+
+bool GetFileSize (__int64& FileSize, const std::string Filename)
+{
+	FILE* pFile = fopen(Filename.c_str(), "rb");
+
+	if (pFile == nullptr) 
+	{
+		FileSize = 0;
+		return false;
+	}
+
+	if (_fseeki64(pFile, 0, SEEK_END) != 0)
+	{
+		FileSize = 0;
+		return false;
+	}
+
+	FileSize = _ftelli64(pFile);
+	fclose(pFile);
+
+	if (FileSize < 0) 
+	{
+		FileSize = 0;
+		return false;
+	}
+	
+	return true;
+}
+
+
+bool FileExists(const char* pFilename)
+{
+	DWORD dw = ::GetFileAttributes(pFilename);
+	return (dw != INVALID_FILE_ATTRIBUTES && (dw & FILE_ATTRIBUTE_DIRECTORY) == 0);
+}
+
 
 };

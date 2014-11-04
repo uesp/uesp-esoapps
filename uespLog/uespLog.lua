@@ -1886,14 +1886,19 @@ function uespLog.OnTargetChange (eventCode)
 		--COMBAT_UNIT_TYPE_PLAYER_PET
 
     if (unitType == 2) then -- NPC, COMBAT_UNIT_TYPE_OTHER?
+		uespLog.DebugExtraMsg("OnTargetChange1 to "..tostring(unitType).."  ")
         local name = GetUnitName(unitTag)
         local x, y, z, zone = uespLog.GetUnitPosition(unitTag)
 		local gameTime = GetGameTimeMilliseconds()
 		local diffTime = gameTime - uespLog.lastOnTargetChangeGameTime
+		
+		uespLog.DebugExtraMsg("OnTargetChange1a: "..tostring(name).."  "..tostring(x)..","..tostring(y))
 
         if (name == nil or name == "" or x <= 0 or y <= 0) then
             return
         end
+		
+		uespLog.DebugExtraMsg("OnTargetChange2 to "..tostring(unitType).."  ")
 		
 		uespLog.lastTargetData.x = x
 		uespLog.lastTargetData.y = y
@@ -1920,10 +1925,14 @@ function uespLog.OnTargetChange (eventCode)
 		if (uespLog.IsIgnoredNPC(name)) then
 			return
 		end
+		
+		uespLog.DebugExtraMsg("OnTargetChange3 to "..tostring(unitType).."  ")
 	
 		if (name == uespLog.lastOnTargetChange or diffTime < uespLog.MIN_TARGET_CHANGE_TIMEMS) then
 			return
 		end
+		
+		uespLog.DebugExtraMsg("OnTargetChange4 to "..tostring(unitType).."  ")
 		
 		uespLog.lastOnTargetChange = name
 		uespLog.lastOnTargetChangeGameTime = gameTime
@@ -2231,7 +2240,7 @@ function uespLog.OnUpdate ()
     end
 	
 	if (DoesUnitExist("recticleover")) then
-		x, y, z, zone = uespLog.GetUnitPositionPosition("recticleover")
+		x, y, z, zone = uespLog.GetUnitPosition("recticleover")
 	else
 		x, y, z, zone = uespLog.GetPlayerPosition()
 	end

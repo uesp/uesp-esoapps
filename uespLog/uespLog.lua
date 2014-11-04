@@ -682,7 +682,12 @@ end
 function uespLog.GetUnitPositionData(unitTag)
 	local result = { }
 	
-	result.x, result.y = GetMapPlayerPosition(unitTag)
+	if (unitTag == "reticleover") then
+		result.x, result.y = GetMapPlayerPosition("player")
+	else
+		result.x, result.y = GetMapPlayerPosition(unitTag)
+	end
+	
 	result.zone = GetMapName()
 	
 	return result
@@ -690,7 +695,14 @@ end
 
 
 function uespLog.GetUnitPosition(unitName)
-	local x, y, z = GetMapPlayerPosition(unitName)
+	local x, y, z
+                     
+	if (unitName == "reticleover") then
+		x, y, z = GetMapPlayerPosition("player")
+	else
+		x, y, z = GetMapPlayerPosition(unitName)
+	end
+	
 	local zone = GetMapName()
 	return x, y, z, zone
 end
@@ -1886,19 +1898,14 @@ function uespLog.OnTargetChange (eventCode)
 		--COMBAT_UNIT_TYPE_PLAYER_PET
 
     if (unitType == 2) then -- NPC, COMBAT_UNIT_TYPE_OTHER?
-		uespLog.DebugExtraMsg("OnTargetChange1 to "..tostring(unitType).."  ")
         local name = GetUnitName(unitTag)
         local x, y, z, zone = uespLog.GetUnitPosition(unitTag)
 		local gameTime = GetGameTimeMilliseconds()
 		local diffTime = gameTime - uespLog.lastOnTargetChangeGameTime
 		
-		uespLog.DebugExtraMsg("OnTargetChange1a: "..tostring(name).."  "..tostring(x)..","..tostring(y))
-
         if (name == nil or name == "" or x <= 0 or y <= 0) then
             return
         end
-		
-		uespLog.DebugExtraMsg("OnTargetChange2 to "..tostring(unitType).."  ")
 		
 		uespLog.lastTargetData.x = x
 		uespLog.lastTargetData.y = y
@@ -1926,13 +1933,9 @@ function uespLog.OnTargetChange (eventCode)
 			return
 		end
 		
-		uespLog.DebugExtraMsg("OnTargetChange3 to "..tostring(unitType).."  ")
-	
 		if (name == uespLog.lastOnTargetChange or diffTime < uespLog.MIN_TARGET_CHANGE_TIMEMS) then
 			return
 		end
-		
-		uespLog.DebugExtraMsg("OnTargetChange4 to "..tostring(unitType).."  ")
 		
 		uespLog.lastOnTargetChange = name
 		uespLog.lastOnTargetChangeGameTime = gameTime
@@ -2239,8 +2242,8 @@ function uespLog.OnUpdate ()
         return
     end
 	
-	if (DoesUnitExist("recticleover")) then
-		x, y, z, zone = uespLog.GetUnitPosition("recticleover")
+	if (DoesUnitExist("reticleover")) then
+		x, y, z, zone = uespLog.GetUnitPosition("reticleover")
 	else
 		x, y, z, zone = uespLog.GetPlayerPosition()
 	end

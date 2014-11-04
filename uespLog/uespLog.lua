@@ -125,7 +125,7 @@
 --
 --		- v0.20 - 4 November 2014
 --			- Fixed updated GetNumLastCraftingResultItemsAndPenalty() function.
---			- Updated API to 100009
+--			- Updated API to 100010
 --
 
 
@@ -2018,7 +2018,7 @@ end
 function uespLog.OnFoundSkyshard ()
 	local logData = { }
 	
-1	logData.event = "Skyshard"
+	logData.event = "Skyshard"
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetCurrentTargetData(), uespLog.GetTimeData())
 	

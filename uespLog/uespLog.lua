@@ -128,7 +128,7 @@
 --			- Updated API to 100010.
 --			- Fix the CSV export utility.
 --			- Attempted fix to replace the now remove 'reticleover' target position (uses the player position instead).
---
+--			- Show item info fixed (updated new function names).
 --
 
 
@@ -1126,8 +1126,8 @@ function uespLog.ShowItemInfo (itemLink)
 	local itemName, itemColor, itemId, itemLevel, itemData, itemNiceName, itemNiceLink = uespLog.ParseLinkID(itemLink)
 	local styleStr = uespLog.GetItemStyleStr(itemStyle)
 	local equipTypeStr = uespLog.GetItemEquipTypeStr(equipType)
-	local weaponType = GetItemWeaponType(itemLink)
-	local armorType = GetItemArmorType(itemLink)
+	local weaponType = GetItemLinkWeaponType(itemLink)
+	local armorType = GetItemLinkArmorType(itemLink)
 	
 	uespLog.MsgColor(uespLog.itemColor, "UESP::Information for "..tostring(itemLink))
 	uespLog.MsgColor(uespLog.itemColor, ".    Data: "..tostring(itemData))

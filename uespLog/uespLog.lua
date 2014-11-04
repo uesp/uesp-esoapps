@@ -3174,6 +3174,33 @@ function uespLog.CountAchievements()
 end
 
 
+if GetAchievementRewardInfo == nil then
+   function GetAchievementRewardInfo(achievementId, rewardIndex)
+      local rewards = {}
+
+      local points = GetAchievementRewardPoints(achievementId)
+      table.insert(rewards, {ACHIEVEMENT_REWARD_TYPE_POINTS, points})
+
+      local hasRewardItem, itemName, iconTextureName, quality = GetAchievementRewardItem(achievementId)
+      if hasRewardItem then
+         table.insert(rewards, {ACHIEVEMENT_REWARD_TYPE_ITEM, itemName, iconTextureName, quality})
+      end
+
+      local hasRewardTitle, titleName = GetAchievementRewardTitle(achievementId)
+      if hasRewardTitle then
+         table.insert(rewards, {ACHIEVEMENT_REWARD_TYPE_TITLE, titleName})
+      end
+
+      local hasRewardDye, dyeIndex = GetAchievementRewardDye(achievementId)
+      if hasRewardDye then
+         table.insert(rewards, {ACHIEVEMENT_REWARD_TYPE_DYE, dyeIndex})
+      end
+      
+      return unpack(rewards[rewardIndex])
+   end
+end
+
+
 function uespLog.DumpAchievementPriv (categoryIndex, subCategoryIndex, achievementIndex)
 	local achievementId = GetAchievementId(categoryIndex, subCategoryIndex, achievementIndex)
 	local achName, achDescription, achPoints, achIcon, achCompleted, achData, achTime = GetAchievementInfo(achievementId)

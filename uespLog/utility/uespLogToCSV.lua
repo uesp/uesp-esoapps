@@ -1,16 +1,14 @@
 
 	-- Add all files to combine and convert here
 INPUT_FILENAMES = {
-	"d:\\esoexport\\uespLog\\addon\\test\\testOutput.lua",
+	--"d:\\esoexport\\uespLog\\addon\\test\\testOutput.lua",
+	"C:\\Users\\Dave\\Documents\\Elder Scrolls Online\\live\\SavedVariables\\uespLog.lua",
 }
-
-
-ItemIdMap = { }
-
 
 	-- Specify the output path here
 	-- Make sure this path and '\books' exists
 OUTPUT_PATH = "d:\\esoexport\\uespLog\\output\\"
+
 
 	-- The field seperator character (usually , for CSV)
 FIELD_SEP = ","
@@ -38,7 +36,7 @@ OUTPUT_MISCLOCATION_FILENAME = OUTPUT_PATH .. "misclocs.csv"
 OUTPUT_ITEMDB_FILENAME = OUTPUT_PATH .. "itemdb.csv"
 OUTPUT_COMBINEDLOCS_FILENAME = OUTPUT_PATH .. "combinedlocs.csv"
 
-
+ItemIdMap = { }
 currentPlayerName = ""
 
 ITEMDB_CSV_FORMAT = {
@@ -524,31 +522,33 @@ function parseAchievementData (data, version)
 	for k, v in ipairs(data) do
 		local rowData = parseFields(v)
 				
-		if (rowData.event == "Category") then
-			achCategory = rowData.name
-			rowData.icon = rowData.normalicon
-		elseif (rowData.event == "Subcategory") then
-			achSubCategory = rowData.name
-			rowData.icon = rowData.pressedIcon
-		elseif (rowData.event == "Achievement") then
-			achCount = achCount + 1
-		elseif (rowData.event == "Reward") then
-			rowData.name = rowData.type .. ": " .. rowData.name
-			if (rowData.type == "points") then rowData.name = rowData.name .. tostring(rowData.points) end
-		elseif (rowData.event == "Criteria") then
-			rowData.name = rowData.description
-			local numRequired = rowData.numrequired
-			if (numRequired == nil) then numRequired = "" end
-			rowData.name = rowData.name .. " (x" .. tostring(numRequired) ..")"
+		if (rowData.event ~= nil) then
+			if (rowData.event == "Category") then
+				achCategory = rowData.name
+				rowData.icon = rowData.normalicon
+			elseif (rowData.event == "Subcategory") then
+				achSubCategory = rowData.name
+				rowData.icon = rowData.pressedIcon
+			elseif (rowData.event == "Achievement") then
+				achCount = achCount + 1
+			elseif (rowData.event == "Reward") then
+				rowData.name = rowData.type .. ": " .. rowData.name
+				if (rowData.type == "points") then rowData.name = rowData.name .. tostring(rowData.points) end
+			elseif (rowData.event == "Criteria") then
+				rowData.name = rowData.description
+				local numRequired = rowData.numrequired
+				if (numRequired == nil) then numRequired = "" end
+				rowData.name = rowData.name .. " (x" .. tostring(numRequired) ..")"
+			end
+					
+			rowData.index = achCount
+			rowData.category = achCategory
+			rowData.subcategory = achSubCategory
+			
+			outputCsvRowFormat(f, ACHIEVEMENT_CSV_FORMAT, rowData)
 		end
-				
-		rowData.index = achCount
-		rowData.category = achCategory
-		rowData.subcategory = achSubCategory
-		
-		outputCsvRowFormat(f, ACHIEVEMENT_CSV_FORMAT, rowData)
 	end
-	
+		
 	f:close()
 end
 
@@ -669,6 +669,13 @@ end
 function OnLogEventShowBook (rowData, version)
 	-- event{ShowBook}  medium{1}  body{book Body}  bookTitle{Title}  y{0.9138137}  x{0.183874}  zone{MapName}  gameTime{1395522429000}  timeStamp{1234567890000}  
 	
+	--print("ShowBook " .. tostring(rowData))
+	--print("ShowBook " .. tostring(rowData["body"]))
+	--print("ShowBook " .. tostring(rowData["medium"]))
+	--print("ShowBook " .. tostring(rowData["bookTitle"]))
+	
+	--dumpObject("BookData", rowData, 0, 3)
+	
 	rowData.booktitle = escapeBookTitle(rowData.booktitle)
 	rowData.booklength = #rowData.body
 					
@@ -680,6 +687,8 @@ end
 function OnLogEventLoreBook (rowData, version)
 	-- event{LoreBook}  known{true}  bookTitle{Title}  y{0.9138137}  x{0.183874}  zone{MapName}  gameTime{1395522429000}  timeStamp{1234567890000}  
 	-- event{LoreBook}  known{false}  guild{4}  index{3}  category{1}  collection{2}  icon{icon.dds}  bookTitle{Title}  y{0.9138137}  x{0.183874}  zone{MapName}  gameTime{1395522429000} timeStamp{1234567890000}  
+	
+	--print("LoreBook " .. tostring(rowData))
 	
 	rowData.booktitle = escapeBookTitle(rowData.booktitle)
 	
@@ -942,18 +951,62 @@ LOGEVENT_FUNCTION_TABLE = {
 }
 
 
+function combineLongLogLines (data)
+	local lastCombineKey = nil
+	local hasSplitEnd
+	local hasSplitStart
+
+	for k, v in ipairs(data) do
+		hasSplitEnd = false
+		hasSplitEnd = false
+		hasSplitStart = false
+		
+		if ( string.sub(v, 1, 5) == "#STR#") then
+			v = string.sub(v, 5, v:len())
+			data[k] = v
+			hasSplitStart = true
+		end
+			
+		if ( string.sub(v, -5) == "#STR#" ) then
+			v = string.sub(v, 1, v:len() - 5)
+			data[k] = v
+			hasSplitEnd = true
+			lastCombineKey = k
+		end
+				
+		if (lastCombineKey ~= nil and hasSplitStart) then
+			data[lastCombineKey] = data[lastCombineKey] .. v;
+			data[k] = ""
+		end
+		
+		if (not hasSplitEnd) then
+			lastCombineKey = nil
+		end
+		
+	end
+
+end
+
+
 function parseSectionAllData (data, version)
 
 	for k, v in ipairs(data) do
-		local rowData = parseFields(v)	
-		local event = rowData.event:lower()
-		local func = LOGEVENT_FUNCTION_TABLE[event]
+		--print("Parsing rowdata "..tostring(k))
 		
-		if (func == nil) then
-			print("\tERROR: Unknown event '" .. tostring(rowData.event) .. "' found!")
-		else
-			func(rowData, version)
-		end		
+		if (v ~= "") then
+			local rowData = parseFields(v)	
+			
+			if (rowData.event ~= nil) then
+				local event = rowData.event:lower()
+				local func = LOGEVENT_FUNCTION_TABLE[event]
+		
+				if (func == nil) then
+					print("\tERROR: Unknown event '" .. tostring(rowData.event) .. "' found!")
+				else
+					func(rowData, version)
+				end		
+			end
+		end
 	end
 	
 end
@@ -986,6 +1039,8 @@ function parseAllData (allData)
 	for k, v in pairs(allData) do
 		local version = v["version"]
 		local data = v["data"]
+		
+		combineLongLogLines(data)
 		
 		if (data == nil) then
 			print("\tError: Missing [\"data\"] section in "..k.." data!")
@@ -1066,6 +1121,54 @@ function logCombinedLocation (category, name, x, y, zone, timeStamp, user)
 	
 	outputCsvRowFormat(f, COMBINEDLOC_CSV_FORMAT, rowData)	
 	f:close()
+end
+
+
+function dumpObject (prefix, a, level, maxLevel) 
+	local logData = { }
+	local parentPrefix = ""
+	
+	if (prefix ~= "_G") then
+		parentPrefix = prefix .. "."
+	end
+	
+	newLevel = level + 1
+	
+		-- Prevent recursion of the global object
+	if (newLevel > 1 and tostring(a) == "_G") then
+		return
+	end
+  	
+	local status, tableIndex, value = pcall(next, a, nil)
+  
+	while (status and tableIndex ~= nil) do
+		local lastIndex = tableIndex
+	
+		if type(value) == "table" then
+			if (level <= maxLevel) then
+				dumpObject(parentPrefix .. tableIndex, value, newLevel, maxLevel)
+			else
+				print("Public Table "..tostring(parentPrefix).."::"..tostring(tableIndex).." = "..tostring(value))
+			end
+		elseif type(value) == "function" then
+			print("Public Function "..tostring(parentPrefix).."::"..tostring(tableIndex).." = "..tostring(value))
+		else
+			objType = type(value)
+			print("Public "..tostring(objType)..".. "..tostring(parentPrefix).."::"..tostring(tableIndex).." = "..tostring(value))
+		end
+		
+		repeat
+			status, tableIndex, value = pcall(next, a, tableIndex)
+			
+			if (not status) then
+				local errIndex = string.match(tableIndex, "attempt to access a private function '(%a*)' from")
+				tableIndex = errIndex
+				print("Private "..tostring(parentPrefix).."::"..tostring(errIndex).." ")
+			end
+		until status or tableIndex == nil
+		
+	end
+  
 end
 
 

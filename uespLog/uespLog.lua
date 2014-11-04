@@ -1788,7 +1788,7 @@ end
 
 function uespLog.OnCraftCompleted (eventCode, craftSkill)
 	local inspiration = GetLastCraftingResultTotalInspiration()
-	local numItemsGained = GetNumLastCraftingResultItems()
+	local numItemsGained, penalty = GetNumLastCraftingResultItemsAndPenalty()
 	local logData = { }
 	
 	logData.event = "CraftComplete"
@@ -2014,7 +2014,7 @@ end
 function uespLog.OnFoundSkyshard ()
 	local logData = { }
 	
-	logData.event = "Skyshard"
+1	logData.event = "Skyshard"
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetCurrentTargetData(), uespLog.GetTimeData())
 	

@@ -130,6 +130,8 @@
 --			- Attempted fix to replace the now remove 'reticleover' target position (uses the player position instead).
 --			- Show item info fixed (updated new function names).
 --
+--		- v0.21 -
+--			- Fixed "/uespdump achievements" due to removed function.
 
 
 
@@ -143,7 +145,7 @@ uespLog.enableTesting = false
 	--require "test/uespLog_mock"
 --end
 
-uespLog.version = "0.20"
+uespLog.version = "0.21"
 uespLog.releaseDate = "4 November 2014"
 
 

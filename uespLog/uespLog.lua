@@ -125,7 +125,10 @@
 --
 --		- v0.20 - 4 November 2014
 --			- Fixed updated GetNumLastCraftingResultItemsAndPenalty() function.
---			- Updated API to 100010
+--			- Updated API to 100010.
+--			- Fix the CSV export utility.
+--			- Attempted fix to replace the now remove 'reticleover' target position (uses the player position instead).
+--
 --
 
 

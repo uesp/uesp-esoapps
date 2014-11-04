@@ -123,6 +123,10 @@
 --			- Fixed "nil string" crash bug due to strings over 1999 bytes being output to
 --            the saved variable file. Long strings are split.
 --
+--		- v0.20 - 4 November 2014
+--			- Fixed updated GetNumLastCraftingResultItemsAndPenalty() function.
+--			- Updated API to 100009
+--
 
 
 
@@ -136,8 +140,8 @@ uespLog.enableTesting = false
 	--require "test/uespLog_mock"
 --end
 
-uespLog.version = "0.19"
-uespLog.releaseDate = "21 August 2014"
+uespLog.version = "0.20"
+uespLog.releaseDate = "4 November 2014"
 
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

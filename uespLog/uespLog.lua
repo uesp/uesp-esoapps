@@ -132,6 +132,8 @@
 --
 --		- v0.21 -
 --			- Fixed "/uespdump achievements" due to removed function.
+--			- Fixed issue with facial animations.
+--
 
 
 
@@ -146,7 +148,7 @@ uespLog.enableTesting = false
 --end
 
 uespLog.version = "0.21"
-uespLog.releaseDate = "4 November 2014"
+uespLog.releaseDate = "5 November 2014"
 
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -854,7 +856,8 @@ function uespLog.Initialize( self, addOnName )
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CONVERSATION_UPDATED, uespLog.OnConversationUpdated)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CHATTER_BEGIN, uespLog.OnChatterBegin)
-	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CHATTER_END, uespLog.OnChatterEnd)
+	ZO_InteractWindow:UnregisterForEvent(EVENT_CHATTER_BEGIN)
+    EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CHATTER_END, uespLog.OnChatterEnd)
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_RECIPE_LEARNED, uespLog.OnRecipeLearned)
 	
@@ -1228,12 +1231,11 @@ end
 
 
 function uespLog.OnChatterBegin (eventCode, optionCount)
-
 	local x, y, z, zone = uespLog.GetUnitPosition("interact")
     local npcLevel = GetUnitLevel("interact")
 	local npcName = GetUnitName("interact")
 	local logData = { }
-	
+		
 	if (x == nil) then
 		x, y, z, zone = uespLog.GetPlayerPosition()
 	end
@@ -1241,17 +1243,22 @@ function uespLog.OnChatterBegin (eventCode, optionCount)
 	if (npcLevel == nil) then
 		npcLevel = ""
 	end
-
+	
     uespLog.currentConversationData.npcName = npcName
     uespLog.currentConversationData.npcLevel = npcLevel
     uespLog.currentConversationData.x = x
     uespLog.currentConversationData.y = y
     uespLog.currentConversationData.zone = zone
-	
+		
 	logData.event = "ChatterBegin"
 	logData.bodyText = GetChatterGreeting()
 	logData.optionCount = optionCount
-		
+	--logData.chatText, logData.numOptions, logData.atGreeting = GetChatterData()   -- Still has issue with facial animations
+	
+		-- Manually call the original function to update the chat window
+	INTERACT_WINDOW:InitializeInteractWindow(logData.bodyText)
+	INTERACT_WINDOW:PopulateChatterOptions(logData.optionCount, false)
+	
 	uespLog.AppendDataToLog("all", logData, uespLog.currentConversationData, uespLog.GetTimeData())
 	
 	for i = 1, optionCount do

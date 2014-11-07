@@ -115,6 +115,7 @@ namespace eso {
 
 		for (size_t i = 0; i < m_Header.RecordCount; ++i)
 		{
+			Entry.UserData = 0;
 			Entry.Index = i;
 			
 			if (Offset11 < pData11->UncompressedSize)
@@ -201,14 +202,14 @@ namespace eso {
 		if (!EnsurePathExists(OutputPath)) return false;
 		if (!File.Open(pFilename, "wb")) return false;
 
-		File.Printf("  Index,   Index11 ,   Index13 ,   Index21 , FileIndex,  FileOffset,      FileID       ,                Filename\n");
+		File.Printf("  Index,   Index11 ,   Index13 ,   Index21 , FileIndex,  FileOffset,      FileID       , UserData,                Filename\n");
 
 		for (size_t i = 0; i < m_FileTable.size(); ++i)
 		{
 			zosft_filetable_t &Entry = m_FileTable[i];
 
-			File.Printf("%7d, 0x%08X, 0x%08X, 0x%08X, 0x%08X, 0x%08X, 0x%016llX, '%s'\n", 
-				Entry.Index, Entry.Index11, Entry.Index13, Entry.Index21, Entry.FileIndex, Entry.FilenameOffset, Entry.FileID, Entry.Filename.c_str());
+			File.Printf("%7d, 0x%08X, 0x%08X, 0x%08X, 0x%08X, 0x%08X, 0x%016llX, %8d, '%s'\n", 
+				Entry.Index, Entry.Index11, Entry.Index13, Entry.Index21, Entry.FileIndex, Entry.FilenameOffset, Entry.FileID, Entry.UserData, Entry.Filename.c_str());
 		}
 
 		return true;

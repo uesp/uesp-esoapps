@@ -1130,7 +1130,7 @@ cmdparamdef_t g_Cmds[] =
 };
 
 const char g_AppDescription[] = "\
-ExportMnf v0.16 is a simple command line application to load and export files\n\
+ExportMnf v0.17 is a simple command line application to load and export files\n\
 from ESO's MNF and DAT files.\n\
 \n\
 WARNING: This app is in early development and is fragile. User discretion is\n\

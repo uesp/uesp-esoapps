@@ -9,6 +9,9 @@
 --		- Extended loot display messages (level, trait, style)
 --		- Display message when weapon charges run out
 --		- "Item Info" menu for all crafting stations tooltips
+--		- MAC Install Issue
+--				- Make root folder "uespLog"
+--				- Remove utility folder?
 --
 --
 -- CHANGELOG:
@@ -133,6 +136,7 @@
 --		- v0.21 -
 --			- Fixed "/uespdump achievements" due to removed function.
 --			- Fixed issue with facial animations.
+--			- More conversation data is now logged.
 --
 
 
@@ -185,6 +189,12 @@ uespLog.lastPlayerUT = -1
 uespLog.printDumpObject = false
 uespLog.countGlobal = 0
 
+uespLog.lastConversationOption = { }
+uespLog.lastConversationOption.Text = ""
+uespLog.lastConversationOption.Type = ""
+uespLog.lastConversationOption.Gold = ""
+uespLog.lastConversationOption.Index = ""
+uespLog.lastConversationOption.Important = ""
 
 uespLog.savedVars = {}
     
@@ -854,10 +864,14 @@ function uespLog.Initialize( self, addOnName )
 
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CRAFT_COMPLETED, uespLog.OnCraftCompleted)
 	
-	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CONVERSATION_UPDATED, uespLog.OnConversationUpdated)
-	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CHATTER_BEGIN, uespLog.OnChatterBegin)
 	ZO_InteractWindow:UnregisterForEvent(EVENT_CHATTER_BEGIN)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CONVERSATION_UPDATED, uespLog.OnConversationUpdated)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_QUEST_OFFERED, uespLog.OnQuestOffered)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CHATTER_BEGIN, uespLog.OnChatterBegin)
     EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CHATTER_END, uespLog.OnChatterEnd)
+	
+	uespLog.Old_HandleChatterOptionClicked = ZO_InteractionManager.HandleChatterOptionClicked
+	ZO_InteractionManager.HandleChatterOptionClicked = uespLog.HandleChatterOptionClicked
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_RECIPE_LEARNED, uespLog.OnRecipeLearned)
 	
@@ -900,11 +914,11 @@ function uespLog.Initialize( self, addOnName )
 	
 	zo_callLater(uespLog.InitTradeData, 1000) 
 	
-	--uespLog.Old_InventorySlot_ShowContextMenu = ZO_InventorySlot_ShowContextMenu
-	--uespLog.Old_ZO_InventorySlot_DoPrimaryAction = ZO_InventorySlot_DoPrimaryAction
-	--ZO_InventorySlot_ShowContextMenu = uespLog.New_InventorySlot_ShowContextMenu
-	--ZO_InventorySlot_DoPrimaryAction = uespLog.ZO_InventorySlot_DoPrimaryAction
 end
+
+
+	--	Hook initialization onto the ADD_ON_LOADED event  
+EVENT_MANAGER:RegisterForEvent("uespLog" , EVENT_ADD_ON_LOADED, uespLog.Initialize)
 
 
 function uespLog.EnchantingOnTooltipMouseUp(control, button, upInside)
@@ -1194,13 +1208,54 @@ function uespLog.fillInfoData ()
 end
 
 
-	--	Hook initialization onto the ADD_ON_LOADED event  
-EVENT_MANAGER:RegisterForEvent("uespLog" , EVENT_ADD_ON_LOADED, uespLog.Initialize)
+function uespLog.HandleChatterOptionClicked (self, label)
+	uespLog.DebugExtraMsg("UESP::HandleChatterOptionClicked")
+	uespLog.DebugExtraMsg("Index:"..tostring(label.optionIndex))
+	--uespLog.DebugExtraMsg("Text:"..tostring(label:GetText()))
+	uespLog.DebugExtraMsg("Type:"..tostring(label.optionType))
+	
+	uespLog.lastConversationOption.Text = label:GetText()
+	uespLog.lastConversationOption.Type = label.optionType
+	uespLog.lastConversationOption.Gold = label.gold
+	uespLog.lastConversationOption.Index = label.optionIndex
+	uespLog.lastConversationOption.Important = label.isImportant
+		--label.chosenBefore
+		
+	uespLog.Old_HandleChatterOptionClicked(self, label)
+end
+
+
+function uespLog.OnQuestOffered (eventCode)
+    local dialog, response = GetOfferedQuestInfo()
+    local _, farewell = GetChatterFarewell()
+	local logData = { }
+	
+	if (farewell == "") then farewell = GetString(SI_GOODBYE) end
+	
+	logData.event = "QuestOffered"
+	logData.farewell = farewell
+	logData.dialog = dialog
+	logData.response = response
+	logData.optionText = uespLog.lastConversationOption.Text
+	logData.optionType = uespLog.lastConversationOption.Type
+	logData.optionGold = uespLog.lastConversationOption.Gold
+	logData.optionIndex = uespLog.lastConversationOption.Index
+	logData.optionImp = uespLog.lastConversationOption.Important
+	
+	uespLog.AppendDataToLog("all", logData, uespLog.currentConversationData, uespLog.GetTimeData())
+	
+	uespLog.DebugMsg("UESP::Updated Conversation (QuestOffered)...")
+	--uespLog.DebugExtraMsg("UESP::dialog = "..tostring(dialog))
+	--uespLog.DebugExtraMsg("UESP::response = "..tostring(response))
+	--uespLog.DebugExtraMsg("UESP::farewell = "..tostring(farewell))	
+end
 
 
 function uespLog.OnConversationUpdated (eventCode, conversationBodyText, conversationOptionCount)
 
 	local logData = { }
+	
+	uespLog.DebugMsg("UESP::Updated conversation START...")
 
 	logData.event = "ConversationUpdated"
 	logData.bodyText = conversationBodyText
@@ -1218,6 +1273,16 @@ function uespLog.OnConversationUpdated (eventCode, conversationBodyText, convers
 	end
 	
 	uespLog.DebugMsg("UESP::Updated conversation...")
+	
+	uespLog.lastConversationOption.Text = ""
+	uespLog.lastConversationOption.Type = ""
+	uespLog.lastConversationOption.Gold = ""
+	uespLog.lastConversationOption.Index = ""
+	uespLog.lastConversationOption.Important = ""
+	
+		-- Manually update the interaction window
+	--INTERACT_WINDOW:InitializeInteractWindow(conversationBodyText)
+    --INTERACT_WINDOW:PopulateChatterOptions(conversationOptionCount, true)
 end
 
 
@@ -1227,6 +1292,12 @@ function uespLog.OnChatterEnd (eventCode)
     uespLog.currentConversationData.x = ""
     uespLog.currentConversationData.y = ""
     uespLog.currentConversationData.zone = ""
+	
+	uespLog.lastConversationOption.Text = ""
+	uespLog.lastConversationOption.Type = ""
+	uespLog.lastConversationOption.Gold = ""
+	uespLog.lastConversationOption.Index = ""
+	uespLog.lastConversationOption.Important = ""
 end
 
 
@@ -1235,6 +1306,19 @@ function uespLog.OnChatterBegin (eventCode, optionCount)
     local npcLevel = GetUnitLevel("interact")
 	local npcName = GetUnitName("interact")
 	local logData = { }
+	local ChatterGreeting = GetChatterGreeting()
+	
+	uespLog.lastConversationOption.Text = ""
+	uespLog.lastConversationOption.Type = ""
+	uespLog.lastConversationOption.Gold = ""
+	uespLog.lastConversationOption.Index = ""
+	uespLog.lastConversationOption.Important = ""
+	
+	--EVENT_MANAGER:RegisterForEvent( "uespLog", EVENT_CONVERSATION_UPDATED, uespLog.OnConversationUpdated)
+	--ZO_InteractWindow:UnregisterForEvent(EVENT_CONVERSATION_UPDATED)
+	--ZO_InteractWindow:UnregisterForEvent(EVENT_CONVERSATION_UPDATED)
+	--EVENT_MANAGER:UnregisterForEvent(EVENT_CONVERSATION_UPDATED)
+	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CONVERSATION_UPDATED, uespLog.OnConversationUpdated)
 		
 	if (x == nil) then
 		x, y, z, zone = uespLog.GetPlayerPosition()
@@ -1251,14 +1335,11 @@ function uespLog.OnChatterBegin (eventCode, optionCount)
     uespLog.currentConversationData.zone = zone
 		
 	logData.event = "ChatterBegin"
-	logData.bodyText = GetChatterGreeting()
+	
+	logData.bodyText = ChatterGreeting
 	logData.optionCount = optionCount
 	--logData.chatText, logData.numOptions, logData.atGreeting = GetChatterData()   -- Still has issue with facial animations
-	
-		-- Manually call the original function to update the chat window
-	INTERACT_WINDOW:InitializeInteractWindow(logData.bodyText)
-	INTERACT_WINDOW:PopulateChatterOptions(logData.optionCount, false)
-	
+		
 	uespLog.AppendDataToLog("all", logData, uespLog.currentConversationData, uespLog.GetTimeData())
 	
 	for i = 1, optionCount do
@@ -1271,6 +1352,10 @@ function uespLog.OnChatterBegin (eventCode, optionCount)
 	end
 	
 	uespLog.DebugLogMsg("chatter begin...")
+	
+		-- Manually call the original function to update the chat window
+	INTERACT_WINDOW:InitializeInteractWindow(ChatterGreeting)
+	INTERACT_WINDOW:PopulateChatterOptions(optionCount, false)
 end
 
 

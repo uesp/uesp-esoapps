@@ -12,6 +12,7 @@
 --		- MAC Install Issue
 --				- Make root folder "uespLog"
 --				- Remove utility folder?
+--		- Yokudan style icon (35)
 --
 --
 -- CHANGELOG:
@@ -701,6 +702,8 @@ function uespLog.GetUnitPositionData(unitTag)
 	
 	if (unitTag == "reticleover") then
 		result.x, result.y = GetMapPlayerPosition("player")
+	elseif (unitTag == "interact") then
+		result.x, result.y = GetMapPlayerPosition("player")
 	else
 		result.x, result.y = GetMapPlayerPosition(unitTag)
 	end
@@ -715,6 +718,8 @@ function uespLog.GetUnitPosition(unitName)
 	local x, y, z
                      
 	if (unitName == "reticleover") then
+		x, y, z = GetMapPlayerPosition("player")
+	elseif (unitName == "interact") then
 		x, y, z = GetMapPlayerPosition("player")
 	else
 		x, y, z = GetMapPlayerPosition(unitName)
@@ -1302,7 +1307,7 @@ end
 
 
 function uespLog.OnChatterBegin (eventCode, optionCount)
-	local x, y, z, zone = uespLog.GetUnitPosition("interact")
+	local x, y, heading, zone = uespLog.GetUnitPosition("interact")
     local npcLevel = GetUnitLevel("interact")
 	local npcName = GetUnitName("interact")
 	local logData = { }
@@ -1313,15 +1318,9 @@ function uespLog.OnChatterBegin (eventCode, optionCount)
 	uespLog.lastConversationOption.Gold = ""
 	uespLog.lastConversationOption.Index = ""
 	uespLog.lastConversationOption.Important = ""
-	
-	--EVENT_MANAGER:RegisterForEvent( "uespLog", EVENT_CONVERSATION_UPDATED, uespLog.OnConversationUpdated)
-	--ZO_InteractWindow:UnregisterForEvent(EVENT_CONVERSATION_UPDATED)
-	--ZO_InteractWindow:UnregisterForEvent(EVENT_CONVERSATION_UPDATED)
-	--EVENT_MANAGER:UnregisterForEvent(EVENT_CONVERSATION_UPDATED)
-	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CONVERSATION_UPDATED, uespLog.OnConversationUpdated)
 		
 	if (x == nil) then
-		x, y, z, zone = uespLog.GetPlayerPosition()
+		x, y, heading, zone = uespLog.GetPlayerPosition()
 	end
 	
 	if (npcLevel == nil) then
@@ -1335,7 +1334,6 @@ function uespLog.OnChatterBegin (eventCode, optionCount)
     uespLog.currentConversationData.zone = zone
 		
 	logData.event = "ChatterBegin"
-	
 	logData.bodyText = ChatterGreeting
 	logData.optionCount = optionCount
 	--logData.chatText, logData.numOptions, logData.atGreeting = GetChatterData()   -- Still has issue with facial animations

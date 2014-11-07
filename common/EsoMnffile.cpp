@@ -168,7 +168,7 @@ namespace eso {
 		for (size_t i = 0; i < FileTable.size(); ++i)
 		{
 			mnf_filetable_t& Entry = FileTable[i];
-			File.Printf("%7d, 0x%08X, 0x%08X, 0x%08X, 0x%08X, 0x%08X, 0x%08X, 0x%08X, 0x%02X, 0x%02X, 0x%04X %s\n",
+			File.Printf("%7d, 0x%08X, 0x%08X, 0x%08X, 0x%08X, 0x%08X, 0x%08X, 0x%08X, 0x%02X, 0x%02X, 0x%04X, %s\n",
 					Entry.Index, Entry.ID1, Entry.FileIndex, Entry.Unknown1, Entry.Size, Entry.CompressedSize, Entry.Hash, Entry.Offset, Entry.CompressType, Entry.ArchiveIndex, Entry.Unknown2, 
 					Entry.pZosftEntry ? Entry.pZosftEntry->Filename.c_str() : "");
 		}

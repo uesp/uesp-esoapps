@@ -38,6 +38,7 @@ public:
 	virtual void Destroy();
 
 	bool DumpCsv (const std::string Filename);
+	bool DumpTextFile (eso::CFile& File, lang_record_t& Record);
 
 	bool Load (const std::string Filename);
 	bool Read (eso::CFile& File);

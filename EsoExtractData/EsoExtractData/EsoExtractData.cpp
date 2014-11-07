@@ -13,7 +13,10 @@
  *	    - Added the "UserData" column to the ZOSFT file table CSV export. Currently
  *		  is the number of file entries found in the MNF data.
  *		- Converts any .lang file to a CSV format if it can.
+ *		- Language file now exported in a normal CSV format (with commas and internal
+ *		  double-quotes escaped to \").
  *		- Added the -k/--skipsubfiles option to start at a specific DAT file index.
+ 
  */
 
 

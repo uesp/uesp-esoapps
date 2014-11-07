@@ -286,6 +286,14 @@ namespace eso {
 	}
 
 
+	bool CFile::WriteChar (const char Data)
+	{
+		if (m_pFile == nullptr) return PrintError("Error: No file defined to read from!");
+		
+		return (fputc(Data, m_pFile) != EOF);
+	}
+
+
 
 
 

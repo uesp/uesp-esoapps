@@ -78,6 +78,7 @@ namespace eso {
 		void SetFile (FILE* pFile, const bool CloseFile = false);
 		
 		virtual bool WriteBytes (const byte* pData, const size_t Size);
+		virtual bool WriteChar (const char Data);
 	};
 
 

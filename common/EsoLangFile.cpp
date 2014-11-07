@@ -30,13 +30,33 @@ bool CEsoLangFile::DumpCsv (const std::string Filename)
 
 	if (!File.Open(Filename, "wb")) return false;
 
-	File.Printf("ID`Unknown`Index`Offset`Text\n");
+	File.Printf("ID, Unknown, Index, Offset, Text\n");
 
 	for (size_t i = 0; i < m_Records.size(); ++i)
 	{
 		lang_record_t& Record = m_Records[i];
 
-		File.Printf("%d`%d`%d`%d`%s\n", Record.Id, Record.Unknown, Record.Index, Record.Offset, Record.Text.c_str());
+		File.Printf("%d, %d, %d, %d, \"", Record.Id, Record.Unknown, Record.Index, Record.Offset);
+		DumpTextFile(File, Record);
+		File.Printf("\"\n");
+	}
+
+	return true;
+}
+
+
+bool CEsoLangFile::DumpTextFile (CFile& File, lang_record_t& Record)
+{
+	const char* pText = Record.Text.c_str();
+
+	while (*pText)
+	{
+		if (*pText == '"')
+			File.Printf("\\\"");
+		else
+			File.WriteChar(*pText);
+	
+		++pText;
 	}
 
 	return true;

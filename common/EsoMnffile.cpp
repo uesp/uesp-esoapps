@@ -2,6 +2,7 @@
 
 
 #include "EsoMnfFile.h"
+#include "EsoLangFile.h"
 
 
 namespace eso {
@@ -277,10 +278,14 @@ namespace eso {
 
 		for (size_t i = 0; i < m_FileTable.size(); ++i)
 		{
+				/* Skip entries with a non-zero Unknown1 */
+			if (m_FileTable[i].Unknown1 != 0) continue;
+
 			zosft_filetable_t* pEntry = ZosftFile.LookupIndex(m_FileTable[i].FileIndex);
 			
 			if (pEntry)
 			{
+				++pEntry->UserData;
 				m_FileTable[i].pZosftEntry = pEntry;
 				++FoundCount;
 			}
@@ -486,6 +491,17 @@ namespace eso {
 			if (ConvertDDS && StringEndsWith(OutputFilename, ".dds"))
 			{
 				ConvertDDStoPNG(DataInfo.pFileDataStart, DataInfo.FileDataSize, OutputFilename);
+			}
+			else if (StringEndsWith(OutputFilename, ".lang"))
+			{
+				CEsoLangFile LangFile;
+				
+				if (LangFile.Load(OutputFilename))
+				{
+					std::string LangOutputFilename(OutputFilename);
+					LangOutputFilename += ".csv";
+					LangFile.DumpCsv(LangOutputFilename);
+				}
 			}
 		}
 

@@ -30,6 +30,8 @@ namespace eso {
 		dword		FilenameOffset;
 		dword64		FileID;
 		std::string Filename;
+
+		dword		UserData;	/* Extra data */
 	};
 
 

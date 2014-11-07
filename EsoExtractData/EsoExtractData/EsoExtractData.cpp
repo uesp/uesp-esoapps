@@ -1,5 +1,6 @@
-// TestZLib.cpp : Defines the entry point for the console application.
-//
+/*
+ *
+ */
 
 
 #include "stdafx.h"
@@ -1139,31 +1140,6 @@ advised.\n\
 
 int _tmain(int argc, _TCHAR* argv[])
 { 
-	CEsoLangFile LangFile;
-
-	//Old
-	// En = 101315
-
-	//May 2014
-	//en = 2-103452
-	//de = 2-103152
-	//fr = 2-103848
-
-	//July 2014
-
-	//Aug 2014
-
-	/*
-	LangFile.Load("d:\\esoexport\\esomnf6\\gamedata\\lang\\en-103452.dat");
-	LangFile.DumpCsv("d:\\esoexport\\esomnf6\\en.lang.csv");
-
-	LangFile.Load("d:\\esoexport\\esomnf6\\gamedata\\lang\\de-103152.dat");
-	LangFile.DumpCsv("d:\\esoexport\\esomnf6\\de.lang.csv");
-
-	LangFile.Load("d:\\esoexport\\esomnf6\\gamedata\\lang\\fr-103848.dat");
-	LangFile.DumpCsv("d:\\esoexport\\esomnf6\\fr.lang.csv");
-	return 0; //*/
-
 	CMnfFile GameMnf;
 	CMnfFile EsoMnf;
 	CMnfFile EsoAudioMnf;

@@ -1122,6 +1122,7 @@ cmdparamdef_t g_Cmds[] =
 	{ "startindex",   "s", "startindex",	"Start exporting sub-files at the given file index.",		false, true,  true,  false, "-1" },
 	{ "endindex",     "e", "endindex",	    "Stop exporting sub-files at the given file index.",		false, true,  true,  false, "-1" },
 	{ "archiveindex", "a", "archive",		"Only export MNF file with the given index.",				false, true,  true,  false, "-1" },
+	{ "beginarchive", "b", "beginarchive",	"start with the given MNF file index.",						false, true,  true,  false, "-1" },
 	{ "fileindex",    "f", "fileindex",		"Only export MNF the subfile with the given file index.",	false, true,  true,  false, "-1" },
 	{ "convertdds",   "c", "convertdds",    "(Doesn't Work Yet) Attempt to convert DDS files to PNG.",	false, true,  false, false, "0" },
 	{ "skipsubfiles", "k", "skipsubfiles",	"Don't export subfiles from the MNF data.",		            false, true,  false, false, "0" },
@@ -1201,6 +1202,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	ExportOptions.MnfStartIndex = CmdParamHandler.GetParamValueAsInt("startindex");
 	ExportOptions.MnfEndIndex = CmdParamHandler.GetParamValueAsInt("endindex");
 	ExportOptions.ArchiveIndex = CmdParamHandler.GetParamValueAsInt("archiveindex");
+	ExportOptions.BeginArchiveIndex = CmdParamHandler.GetParamValueAsInt("beginarchive");
 	ExportOptions.MnfFileIndex = CmdParamHandler.GetParamValueAsInt("fileindex");
 	ExportOptions.ConvertDDS = CmdParamHandler.HasParamValue("convertdds");
 	ExportOptions.SkipSubFiles = CmdParamHandler.HasParamValue("skipsubfiles");

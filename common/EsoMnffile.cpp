@@ -589,6 +589,8 @@ namespace eso {
 
 		if (ExportOptions.ArchiveIndex >= 0)
 			PrintError("Saving %u sub-files (%u-%u) from archive %04d in MNF file...", ArchiveCount, StartIndex, EndIndex, ExportOptions.ArchiveIndex);
+		else if (ExportOptions.BeginArchiveIndex >= 0)
+			PrintError("Saving sub-files from archive %04d and above in MNF file...", ExportOptions.BeginArchiveIndex);
 		else
 			PrintError("Saving %u sub-files (%u-%u) in MNF file...", EndIndex - StartIndex + 1, StartIndex, EndIndex);
 
@@ -597,6 +599,7 @@ namespace eso {
 		for (size_t i = StartIndex; i <= EndIndex; ++i)
 		{
 			if (ExportOptions.ArchiveIndex >= 0 && ExportOptions.ArchiveIndex != SortedTable[i].ArchiveIndex) continue;
+			if (ExportOptions.BeginArchiveIndex >= 0 && SortedTable[i].ArchiveIndex < ExportOptions.BeginArchiveIndex) continue;
 
 			if (i % 100 == 0) 
 			{

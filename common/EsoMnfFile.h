@@ -38,6 +38,7 @@ namespace eso {
 		int MnfEndIndex;
 		int ArchiveIndex;
 		int MnfFileIndex;
+		int BeginArchiveIndex;
 		bool ConvertDDS;
 		bool SkipSubFiles;
 
@@ -46,6 +47,7 @@ namespace eso {
 					MnfEndIndex(-1),
 					ArchiveIndex(-1),
 					MnfFileIndex(-1),
+					BeginArchiveIndex(-1),
 					ConvertDDS(false),
 					SkipSubFiles(false)
 		{

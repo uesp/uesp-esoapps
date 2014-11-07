@@ -1,5 +1,19 @@
 /*
+ * EsoExtractData - by Dave Humphrey (dave@uesp.net)
  *
+ * A Windows command line program that extracts data/files from ESO (Elder Scrolls Online)
+ * MNF and DAT game data files.
+ *
+ * Use "EsoExtractData -h" for basic help.
+ *
+ * HISTORY
+ *
+ * v0.17 -- 7 November 2014
+ *		- Added missing , to MNF file table CSV export.
+ *	    - Added the "UserData" column to the ZOSFT file table CSV export. Currently
+ *		  is the number of file entries found in the MNF data.
+ *		- Converts any .lang file to a CSV format if it can.
+ *		- Added the -k/--skipsubfiles option to start at a specific DAT file index.
  */
 
 

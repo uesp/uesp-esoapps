@@ -34,6 +34,7 @@ namespace eso {
 		std::string OutputPath;
 		std::string MnfOutputFileTable;
 		std::string ZosOutputFileTable;
+		std::string LangFilename;
 		int MnfStartIndex;
 		int MnfEndIndex;
 		int ArchiveIndex;

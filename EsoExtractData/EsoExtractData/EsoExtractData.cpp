@@ -16,7 +16,8 @@
  *		- Language file now exported in a normal CSV format (with commas and internal
  *		  double-quotes escaped to \").
  *		- Added the -k/--skipsubfiles option to start at a specific DAT file index.
- 
+ *		- Added the -l/--lang option to convert a .LANG file to a CSV.
+ *
  */
 
 
@@ -1133,8 +1134,8 @@ bool DoConvertExistingRiffFiles (const std::string RootPath)
 
 cmdparamdef_t g_Cmds[] = 
 {
-	{ "mnffile",      "", "",				"Input MNF filename to load.",								true,  false, true,  false, "" },
-	{ "outputpath",   "", "",				"Path to save extracted data files to.",					true,  false, true,  false, "" },
+	{ "mnffile",      "", "",				"Input MNF filename to load.",								false, false, true,  false, "" },
+	{ "outputpath",   "", "",				"Path to save extracted data files to.",					false, false, true,  false, "" },
 	{ "mnfft",        "m", "mnfft",			"Dump the MNF filetable to the specified text file.",		false, true,  true,  false, "" },
 	{ "zosft",        "z", "zosft",			"Dump the ZOS filetable to the specified text file.",		false, true,  true,  false, "" },
 	{ "startindex",   "s", "startindex",	"Start exporting sub-files at the given file index.",		false, true,  true,  false, "-1" },
@@ -1144,6 +1145,7 @@ cmdparamdef_t g_Cmds[] =
 	{ "fileindex",    "f", "fileindex",		"Only export MNF the subfile with the given file index.",	false, true,  true,  false, "-1" },
 	{ "convertdds",   "c", "convertdds",    "(Doesn't Work Yet) Attempt to convert DDS files to PNG.",	false, true,  false, false, "0" },
 	{ "skipsubfiles", "k", "skipsubfiles",	"Don't export subfiles from the MNF data.",		            false, true,  false, false, "0" },
+	{ "langfile",     "l", "lang",	        "Convert the given .lang file to a CSV.",		            false, false, true,  false, "" },
 	{ "",   "", "", "", false, false, false, false, "" }
 };
 
@@ -1199,8 +1201,39 @@ int _tmain(int argc, _TCHAR* argv[])
 	ExportOptions.MnfFileIndex = CmdParamHandler.GetParamValueAsInt("fileindex");
 	ExportOptions.ConvertDDS = CmdParamHandler.HasParamValue("convertdds");
 	ExportOptions.SkipSubFiles = CmdParamHandler.HasParamValue("skipsubfiles");
+	ExportOptions.LangFilename = CmdParamHandler.GetParamValue("langfile");
 
-	CMnfFile MnfFile;
-	return MnfFile.Export(ExportOptions) ? 0 : -1;
+		/* Handle a .LANG file seperately */
+	if (!ExportOptions.LangFilename.empty())
+	{
+		CEsoLangFile LangFile;
+		std::string OutputCSVFilename = ExportOptions.LangFilename + ".csv";
+
+		if (LangFile.Load(ExportOptions.LangFilename))
+		{
+			PrintError("Loaded LANG file '%s'...", ExportOptions.LangFilename.c_str());
+
+			if (LangFile.DumpCsv(OutputCSVFilename))
+				PrintError("Saved the LANG file to '%s'!", OutputCSVFilename.c_str());
+			else
+				PrintError("Failed to save the LANG file '%s'!", OutputCSVFilename.c_str());
+		}
+		else
+		{
+			PrintError("Failed to load the LANG file '%s'!", ExportOptions.LangFilename.c_str());
+		}
+	}
+
+	if (!ExportOptions.MnfFilename.empty())
+	{
+		CMnfFile MnfFile;
+		MnfFile.Export(ExportOptions);
+	}
+	else
+	{
+		PrintError("Skipping MNF export...no file specified!");
+	}
+
+	return 0;
 }
 

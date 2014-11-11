@@ -12,7 +12,9 @@
 --		- MAC Install Issue
 --				- Make root folder "uespLog"
 --				- Remove utility folder?
---		- Yokudan style icon (35)
+--		- Yokudan style icon (35)?
+--		- Akaviri style icon?
+--		- Ancient Elf style icon (15)?
 --
 --
 -- CHANGELOG:
@@ -134,10 +136,13 @@
 --			- Attempted fix to replace the now remove 'reticleover' target position (uses the player position instead).
 --			- Show item info fixed (updated new function names).
 --
---		- v0.21 -
+--		- v0.21 - 11 November 2014
 --			- Fixed "/uespdump achievements" due to removed function.
 --			- Fixed issue with facial animations.
 --			- More conversation data is now logged.
+--			- Added Dwemer style icon.
+--			- The "Show Item Info" context menu works in more places now.
+--
 --
 
 
@@ -153,7 +158,7 @@ uespLog.enableTesting = false
 --end
 
 uespLog.version = "0.21"
-uespLog.releaseDate = "5 November 2014"
+uespLog.releaseDate = "11 November 2014"
 
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -188,6 +193,7 @@ uespLog.lastPlayerST = -1
 uespLog.lastPlayerUT = -1
 
 uespLog.printDumpObject = false
+uespLog.logDumpObject = true
 uespLog.countGlobal = 0
 
 uespLog.lastConversationOption = { }
@@ -912,6 +918,7 @@ function uespLog.Initialize( self, addOnName )
     PopupTooltip:SetHandler("OnMouseUp", uespLog.OnTooltipMouseUp)
     --self.resultTooltip:GetNamedChild("Icon"):SetHandler("OnMouseUp", uespLog.OnTooltipMouseUp)
 	SMITHING.creationPanel.resultTooltip:SetHandler("OnMouseUp", uespLog.SmithingCreationOnTooltipMouseUp)
+	SMITHING.improvementPanel.resultTooltip:SetHandler("OnMouseUp", uespLog.SmithingImprovementOnTooltipMouseUp)
 	ALCHEMY.tooltip:SetHandler("OnMouseUp", uespLog.AlchemyOnTooltipMouseUp)
 	ALCHEMY.tooltip:GetNamedChild("Icon"):SetHandler("OnMouseUp", OnTooltipMouseUp)
 	ENCHANTING.resultTooltip:SetHandler("OnMouseUp", uespLog.EnchantingOnTooltipMouseUp)
@@ -996,6 +1003,31 @@ function uespLog.SmithingCreationOnTooltipMouseUp(control, button, upInside)
 end
 
 
+function uespLog.SmithingImprovementOnTooltipMouseUp(control, button, upInside)
+	if upInside and button == 2 then
+		local itemToImproveBagId, itemToImproveSlotIndex, craftingType = SMITHING.improvementPanel:GetCurrentImprovementParams()
+		local link = GetSmithingImprovedItemLink(itemToImproveBagId, itemToImproveSlotIndex, craftingType, LINK_STYLE_BRACKETS)
+		
+		if link ~= "" then
+			ClearMenu()
+
+			local function AddLink()
+				ZO_LinkHandler_InsertLink(zo_strformat(SI_TOOLTIP_ITEM_NAME, link))
+			end
+			
+			local function GetInfo()
+				uespLog.ShowItemInfo(link)
+			end
+
+			AddMenuItem(GetString(SI_ITEM_ACTION_LINK_TO_CHAT), AddLink)
+			AddMenuItem("Show Item Info", GetInfo)
+				
+			ShowMenu(SMITHING)
+		end
+	end
+end
+
+
 function uespLog.OnInventoryShowItemInfo (inventorySlot, slotActions)
 	local bag, index = ZO_Inventory_GetBagAndIndex(inventorySlot)
 	local itemLink = GetItemLink(bag, index, LINK_STYLE_DEFAULT)
@@ -1047,12 +1079,36 @@ function uespLog.OnTooltipMouseUp (control, button, upInside)
 end
 
 
+function uespLog.FindDataIndexFromHorizontalList (scrollListControl, rootList, dataName, defaultIndex)
+	local selIndex = nil
+	local control
+
+	for i, control in ipairs(rootList.controls) do
+		if scrollListControl == control then
+			selIndex = 1 - ((rootList.selectedIndex or 0) - (i - rootList.halfNumVisibleEntries - 1))
+			--uespLog.DebugMsg("Found index at "..tostring(i)..", "..tostring(rootList.selectedIndex)..", "..tostring(selIndex)..", default="..tostring(defaultIndex))
+			--uespLog.DebugMsg("Control data = "..tostring(control[dataName]))
+		
+			if (dataName ~= nil and control[dataName] ~= nil) then
+				return control[dataName]
+			end
+			
+			return selIndex
+		end
+	end
+	
+	return defaultIndex
+end
+
+
 function uespLog.ShowItemInfoRowControl (rowControl)
 	local dataEntry = rowControl.dataEntry
 	local bagId, slotIndex 
 	local itemLink = nil
 	local storeMode = uespLog.GetStoreMode()
 	--SI_STORE_MODE_REPAIR SI_STORE_MODE_BUY_BACK SI_STORE_MODE_BUY  SI_STORE_MODE_SELL
+	
+	--uespLog.DebugMsg("uespLog.ShowItemInfoRowControl() "..tostring(rowControl:GetName()))
 
 	if (dataEntry ~= nil and dataEntry.data ~= nil and dataEntry.data.slotIndex ~= nil) then
 		slotIndex = dataEntry.data.slotIndex
@@ -1070,9 +1126,13 @@ function uespLog.ShowItemInfoRowControl (rowControl)
 		bagId = dataEntry.data.bag
 		slotIndex = dataEntry.data.index 
 		itemLink = GetItemLink(bagId, slotIndex, LINK_STYLE_DEFAULT)
-	elseif (rowControl.bagId ~= nil) then
+	elseif (rowControl.bagId ~= nil and rowControl.itemIndex ~= nil) then
 		bagId = rowControl.bagId
 		slotIndex = rowControl.itemIndex
+		itemLink = GetItemLink(bagId, slotIndex, LINK_STYLE_DEFAULT)
+	elseif (rowControl.bagId ~= nil and rowControl.slotIndex ~= nil) then
+		bagId = rowControl.bagId
+		slotIndex = rowControl.slotIndex
 		itemLink = GetItemLink(bagId, slotIndex, LINK_STYLE_DEFAULT)
 	elseif (dataEntry ~= nil and dataEntry.data ~= nil and dataEntry.data.lootId ~= nil) then
 		slotIndex = dataEntry.data.lootId
@@ -1081,14 +1141,77 @@ function uespLog.ShowItemInfoRowControl (rowControl)
 		slotIndex = rowControl.slotIndex
 		itemLink = GetLootItemLink(slotIndex, LINK_STYLE_DEFAULT)
 	else
+		local parents = { }
+		local parentNames = {} 
+		local i
+		
+		parents[0] = rowControl
+		
+		for i = 1, 6 do
+			if (parents[i-1] == nil) then
+				parents[i] = nil
+			else
+				parents[i] = parents[i-1]:GetParent()
+			end
+		end
+		
+		for i = 0, 6 do
+			if (parents[i] == nil) then
+				parentNames[i] = ""
+			else
+				parentNames[i] = parents[i]:GetName()
+			end
+		end
+		
+		if (parentNames[3] == "ZO_SmithingTopLevelCreationPanelPatternList") then
+			local patternIndex, materialIndex, materialQuantity, styleIndex, traitIndex = SMITHING.creationPanel:GetAllCraftingParameters()
+			patternIndex = uespLog.FindDataIndexFromHorizontalList(rowControl, SMITHING.creationPanel.patternList, nil, patternIndex)
+			itemLink = GetSmithingPatternResultLink(patternIndex, materialIndex, materialQuantity, styleIndex, traitIndex)
+		elseif (parentNames[3] == "ZO_SmithingTopLevelCreationPanelMaterialList") then
+			local patternIndex, materialIndex, materialQuantity, styleIndex, traitIndex = SMITHING.creationPanel:GetAllCraftingParameters()			
+			materialIndex = uespLog.FindDataIndexFromHorizontalList(rowControl, SMITHING.creationPanel.materialList, "materialIndex", materialIndex)
+			itemLink = GetSmithingPatternMaterialItemLink(patternIndex, materialIndex)
+		elseif (parentNames[3] == "ZO_SmithingTopLevelCreationPanelStyleList") then
+			local patternIndex, materialIndex, materialQuantity, styleIndex, traitIndex = SMITHING.creationPanel:GetAllCraftingParameters()			
+			styleIndex = uespLog.FindDataIndexFromHorizontalList(rowControl, SMITHING.creationPanel.styleList, "styleIndex", styleIndex)
+			itemLink = GetSmithingStyleItemLink(styleIndex)
+		elseif (parentNames[3] == "ZO_SmithingTopLevelCreationPanelTraitList") then
+			local patternIndex, materialIndex, materialQuantity, styleIndex, traitIndex = SMITHING.creationPanel:GetAllCraftingParameters()			
+			traitIndex = uespLog.FindDataIndexFromHorizontalList(rowControl, SMITHING.creationPanel.traitList, "traitIndex", traitIndex)
+			itemLink = GetSmithingTraitItemLink(traitIndex)
+		elseif (parentNames[0] == "ZO_SmithingTopLevelImprovementPanelSlotContainerBoosterSlot") then
+			local itemToImproveBagId, itemToImproveSlotIndex, craftingType = SMITHING.improvementPanel:GetCurrentImprovementParams()
+			itemLink = GetSmithingImprovementItemLink(craftingType, SMITHING.improvementPanel:GetBoosterRowForQuality(SMITHING.improvementPanel.currentQuality).index)
+		elseif (parentNames[0] == "ZO_SmithingTopLevelImprovementPanelSlotContainerImprovementSlot") then
+			local itemToImproveBagId, itemToImproveSlotIndex, craftingType = SMITHING.improvementPanel:GetCurrentImprovementParams()
+			itemLink = GetItemLink(itemToImproveBagId, itemToImproveSlotIndex)
+		elseif (parentNames[1] == "ZO_SmithingTopLevelRefinementPanel") then
+			if (SMITHING.refinementPanel.extractionSlot.bagId == nil) then
+				return
+			end
+			itemLink = GetItemLink(SMITHING.refinementPanel.extractionSlot.bagId, SMITHING.refinementPanel.extractionSlot.slotIndex)
+		elseif (parentNames[1] == "ZO_SmithingTopLevelDeconstructionPanel") then
+			if (SMITHING.deconstructionPanel.extractionSlot.bagId == nil) then
+				return
+			end
+			itemLink = GetItemLink(SMITHING.deconstructionPanel.extractionSlot.bagId, SMITHING.deconstructionPanel.extractionSlot.slotIndex)
+		end				
+		
+		--uespLog.DebugMsg("UESP::rowControl parent[a] = "..tostring(rowControl.patternIndex))
+		--uespLog.DebugMsg("UESP::rowControl parent[b] = "..tostring(rowControl.materialIndex))
+		--uespLog.DebugMsg("UESP::rowControl parent[c] = "..tostring(rowControl.styleIndex))
+		--uespLog.DebugMsg("UESP::rowControl parent[d] = "..tostring(rowControl.traitIndex))
+		--uespLog.DebugMsg("UESP::rowControl parent[0] = "..tostring(parentNames[0]))
+		--uespLog.DebugMsg("UESP::rowControl parent[1] = "..tostring(parentNames[1]))
+		--uespLog.DebugMsg("UESP::rowControl parent[2] = "..tostring(parentNames[2]))
 		--uespLog.DebugMsg("UESP::rowControl statValue = "..tostring(rowControl.dataEntry.data.statValue))
 		--uespLog.DebugMsg("UESP::rowControl slotIndex = "..tostring(rowControl.dataEntry.data.slotIndex))
 		--uespLog.DebugMsg("UESP::ShowItemInfoRowControl no slot info found!")
-		return
+		--return
 	end
 
 	if (itemLink == nil) then
-		--uespLog.DebugMsg("UESP::ShowItemInfoRowControl null itemLink!")
+		uespLog.DebugExtraMsg("UESP::ShowItemInfoRowControl -- No itemLink found!")
 		return
 	end
 	
@@ -3033,7 +3156,10 @@ function uespLog.DumpObject (prefix, a, level, maxLevel)
 				logData.type = "table"
 				logData.name = parentPrefix .. tostring(tableIndex)
 				logData.value = tostring(value)
-				uespLog.AppendDataToLog("globals", logData)
+				
+				if (uespLog.logDumpObject) then
+					uespLog.AppendDataToLog("globals", logData)
+				end
 				
 				if (uespLog.printDumpObject) then
 					uespLog.DebugMsg("UESP::table "..tostring(tableIndex))
@@ -3046,7 +3172,11 @@ function uespLog.DumpObject (prefix, a, level, maxLevel)
 			logData.label = "Public"
 			logData.value = tostring(value)
 			logData.name = parentPrefix .. tostring(tableIndex) .. "()"
-			uespLog.AppendDataToLog("globals", logData)
+			
+			if (uespLog.logDumpObject) then
+				uespLog.AppendDataToLog("globals", logData)
+			end
+				
 			uespLog.countGlobal = uespLog.countGlobal + 1
 			
 			if (uespLog.printDumpObject) then
@@ -3061,7 +3191,10 @@ function uespLog.DumpObject (prefix, a, level, maxLevel)
 			logData.label = "Public"
 			logData.name = parentPrefix .. tostring(tableIndex)
 			logData.value = tostring(value)
-			uespLog.AppendDataToLog("globals", logData)
+			
+			if (uespLog.logDumpObject) then
+				uespLog.AppendDataToLog("globals", logData)
+			end
 			
 			if (uespLog.printDumpObject) then
 				uespLog.DebugMsg("UESP::Function "..tostring(tableIndex).." = "..tostring(value))
@@ -3080,7 +3213,10 @@ function uespLog.DumpObject (prefix, a, level, maxLevel)
 				logData.event = "Global"
 				logData.label = "Private"
 				logData.name = parentPrefix .. tostring(errIndex) .. "()"
-				uespLog.AppendDataToLog("globals", logData)
+				
+				if (uespLog.logDumpObject) then
+					uespLog.AppendDataToLog("globals", logData)
+				end
 				
 				uespLog.countGlobalError = uespLog.countGlobalError + 1
 				tableIndex = errIndex
@@ -3894,6 +4030,7 @@ end
 --end
 
 --]]
+
 
 
 

@@ -43,6 +43,8 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[ITEMSTYLE_AREA_REACH]  		= "uespLog\\images\\stylebarbaric.dds",		-- Copper, Barbaric, 46149, ITEMSTYLE_AREA_REACH=17, /esoui/art/icons/crafting_smith_potion_standard_f_001.dds
 	[ITEMSTYLE_ENEMY_DAEDRIC] 		= "uespLog\\images\\styledaedric.dds",		-- Daedra Heart, Daedric, 46151, ITEMSTYLE_ENEMY_DAEDRIC=20, /esoui/art/icons/crafting_walking_dead_mort_heart.dds
 	[ITEMSTYLE_AREA_ANCIENT_ELF] 	= "uespLog\\images\\styleancientelf.dds",	-- Palladium, Ancient Elf, 46152, ITEMSTYLE_AREA_ANCIENT_ELF=15, /esoui/art/icons/crafting_ore_palladuim.dds
+	[ITEMSTYLE_AREA_DWEMER] 	    = "uespLog\\images\\styledwemer.dds",		-- Dwemer Frame, Dwemer, 57587, ITEMSTYLE_AREA_DWEMER=14, /esoui/art/icons/crafting_dwemer_shiny_tube.dds
+	--[ITEMSTYLE_AREA_YOKUDAN] = "", --Yokudan
 }
 
 
@@ -61,6 +63,8 @@ uespLog.STYLE_ICON_DATA = {
 	[ITEMSTYLE_AREA_REACH]  		= "/esoui/art/icons/crafting_smith_potion_standard_f_001.dds",
 	[ITEMSTYLE_ENEMY_DAEDRIC] 		= "/esoui/art/icons/crafting_walking_dead_mort_heart.dds",
 	[ITEMSTYLE_AREA_ANCIENT_ELF] 	= "/esoui/art/icons/crafting_ore_palladuim.dds",
+	[ITEMSTYLE_AREA_DWEMER] 	    = "/esoui/art/icons/crafting_dwemer_shiny_tube.dds",
+	--[ITEMSTYLE_AREA_YOKUDAN] = "", --Yokudan
 }
 
 
@@ -226,7 +230,7 @@ function uespLog.SetupInventoryHooks()
 	uespLog.SetupInventoryListHooks(PLAYER_INVENTORY.inventories[4].listView, {GetItemLink, "bagId", "slotIndex"})
 	uespLog.SetupInventoryListHooks(LOOT_WINDOW.list, {GetLootItemLink, "lootId", nil})
 	uespLog.SetupInventoryListHooks(SMITHING.deconstructionPanel.inventory.list, {GetItemLink, "bagId", "slotIndex"})
-	uespLog.SetupInventoryListHooks(SMITHING.improvementPanel.inventory.list, {GetItemLink, "bagId", "slotIndex"})
+	--uespLog.SetupInventoryListHooks(SMITHING.improvementPanel.inventory.list, {GetItemLink, "bagId", "slotIndex"})
 	uespLog.SetupInventoryListHooks(STORE_WINDOW.list, {GetStoreItemLink, "slotIndex", nil})
 	uespLog.SetupInventoryListHooks(BUY_BACK_WINDOW.list, {GetBuybackItemLink, "slotIndex", nil})
 	uespLog.SetupInventoryListHooks(REPAIR_WINDOW.list, {GetItemLink, "bagId", "slotIndex"})
@@ -261,11 +265,30 @@ end
 
 
 function uespLog.UpdateInventoryContextMenuHook(rowControl) 
+	local controlName = rowControl:GetName()
+	local parentName = ""
+	local parentName2 = ""
+	
+	if (rowControl:GetParent() ~= nil) then
+		parentName = rowControl:GetParent():GetName()
+		
+		if (rowControl:GetParent():GetParent() ~= nil) then
+			parentName2 = rowControl:GetParent():GetParent():GetName()
+		end
+	end
 
-	if (rowControl:GetParent() ~= ZO_Character) then
-		zo_callLater(function() uespLog.UpdateInventoryContextMenu(rowControl:GetParent()) end, 50)
-	else
+	if (parentName2 == "ZO_SmithingTopLevelResearchPanelResearchLineListList") then
+		-- Skip this
+	elseif (rowControl:GetParent() == nil or parentName == "ZO_Character"
+				or controlName == "ZO_SmithingTopLevelImprovementPanelSlotContainerBoosterSlot" 
+				or controlName == "ZO_SmithingTopLevelImprovementPanelSlotContainerImprovementSlot"
+				or parentName == "ZO_SmithingTopLevelCreationPanelPatternListListScroll"
+				or parentName == "ZO_SmithingTopLevelCreationPanelMaterialListListScroll"
+				or parentName == "ZO_SmithingTopLevelCreationPanelStyleListListScroll"
+				or parentName == "ZO_SmithingTopLevelCreationPanelTraitListListScroll") then
 		zo_callLater(function() uespLog.UpdateInventoryContextMenu(rowControl) end, 50)
+	else
+		zo_callLater(function() uespLog.UpdateInventoryContextMenu(rowControl:GetParent()) end, 50)
 	end
 	
 end
@@ -273,7 +296,6 @@ end
 
 function uespLog.UpdateInventoryContextMenu(rowControl)
 	AddMenuItem("Show Item Info", function() uespLog.ShowItemInfoRowControl(rowControl) end, MENU_ADD_OPTION_LABEL)
-	
 	ShowMenu(self)
 end
 
@@ -299,6 +321,7 @@ function uespLog.AddCraftDetailsToPopupToolTip()
 	
 	return uespLog.AddCraftDetailsToToolTip(PopupTooltip, PopupTooltip.lastLink)
 end
+
 
 function uespLog.AddCraftDetailsToToolTipRow (row)	
 

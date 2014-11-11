@@ -142,6 +142,7 @@
 --			- More conversation data is now logged.
 --			- Added Dwemer style icon.
 --			- The "Show Item Info" context menu works in more places now.
+--			- "Show Item Info" displays much more item information.
 --
 --
 

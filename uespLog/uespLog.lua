@@ -1219,53 +1219,19 @@ function uespLog.ShowItemInfoRowControl (rowControl)
 end
 
 
-uespLog.ARMOR_TYPE_STRINGS = {
-	[ARMORTYPE_HEAVY] = "Heavy",
-	[ARMORTYPE_LIGHT] = "Light",
-	[ARMORTYPE_MEDIUM] = "Medium", 
-	[ARMORTYPE_NONE] = "None",
-}
-
-
-uespLog.WEAPON_TYPE_STRINGS = {
-	[WEAPONTYPE_AXE] = "Axe",
-	[WEAPONTYPE_BOW] = "Bow",
-	[WEAPONTYPE_DAGGER] = "Dagger",
-	[WEAPONTYPE_FIRE_STAFF] = "Fire Staff",
-	[WEAPONTYPE_FROST_STAFF] = "Frost Staff",
-	[WEAPONTYPE_HAMMER] = "Hammer",
-	[WEAPONTYPE_HEALING_STAFF] = "Healing Staff",
-	[WEAPONTYPE_LIGHTNING_STAFF] = "Lightning Staff",
-	[WEAPONTYPE_NONE] = "None",
-	[WEAPONTYPE_PROP] = "Prop", 
-	[WEAPONTYPE_RUNE] = "Rune",
-	[WEAPONTYPE_SHIELD] = "Shield",
-	[WEAPONTYPE_SWORD] = "Sword",
-	[WEAPONTYPE_TWO_HANDED_AXE] = "Two-Handed Axe",
-	[WEAPONTYPE_TWO_HANDED_HAMMER] = "Two-Handed Hammer",
-	[WEAPONTYPE_TWO_HANDED_SWORD] = "Two-Handed Sword",
-}
-
-
 function uespLog.GetWeaponTypeStr(weaponType)
-
-	if (uespLog.WEAPON_TYPE_STRINGS[weaponType] ~= nil) then
-		return uespLog.WEAPON_TYPE_STRINGS[weaponType]
-	end
-	
-	return "Unknown"
+	return GetString(SI_WEAPONTYPE0 + weaponType) or "Unknown"
 end
 
 
 function uespLog.GetArmorTypeStr(armorType)
-
-	if (uespLog.ARMOR_TYPE_STRINGS[armorType] ~= nil) then
-		return uespLog.ARMOR_TYPE_STRINGS[armorType]
-	end
-	
-	return "Unknown"
+	return GetString(SI_ARMORTYPE0 + armorType) or "Unknown"
 end
 
+
+function uespLog.GetItemTypeStr(itemType)
+	 return GetString(SI_ITEMTYPE0 + itemType) or "Unknown"
+end
 
 
 function uespLog.ShowItemInfo (itemLink)
@@ -1276,16 +1242,133 @@ function uespLog.ShowItemInfo (itemLink)
 	local weaponType = GetItemLinkWeaponType(itemLink)
 	local armorType = GetItemLinkArmorType(itemLink)
 	
-	uespLog.MsgColor(uespLog.itemColor, "UESP::Information for "..tostring(itemLink))
+	itemName = GetItemLinkName(itemLink)
+	
+	local itemType = GetItemLinkItemType(itemLink)
+	local weaponPower = GetItemLinkWeaponPower(itemLink)
+	local armorRating = GetItemLinkArmorRating(itemLink, false)
+	local reqLevel = GetItemLinkRequiredLevel(itemLink)
+	local reqVetLevel = GetItemLinkRequiredVeteranRank(itemLink)
+	local value = GetItemLinkValue(itemLink, false)
+	local condition = GetItemLinkCondition(itemLink)
+	local hasArmorDecay = DoesItemLinkHaveArmorDecay(itemLink)
+	local maxCharges = GetItemLinkMaxEnchantCharges(itemLink)
+	local numCharges = GetItemLinkNumEnchantCharges(itemLink)
+	local hasCharges = DoesItemLinkHaveEnchantCharges(itemLink)
+	local hasEnchant, enchantHeader, enchantDesc = GetItemLinkEnchantInfo(itemLink)
+	local hasUseAbility, useAbilityHeader, useAbilityDesc, useAbilityCooldown = GetItemLinkOnUseAbilityInfo(itemLink)
+	local trait, traitText = GetItemLinkTraitInfo(itemLink)
+	local isSetItem, setName, numSetBonuses, numSetEquipped, maxSetEquipped = GetItemLinkSetInfo(itemLink)
+	--local setBonusRequired, setBonusDesc = GetItemLinkSetBonusInfo(itemLink)
+	local flavourText = GetItemLinkFlavorText(itemLink)
+	local isCrafted = IsItemLinkCrafted(itemLink)
+	local isVendorTrash = IsItemLinkVendorTrash(itemLink)
+	local maxSiegeHP = GetItemLinkSiegeMaxHP(itemLink)
+	local siegeType = GetItemLinkSiegeType(itemLink)
+	local quality = GetItemLinkQuality(itemLink)
+	local isUnique = IsItemLinkUnique(itemLink)
+	local isUniqueEquipped = IsItemLinkUniqueEquipped(itemLink)
+	local equipType1 = GetItemLinkEquipType(itemLink)
+	local isConsumable = IsItemLinkConsumable(itemLink)
+	local craftSkill = GetItemLinkCraftingSkillType(itemLink)
+	local isRune = IsItemLinkEnchantingRune(itemLink)
+	local runeType = GetItemLinkEnchantingRuneClassification(itemLink)
+	local isBound = IsItemLinkBound(itemLink)
+	local bindType = GetItemLinkBindType(itemLink)
+	local glyphMinLevel, glyphMaxLevel, glyphMinVetLevel, glyphMaxVetLevel = GetItemLinkGlyphMinMaxLevels(itemLink)
+	local bookTitle = GetItemLinkBookTitle(itemLink)
+	local isBookKnown = IsItemLinkBookKnown(itemLink)
+	
+	local flagString = ""
+	local levelString = ""
+	local glyphLevelString = ""
+	
+	if (hasEnchant) then flagString = flagString.."Enchant  " end
+	if (isSetItem) then flagString = flagString.."Set  " end
+	if (isCrafted) then flagString = flagString.."Crafted  " end
+	if (isVendorTrash) then flagString = flagString.."Vendor  " end
+	if (hasArmorDecay) then flagString = flagString.."ArmorDecay  " end
+	if (isUnique) then flagString = flagString.."Unique  " end
+	if (isUniqueEquipped) then flagString = flagString.."UniqueEquip  " end
+	if (isConsumable) then flagString = flagString.."Consumable  " end
+	if (isBound) then flagString = flagString.."Bound  " end
+	if (siegeType > 0) then flagString = flagString.."Siege  " end
+	if (hasUseAbility) then flagString = flagString.."UseAbility  " end
+	
+	uespLog.MsgColor(uespLog.itemColor, "UESP::Information for "..tostring(itemNiceLink))
 	uespLog.MsgColor(uespLog.itemColor, ".    Data: "..tostring(itemData))
-	uespLog.MsgColor(uespLog.itemColor, ".    ID: "..tostring(itemId))
-	uespLog.MsgColor(uespLog.itemColor, ".    Level: "..tostring(itemLevel))
+	uespLog.MsgColor(uespLog.itemColor, ".    Type: ".. uespLog.GetItemTypeStr(itemType) .." ("..tostring(itemType)..")      Equip: "..equipTypeStr.." ("..tostring(equipType)..")")
+	
+	if (glyphMinLevel ~= nil and glyphMaxLevel ~= nil) then
+		glyphLevelString = tostring(glyphMinLevel).." to "..tostring(glyphMaxLevel)
+	elseif (glyphMinVetLevel ~= nil and glyphMaxVetLevel ~= nil) then
+		glyphLevelString = "V"..tostring(glyphMinVetLevel).." to V"..tostring(glyphMaxVetLevel)
+	elseif (glyphMinLevel ~= nil and glyphMaxVetLevel ~= nil) then
+		glyphLevelString = tostring(glyphMinLevel).." to V"..tostring(glyphMaxVetLevel)
+	end
+	
+	if (weaponType > 0) then
+		uespLog.MsgColor(uespLog.itemColor, ".     Weapon: "..uespLog.GetWeaponTypeStr(weaponType).." ("..tostring(weaponType)..")     Power: "..tostring(weaponPower).."    Glyphs: "..glyphLevelString)
+	elseif (armorType > 0) then
+		uespLog.MsgColor(uespLog.itemColor, ".     Armor: "..uespLog.GetArmorTypeStr(armorType).." ("..tostring(armorType)..")     Rating: "..tostring(armorRating).."    Glyphs: "..glyphLevelString)
+	elseif (glyphLevelString ~= "") then
+		uespLog.MsgColor(uespLog.itemColor, ".     Glyphs: "..glyphLevelString)
+	end
+		
+	if (flagString ~= "") then
+		uespLog.MsgColor(uespLog.itemColor, ".    Flags: "..flagString)
+	end
+	
+	if (reqVetLevel > 0) then
+		levelString = "V"..tostring(reqVetLevel)
+	else
+		levelString = tostring(reqLevel)
+	end
+	
+	uespLog.MsgColor(uespLog.itemColor, ".    Level: "..levelString.."     Value: "..tostring(value).."     Condition: "..tostring(condition).."     Quality: "..tostring(quality))
+	uespLog.MsgColor(uespLog.itemColor, ".    Style: "..styleStr.." ("..tostring(itemStyle)..")     Trait: "..uespLog.GetItemTraitName(trait).." ("..tostring(trait)..")     Color: "..tostring(itemColor))
 	uespLog.MsgColor(uespLog.itemColor, ".    Icon: "..tostring(icon))
-	uespLog.MsgColor(uespLog.itemColor, ".    Color: "..tostring(itemColor))
-	uespLog.MsgColor(uespLog.itemColor, ".    Value: "..tostring(sellPrice))
-	uespLog.MsgColor(uespLog.itemColor, ".    Equip Type: "..equipTypeStr.." ("..tostring(equipType)..")")
-	uespLog.MsgColor(uespLog.itemColor, ".    Weapon/Armor Type: "..uespLog.GetWeaponTypeStr(weaponType).." ("..tostring(weaponType)..") / "..uespLog.GetArmorTypeStr(armorType).." ("..tostring(armorType)..")")
-	uespLog.MsgColor(uespLog.itemColor, ".    Style: "..styleStr.." ("..tostring(itemStyle)..")")
+	
+	if (hasCharges) then
+		uespLog.MsgColor(uespLog.itemColor, ".    Charges: "..tostring(numCharges).." / "..tostring(maxCharges))
+	end
+		
+	if (hasEnchant) then
+		uespLog.MsgColor(uespLog.itemColor, ".    Enchant: "..tostring(enchantHeader).." -- "..tostring(enchantDesc))
+	end
+	
+	if (hasUseAbility) then
+		uespLog.MsgColor(uespLog.itemColor, ".    UseAbility: "..tostring(useAbilityHeader).." -- "..tostring(useAbilityDesc).."     Cooldown: "..tostring(useAbilityCooldown/1000).." sec")
+	end
+		
+	if (isSetItem) then
+		uespLog.MsgColor(uespLog.itemColor, ".    Set: "..tostring(setName).."   Bonuses: "..tostring(numSetBonuses).." ("..tostring(numSetEquipped).." / "..tostring(maxSetEquipped).." equipped)")
+	end
+	
+	if (craftSkill > 0) then
+		uespLog.MsgColor(uespLog.itemColor, ".    Craft: "..tostring(craftSkill))
+	end
+		
+	if (runeType > 0) then
+		uespLog.MsgColor(uespLog.itemColor, ".    Rune: "..tostring(runeType))
+	end
+	
+	if (bindType > 0) then
+		uespLog.MsgColor(uespLog.itemColor, ".    Bind: "..tostring(bindType))
+	end
+	
+	if (bookTitle ~= nil) then
+		uespLog.MsgColor(uespLog.itemColor, ".    Book: "..tostring(bookTitle).."     Known: "..tostring(isBookKnown))
+	end
+	
+	if (siegeType > 0 and maxSiegeHP > 0) then
+		uespLog.MsgColor(uespLog.itemColor, ".    SiegeHP: "..tostring(maxSiegeHP))
+	end
+		
+	if (flavourText ~= "") then
+		uespLog.MsgColor(uespLog.itemColor, ".    Flavour Text: "..tostring(flavourText))
+	end
+	
 end
 
 
@@ -3081,7 +3164,7 @@ function uespLog.LogInventoryItem (bagId, slotIndex, event, extraData)
 	logData.qnt = stack
 	logData.bag = bagId
 	logData.slot = slotIndex
-
+	
 	uespLog.AppendDataToLog("all", logData, extraData)
 
 	return true

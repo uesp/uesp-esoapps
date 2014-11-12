@@ -163,6 +163,7 @@ uespLog.enableTesting = false
 
 uespLog.version = "0.21"
 uespLog.releaseDate = "11 November 2014"
+uespLog.DATA_VERSION = 3
 
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -841,15 +842,15 @@ function uespLog.Initialize( self, addOnName )
 		--["npcs"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", 2, "npcs", uespLog.DEFAULT_DATA),  
 		--["recipes"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", 2, "recipes", uespLog.DEFAULT_DATA),  
 		
-		["all"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", 3, "all", uespLog.DEFAULT_DATA),  
+		["all"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "all", uespLog.DEFAULT_DATA),  
 		
-		["achievements"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", 3, "achievements", uespLog.DEFAULT_DATA),  
-		["globals"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", 3, "globals", uespLog.DEFAULT_DATA),  
+		["achievements"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "achievements", uespLog.DEFAULT_DATA),  
+		["globals"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "globals", uespLog.DEFAULT_DATA),  
 		
-		["info"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", 3, "info", uespLog.DEFAULT_DATA),  
+		["info"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "info", uespLog.DEFAULT_DATA),  
 		
 			-- Parameters
-		["settings"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", 3, "settings", uespLog.DEFAULT_SETTINGS),  		
+		["settings"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "settings", uespLog.DEFAULT_SETTINGS),  		
 	}
 		
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_RETICLE_TARGET_CHANGED, uespLog.OnTargetChange)
@@ -3909,7 +3910,7 @@ function uespLog.MineItemIterateLevels (itemId)
 	local badItems = 0
 	local itemLink
 	local itemName
-	local extraData = { }
+	local extraData = uespLog.GetTimeData()
 
 	for i, value in ipairs(uespLog.MINEITEM_LEVELS) do
 		local levelStart = value[1]
@@ -3926,7 +3927,6 @@ function uespLog.MineItemIterateLevels (itemId)
 				itemLink = uespLog.MakeItemLinkEx( { itemId = itemId, level = level, quality = quality, style = 1 } )
 				
 				if (uespLog.IsValidItemLink(itemLink)) then
-					extraData = { }
 					extraData.comment = comment
 					uespLog.LogItemLink(itemLink, "mineitem", extraData)
 				else
@@ -3941,13 +3941,14 @@ function uespLog.MineItemIterateLevels (itemId)
 		end
 	end
 	
-	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Made "..tostring(setCount).." items with ID "..tostring(itemId)..", "..tostring(badItems).." bad")
+	--uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Made "..tostring(setCount).." items with ID "..tostring(itemId)..", "..tostring(badItems).." bad")
 	return setCount, badCount
 end
 
 
 function uespLog.MineItemIterateOther (itemId)
 	local itemLink
+	local extraData = uespLog.GetTimeData()
 	
 	itemLink = uespLog.MakeItemLinkEx( { itemId = itemId, level = 1, quality = 1, style = 0 } )
 	uespLog.MineItemCount = uespLog.MineItemCount + 1
@@ -3957,7 +3958,7 @@ function uespLog.MineItemIterateOther (itemId)
 	end
 	
 	if (uespLog.IsValidItemLink(itemLink)) then
-		uespLog.LogItemLink(itemLink, "mineitem")
+		uespLog.LogItemLink(itemLink, "mineitem", extraData)
 	else
 		uespLog.MineItemBadCount = uespLog.MineItemBadCount + 1
 		return 1, 1
@@ -4014,7 +4015,7 @@ function uespLog.MineItems (startId, endId)
 	logData.startId = startId
 	logData.endId = endId
 	logData.event = "mineItem::Start"
-	uespLog.AppendDataToLog("all", logData)
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 
 	for itemId = startId, endId do
 		uespLog.MineItemIterate(itemId)
@@ -4024,7 +4025,7 @@ function uespLog.MineItems (startId, endId)
 	
 	logData = { }
 	logData.event = "mineItem::End"
-	uespLog.AppendDataToLog("all", logData)
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
 	uespLog.DebugMsgColor(uespLog.mineColor, ".    Finished Mining "..tostring(uespLog.MineItemCount).." items, "..tostring(uespLog.MineItemBadCount).." bad")
 end
@@ -4057,7 +4058,9 @@ function uespLog.MineItemsAutoLoop ()
 		zo_callLater(uespLog.MineItemsAutoLoop, uespLog.MineItemsAutoDelay)
 	end
 	
-	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Auto-mined "..tostring(uespLog.MineItemCount - initItemCount).." items, "..tostring(uespLog.MineItemBadCount - initBadCount).." bad, with IDs "..tostring(initItemId).."-"..tostring(itemId))	
+	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Auto-mined "..tostring(uespLog.MineItemCount - initItemCount).." items, "..
+			tostring(uespLog.MineItemBadCount - initBadCount).." bad, with IDs "..tostring(initItemId).."-"..tostring(itemId)..
+			" (Total "..tostring(uespLog.MineItemCount).." items)")	
 end
 
 
@@ -4074,7 +4077,7 @@ function uespLog.MineItemsAutoStart ()
 	logData = { }
 	logData.itemId = uespLog.MineItemsAutoNextItemId
 	logData.event = "mineItem::AutoStart"
-	uespLog.AppendDataToLog("all", logData)
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
 	uespLog.IsAutoMiningItems = true
 	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Started auto-mining items at ID "..tostring(uespLog.MineItemsAutoNextItemId))
@@ -4097,7 +4100,7 @@ function uespLog.MineItemsAutoEnd ()
 	logData.itemCount = uespLog.MineItemCount
 	logData.badCount = uespLog.MineItemBadCount
 	logData.event = "mineItem::AutoEnd"
-	uespLog.AppendDataToLog("all", logData)
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
 	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Stopped auto-mining items at ID "..tostring(uespLog.MineItemsAutoNextItemId))
 	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Total auto-mined "..tostring(uespLog.MineItemCount).." items, "..tostring(uespLog.MineItemBadCount).." bad")	
@@ -4155,6 +4158,23 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 end
 
 
+function uespLog.clearAllSections()
+
+	for key, value in pairs(uespLog.savedVars) do
+	
+		if (key == "settings" or key == "info") then
+			-- Keep data
+		elseif (key == "globals" or key == "all" or key == "achievements") then
+			uespLog.savedVars[key].data = { }
+			uespLog.savedVars[key].version = uespLog.DATA_VERSION
+		else
+			uespLog.savedVars[key] = nil
+		end
+	end
+
+end
+
+
 SLASH_COMMANDS["/umi"] = SLASH_COMMANDS["/uespmineitems"]
 
 
@@ -4164,6 +4184,8 @@ SLASH_COMMANDS["/uespreset"] = function (cmd)
 		uespLog.clearSection("all")
 		uespLog.clearSection("globals")
 		uespLog.clearSection("achievements")
+		uespLog.SetTotalInspiration(0)
+		uespLog.clearAllSections()
 		uespLog.Msg("UESP::Reset all logged data")
 	elseif (cmd == "globals") then
 		uespLog.clearSection("globals")

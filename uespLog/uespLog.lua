@@ -144,6 +144,8 @@
 --			- The "Show Item Info" context menu works in more places now.
 --			- "Show Item Info" displays much more item information.
 --			- Much more item information is now logged.
+--			- If you receive a "Low LUA Memory" warning you can try to increase the "LuaMemoryLimitMB" 
+--			  parameter in the UserSettings.txt file.
 --
 --
 
@@ -332,6 +334,7 @@ uespLog.countColor = "00ffff"
 uespLog.xpColor = "6699ff"
 uespLog.itemColor = "ff9900"
 uespLog.statColor = "44ffff"
+uespLog.mineColor = "ff6666"
 
 uespLog.currentTargetData = {
 	name = "",
@@ -3891,8 +3894,13 @@ ITEMTYPE_WOODWORKING_RAW_MATERIAL
 
 uespLog.MineItemBadCount = 0
 uespLog.MineItemCount = 0
-uespLog.MineUpdateItemCount = 100
+uespLog.MineUpdateItemCount = 0
 uespLog.MineNextItemId = 1
+uespLog.IsAutoMiningItems = false
+uespLog.MineItemsAutoDelay = 2000 -- Delay in ms
+uespLog.MineItemsAutoLoopCount = 100
+uespLog.MineItemsAutoMaxLoopCount = 200
+uespLog.MineItemsAutoNextItemId = 1
 
 function uespLog.MineItemIterateLevels (itemId)
 	local i, value
@@ -3927,13 +3935,13 @@ function uespLog.MineItemIterateLevels (itemId)
 				end				
 				
 				if (uespLog.MineItemCount % uespLog.MineUpdateItemCount == 0) then
-					uespLog.DebugMsg(".     Mined "..tostring(uespLog.MineItemCount).." items, "..tostring(uespLog.MineItemBadCount).." bad...")
+					uespLog.DebugMsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.MineItemCount).." items, "..tostring(uespLog.MineItemBadCount).." bad...")
 				end
 			end
 		end
 	end
 	
-	uespLog.DebugMsg("Made "..tostring(setCount).." items with ID "..tostring(itemId)..", "..tostring(badItems).." bad")
+	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Made "..tostring(setCount).." items with ID "..tostring(itemId)..", "..tostring(badItems).." bad")
 	return setCount, badCount
 end
 
@@ -3945,7 +3953,7 @@ function uespLog.MineItemIterateOther (itemId)
 	uespLog.MineItemCount = uespLog.MineItemCount + 1
 	
 	if (uespLog.MineItemCount % uespLog.MineUpdateItemCount == 0) then
-		uespLog.DebugMsg(".     Mined "..tostring(uespLog.MineItemCount).." items, "..tostring(uespLog.MineItemBadCount).." bad...")
+		uespLog.DebugMsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.MineItemCount).." items, "..tostring(uespLog.MineItemBadCount).." bad...")
 	end
 	
 	if (uespLog.IsValidItemLink(itemLink)) then
@@ -4000,7 +4008,7 @@ function uespLog.MineItems (startId, endId)
 	
 	uespLog.MineItemBadCount = 0
 	uespLog.MineItemCount = 0
-	uespLog.DebugMsg("UESP::Mining items from IDs "..tostring(startId).." to "..tostring(endId))
+	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Mining items from IDs "..tostring(startId).." to "..tostring(endId))
 	
 	logData = { }
 	logData.startId = startId
@@ -4018,7 +4026,94 @@ function uespLog.MineItems (startId, endId)
 	logData.event = "mineItem::End"
 	uespLog.AppendDataToLog("all", logData)
 	
-	uespLog.DebugMsg(".    Finished Mining "..tostring(uespLog.MineItemCount).." items, "..tostring(uespLog.MineItemBadCount).." bad")
+	uespLog.DebugMsgColor(uespLog.mineColor, ".    Finished Mining "..tostring(uespLog.MineItemCount).." items, "..tostring(uespLog.MineItemBadCount).." bad")
+end
+
+
+function uespLog.MineItemsAutoLoop ()
+	local initItemCount = uespLog.MineItemCount
+	local initBadCount = uespLog.MineItemBadCount
+	local initItemId = uespLog.MineItemsAutoNextItemId
+	local itemId
+	local i
+	
+	if (not uespLog.IsAutoMiningItems) then
+		return
+	end
+	
+	for i = 1, uespLog.MineItemsAutoLoopCount do
+		itemId = uespLog.MineItemsAutoNextItemId
+		uespLog.MineItemsAutoNextItemId = uespLog.MineItemsAutoNextItemId + 1
+		
+		uespLog.MineItemIterate(itemId)
+		
+		if (uespLog.MineItemCount - initItemCount > uespLog.MineItemsAutoMaxLoopCount) then
+			break
+		end
+	end
+
+		-- Chain the call to keep going if required
+	if (uespLog.IsAutoMiningItems) then
+		zo_callLater(uespLog.MineItemsAutoLoop, uespLog.MineItemsAutoDelay)
+	end
+	
+	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Auto-mined "..tostring(uespLog.MineItemCount - initItemCount).." items, "..tostring(uespLog.MineItemBadCount - initBadCount).." bad, with IDs "..tostring(initItemId).."-"..tostring(itemId))	
+end
+
+
+function uespLog.MineItemsAutoStart ()
+	local logData
+
+	if (uespLog.IsAutoMiningItems) then
+		return
+	end
+	
+	uespLog.MineItemBadCount = 0
+	uespLog.MineItemCount = 0
+	
+	logData = { }
+	logData.itemId = uespLog.MineItemsAutoNextItemId
+	logData.event = "mineItem::AutoStart"
+	uespLog.AppendDataToLog("all", logData)
+	
+	uespLog.IsAutoMiningItems = true
+	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Started auto-mining items at ID "..tostring(uespLog.MineItemsAutoNextItemId))
+	
+	zo_callLater(uespLog.MineItemsAutoLoop, uespLog.MineItemsAutoDelay)
+end
+
+
+function uespLog.MineItemsAutoEnd ()
+	local logData
+
+	if (not uespLog.IsAutoMiningItems) then
+		return
+	end
+	
+	uespLog.IsAutoMiningItems = false
+	
+	logData = { }
+	logData.itemId = uespLog.MineItemsAutoNextItemId
+	logData.itemCount = uespLog.MineItemCount
+	logData.badCount = uespLog.MineItemBadCount
+	logData.event = "mineItem::AutoEnd"
+	uespLog.AppendDataToLog("all", logData)
+	
+	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Stopped auto-mining items at ID "..tostring(uespLog.MineItemsAutoNextItemId))
+	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Total auto-mined "..tostring(uespLog.MineItemCount).." items, "..tostring(uespLog.MineItemBadCount).." bad")	
+end
+
+
+function uespLog.MineItemsAutoStatus ()
+	
+	if (uespLog.IsAutoMiningItems) then
+		uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Currently auto-mining items.")
+		uespLog.DebugMsgColor(uespLog.mineColor, "UESP:Total auto-mined "..tostring(uespLog.MineItemCount).." items, "..tostring(uespLog.MineItemBadCount).." bad")	
+	else
+		uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Not currently auto-mining items.")
+	end
+	
+	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Next auto-mine itemId is "..tostring(uespLog.MineItemsAutoNextItemId))
 end
 
 
@@ -4027,10 +4122,36 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 	
 	for word in cmd:gmatch("%S+") do table.insert(cmds, word) end
 	
-	if (cmds[1] == nil) then cmds[1] = uespLog.MineNextItemId end
-	if (cmds[2] == nil) then cmds[2] = cmds[1] end
+	if (cmds[1] == "start" or cmds[1] == "begin") then
+		
+		if (cmds[2] ~= nil) then
+			uespLog.MineItemsAutoNextItemId = tonumber(cmds[2])
+		end
+		
+		uespLog.MineItemsAutoStart()
+		return
+	elseif (cmds[1] == "end" or cmds[1] == "stop") then
+		uespLog.MineItemsAutoEnd()
+		return
+	elseif (cmds[1] == "status") then
+		uespLog.MineItemsAutoStatus()
+		return
+	end
 	
-	uespLog.MineItems(tonumber(cmds[1]), tonumber(cmds[2]))
+	if (cmds[1] == nil) then cmds[1] = uespLog.MineNextItemId end
+	local startNumber = tonumber(cmds[1])
+	
+	if (startNumber == nil) then
+		uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Invalid input to /uespmineitems, expected format:")
+		uespLog.DebugMsgColor(uespLog.mineColor, ".    /uespmineitems [itemId]")
+		uespLog.DebugMsgColor(uespLog.mineColor, ".    /uespmineitems status")
+		uespLog.DebugMsgColor(uespLog.mineColor, ".    /uespmineitems start [startId]")
+		uespLog.DebugMsgColor(uespLog.mineColor, ".    /uespmineitems end")
+		return
+	end
+	
+	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Trying to mine items with ID "..tostring(startNumber))
+	uespLog.MineItems(startNumber, startNumber)
 end
 
 

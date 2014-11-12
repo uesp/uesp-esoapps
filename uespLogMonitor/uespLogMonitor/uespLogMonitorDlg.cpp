@@ -18,6 +18,8 @@
 		  complete in order to prevent write errors from blanking the file.
 		- Original saved variable file is copied to uespLog.lua.old before each overwrite.
 		- Auto-scrolls to end of console window on update.
+		- HTTP send queue is now threaded to prevent delays/pauses in UI when sending 
+		  large amounts of data.
  */
 
 #include "stdafx.h"

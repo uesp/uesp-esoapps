@@ -142,7 +142,7 @@ protected:
 	void ClearLogData ();
 
 	bool HasLogChanged();
-	bool DoLogCheck();
+	bool DoLogCheck(const bool OverrideEnable = false);
 	void UpdateLogFileSize();
 
 	std::string GetSavedVarFilename ();
@@ -230,4 +230,5 @@ public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnFileSendotherlog();
 	afx_msg void OnFileChecklognow();
+	afx_msg void OnBnClickedChecknowButton();
 };

@@ -10,6 +10,13 @@
 	v0.15 - 21 August 2014
 		- Added handling of split-line logs.
 		- Checks for the "liveeu" path for AddOns if "live" is not found.
+
+	v0.16 - November 2014
+		- Added the "Check Now" button.
+		- "Check Now" command ignores the enabled option.
+		- Saved variable file is now written to a temporary file and then moved once the write is
+		  complete in order to prevent write errors from blanking the file.
+		- Original saved variable file is copied to uespLog.lua.old before each overwrite.
  */
 
 #include "stdafx.h"
@@ -72,6 +79,7 @@ BEGIN_MESSAGE_MAP(CuespLogMonitorDlg, CDialogEx)
 	ON_WM_SIZE()
 	ON_COMMAND(ID_FILE_SENDOTHERLOG, &CuespLogMonitorDlg::OnFileSendotherlog)
 	ON_COMMAND(ID_FILE_CHECKLOGNOW, &CuespLogMonitorDlg::OnFileChecklognow)
+	ON_BN_CLICKED(IDC_CHECKNOW_BUTTON, &CuespLogMonitorDlg::OnBnClickedChecknowButton)
 END_MESSAGE_MAP()
 
 
@@ -518,6 +526,8 @@ bool CuespLogMonitorDlg::SaveSavedVars()
 {
 	ulm_dumpinfo_t DumpInfo;
 	std::string Filename = GetSavedVarFilename();
+	std::string TmpFilename = Filename + ".tmp";
+	std::string CopyFilename = Filename + ".old";
 
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Writing saved variables to '%s'...", Filename.c_str());
 
@@ -530,7 +540,7 @@ bool CuespLogMonitorDlg::SaveSavedVars()
 		return false;
 	}
 
-	if (!DumpInfo.File.Open(Filename, "wb"))
+	if (!DumpInfo.File.Open(TmpFilename, "wb"))
 	{
 		lua_settop(m_pLuaState, 0);
 		return false;
@@ -545,6 +555,19 @@ bool CuespLogMonitorDlg::SaveSavedVars()
 	DumpInfo.File.Close();
 
 	lua_settop(m_pLuaState, 0);
+
+	if (!MoveFileEx(Filename.c_str(), CopyFilename.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_REPLACE_EXISTING))
+	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to move saved variable file to '%s'!", CopyFilename.c_str());
+		return false;
+	}
+
+	if (!MoveFileEx(TmpFilename.c_str(), Filename.c_str(), MOVEFILE_REPLACE_EXISTING))
+	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to move temporary saved variabile file to '%s'!", Filename.c_str());
+		return false;
+	}
+
 	return Result;
 }
 
@@ -842,7 +865,7 @@ bool CuespLogMonitorDlg::SendQueuedData ()
 		FormQuery += TempData;
 		FormQuery += "&";
 
-		if (FormQuery.size() > ULM_SENDDATA_MAXPOSTSIZE) 
+		if (FormQuery.size() > ULM_SENDDATA_MAXPOSTSIZE)
 		{
 			if (!SendFormData(FormQuery)) return false;
 			FormQuery.clear();
@@ -1583,9 +1606,9 @@ void CuespLogMonitorDlg::OnLogCheckTimer()
 }
 
 
-bool CuespLogMonitorDlg::DoLogCheck()
+bool CuespLogMonitorDlg::DoLogCheck(const bool OverrideEnable)
 {
-	if (!m_Options.Enabled) return true;
+	if (!OverrideEnable && !m_Options.Enabled) return true;
 
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Checking log...");
 	//PrintLogLine(ULM_LOGLEVEL_INFO, "Pre-TimeStamp: %I64d", m_Options.LastTimeStamp);
@@ -1857,7 +1880,7 @@ void CuespLogMonitorDlg::OnSize(UINT nType, int cx, int cy)
 
 	if (nType != SIZE_MINIMIZED && IsWindow(m_LogText.m_hWnd))
 	{
-		m_LogText.SetWindowPos(NULL, 0, 0, cx-20, cy-20, SWP_NOMOVE | SWP_NOZORDER);
+		m_LogText.SetWindowPos(NULL, 0, 0, cx-20, cy-20-40, SWP_NOMOVE | SWP_NOZORDER);
 	}
 	
 }
@@ -1904,5 +1927,11 @@ bool CuespLogMonitorDlg::SendEntireLog (const std::string Filename)
 
 void CuespLogMonitorDlg::OnFileChecklognow()
 {
-	DoLogCheck();
+	DoLogCheck(true);
+}
+
+
+void CuespLogMonitorDlg::OnBnClickedChecknowButton()
+{
+	DoLogCheck(true);
 }

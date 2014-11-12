@@ -109,6 +109,10 @@ protected:
 	CUlmLogDataArray	m_SendQueue;
 	CUlmLogDataArray	m_BackupQueue;   // Data that should be backed up but not sent
 
+	HANDLE				m_hSendQueueThread;
+	HANDLE				m_hSendQueueMutex;
+	LONG				m_StopSendQueueThread;
+
 
 public:
 	enum { IDD = IDD_UESPLOGMONITOR_DIALOG };
@@ -146,7 +150,7 @@ protected:
 	void UpdateLogFileSize();
 
 	std::string GetSavedVarFilename ();
-
+		
 	bool LoadSavedVars();
 	bool LoadSavedVars(const std::string Filename);
 	bool SaveSavedVars();
@@ -203,11 +207,16 @@ protected:
 
 	bool SendEntireLog(const std::string Filename);
 
+	void InitSendQueueThread();
+	void DestroySendQueueThread();
+	bool SendQueuedDataThread();
+
 
 public:
 	CuespLogMonitorDlg(CWnd* pParent = NULL);
 	virtual ~CuespLogMonitorDlg();
 
+	DWORD SendQueueThreadProc();
 
 
 protected:

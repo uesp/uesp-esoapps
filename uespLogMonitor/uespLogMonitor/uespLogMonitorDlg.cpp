@@ -17,6 +17,7 @@
 		- Saved variable file is now written to a temporary file and then moved once the write is
 		  complete in order to prevent write errors from blanking the file.
 		- Original saved variable file is copied to uespLog.lua.old before each overwrite.
+		- Auto-scrolls to end of console window on update.
  */
 
 #include "stdafx.h"
@@ -56,7 +57,7 @@ const char ULM_SAVEDVAR_FILENAME[] = "uespLog.lua";
 const char ULM_SAVEDVAR_BASEPATH[] = "Elder Scrolls Online\\live\\SavedVariables\\";
 const char ULM_SAVEDVAR_ALTBASEPATH[] = "Elder Scrolls Online\\liveeu\\SavedVariables\\";
 
-const int ULM_SENDDATA_MAXPOSTSIZE = 200000;		/* Maximum desired size of post data in bytes */
+const int ULM_SENDDATA_MAXPOSTSIZE = 100000;		/* Maximum desired size of post data in bytes */
 
 const int ULM_TIMER_ID = 5566;
 
@@ -88,7 +89,10 @@ CuespLogMonitorDlg::CuespLogMonitorDlg(CWnd* pParent) :
 	m_TimerId(0),
 	m_LastLogFileSize(0),
 	m_IsInTray(false),
-	m_IsCheckingFile(false)
+	m_IsCheckingFile(false),
+	m_hSendQueueThread(NULL),
+	m_hSendQueueMutex(NULL),
+	m_StopSendQueueThread(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
@@ -106,6 +110,7 @@ CuespLogMonitorDlg::CuespLogMonitorDlg(CWnd* pParent) :
 
 CuespLogMonitorDlg::~CuespLogMonitorDlg()
 {
+	DestroySendQueueThread();
 	lua_close(m_pLuaState);
 }
 
@@ -705,8 +710,16 @@ std::string CuespLogMonitorDlg::GetExtraLogData ()
 
 bool CuespLogMonitorDlg::SendLogData (const std::string Section, const ulm_sectiondata_t Data)
 {
+	if (WaitForSingleObject(m_hSendQueueMutex, INFINITE) != WAIT_OBJECT_0) 
+	{ 
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to wait for send queue mutex!");
+		return false;
+	}
+
 	m_SendQueue.push_back(Data);
 	m_SendQueue.back().Data += GetExtraLogData();
+
+	ReleaseMutex(m_hSendQueueMutex);
 	return true;
 }
 
@@ -831,8 +844,8 @@ bool CuespLogMonitorDlg::SendFormData (const std::string FormQuery)
 	
 	char Buffer[220];
 	DWORD Size = 200;
-
-	Sleep(1000); // TODO
+	
+	Sleep(100); // TODO?
 
 	Result = HttpQueryInfo(hreq, HTTP_QUERY_STATUS_CODE, &Buffer, &Size, NULL);
 
@@ -840,7 +853,11 @@ bool CuespLogMonitorDlg::SendFormData (const std::string FormQuery)
 	InternetCloseHandle(higeo);
 	InternetCloseHandle(hinet);
 
-	if (!Result) return false;
+	if (!Result) 
+	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to receive a HTTP response!");
+		return false;
+	}
 	
 	if (strcmp(Buffer, "200") != 0)
 	{
@@ -854,9 +871,22 @@ bool CuespLogMonitorDlg::SendFormData (const std::string FormQuery)
 
 bool CuespLogMonitorDlg::SendQueuedData ()
 {
-	std::string FormQuery;
+	return true; // The send queue thread will automatically send data now
+}
 
-	for (size_t i = 0; i < m_SendQueue.size(); ++i)
+
+bool CuespLogMonitorDlg::SendQueuedDataThread()
+{
+	std::string FormQuery;
+	size_t i;
+
+	if (WaitForSingleObject(m_hSendQueueMutex, INFINITE) != WAIT_OBJECT_0) 
+	{ 
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to wait for send queue mutex!");
+		return false;
+	}
+
+	for (i = 0; i < m_SendQueue.size(); ++i)
 	{
 		std::string TempData = EncodeLogDataForQuery(m_SendQueue[i].Data);
 		//eso::PrintLog("%s", TempData.c_str());
@@ -867,19 +897,23 @@ bool CuespLogMonitorDlg::SendQueuedData ()
 
 		if (FormQuery.size() > ULM_SENDDATA_MAXPOSTSIZE)
 		{
-			if (!SendFormData(FormQuery)) return false;
-			FormQuery.clear();
+			break;
 		}
 	}
 
 	if (FormQuery.size() > 0) 
 	{
-		if (!SendFormData(FormQuery)) return false;
+		if (!SendFormData(FormQuery)) 
+		{
+			ReleaseMutex(m_hSendQueueMutex);
+			return false;
+		}
+
+		PrintLogLine(ULM_LOGLEVEL_INFO, "Sent %d of %d log entries in %d bytes!", i, m_SendQueue.size(), FormQuery.size());
+		m_SendQueue.erase(m_SendQueue.begin(), m_SendQueue.begin() + i);
 	}
 
-		// TODO: Add proper confirmation that query was sent successfully
-	m_SendQueue.clear();
-
+	ReleaseMutex(m_hSendQueueMutex);
 	return true;
 }
 
@@ -887,12 +921,20 @@ bool CuespLogMonitorDlg::SendQueuedData ()
 bool CuespLogMonitorDlg::CheckAndSendLogData ()
 {
 	bool Result = true;
+
+	if (WaitForSingleObject(m_hSendQueueMutex, INFINITE) != WAIT_OBJECT_0) 
+	{ 
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to wait for send queue mutex!");
+		return false;
+	}
 	
 	Result &= CheckAndSendLogDataAll();
 	Result &= CheckAndSendLogDataGlobal();
 	Result &= CheckAndSendLogDataAchievement();
 
 	Result &= BackupData();
+
+	ReleaseMutex(m_hSendQueueMutex);
 
 	Result &= SendQueuedData();
 
@@ -1106,8 +1148,11 @@ void CuespLogMonitorDlg::PrintLogLineV (const char* pString, va_list Args)
 	{
 		//m_LogText.SetScrollPos(SB_VERT, OrigScrollPos, TRUE);
 	}
-
 	
+		/* Force scroll to bottom with no text selection */
+	TextLength = m_LogText.GetTextLength();
+	m_LogText.SetSel(TextLength, TextLength);
+	m_LogText.SendMessage(WM_VSCROLL, SB_BOTTOM, NULL);
 }
 
 
@@ -1152,6 +1197,58 @@ void CuespLogMonitorDlg::SetTrayToolTip (const CString Buffer)
 }
 
 
+DWORD WINAPI l_SendQueueThreadProc (LPVOID lpParameter)
+{
+	CuespLogMonitorDlg* pThis = (CuespLogMonitorDlg *) lpParameter;
+	return pThis->SendQueueThreadProc();
+}
+
+
+DWORD CuespLogMonitorDlg::SendQueueThreadProc()
+{
+
+	while(!m_StopSendQueueThread)
+	{
+		if (WaitForSingleObject(m_hSendQueueMutex, INFINITE) == WAIT_OBJECT_0) 
+		{ 
+			SendQueuedDataThread();
+			ReleaseMutex(m_hSendQueueMutex);
+		}
+
+		Sleep(100);
+	}
+
+	return 0;
+}
+
+
+void CuespLogMonitorDlg::InitSendQueueThread()
+{
+	m_StopSendQueueThread = 0;
+	m_hSendQueueThread = CreateThread(NULL, 0, l_SendQueueThreadProc, this, 0, NULL);
+	m_hSendQueueMutex = CreateMutex(NULL, FALSE, "SendQueueMutex");
+}
+
+
+void CuespLogMonitorDlg::DestroySendQueueThread()
+{
+	InterlockedExchange(&m_StopSendQueueThread, 1);
+
+	if (m_hSendQueueThread != NULL)
+	{
+		if (WaitForSingleObject(m_hSendQueueThread, 10000) != WAIT_OBJECT_0)
+		{
+			TerminateThread(m_hSendQueueThread, 0);
+		}
+
+		CloseHandle(m_hSendQueueThread);
+		m_hSendQueueThread = NULL;
+	}
+
+	CloseHandle(m_hSendQueueMutex);
+}
+
+
 BOOL CuespLogMonitorDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
@@ -1182,6 +1279,8 @@ BOOL CuespLogMonitorDlg::OnInitDialog()
 
 	SetIcon(m_hIcon, TRUE);
 	SetIcon(m_hIcon, FALSE);
+
+	InitSendQueueThread();
 
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Program initialized...");
 	PrintSettings();
@@ -1577,7 +1676,7 @@ void CuespLogMonitorDlg::PostURL()
 
 	  char Buffer[220];
 	  DWORD Size = 200;
-	  Sleep(1000);
+	  Sleep(400);
 
 	  Result = HttpQueryInfo(hreq, HTTP_QUERY_STATUS_CODE, &Buffer, &Size, NULL);
 	  eso::PrintLog("HTTP Query Info = %d (%s)", Result, Buffer);  

@@ -148,6 +148,7 @@
 --			  parameter in the UserSettings.txt file.
 --			- Dumping globals works better. Removed duplicate entries and unecessary objects. Userdata
 -- 	          objects now dumped. Duplicate "classes" no longer dumped to save space.
+--			- Dump globals now outputs the string for SI_* values.
 --			- Added a method to iteratively dump all the global objects.
 --					/uespdump globals [maxlevel]        -- Normal method all at once
 --					/uespdump globals start [maxlevel]  -- Start iterative dumping
@@ -638,6 +639,11 @@ end
 
 function uespLog.EndsWith(s, send)
 	return #s >= #send and s:find(send, #s-#send+1, true) and true or false
+end
+
+
+function uespLog.BeginsWith(s, sBegin)
+	return string.sub(s, 1, string.len(sBegin)) == sBegin
 end
 
 
@@ -3570,6 +3576,14 @@ function uespLog.DumpObjectTable (objectName, objectValue, parentName, varLevel)
 	logData.name = parentName .. tostring(objectName)
 	logData.value = uespLog.GetAddress(objectValue)
 	
+	if (uespLog.dumpTableTable[logData.value] == 1) then
+		logData.firstTable = 1
+	end
+	
+	if (logData.meta and uespLog.dumpMetaTable[logData.meta] == 1) then
+		logData.firstMeta = 1
+	end
+		
 	if (uespLog.logDumpObject) then
 		uespLog.AppendDataToLog("globals", logData)
 	end
@@ -3592,6 +3606,14 @@ function uespLog.DumpObjectUserData (objectName, objectValue, parentName, varLev
 	logData.index = uespLog.GetAddress(uespLog.GetIndexTable(objectValue))
 	logData.name = parentName .. tostring(objectName)
 	logData.value = uespLog.GetAddress(objectValue)
+	
+	if (logData.meta and uespLog.dumpMetaTable[logData.meta] == 1) then
+		logData.firstMeta = 1
+	end
+	
+	if (logData.index and uespLog.dumpIndexTable[logData.index] == 1) then
+		logData.firstIndex = 1
+	end
 	
 	if (uespLog.logDumpObject) then
 		uespLog.AppendDataToLog("globals", logData)
@@ -3635,6 +3657,10 @@ function uespLog.DumpObjectOther (objectName, objectValue, parentName, varLevel)
 	logData.label = "Public"
 	logData.name = parentName .. tostring(objectName)
 	logData.value = tostring(objectValue)
+	
+	if (objType == "number" and uespLog.BeginsWith(tostring(objectName), "SI_")) then
+		logData.string = GetString(objectValue)
+	end
 		
 	if (uespLog.logDumpObject) then
 		uespLog.AppendDataToLog("globals", logData)

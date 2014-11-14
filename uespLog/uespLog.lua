@@ -200,7 +200,20 @@ uespLog.lastPlayerUT = -1
 uespLog.printDumpObject = false
 uespLog.logDumpObject = true
 uespLog.dumpIterateUserTable = true
+uespLog.dumpIterateNextIndex = nil
+uespLog.dumpIterateObject = nil
+uespLog.dumpIterateStatus = 0
+uespLog.dumpIterateParentName = ""
+uespLog.dumpIterateMaxLevel = 3
+uespLog.dumpIterateCurrentLevel = 0
+uespLog.DUMP_ITERATE_TIMERDELAY = 100
+uespLog.DUMP_ITERATE_LOOPCOUNT = 1000
+uespLog.dumpIterateEnabled = false
+uespLog.dumpMetaTable = { }
+uespLog.dumpIndexTable = { }
+uespLog.dumpTableTable = { }
 uespLog.countGlobal = 0
+uespLog.countGlobalError = 0
 
 	-- Objects to ignore when dumping
 uespLog.dumpIgnoreObjects = { 
@@ -3032,7 +3045,7 @@ SLASH_COMMANDS["/uespdump"] = function(cmd)
 			uespLog.DumpGlobalsIterateEnd()
 		elseif (cmds[2] == "begin" or cmds[2] == "start") then
 			uespLog.DumpGlobalsIterateStart(tonumber(cmds[3]))
-		elseif (not uespLog.DumpIterateEnabled) then
+		elseif (not uespLog.dumpIterateEnabled) then
 			uespLog.DumpGlobals(tonumber(cmds[2]))
 		else
 			uespLog.DebugMsg("UESP::Dump globals iterative currently running...")
@@ -3381,23 +3394,9 @@ function uespLog.DumpInventory ()
 end
 
 
-uespLog.DumpIterateNextIndex = nil
-uespLog.DumpIterateObject = nil
-uespLog.DumpIterateStatus = 0
-uespLog.DumpIterateParentName = ""
-uespLog.DumpIterateMaxLevel = 3
-uespLog.DumpIterateCurrentLevel = 0
-uespLog.DumpIterateTimerDelay = 100
-uespLog.DumpIterateLoopCount = 1000
-uespLog.DumpIterateEnabled = false
-uespLog.DumpMetaTable = { }
-uespLog.DumpIndexTable = { }
-uespLog.DumpTableTable = { }
-
-
 function uespLog.GetAddress(obj)
 
-	if type(obj) == "function" or type(obj) == "table" then
+	if type(obj) == "function" or type(obj) == "table" or type(obj) == "userdata" then
 		return tostring(obj):match(": ([%u%d]+)")
 	end
 	
@@ -3408,47 +3407,47 @@ end
 function uespLog.DumpGlobalsIterateStart(maxLevel)
 	local logData = {} 
 
-	if (uespLog.DumpIterateEnabled) then
+	if (uespLog.dumpIterateEnabled) then
 		uespLog.DebugMsg("UESP::Dump globals iteration already running!")
 		return
 	end
 	
 	uespLog.savedVars["globals"].data = { }
 
-	uespLog.DumpIterateNextIndex = _nil
-	uespLog.DumpIterateObject = _G
-	uespLog.DumpIterateStatus = 0
-	uespLog.DumpIterateCurrentLevel = 0
+	uespLog.dumpIterateNextIndex = _nil
+	uespLog.dumpIterateObject = _G
+	uespLog.dumpIterateStatus = 0
+	uespLog.dumpIterateCurrentLevel = 0
 	uespLog.countGlobal = 0
 	uespLog.countGlobalError = 0
-	uespLog.DumpIterateParentName = ""
-	uespLog.DumpIterateMaxLevel = maxLevel or 3
-	uespLog.DumpMetaTable = { }
-	uespLog.DumpIndexTable = { }
-	uespLog.DumpTableTable = { }
-	uespLog.DumpIterateEnabled = true
+	uespLog.dumpIterateParentName = ""
+	uespLog.dumpIterateMaxLevel = maxLevel or 3
+	uespLog.dumpMetaTable = { }
+	uespLog.dumpIndexTable = { }
+	uespLog.dumpTableTable = { }
+	uespLog.dumpIterateEnabled = true
 		
-	uespLog.DebugMsg("UESP::Dumping globals iteratively to a depth of ".. tostring(uespLog.DumpIterateMaxLevel).."...")
+	uespLog.DebugMsg("UESP::Dumping globals iteratively to a depth of ".. tostring(uespLog.dumpIterateMaxLevel).."...")
 	
 	logData.event = "Global::Start"
 	uespLog.AppendDataToLog("globals", logData, uespLog.GetTimeData())
 
-	zo_callLater(uespLog.DumpObjectIterate, uespLog.DumpIterateTimerDelay)
+	zo_callLater(uespLog.DumpObjectIterate, uespLog.DUMP_ITERATE_TIMERDELAY)
 end
 
 
 function uespLog.DumpGlobalsIterateEnd()
 	local logData = {} 
 
-	if (not uespLog.DumpIterateEnabled) then
+	if (not uespLog.dumpIterateEnabled) then
 		uespLog.DebugMsg("UESP::Dump globals iteration not running!")
 		return
 	end
-	
+
 	logData.event = "Global::End"
 	uespLog.AppendDataToLog("globals", logData, uespLog.GetTimeData())
 	
-	uespLog.DumpIterateEnabled = false
+	uespLog.dumpIterateEnabled = false
 	uespLog.DebugMsg("UESP::Stopped dump globals iteration...")
 	uespLog.DebugMsg("UESP::Found ".. tostring(uespLog.countGlobal) .." objects and ".. tostring(uespLog.countGlobalError) .." private functions...")
 	
@@ -3456,19 +3455,19 @@ function uespLog.DumpGlobalsIterateEnd()
 	local indexSize = 0
 	local tableSize = 0
 	
-	for _ in pairs(uespLog.DumpMetaTable) do metaSize = metaSize + 1 end
-	for _ in pairs(uespLog.DumpIndexTable) do indexSize = indexSize + 1 end
-	for _ in pairs(uespLog.DumpTableTable) do tableSize = tableSize + 1 end
+	for _ in pairs(uespLog.dumpMetaTable) do metaSize = metaSize + 1 end
+	for _ in pairs(uespLog.dumpIndexTable) do indexSize = indexSize + 1 end
+	for _ in pairs(uespLog.dumpTableTable) do tableSize = tableSize + 1 end
 	
 	uespLog.DebugMsg("UESP::Size of tables = "..tostring(metaSize) .. " / " .. tostring(indexSize) .. " / " ..tostring(tableSize))
 end
 
 
 function uespLog.DumpObjectIterate()
-	local parentPrefix = uespLog.DumpIterateParentName
-	local level = uespLog.DumpIterateCurrentLevel
+	local parentPrefix = uespLog.dumpIterateParentName
+	local level = uespLog.dumpIterateCurrentLevel
 	local newLevel = level + 1
-	local maxLevel = uespLog.DumpIterateMaxLevel
+	local maxLevel = uespLog.dumpIterateMaxLevel
 	local startCount = uespLog.countGlobal
 	local startErrorCount = uespLog.countGlobalError
 	local status, tableIndex, value
@@ -3476,7 +3475,7 @@ function uespLog.DumpObjectIterate()
 	local skipMeta = false
 	local skipObject = false
 
-	if (not uespLog.DumpIterateEnabled) then
+	if (not uespLog.dumpIterateEnabled) then
 		return
 	end
 	
@@ -3486,7 +3485,7 @@ function uespLog.DumpObjectIterate()
 		skipMeta = false
 		skipTable = false
 		skipObject = false
-		status, tableIndex, value = pcall(next, uespLog.DumpIterateObject, uespLog.DumpIterateNextIndex)
+		status, tableIndex, value = pcall(next, uespLog.dumpIterateObject, uespLog.dumpIterateNextIndex)
 			
 		if (tableIndex == nil) then
 			uespLog.DumpGlobalsIterateEnd()
@@ -3502,7 +3501,7 @@ function uespLog.DumpObjectIterate()
 		end
 		
 		if (not status) then
-			tableIndex = uespLog.DumpObjectPrivate (tableIndex, value, uespLog.DumpIterateParentName, level)
+			tableIndex = uespLog.DumpObjectPrivate (tableIndex, value, uespLog.dumpIterateParentName, level)
 			uespLog.DebugExtraMsg("UESP::Error on dump object iteration...")
 		elseif (skipObject) then
 			-- Do nothing
@@ -3527,12 +3526,12 @@ function uespLog.DumpObjectIterate()
 		end
 		
 		local deltaCount = uespLog.countGlobal - startCount
-		uespLog.DumpIterateNextIndex = tableIndex	
-	until deltaCount >= uespLog.DumpIterateLoopCount
+		uespLog.dumpIterateNextIndex = tableIndex	
+	until deltaCount >= uespLog.DUMP_ITERATE_LOOPCOUNT
 	
 	uespLog.DebugMsg("UESP::Dump iterate created "..tostring(uespLog.countGlobal-startCount).." logs with "..tostring(uespLog.countGlobalError-startErrorCount).." errors.")
 	
-	zo_callLater(uespLog.DumpObjectIterate, uespLog.DumpIterateTimerDelay)
+	zo_callLater(uespLog.DumpObjectIterate, uespLog.DUMP_ITERATE_TIMERDELAY)
 end
 
 
@@ -3671,29 +3670,29 @@ function uespLog.DumpUpdateObjectTables (value)
 	
 	if (tableAddress ~= nil) then
 	
-		if (uespLog.DumpTableTable[tableAddress] ~= nil) then
+		if (uespLog.dumpTableTable[tableAddress] ~= nil) then
 			skipTable = true
 		end
 		
-		uespLog.DumpTableTable[tableAddress] = (uespLog.DumpTableTable[tableAddress] or 0) + 1
+		uespLog.dumpTableTable[tableAddress] = (uespLog.dumpTableTable[tableAddress] or 0) + 1
 	end
 	
 	if (metaAddress ~= nil) then
 	
-		if (uespLog.DumpMetaTable[metaAddress] ~= nil) then
+		if (uespLog.dumpMetaTable[metaAddress] ~= nil) then
 			skipMeta = true
 		end
 		
-		uespLog.DumpMetaTable[metaAddress] = (uespLog.DumpMetaTable[metaAddress] or 0) + 1
+		uespLog.dumpMetaTable[metaAddress] = (uespLog.dumpMetaTable[metaAddress] or 0) + 1
 	end
 	
 	if (indexAddress ~= nil) then
 	
-		if (uespLog.DumpIndexTable[indexAddress] ~= nil) then
+		if (uespLog.dumpIndexTable[indexAddress] ~= nil) then
 			skipMeta = true
 		end
 		
-		uespLog.DumpIndexTable[indexAddress] = (uespLog.DumpIndexTable[indexAddress] or 0) + 1
+		uespLog.dumpIndexTable[indexAddress] = (uespLog.dumpIndexTable[indexAddress] or 0) + 1
 	end
 	
 	return skipTable, skipMeta
@@ -3783,9 +3782,9 @@ function uespLog.DumpGlobals (maxLevel)
 	
 	uespLog.countGlobal = 0
 	uespLog.countGlobalError = 0
-	uespLog.DumpMetaTable = { }
-	uespLog.DumpIndexTable = { }
-	uespLog.DumpTableTable = { }
+	uespLog.dumpMetaTable = { }
+	uespLog.dumpIndexTable = { }
+	uespLog.dumpTableTable = { }
 	
 	if (maxLevel == nil or maxLevel <= 0) then
 		maxLevel = 3

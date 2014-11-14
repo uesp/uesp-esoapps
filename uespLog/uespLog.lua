@@ -3530,16 +3530,8 @@ end
 
 
 function uespLog.DumpObjectIterate()
-	local parentPrefix = uespLog.dumpIterateParentName
-	local level = uespLog.dumpIterateCurrentLevel
-	local newLevel = level + 1
-	local maxLevel = uespLog.dumpIterateMaxLevel
 	local startCount = uespLog.countGlobal
 	local startErrorCount = uespLog.countGlobalError
-	local status, tableIndex, value
-	local skipTable = false
-	local skipMeta = false
-	local skipObject = false
 	local deltaCount
 
 	if (not uespLog.dumpIterateEnabled) then
@@ -3732,10 +3724,7 @@ end
 
 
 function uespLog.DumpObject(prefix, varName, a, level, maxLevel) 
-	local logData = { }
 	local parentPrefix = ""
-	local skipTable
-	local skipMeta
 	local tableIndex = nil
 	
 	if (prefix ~= "_G" and prefix ~= "") then

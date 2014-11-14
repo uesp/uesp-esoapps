@@ -146,6 +146,13 @@
 --			- Much more item information is now logged.
 --			- If you receive a "Low LUA Memory" warning you can try to increase the "LuaMemoryLimitMB" 
 --			  parameter in the UserSettings.txt file.
+--			- Dumping globals works better. Removed duplicate entries and unecessary objects. Userdata
+-- 	          objects now dumped. Duplicate "classes" no longer dumped to save space.
+--			- Added a method to iteratively dump all the global objects.
+--					/uespdump globals [maxlevel]        -- Normal method all at once
+--					/uespdump globals start [maxlevel]  -- Start iterative dumping
+--					/uespdump globals stop              -- Stop iterative dumping
+--					/uespdump globals status            -- Current status of iterative dump
 --
 --
 

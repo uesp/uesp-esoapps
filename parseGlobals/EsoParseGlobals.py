@@ -295,20 +295,16 @@ def CreateGlobalHTML(globalData, filename):
     return
 
 
+
+
 parsedGlobalLog = ParseGlobalLogFile(INPUT_FILENAME)
-print parsedGlobalLog[0].get('event', '')
+print "Loaded " + str(len(parsedGlobalLog)) + " rows from " + INPUT_FILENAME
 
 globalData = ParseGlobalData(parsedGlobalLog)
-print len(globalData)
-#print len(globalData['ABILITY_MORPH_RANK'].children)
-
-#sys.exit()
-
-od = collections.OrderedDict(sorted(globalData.items()))
-#sorted_x = sorted(x.items(), key=operator.itemgetter(1))
+print "Parsed into " + str(len(globalData)) + " root global objects"
 
 #DumpGlobalData(globalData, "test.txt")
-CreateGlobalHTML(globalData, "test.html")
+#CreateGlobalHTML(globalData, "test.html")
 
 
 

@@ -3419,6 +3419,14 @@ function uespLog.DumpGlobalsIterateStart(maxLevel)
 		return
 	end
 	
+	if (maxLevel == nil) then
+		maxLevel = 3
+	elseif (maxLevel < 0) then
+		maxLevel = 0
+	elseif (maxLevel > 10) then
+		maxLevel = 10
+	end
+	
 	uespLog.savedVars["globals"].data = { }
 
 	uespLog.dumpIterateNextIndex = _nil
@@ -3428,7 +3436,7 @@ function uespLog.DumpGlobalsIterateStart(maxLevel)
 	uespLog.countGlobal = 0
 	uespLog.countGlobalError = 0
 	uespLog.dumpIterateParentName = ""
-	uespLog.dumpIterateMaxLevel = maxLevel or 3
+	uespLog.dumpIterateMaxLevel = maxLevel
 	uespLog.dumpMetaTable = { }
 	uespLog.dumpIndexTable = { }
 	uespLog.dumpTableTable = { }
@@ -3470,6 +3478,57 @@ function uespLog.DumpGlobalsIterateEnd()
 end
 
 
+function uespLog.DumpObjectInnerLoop(dumpObject, nextIndex, parentName, level, maxLevel)
+	local skipMeta = false
+	local skipTable = false
+	local skipObject = false
+	
+	local status, tableIndex, value = pcall(next, dumpObject, nextIndex)
+		
+	if (tableIndex == nil) then
+		return tableIndex
+	end
+	
+	if (uespLog.dumpIgnoreObjects[tostring(tableIndex)] ~= nil) then
+		skipObject = true
+	end
+			
+	if (status and not skipObject) then
+		skipTable, skipMeta = uespLog.DumpUpdateObjectTables(value)
+	end
+	
+	if (not status) then
+		tableIndex = uespLog.DumpObjectPrivate(tableIndex, value, parentName, level)
+		uespLog.DebugExtraMsg("UESP::Error on dump object iteration...")
+	elseif (skipObject) then
+		uespLog.DebugExtraMsg("UESP::Skipping dump for object "..tostring(tableIndex))
+	elseif (tableIndex == "__index" and uespLog.EndsWith(parentName, "__index")) then
+		uespLog.DebugExtraMsg("UESP::Skipping dump for recursive __index")
+	elseif type(value) == "table" then
+		uespLog.DumpObjectTable(tableIndex, value, parentName, level)
+		
+		if (not skipTable and level < maxLevel) then
+			uespLog.DumpObject(parentName, tableIndex, value, level+1, maxLevel)
+		end
+	elseif type(value) == "userdata" then		
+		local indexTable = uespLog.GetIndexTable(value)
+		
+		uespLog.DumpObjectUserData(tableIndex, value, parentName, level)
+		
+		if (uespLog.dumpIterateUserTable and not skipMeta and indexTable ~= nil and level < maxLevel) then
+			uespLog.DumpObject(parentName, tableIndex, indexTable, level+1, maxLevel)
+		end
+
+	elseif type(value) == "function" then
+		uespLog.DumpObjectFunction(tableIndex, value, parentName, level)
+	else
+		uespLog.DumpObjectOther(tableIndex, value, parentName, level)
+	end
+	
+	return tableIndex
+end
+
+
 function uespLog.DumpObjectIterate()
 	local parentPrefix = uespLog.dumpIterateParentName
 	local level = uespLog.dumpIterateCurrentLevel
@@ -3481,6 +3540,7 @@ function uespLog.DumpObjectIterate()
 	local skipTable = false
 	local skipMeta = false
 	local skipObject = false
+	local deltaCount
 
 	if (not uespLog.dumpIterateEnabled) then
 		return
@@ -3489,51 +3549,16 @@ function uespLog.DumpObjectIterate()
 	uespLog.DebugExtraMsg("uespLog.DumpObjectIterate()")
 	
 	repeat
-		skipMeta = false
-		skipTable = false
-		skipObject = false
-		status, tableIndex, value = pcall(next, uespLog.dumpIterateObject, uespLog.dumpIterateNextIndex)
-			
-		if (tableIndex == nil) then
+		local nextIndex = uespLog.DumpObjectInnerLoop(uespLog.dumpIterateObject, uespLog.dumpIterateNextIndex, uespLog.dumpIterateParentName, uespLog.dumpIterateCurrentLevel, uespLog.dumpIterateMaxLevel)
+		
+		if (nextIndex == nil) then
 			uespLog.DumpGlobalsIterateEnd()
 			return
 		end
 		
-		if (uespLog.dumpIgnoreObjects[tostring(tableIndex)] ~= nil) then
-			skipObject = true
-		end
-				
-		if (status and not skipObject) then
-			skipTable, skipMeta = uespLog.DumpUpdateObjectTables(value)
-		end
-		
-		if (not status) then
-			tableIndex = uespLog.DumpObjectPrivate (tableIndex, value, uespLog.dumpIterateParentName, level)
-			uespLog.DebugExtraMsg("UESP::Error on dump object iteration...")
-		elseif (skipObject) then
-			-- Do nothing
-			uespLog.DebugExtraMsg("UESP::Skipping dump for object "..tostring(tableIndex))
-		elseif type(value) == "table" then
-			uespLog.DumpObjectTable(tableIndex, value, parentPrefix, level)
-			
-			if (not skipTable) then
-				uespLog.DumpObject(parentPrefix, tableIndex, value, newLevel, maxLevel)
-			end
-		elseif type(value) == "userdata" then		
-			uespLog.DumpObjectUserData(tableIndex, value, parentPrefix, level)
-			
-			if (uespLog.dumpIterateUserTable and not skipMeta and indexTable ~= nil and level <= maxLevel) then
-				uespLog.DumpObject(parentPrefix, tableIndex, indexTable, newLevel, maxLevel)
-			end
+		deltaCount = uespLog.countGlobal - startCount
+		uespLog.dumpIterateNextIndex = nextIndex
 
-		elseif type(value) == "function" then
-			uespLog.DumpObjectFunction(tableIndex, value, parentPrefix, level)
-		else
-			uespLog.DumpObjectOther(tableIndex, value, parentPrefix, level)
-		end
-		
-		local deltaCount = uespLog.countGlobal - startCount
-		uespLog.dumpIterateNextIndex = tableIndex	
 	until deltaCount >= uespLog.DUMP_ITERATE_LOOPCOUNT
 	
 	uespLog.DebugMsg("UESP::Dump iterate created "..tostring(uespLog.countGlobal-startCount).." logs with "..tostring(uespLog.countGlobalError-startErrorCount).." errors.")
@@ -3711,6 +3736,7 @@ function uespLog.DumpObject(prefix, varName, a, level, maxLevel)
 	local parentPrefix = ""
 	local skipTable
 	local skipMeta
+	local tableIndex = nil
 	
 	if (prefix ~= "_G" and prefix ~= "") then
 		parentPrefix = prefix
@@ -3721,7 +3747,7 @@ function uespLog.DumpObject(prefix, varName, a, level, maxLevel)
 	end	
 	
 	if (varName ~= "_G" and varName ~= "") then
-		parentPrefix = parentPrefix .. varName .. "."
+		parentPrefix = parentPrefix .. tostring(varName) .. "."
 	end	
 	
 	newLevel = level + 1
@@ -3734,51 +3760,11 @@ function uespLog.DumpObject(prefix, varName, a, level, maxLevel)
 	elseif (uespLog.dumpIgnoreObjects[varName] ~= nil) then
 		return
 	end
-  	
-	local status, tableIndex, value = pcall(next, a, nil)
-  
-	while (tableIndex ~= nil) do
-		skipTable = false
-		skipMeta = false
 	
-		if (status) then
-			skipTable, skipMeta = uespLog.DumpUpdateObjectTables(value)
-		end
+	repeat
+		tableIndex = uespLog.DumpObjectInnerLoop(a, tableIndex, parentPrefix, level, maxLevel)
+	until tableIndex == nil
 	
-		if (not status) then
-			tableIndex = uespLog.DumpObjectPrivate (tableIndex, value, parentPrefix, level)
-		elseif (tableIndex == "__index" and uespLog.EndsWith(prefix, "__index")) then
-			-- Skip recursive output6
-		elseif type(value) == "table" then
-			uespLog.DumpObjectTable(tableIndex, value, parentPrefix, level)
-			
-			if (level <= maxLevel and not skipTable) then
-				uespLog.DumpObject(parentPrefix, tostring(tableIndex), value, newLevel, maxLevel)
-			end
-			
-		elseif type(value) == "userdata" then			
-			uespLog.DumpObjectUserData(tableIndex, value, parentPrefix, level)
-			
-			if (uespLog.dumpIterateUserTable and not skipMeta and indexTable ~= nil and level <= maxLevel) then
-				uespLog.DumpObject(parentPrefix, tostring(tableIndex), uespLog.GetIndexTable(value), newLevel, maxLevel)
-			end
-
-		elseif type(value) == "function" then
-			uespLog.DumpObjectFunction(tableIndex, value, parentPrefix, level)
-		else
-			uespLog.DumpObjectOther(tableIndex, value, parentPrefix, level)
-		end
-		
-		repeat
-			status, tableIndex, value = pcall(next, a, tableIndex)
-			
-			if (not status) then
-				tableIndex = uespLog.DumpObjectPrivate (tableIndex, value, parentPrefix, level)
-			end
-		until status or tableIndex == nil
-		
-	end
-  
 end
 
 
@@ -3793,8 +3779,10 @@ function uespLog.DumpGlobals (maxLevel)
 	uespLog.dumpIndexTable = { }
 	uespLog.dumpTableTable = { }
 	
-	if (maxLevel == nil or maxLevel <= 0) then
+	if (maxLevel == nil) then
 		maxLevel = 3
+	elseif (maxLevel < 0) then
+		maxLevel = 0
 	elseif (maxLevel > 10) then
 		maxLevel = 10
 	end

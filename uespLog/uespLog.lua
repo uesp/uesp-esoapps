@@ -1450,6 +1450,7 @@ function uespLog.fillInfoData ()
 	local data = uespLog.savedVars["info"].data
 	
 	data["uespLogVersion"] = uespLog.version
+	data["apiVersion"] = GetAPIVersion() 
 	data["version"] = _VERSION
 	data["language"] = GetCVar("language.2")
 	
@@ -2724,6 +2725,7 @@ function uespLog.ShowTime (inputTimestamp)
 	local timeStampStr = Id64ToString(timeStamp)
 	local timeStampFmt = GetDateStringFromTimestamp(timeStamp)
 	local version = _VERSION
+	local apiVersion = GetAPIVersion()
 	local gameTimeStr = uespLog.getGameTimeStr(timeStamp)
 	local moonPhaseStr = uespLog.getMoonPhaseStr(timeStamp)
 		
@@ -2732,7 +2734,7 @@ function uespLog.ShowTime (inputTimestamp)
 	uespLog.MsgColor(uespLog.timeColor, "UESP::localGameTime = " .. tostring(localGameTime/1000) .. " sec")
 	uespLog.MsgColor(uespLog.timeColor, "UESP::timeStamp = " .. tostring(timeStamp))
 	uespLog.MsgColor(uespLog.timeColor, "UESP::timeStamp Date = " .. timeStampFmt)
-	uespLog.MsgColor(uespLog.timeColor, "UESP::_VERSION = " .. version)	
+	uespLog.MsgColor(uespLog.timeColor, "UESP::_VERSION = " ..version..",  API = "..tostring(apiVersion))	
 	uespLog.DebugExtraMsg(uespLog.timeColor, "UESP::timeStampStr = " .. timeStampStr)
 end
 
@@ -3451,6 +3453,9 @@ function uespLog.DumpGlobalsIterateStart(maxLevel)
 	uespLog.DebugMsg("UESP::Dumping globals iteratively to a depth of ".. tostring(uespLog.dumpIterateMaxLevel).."...")
 	
 	logData.event = "Global::Start"
+	logData.niceDate = GetDate()
+	logData.niceTime = GetTimeString()
+	logData.apiVersion = GetAPIVersion() 
 	uespLog.AppendDataToLog("globals", logData, uespLog.GetTimeData())
 
 	zo_callLater(uespLog.DumpObjectIterate, uespLog.DUMP_ITERATE_TIMERDELAY)
@@ -3805,6 +3810,9 @@ function uespLog.DumpGlobals (maxLevel)
 	
 	local logData = {} 
 	logData.event = "Global::Start"
+	logData.niceDate = GetDate()
+	logData.niceTime = GetTimeString()
+	logData.apiVersion = GetAPIVersion()
 	uespLog.AppendDataToLog("globals", logData, uespLog.GetTimeData())
 	
 	uespLog.DumpObject("", "_G", _G, 0, maxLevel)

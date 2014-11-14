@@ -3032,7 +3032,7 @@ SLASH_COMMANDS["/uespdump"] = function(cmd)
 			uespLog.DumpGlobalsIterateEnd()
 		elseif (cmds[2] == "begin" or cmds[2] == "start") then
 			uespLog.DumpGlobalsIterateStart(tonumber(cmds[3]))
-		elseif (not uespLog.DumpIterateEnable) then
+		elseif (not uespLog.DumpIterateEnabled) then
 			uespLog.DumpGlobals(tonumber(cmds[2]))
 		else
 			uespLog.DebugMsg("UESP::Dump globals iterative currently running...")

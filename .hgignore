@@ -17,6 +17,9 @@ EsoExtractData/Installs/**
 uespLogMonitor/Installs/**
 uespLog/Installs/**
 
+#
+parseGlobals/test*
+
 *.obj
 *.pdb
 *.user

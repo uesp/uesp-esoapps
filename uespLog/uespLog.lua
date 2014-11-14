@@ -199,7 +199,22 @@ uespLog.lastPlayerUT = -1
 
 uespLog.printDumpObject = false
 uespLog.logDumpObject = true
+uespLog.dumpIterateUserTable = true
 uespLog.countGlobal = 0
+
+	-- Objects to ignore when dumping
+uespLog.dumpIgnoreObjects = { 
+	["_G"] = 1, 
+	["uespLog"] = 1, 
+	["uespLogSavedVars"] = 1, 
+	["uespLogCoordinates"] = 1, 
+	["uespLogCoordinatesValue"] = 1,
+	["uespLogUI"] = 1,
+	["Zgoo"] = 1,
+	["ZgooFrame"] = 1,
+	["ZgooSV"] = 1,
+	["ZGOO_ADDRESS_LOOKUP"] = 1
+}
 
 uespLog.lastConversationOption = { }
 uespLog.lastConversationOption.Text = ""
@@ -983,7 +998,6 @@ function uespLog.AlchemyOnTooltipMouseUp(control, button, upInside)
 		end
 	end
 end
-
 
 
 function uespLog.SmithingCreationOnTooltipMouseUp(control, button, upInside)
@@ -3013,7 +3027,14 @@ SLASH_COMMANDS["/uespdump"] = function(cmd)
 	elseif (cmds[1] == "inventory") then
 		uespLog.DumpInventory()
 	elseif (cmds[1] == "globals") then
-		uespLog.DumpGlobals(tonumber(cmds[2]))
+		--uespLog.DumpGlobals(tonumber(cmds[2]))
+		
+		if (cmds[2] == "end" or cmds[2] == "stop") then
+			uespLog.DumpGlobalsIterateEnd()
+		else
+			uespLog.DumpGlobalsIterateStart(tonumber(cmds[2]))
+		end
+		
 	elseif (cmds[1] == "smith") then
 		uespLog.DumpSmithItems(false)
 	elseif (cmds[1] == "smithset") then
@@ -3357,104 +3378,415 @@ function uespLog.DumpInventory ()
 end
 
 
-function uespLog.DumpObject (prefix, a, level, maxLevel) 
+uespLog.DumpIterateNextIndex = nil
+uespLog.DumpIterateObject = nil
+uespLog.DumpIterateStatus = 0
+uespLog.DumpIterateParentName = ""
+uespLog.DumpIterateMaxLevel = 3
+uespLog.DumpIterateCurrentLevel = 0
+uespLog.DumpIterateTimerDelay = 100
+uespLog.DumpIterateLoopCount = 1000
+uespLog.DumpIterateEnabled = false
+uespLog.DumpMetaTable = { }
+uespLog.DumpIndexTable = { }
+uespLog.DumpTableTable = { }
+
+
+function uespLog.GetAddress(obj)
+
+	if type(obj) == "function" or type(obj) == "table" then
+		return tostring(obj):match(": ([%u%d]+)")
+	end
+	
+	return nil
+end
+
+
+function uespLog.DumpGlobalsIterateStart(maxLevel)
+	local logData = {} 
+
+	if (uespLog.DumpIterateEnabled) then
+		uespLog.DebugMsg("UESP::Dump globals iteration already running!")
+		return
+	end
+	
+	uespLog.savedVars["globals"].data = { }
+
+	uespLog.DumpIterateNextIndex = _nil
+	uespLog.DumpIterateObject = _G
+	uespLog.DumpIterateStatus = 0
+	uespLog.DumpIterateCurrentLevel = 0
+	uespLog.countGlobal = 0
+	uespLog.countGlobalError = 0
+	uespLog.DumpIterateParentName = ""
+	uespLog.DumpIterateMaxLevel = maxLevel or 3
+	uespLog.DumpMetaTable = { }
+	uespLog.DumpIndexTable = { }
+	uespLog.DumpTableTable = { }
+	uespLog.DumpIterateEnabled = true
+		
+	uespLog.DebugMsg("UESP::Dumping globals iteratively to a depth of ".. tostring(uespLog.DumpIterateMaxLevel).."...")
+	
+	logData.event = "Global::Start"
+	uespLog.AppendDataToLog("globals", logData, uespLog.GetTimeData())
+
+	zo_callLater(uespLog.DumpObjectIterate, uespLog.DumpIterateTimerDelay)
+end
+
+
+function uespLog.DumpGlobalsIterateEnd()
+	local logData = {} 
+
+	if (not uespLog.DumpIterateEnabled) then
+		uespLog.DebugMsg("UESP::Dump globals iteration not running!")
+		return
+	end
+	
+	logData.event = "Global::End"
+	uespLog.AppendDataToLog("globals", logData, uespLog.GetTimeData())
+	
+	uespLog.DumpIterateEnabled = false
+	uespLog.DebugMsg("UESP::Stopped dump globals iteration...")
+	uespLog.DebugMsg("UESP::Found ".. tostring(uespLog.countGlobal) .." objects and ".. tostring(uespLog.countGlobalError) .." private functions...")
+	
+	local metaSize = 0
+	local indexSize = 0
+	local tableSize = 0
+	
+	for _ in pairs(uespLog.DumpMetaTable) do metaSize = metaSize + 1 end
+	for _ in pairs(uespLog.DumpIndexTable) do indexSize = indexSize + 1 end
+	for _ in pairs(uespLog.DumpTableTable) do tableSize = tableSize + 1 end
+	
+	uespLog.DebugMsg("UESP::Size of tables = "..tostring(metaSize) .. " / " .. tostring(indexSize) .. " / " ..tostring(tableSize))
+end
+
+
+function uespLog.DumpObjectIterate()
+	local parentPrefix = uespLog.DumpIterateParentName
+	local level = uespLog.DumpIterateCurrentLevel
+	local newLevel = level + 1
+	local maxLevel = uespLog.DumpIterateMaxLevel
+	local startCount = uespLog.countGlobal
+	local startErrorCount = uespLog.countGlobalError
+	local status, tableIndex, value
+	local skipTable = false
+	local skipMeta = false
+	local skipObject = false
+
+	if (not uespLog.DumpIterateEnabled) then
+		return
+	end
+	
+	uespLog.DebugExtraMsg("uespLog.DumpObjectIterate()")
+	
+	repeat
+		skipMeta = false
+		skipTable = false
+		skipObject = false
+		status, tableIndex, value = pcall(next, uespLog.DumpIterateObject, uespLog.DumpIterateNextIndex)
+			
+		if (tableIndex == nil) then
+			uespLog.DumpGlobalsIterateEnd()
+			return
+		end
+		
+		if (uespLog.dumpIgnoreObjects[tostring(tableIndex)] ~= nil) then
+			skipObject = true
+		end
+		
+		if (status and not skipObject) then
+			local metaTable = getmetatable(value)
+			local indexTable = uespLog.GetIndexTable(value)
+			local metaAddress = uespLog.GetAddress(metaTable)
+			local indexAddress = uespLog.GetAddress(indexTable)
+			local tableAddress = uespLog.GetAddress(value)
+			
+			if (tableAddress ~= nil) then
+				if (uespLog.DumpTableTable[tableAddress] ~= nil) then
+					skipTable = true
+				end
+				
+				uespLog.DumpTableTable[tableAddress] = (uespLog.DumpTableTable[tableAddress] or 0) + 1
+			end
+			
+			if (metaAddress ~= nil) then
+				if (uespLog.DumpMetaTable[metaAddress] ~= nil) then
+					skipMeta = true
+				end
+				
+				uespLog.DumpMetaTable[metaAddress] = (uespLog.DumpMetaTable[metaAddress] or 0) + 1
+				--uespLog.DumpMetaTable[metaAddress] = 1
+			end
+			
+			if (indexAddress ~= nil) then
+				if (uespLog.DumpIndexTable[indexAddress] ~= nil) then
+					skipMeta = true
+				end
+				uespLog.DumpIndexTable[indexAddress] = (uespLog.DumpIndexTable[indexAddress] or 0) + 1
+				--uespLog.DumpIndexTable[indexAddress] = 1
+			end
+		end
+		
+		if (not status) then
+			tableIndex = uespLog.DumpObjectPrivate (tableIndex, value, uespLog.DumpIterateParentName, level)
+			uespLog.DebugExtraMsg("UESP::Error on dump object iteration...")
+		elseif (skipObject) then
+			-- Do nothing
+			uespLog.DebugExtraMsg("UESP::Skipping dump for object "..tostring(tableIndex))
+		elseif type(value) == "table" then
+			uespLog.DumpObjectTable(tableIndex, value, parentPrefix, level)
+			
+			if (not skipTable) then
+				uespLog.DumpObject(parentPrefix, tableIndex, value, newLevel, maxLevel)
+			end
+		elseif type(value) == "userdata" then		
+			uespLog.DumpObjectUserData(tableIndex, value, parentPrefix, level)
+			
+			if (uespLog.dumpIterateUserTable and not skipMeta and indexTable ~= nil and level <= maxLevel) then
+				uespLog.DumpObject(parentPrefix, tableIndex, indexTable, newLevel, maxLevel)
+			end
+
+		elseif type(value) == "function" then
+			uespLog.DumpObjectFunction(tableIndex, value, parentPrefix, level)
+		else
+			uespLog.DumpObjectOther(tableIndex, value, parentPrefix, level)
+		end
+		
+		local deltaCount = uespLog.countGlobal - startCount
+		uespLog.DumpIterateNextIndex = tableIndex	
+	until deltaCount >= uespLog.DumpIterateLoopCount
+	
+	uespLog.DebugMsg("UESP::Dump iterate created "..tostring(uespLog.countGlobal-startCount).." logs with "..tostring(uespLog.countGlobalError-startErrorCount).." errors.")
+	
+	zo_callLater(uespLog.DumpObjectIterate, uespLog.DumpIterateTimerDelay)
+end
+
+
+function uespLog.DumpObjectTable (objectName, objectValue, parentName, varLevel)
+	local logData = { }
+	
+	logData.event = "Global"
+	logData.label = "Public"
+	logData.type = "table"
+	logData.meta = getmetatable(objectValue)
+	logData.index = uespLog.GetIndexTable(objectValue)
+	
+	logData.name = parentName..tostring(objectName)
+	logData.value = tostring(objectValue)
+	
+	if (uespLog.logDumpObject) then
+		uespLog.AppendDataToLog("globals", logData)
+	end
+	
+	if (uespLog.printDumpObject) then
+		uespLog.DebugMsg("UESP:"..tostring(varLevel)..":table "..logData.name)
+	end
+	
+	uespLog.countGlobal = uespLog.countGlobal + 1
+end
+
+
+function uespLog.DumpObjectUserData (objectName, objectValue, parentName, varLevel)
+	local logData = { }
+	
+	logData.event = "Global"
+	logData.label = "Public"
+	logData.type = "userdata"
+	logData.meta = getmetatable(objectValue)
+	logData.index = uespLog.GetIndexTable(objectValue)
+	logData.name = parentName .. tostring(objectName)
+	logData.value = tostring(objectValue)
+	
+	if (uespLog.logDumpObject) then
+		uespLog.AppendDataToLog("globals", logData)
+	end
+	
+	if (uespLog.printDumpObject) then
+		uespLog.DebugMsg("UESP::userdata "..logData.name)
+	end
+	
+	uespLog.countGlobal = uespLog.countGlobal + 1
+end
+
+
+function uespLog.DumpObjectFunction (objectName, objectValue, parentName, varLevel)
+	local logData = {} 
+	
+	logData.event = "Global"
+	logData.type = "function"
+	logData.label = "Public"
+	logData.value = tostring(objectValue)
+	logData.name = parentName .. tostring(objectName) .. "()"
+	
+	if (uespLog.logDumpObject) then
+		uespLog.AppendDataToLog("globals", logData)
+	end
+	
+	if (uespLog.printDumpObject) then
+		uespLog.DebugMsg("UESP:"..tostring(varLevel)..":Function "..logData.name)
+	end
+	
+	uespLog.countGlobal = uespLog.countGlobal + 1
+end
+
+
+function uespLog.DumpObjectOther (objectName, objectValue, parentName, varLevel)
+	local objType = type(objectValue)
+	local logData = {} 
+	
+	logData.event = "Global"
+	logData.type = objType
+	logData.label = "Public"
+	logData.name = parentName .. tostring(objectName)
+	logData.value = tostring(objectValue)
+		
+	if (uespLog.logDumpObject) then
+		uespLog.AppendDataToLog("globals", logData)
+	end
+	
+	if (uespLog.printDumpObject) then
+		uespLog.DebugMsg("UESP:"..tostring(varLevel)..":Global "..logData.name.." = "..tostring(value))
+	end
+	
+	uespLog.countGlobal = uespLog.countGlobal + 1
+end
+
+
+function uespLog.DumpObjectPrivate (objectName, objectValue, parentName, varLevel)
+	local errIndex = string.match(objectName, "attempt to access a private function '(%a*)' from")
+	local logData = {} 
+	
+	logData.event = "Global"
+	logData.label = "Private"
+	logData.name = parentName .. tostring(errIndex) .. "()"
+	
+	if (uespLog.logDumpObject) then
+		uespLog.AppendDataToLog("globals", logData)
+	end
+		
+	if (uespLog.printDumpObject) then
+		uespLog.DebugMsg("UESP:"..tostring(level)..":Private "..logData.name)
+	end
+	
+	uespLog.countGlobal = uespLog.countGlobal + 1
+	uespLog.countGlobalError = uespLog.countGlobalError + 1
+	
+	return errIndex
+end
+
+
+function uespLog.GetIndexTable(var)
+	local metaTable = getmetatable(var)
+	
+	if (metaTable == nil) then
+		return nil
+	end
+	
+	return metaTable.__index
+end
+
+
+function uespLog.DumpObject(prefix, varName, a, level, maxLevel) 
 	local logData = { }
 	local parentPrefix = ""
+	local skipTable
+	local skipMeta
 	
-	if (prefix ~= "_G") then
-		parentPrefix = prefix .. "."
-	end
+	-- "" "TEST1" "TEST2"
+	-- "" "_G"  ""
+	-- "" "TEST1" "TEST1"
+	-- "TEST1" "TEST2" "TEST1.TEST2"
+	-- "TEST1.TEST2" TEST3" 
+	
+	if (prefix ~= "_G" and prefix ~= "") then
+		parentPrefix = prefix
+		
+		if (not uespLog.EndsWith(prefix, ".")) then
+			parentPrefix = parentPrefix .. "."
+		end
+	end	
+	
+	if (varName ~= "_G" and varName ~= "") then
+		parentPrefix = parentPrefix .. varName .. "."
+	end	
 	
 	newLevel = level + 1
 	
 		-- Prevent recursion of the global object
-	if (newLevel > 1 and tostring(a) == "_G") then
+	if (newLevel > 1 and varName == "_G") then
+		return
+	elseif (uespLog.dumpIgnoreObjects[varName] ~= nil) then
 		return
 	end
   	
 	local status, tableIndex, value = pcall(next, a, nil)
+	--status, tableIndex, value = pcall(next, a, tableIndex)
   
-	while (status and tableIndex ~= nil) do
-		local lastIndex = tableIndex
+	while (tableIndex ~= nil) do
+		skipTable = false
+		skipMeta = false
 	
-		if type(value) == "table" then
-			if (level <= maxLevel) then
-				uespLog.DumpObject(parentPrefix .. tableIndex, value, newLevel, maxLevel)
-			else
-				logData = { }
-				logData.event = "Global"
-				logData.label = "Public"
-				logData.type = "table"
-				logData.name = parentPrefix .. tostring(tableIndex)
-				logData.value = tostring(value)
-				
-				if (uespLog.logDumpObject) then
-					uespLog.AppendDataToLog("globals", logData)
+		if (status) then
+			local metaTable = getmetatable(value)
+			local indexTable = uespLog.GetIndexTable(value)
+			local metaAddress = uespLog.GetAddress(metaTable)
+			local indexAddress = uespLog.GetAddress(indexTable)
+			local tableAddress = uespLog.GetAddress(value)
+			
+			if (tableAddress ~= nil) then
+				if (uespLog.DumpTableTable[tableAddress] ~= nil) then
+					skipTable = true
 				end
 				
-				if (uespLog.printDumpObject) then
-					uespLog.DebugMsg("UESP::table "..tostring(tableIndex))
-				end
+				uespLog.DumpTableTable[tableAddress] = (uespLog.DumpTableTable[tableAddress] or 0) + 1
 			end
+			
+			if (metaAddress ~= nil) then
+				if (uespLog.DumpMetaTable[metaAddress] ~= nil) then
+					skipMeta = true
+				end
+				uespLog.DumpMetaTable[metaAddress] = (uespLog.DumpMetaTable[metaAddress] or 0) + 1
+				--uespLog.DumpMetaTable[metaAddress] = 1
+			end
+			
+			if (indexAddress ~= nil) then
+				if (uespLog.DumpIndexTable[indexAddress] ~= nil) then
+					skipMeta = true
+				end
+				uespLog.DumpIndexTable[indexAddress] = (uespLog.DumpIndexTable[indexAddress] or 0) + 1
+				--uespLog.DumpIndexTable[indexAddress] = 1
+			end
+		end
+	
+		if (not status) then
+			tableIndex = uespLog.DumpObjectPrivate (tableIndex, value, parentPrefix, level)
+		elseif (tableIndex == "__index" and uespLog.EndsWith(prefix, "__index")) then
+			-- Skip recursion output
+		elseif type(value) == "table" then
+			uespLog.DumpObjectTable(tableIndex, value, parentPrefix, level)
+			
+			if (level <= maxLevel and not skipTable) then
+				uespLog.DumpObject(parentPrefix, tostring(tableIndex), value, newLevel, maxLevel)
+			end
+			
+		elseif type(value) == "userdata" then			
+			uespLog.DumpObjectUserData(tableIndex, value, parentPrefix, level)
+			
+			if (uespLog.dumpIterateUserTable and not skipMeta and indexTable ~= nil and level <= maxLevel) then
+				uespLog.DumpObject(parentPrefix, tostring(tableIndex), uespLog.GetIndexTable(value), newLevel, maxLevel)
+			end
+
 		elseif type(value) == "function" then
-			logData = {} 
-			logData.event = "Global"
-			logData.type = "function"
-			logData.label = "Public"
-			logData.value = tostring(value)
-			logData.name = parentPrefix .. tostring(tableIndex) .. "()"
-			
-			if (uespLog.logDumpObject) then
-				uespLog.AppendDataToLog("globals", logData)
-			end
-				
-			uespLog.countGlobal = uespLog.countGlobal + 1
-			
-			if (uespLog.printDumpObject) then
-				uespLog.DebugMsg("UESP::Function "..tostring(tableIndex))
-			end
+			uespLog.DumpObjectFunction(tableIndex, value, parentPrefix, level)
 		else
-			objType = type(value)
-			
-			logData = {} 
-			logData.event = "Global"
-			logData.type = objType
-			logData.label = "Public"
-			logData.name = parentPrefix .. tostring(tableIndex)
-			logData.value = tostring(value)
-			
-			if (uespLog.logDumpObject) then
-				uespLog.AppendDataToLog("globals", logData)
-			end
-			
-			if (uespLog.printDumpObject) then
-				uespLog.DebugMsg("UESP::Function "..tostring(tableIndex).." = "..tostring(value))
-			end
-			
-			uespLog.countGlobal = uespLog.countGlobal + 1
+			uespLog.DumpObjectOther(tableIndex, value, parentPrefix, level)
 		end
 		
 		repeat
 			status, tableIndex, value = pcall(next, a, tableIndex)
 			
 			if (not status) then
-				local errIndex = string.match(tableIndex, "attempt to access a private function '(%a*)' from")
-								
-				logData = {} 
-				logData.event = "Global"
-				logData.label = "Private"
-				logData.name = parentPrefix .. tostring(errIndex) .. "()"
-				
-				if (uespLog.logDumpObject) then
-					uespLog.AppendDataToLog("globals", logData)
-				end
-				
-				uespLog.countGlobalError = uespLog.countGlobalError + 1
-				tableIndex = errIndex
-				
-				if (uespLog.printDumpObject) then
-					uespLog.DebugMsg("UESP::Private "..tostring(errIndex))
-				end
+				tableIndex = uespLog.DumpObjectPrivate (tableIndex, value, parentPrefix, level)
 			end
 		until status or tableIndex == nil
 		
@@ -3470,6 +3802,9 @@ function uespLog.DumpGlobals (maxLevel)
 	
 	uespLog.countGlobal = 0
 	uespLog.countGlobalError = 0
+	uespLog.DumpMetaTable = { }
+	uespLog.DumpIndexTable = { }
+	uespLog.DumpTableTable = { }
 	
 	if (maxLevel == nil or maxLevel <= 0) then
 		maxLevel = 3
@@ -3483,11 +3818,11 @@ function uespLog.DumpGlobals (maxLevel)
 	logData.event = "Global::Start"
 	uespLog.AppendDataToLog("globals", logData, uespLog.GetTimeData())
 	
-	uespLog.DumpObject("_G", _G, 0, maxLevel)
+	uespLog.DumpObject("", "_G", _G, 0, maxLevel)
 	
 	logData = {} 
 	logData.event = "Global::End"
-	uespLog.AppendDataToLog("globals", logData)
+	uespLog.AppendDataToLog("globals", logData, uespLog.GetTimeData())
 		
 	uespLog.DebugMsg("UESP::Output ".. tostring(uespLog.countGlobal) .." global objects and ".. tostring(uespLog.countGlobalError) .." private functions to log...")
 end
@@ -4613,11 +4948,44 @@ end
 SLASH_COMMANDS["/uml"] = SLASH_COMMANDS["/uespmakelink"]
 
 
+SLASH_COMMANDS["/uesptestdump"] = function(cmd)
+
+	uespLog.printDumpObject = true
+	uespLog.logDumpObject = false
+	
+	uespLog.DumpObject("", "BANK_FRAGMENT", BANK_FRAGMENT, 0, 3)
+	uespLog.DebugMsg("CC"..tostring(#BANK_FRAGMENT))
+	uespLog.DumpObject("", "BANK_FRAGMENT", BANK_FRAGMENT.control, 0, 3)
+	
+	local tmpTable = getmetatable(BANK_FRAGMENT.control)
+	
+	if (tmpTable ~= nil) then
+		uespLog.DebugMsg("DD"..tostring(#tmpTable))
+		--uespLog.DumpObject("", "BANK_FRAGMENT", tmpTable, 0, 3)
+	end --]]
+	
+	--[[
+	uespLog.DumpObject("", "TreasureMap", TreasureMap, 0, 3)
+	uespLog.DebugMsg("AA"..tostring(#TreasureMap.__index))
+	uespLog.DumpObject("", "TreasureMap", TreasureMap.__index, 0, 3)
+	
+	local tmpTable = getmetatable(TreasureMap)
+	
+	if (tmpTable ~= nil) then
+		uespLog.DebugMsg("BB"..tostring(#tmpTable))
+		uespLog.DumpObject("", "TreasureMap.__meta", tmpTable, 0, 3)
+	end	--]]
+	
+	uespLog.printDumpObject = false
+	uespLog.logDumpObject = true	
+end
+
+
 function uespLog.DumpToolTip ()
 	uespLog.DebugMsg("UESP::Dumping tooltip "..tostring(PopupTooltip))
 	
 	uespLog.printDumpObject = true
-	--uespLog.DumpObject("PopupTooltip", getmetatable(PopupTooltip), 0, 2)
+	--uespLog.DumpObject("", "PopupTooltip", getmetatable(PopupTooltip), 0, 2)
 		
 	--for k, v in pairs(PopupTooltip) do
 		--uespLog.DebugMsg(".    " .. tostring(k) .. "=" .. tostring(v))
@@ -4628,7 +4996,7 @@ function uespLog.DumpToolTip ()
 	
     for i = 1, numChildren do
         local child = PopupTooltip:GetChild(i)
-		--uespLog.DumpObject("child", getmetatable(child), 0, 2)
+		--uespLog.DumpObject("", "child", getmetatable(child), 0, 2)
 		local name = child:GetName()
 		uespLog.DebugMsg(".   "..tostring(i)..") "..tostring(name))
     end

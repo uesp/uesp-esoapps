@@ -1440,10 +1440,10 @@ end
 
 
 function uespLog.HandleChatterOptionClicked (self, label)
-	uespLog.DebugExtraMsg("UESP::HandleChatterOptionClicked")
-	uespLog.DebugExtraMsg("Index:"..tostring(label.optionIndex))
+	--uespLog.DebugExtraMsg("UESP::HandleChatterOptionClicked")
+	--uespLog.DebugExtraMsg("Index:"..tostring(label.optionIndex))
 	--uespLog.DebugExtraMsg("Text:"..tostring(label:GetText()))
-	uespLog.DebugExtraMsg("Type:"..tostring(label.optionType))
+	--uespLog.DebugExtraMsg("Type:"..tostring(label.optionType))
 	
 	uespLog.lastConversationOption.Text = label:GetText()
 	uespLog.lastConversationOption.Type = label.optionType

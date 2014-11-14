@@ -3027,12 +3027,15 @@ SLASH_COMMANDS["/uespdump"] = function(cmd)
 	elseif (cmds[1] == "inventory") then
 		uespLog.DumpInventory()
 	elseif (cmds[1] == "globals") then
-		--uespLog.DumpGlobals(tonumber(cmds[2]))
 		
 		if (cmds[2] == "end" or cmds[2] == "stop") then
 			uespLog.DumpGlobalsIterateEnd()
+		elseif (cmds[2] == "begin" or cmds[2] == "start") then
+			uespLog.DumpGlobalsIterateStart(tonumber(cmds[3]))
+		elseif (not uespLog.DumpIterateEnable) then
+			uespLog.DumpGlobals(tonumber(cmds[2]))
 		else
-			uespLog.DumpGlobalsIterateStart(tonumber(cmds[2]))
+			uespLog.DebugMsg("UESP::Dump globals iterative currently running...")
 		end
 		
 	elseif (cmds[1] == "smith") then
@@ -3493,38 +3496,9 @@ function uespLog.DumpObjectIterate()
 		if (uespLog.dumpIgnoreObjects[tostring(tableIndex)] ~= nil) then
 			skipObject = true
 		end
-		
+				
 		if (status and not skipObject) then
-			local metaTable = getmetatable(value)
-			local indexTable = uespLog.GetIndexTable(value)
-			local metaAddress = uespLog.GetAddress(metaTable)
-			local indexAddress = uespLog.GetAddress(indexTable)
-			local tableAddress = uespLog.GetAddress(value)
-			
-			if (tableAddress ~= nil) then
-				if (uespLog.DumpTableTable[tableAddress] ~= nil) then
-					skipTable = true
-				end
-				
-				uespLog.DumpTableTable[tableAddress] = (uespLog.DumpTableTable[tableAddress] or 0) + 1
-			end
-			
-			if (metaAddress ~= nil) then
-				if (uespLog.DumpMetaTable[metaAddress] ~= nil) then
-					skipMeta = true
-				end
-				
-				uespLog.DumpMetaTable[metaAddress] = (uespLog.DumpMetaTable[metaAddress] or 0) + 1
-				--uespLog.DumpMetaTable[metaAddress] = 1
-			end
-			
-			if (indexAddress ~= nil) then
-				if (uespLog.DumpIndexTable[indexAddress] ~= nil) then
-					skipMeta = true
-				end
-				uespLog.DumpIndexTable[indexAddress] = (uespLog.DumpIndexTable[indexAddress] or 0) + 1
-				--uespLog.DumpIndexTable[indexAddress] = 1
-			end
+			skipTable, skipMeta = uespLog.DumpUpdateObjectTables(value)
 		end
 		
 		if (not status) then
@@ -3686,17 +3660,51 @@ function uespLog.GetIndexTable(var)
 end
 
 
+function uespLog.DumpUpdateObjectTables (value)
+	local metaTable = getmetatable(value)
+	local indexTable = uespLog.GetIndexTable(value)
+	local metaAddress = uespLog.GetAddress(metaTable)
+	local indexAddress = uespLog.GetAddress(indexTable)
+	local tableAddress = uespLog.GetAddress(value)
+	local skipTable = false
+	local skipMeta = false
+	
+	if (tableAddress ~= nil) then
+	
+		if (uespLog.DumpTableTable[tableAddress] ~= nil) then
+			skipTable = true
+		end
+		
+		uespLog.DumpTableTable[tableAddress] = (uespLog.DumpTableTable[tableAddress] or 0) + 1
+	end
+	
+	if (metaAddress ~= nil) then
+	
+		if (uespLog.DumpMetaTable[metaAddress] ~= nil) then
+			skipMeta = true
+		end
+		
+		uespLog.DumpMetaTable[metaAddress] = (uespLog.DumpMetaTable[metaAddress] or 0) + 1
+	end
+	
+	if (indexAddress ~= nil) then
+	
+		if (uespLog.DumpIndexTable[indexAddress] ~= nil) then
+			skipMeta = true
+		end
+		
+		uespLog.DumpIndexTable[indexAddress] = (uespLog.DumpIndexTable[indexAddress] or 0) + 1
+	end
+	
+	return skipTable, skipMeta
+end
+
+
 function uespLog.DumpObject(prefix, varName, a, level, maxLevel) 
 	local logData = { }
 	local parentPrefix = ""
 	local skipTable
 	local skipMeta
-	
-	-- "" "TEST1" "TEST2"
-	-- "" "_G"  ""
-	-- "" "TEST1" "TEST1"
-	-- "TEST1" "TEST2" "TEST1.TEST2"
-	-- "TEST1.TEST2" TEST3" 
 	
 	if (prefix ~= "_G" and prefix ~= "") then
 		parentPrefix = prefix
@@ -3712,56 +3720,29 @@ function uespLog.DumpObject(prefix, varName, a, level, maxLevel)
 	
 	newLevel = level + 1
 	
-		-- Prevent recursion of the global object
-	if (newLevel > 1 and varName == "_G") then
-		return
+		-- Special case for the global object
+	if (varName == "_G") then
+		if (newLevel > 1) then
+			return
+		end
 	elseif (uespLog.dumpIgnoreObjects[varName] ~= nil) then
 		return
 	end
   	
 	local status, tableIndex, value = pcall(next, a, nil)
-	--status, tableIndex, value = pcall(next, a, tableIndex)
   
 	while (tableIndex ~= nil) do
 		skipTable = false
 		skipMeta = false
 	
 		if (status) then
-			local metaTable = getmetatable(value)
-			local indexTable = uespLog.GetIndexTable(value)
-			local metaAddress = uespLog.GetAddress(metaTable)
-			local indexAddress = uespLog.GetAddress(indexTable)
-			local tableAddress = uespLog.GetAddress(value)
-			
-			if (tableAddress ~= nil) then
-				if (uespLog.DumpTableTable[tableAddress] ~= nil) then
-					skipTable = true
-				end
-				
-				uespLog.DumpTableTable[tableAddress] = (uespLog.DumpTableTable[tableAddress] or 0) + 1
-			end
-			
-			if (metaAddress ~= nil) then
-				if (uespLog.DumpMetaTable[metaAddress] ~= nil) then
-					skipMeta = true
-				end
-				uespLog.DumpMetaTable[metaAddress] = (uespLog.DumpMetaTable[metaAddress] or 0) + 1
-				--uespLog.DumpMetaTable[metaAddress] = 1
-			end
-			
-			if (indexAddress ~= nil) then
-				if (uespLog.DumpIndexTable[indexAddress] ~= nil) then
-					skipMeta = true
-				end
-				uespLog.DumpIndexTable[indexAddress] = (uespLog.DumpIndexTable[indexAddress] or 0) + 1
-				--uespLog.DumpIndexTable[indexAddress] = 1
-			end
+			skipTable, skipMeta = uespLog.DumpUpdateObjectTables(value)
 		end
 	
 		if (not status) then
 			tableIndex = uespLog.DumpObjectPrivate (tableIndex, value, parentPrefix, level)
 		elseif (tableIndex == "__index" and uespLog.EndsWith(prefix, "__index")) then
-			-- Skip recursion output
+			-- Skip recursive output6
 		elseif type(value) == "table" then
 			uespLog.DumpObjectTable(tableIndex, value, parentPrefix, level)
 			

@@ -3565,11 +3565,10 @@ function uespLog.DumpObjectTable (objectName, objectValue, parentName, varLevel)
 	logData.event = "Global"
 	logData.label = "Public"
 	logData.type = "table"
-	logData.meta = getmetatable(objectValue)
-	logData.index = uespLog.GetIndexTable(objectValue)
-	
-	logData.name = parentName..tostring(objectName)
-	logData.value = tostring(objectValue)
+	logData.meta = uespLog.GetAddress(getmetatable(objectValue))
+	--logData.index = uespLog.GetAddress(uespLog.GetIndexTable(objectValue))  -- Same as meta for tables
+	logData.name = parentName .. tostring(objectName)
+	logData.value = uespLog.GetAddress(objectValue)
 	
 	if (uespLog.logDumpObject) then
 		uespLog.AppendDataToLog("globals", logData)
@@ -3589,10 +3588,10 @@ function uespLog.DumpObjectUserData (objectName, objectValue, parentName, varLev
 	logData.event = "Global"
 	logData.label = "Public"
 	logData.type = "userdata"
-	logData.meta = getmetatable(objectValue)
-	logData.index = uespLog.GetIndexTable(objectValue)
+	logData.meta = uespLog.GetAddress(getmetatable(objectValue))
+	logData.index = uespLog.GetAddress(uespLog.GetIndexTable(objectValue))
 	logData.name = parentName .. tostring(objectName)
-	logData.value = tostring(objectValue)
+	logData.value = uespLog.GetAddress(objectValue)
 	
 	if (uespLog.logDumpObject) then
 		uespLog.AppendDataToLog("globals", logData)
@@ -3612,7 +3611,7 @@ function uespLog.DumpObjectFunction (objectName, objectValue, parentName, varLev
 	logData.event = "Global"
 	logData.type = "function"
 	logData.label = "Public"
-	logData.value = tostring(objectValue)
+	logData.value = uespLog.GetAddress(objectValue)
 	logData.name = parentName .. tostring(objectName) .. "()"
 	
 	if (uespLog.logDumpObject) then

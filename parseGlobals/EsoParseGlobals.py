@@ -11,6 +11,10 @@ INPUT_FILENAME = "d:\\esoexport\\goodimages10\\globals_6b.txt"
 LUA_ROOT_PATH = "d:\\esoexport\\gamemnf10\\esoui\\"
 #LUA_ROOT_PATH = "d:\\esoexport\\gamemnf10\\esoui\\pregame\\console\\"
 
+INPUT_FILENAME = "d:\\src\\uesp\\eso\\parseGlobals\\globals_6b.txt"
+LUA_ROOT_PATH = "d:\\src\\esoui\\"
+
+
 class CInstanceInfo:
     def __init__(self):
         self.type = ""

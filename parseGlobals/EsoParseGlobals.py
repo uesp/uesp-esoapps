@@ -8,6 +8,8 @@ import datetime
 #from skipdict import SkipDict
 
 INPUT_FILENAME = "d:\\esoexport\\goodimages10\\globals_6b.txt"
+LUA_ROOT_PATH = "d:\\esoexport\\gamemnf10\\esoui\\"
+#LUA_ROOT_PATH = "d:\\esoexport\\gamemnf10\\esoui\\pregame\\console\\"
 
 class CInstanceInfo:
     def __init__(self):
@@ -22,6 +24,20 @@ class CInstanceInfo:
         self.firstIndex = False
         self.firstMeta = False
         self.children = { }
+
+class CFunctionInfo:
+    def __init__(self):
+        self.fullName = ""
+        self.fullString = ""
+        self.filename = ""
+        self.namespace = ""
+        self.namespaceType = ""
+        self.local = ""
+        self.name = ""
+        self.line = ""
+        self.allParams = ""
+        self.params = [ ]
+
 
 InstanceData = { }
 
@@ -294,6 +310,129 @@ def CreateGlobalHTML(globalData, filename):
 
     return
 
+
+totalLuaFunctions = 0
+totalLuaDuplicates = 0
+#matchFunctions = re.compile("((?:local\s+)?function\s+.*)\s*\n")
+matchFunctions = re.compile("((?:local\s+)?function\s+.*)")
+#matchFunctions = re.compile("((?:local\s+)?function\s+.*\))\s*\n")
+#matchFunctions = re.compile("((?:local\s+)?function\s+.*)\n")
+
+matchFunctionName = re.compile("(local)?\s*function\s+([A-Za-z0-9_]+)?([:.])?([A-Za-z0-9_]+)\(\s*(.*)\s*\)")
+matchFunctionParams = re.compile("([A-Za-z0-9_]+)\s*,?")
+
+# function name()
+# function name(var)
+# function name(var1, var2)
+
+
+def FindLuaFunctions_ParseFunction(filename, function, lineNumber, luaFunctions):
+    global totalLuaDuplicates
+    
+        # 0=local, 1=Namespace, 2=:|., 3=Function, 4=Params
+    funcData = matchFunctionName.findall(function)
+
+    if (len(funcData) <= 0):
+        return None
+
+    #print "\t", funcData[0]
+    funcParams = ""
+
+    if (funcData[0][4] != ""):
+        funcParams = matchFunctionParams.findall(funcData[0][4])
+
+    newFunc = CFunctionInfo()
+    newFunc.fullString = function
+    newFunc.local = funcData[0][0]
+    newFunc.namespace = funcData[0][1]
+    newFunc.namespaceType = funcData[0][2]
+    newFunc.name = funcData[0][3]
+    newFunc.line = str(lineNumber)
+    newFunc.allParams = funcData[0][4]
+    newFunc.fullName = newFunc.namespace + newFunc.namespaceType + newFunc.name
+    newFunc.filename = filename
+
+    #print "\t\t", newFunc.fullName
+
+    if (newFunc.local != ""):
+        return newFunc
+
+    if (newFunc.fullName in luaFunctions):
+        totalLuaDuplicates += 1
+        print "\tDuplicate function " + newFunc.fullName + " found!"
+        print "\t\tExisting Found in " + luaFunctions[newFunc.fullName].filename + " Line " + luaFunctions[newFunc.fullName].line
+        print "\t\t     New Found in " + newFunc.filename + " Line " + newFunc.line
+        print "\t\tExisting Def: " + luaFunctions[newFunc.fullName].fullString
+        print "\t\t     New Def: " + newFunc.fullString
+        return None
+
+    luaFunctions[newFunc.fullName] = newFunc
+    return newFunc
+
+
+def FindLuaFunctions_ParseFile(filename, luaFileContents, luaFunctions):
+    global totalLuaFunctions
+
+    fileLines = luaFileContents.split("\n")
+    functions = [ ]
+    lineNumbers = [ ]
+
+    for i, line in enumerate(fileLines):
+        lineFuncs = matchFunctions.findall(line)
+        functions.extend(lineFuncs)
+        lineNumbers.extend([i+1] * len(lineFuncs))
+
+    #print "\tFound " + str(len(functions)) + " functions " + str(len(lineNumbers))
+
+    for i, func in enumerate(functions):
+        FindLuaFunctions_ParseFunction(filename, func, lineNumbers[i], luaFunctions)
+
+    totalLuaFunctions += len(functions)
+    return
+
+
+def FindLuaFunctions_CheckFile(filename, luaFunctions):
+
+    if (not filename.endswith(".lua")):
+        return False
+    
+    #print "Checking LUA source file " + filename
+
+    with open (filename, "r") as inFile:
+        fileContents = inFile.read()
+
+    FindLuaFunctions_ParseFile(filename, fileContents, luaFunctions)
+        
+    return True
+
+
+def FindLuaFunctions(searchPath):
+    luaFunctions = { }
+    
+    totalFiles = 0
+
+    for subdir, dirs, files in os.walk(searchPath):
+        subPath = subdir + "\\"
+
+        if ("\\gamepad\\" in subPath or
+            "\\pregame\\" in subPath or
+            "\\pregamelocalization\\" in subPath):
+            print "\tSkipping " + subdir + "..."
+        else:                
+            for filename in files:
+                if (FindLuaFunctions_CheckFile(subPath + filename, luaFunctions)):
+                    totalFiles += 1
+            
+    print "Found " + str(totalFiles) + " LUA files"
+    print "Found " + str(totalLuaFunctions) + " LUA functions"
+    print "Found " + str(totalLuaDuplicates) + " duplicate function definitions"
+
+    return luaFunctions
+
+
+
+luaFunctions = FindLuaFunctions(LUA_ROOT_PATH)
+sys.exit()
 
 
 

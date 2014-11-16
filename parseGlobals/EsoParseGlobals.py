@@ -101,6 +101,7 @@ def ParseGlobalData_Start(log):
     global GlobalData_Version
     
     #[1] = "event{Global::Start}  niceDate{20141114}  niceTime{15:21:47}  apiVersion{100010}  timeStamp{4743725927807057920}  gameTime{647585}  lang{en}  ",
+    # 
 
     fullDate = int(log.get('niceDate', '0'))
     
@@ -317,18 +318,20 @@ def CreateGlobalHTML(globalData, filename):
 
 totalLuaFunctions = 0
 totalLuaDuplicates = 0
+totalLuaCalls = 0
 #matchFunctions = re.compile("((?:local\s+)?function\s+.*)\s*\n")
 matchFunctions = re.compile("((?:local\s+)?function\s+.*)")
 #matchFunctions = re.compile("((?:local\s+)?function\s+.*\))\s*\n")
 #matchFunctions = re.compile("((?:local\s+)?function\s+.*)\n")
 
-matchFunctionName = re.compile("(local)?\s*function\s+([A-Za-z0-9_]+)?([:.])?([A-Za-z0-9_]+)\(\s*(.*)\s*\)")
+matchFunctionName = re.compile("(local)?\s*function\s+([A-Za-z0-9_]+)?([:.])?([A-Za-z0-9_]+)\s*\(\s*(.*)\s*\)")
 matchFunctionParams = re.compile("([A-Za-z0-9_]+)\s*,?")
+matchFunctionCall = re.compile("(?:([A-Za-z0-9_,.\[\]\t ]+)\s*=\s*)?([A-Za-z0-9_.:\[\]\"]+)\s*\((.*)\)")
 
 # function name()
 # function name(var)
 # function name(var1, var2)
-
+# x, y, z = func()
 
 def FindLuaFunctions_ParseFunction(filename, function, lineNumber, luaFunctions):
     global totalLuaDuplicates
@@ -376,9 +379,11 @@ def FindLuaFunctions_ParseFunction(filename, function, lineNumber, luaFunctions)
 
 def FindLuaFunctions_ParseFile(filename, luaFileContents, luaFunctions):
     global totalLuaFunctions
+    global totalLuaCalls
 
     fileLines = luaFileContents.split("\n")
     functions = [ ]
+    functionCalls = [ ]
     lineNumbers = [ ]
 
     for i, line in enumerate(fileLines):
@@ -386,12 +391,19 @@ def FindLuaFunctions_ParseFile(filename, luaFileContents, luaFunctions):
         functions.extend(lineFuncs)
         lineNumbers.extend([i+1] * len(lineFuncs))
 
-    #print "\tFound " + str(len(functions)) + " functions " + str(len(lineNumbers))
+        callFuncs = matchFunctionCall.findall(line)
+        functionCalls.extend(callFuncs)
+        
+        #if (len(callFuncs) > 0):
+            #print callFuncs
+
+    print "\tFound " + str(len(functions)) + " functions and " + str(len(functionCalls)) + " calls in " + str(len(lineNumbers)) + " lines"
 
     for i, func in enumerate(functions):
         FindLuaFunctions_ParseFunction(filename, func, lineNumbers[i], luaFunctions)
 
     totalLuaFunctions += len(functions)
+    totalLuaCalls += len(functionCalls)
     return
 
 
@@ -429,11 +441,14 @@ def FindLuaFunctions(searchPath):
             
     print "Found " + str(totalFiles) + " LUA files"
     print "Found " + str(totalLuaFunctions) + " LUA functions"
+    print "Found " + str(totalLuaCalls) + " LUA function calls"
     print "Found " + str(totalLuaDuplicates) + " duplicate function definitions"
 
     return luaFunctions
 
-
+callFuncs = matchFunctionCall.findall("x = y()")
+callFuncs = matchFunctionCall.findall("x[0], y.z = self:zy(abc[1].t, 123)")
+print callFuncs
 
 luaFunctions = FindLuaFunctions(LUA_ROOT_PATH)
 sys.exit()

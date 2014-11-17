@@ -154,8 +154,13 @@
 --					/uespdump globals start [maxlevel]  -- Start iterative dumping
 --					/uespdump globals stop              -- Stop iterative dumping
 --					/uespdump globals status            -- Current status of iterative dump
---			- Started work on /uespmine for mining item data. Use with caution as it can easily crash
---			  your client. 
+--			- Started work on "/uespmineitems" (/umi) for mining item data. Use with caution as it can easily 
+--			  crash your client. 
+--						/uespmineitems [itemId]
+--						/uespmineitems status
+--						/uespmineitems start [startItemId]
+-- 						/uespmineitems stop
+--			  ItemIds are just numbers from 1-100000.
 --			- BUG: Sometimes the saved variable data gets corrupted. This seems to occur during a global
 --			  dump on rare occasions and is most likely an ESO/LUA engine bug. Use "/uespreset all" to
 --			  clear the saved variable data back to an empty state which can usually fix this.

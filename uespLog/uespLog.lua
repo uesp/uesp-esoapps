@@ -173,13 +173,6 @@
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-	-- Use only for testing
-uespLog.enableTesting = false
-
---if (uespLog.enableTesting) then
-	--require "test/uespLog_mock"
---end
-
 uespLog.version = "0.21"
 uespLog.releaseDate = "17 November 2014"
 uespLog.DATA_VERSION = 3
@@ -5006,12 +4999,6 @@ function uespLog.DumpItems()
 	
 end
 
-	
---if (uespLog.enableTesting) then
-	--require "test/uespLog_test"
---end
-
---]]
 
 
 

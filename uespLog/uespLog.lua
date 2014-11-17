@@ -136,7 +136,7 @@
 --			- Attempted fix to replace the now remove 'reticleover' target position (uses the player position instead).
 --			- Show item info fixed (updated new function names).
 --
---		- v0.21 - 11 November 2014
+--		- v0.21 - 17 November 2014
 --			- Fixed "/uespdump achievements" due to removed function.
 --			- Fixed issue with facial animations.
 --			- More conversation data is now logged.
@@ -176,7 +176,7 @@ uespLog.enableTesting = false
 --end
 
 uespLog.version = "0.21"
-uespLog.releaseDate = "11 November 2014"
+uespLog.releaseDate = "17 November 2014"
 uespLog.DATA_VERSION = 3
 
 

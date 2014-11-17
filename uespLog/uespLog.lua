@@ -154,6 +154,11 @@
 --					/uespdump globals start [maxlevel]  -- Start iterative dumping
 --					/uespdump globals stop              -- Stop iterative dumping
 --					/uespdump globals status            -- Current status of iterative dump
+--			- Started work on /uespmine for mining item data. Use with caution as it can easily crash
+--			  your client. 
+--			- BUG: Sometimes the saved variable data gets corrupted. This seems to occur during a global
+--			  dump on rare occasions and is most likely an ESO/LUA engine bug. Use "/uespreset all" to
+--			  clear the saved variable data back to an empty state which can usually fix this.
 --
 --
 
@@ -871,26 +876,10 @@ function uespLog.Initialize( self, addOnName )
 	end
 	
 	uespLog.savedVars = {
-		--["items"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", 2, "items", uespLog.DEFAULT_DATA),
-		--["quests"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", 2, "quests", uespLog.DEFAULT_DATA),
-		--["locations"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", 2, "locations", uespLog.DEFAULT_DATA),
-        --["lorebooks"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", 2, "lorebooks", uespLog.DEFAULT_DATA),
-        --["books"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", 2, "books", uespLog.DEFAULT_DATA),
-        --["skyshards"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", 2, "skyshards", uespLog.DEFAULT_DATA),
-        --["chests"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", 2, "chests", uespLog.DEFAULT_DATA),
-        --["fish"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", 2, "fish", uespLog.DEFAULT_DATA),  
-		--["dialog"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", 2, "dialog", uespLog.DEFAULT_DATA),  
-		--["npcs"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", 2, "npcs", uespLog.DEFAULT_DATA),  
-		--["recipes"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", 2, "recipes", uespLog.DEFAULT_DATA),  
-		
 		["all"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "all", uespLog.DEFAULT_DATA),  
-		
 		["achievements"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "achievements", uespLog.DEFAULT_DATA),  
 		["globals"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "globals", uespLog.DEFAULT_DATA),  
-		
 		["info"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "info", uespLog.DEFAULT_DATA),  
-		
-			-- Parameters
 		["settings"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "settings", uespLog.DEFAULT_SETTINGS),  		
 	}
 		
@@ -4507,6 +4496,31 @@ function uespLog.clearAllSections()
 end
 
 
+function uespLog.clearSavedVar()
+	
+	for key1, value1 in pairs(uespLogSavedVars) do  	-- Default
+		for key2, value2 in pairs(value1) do			-- @User
+			for key3, value3 in pairs(value2) do		-- $AccountWide
+				for key4, value4 in pairs(value3) do	-- globals, all, info, settings, ....
+					uespLog.DebugExtraMsg("UESP::Clearing SavedVar Section "..tostring(key4))
+					
+					if (key4 == "settings" or key4 == "info") then
+						-- Keep data
+					elseif (key4 == "globals" or key4 == "all" or key4 == "achievements") then
+						uespLogSavedVars[key1][key2][key3][key4].data = { }
+						uespLogSavedVars[key1][key2][key3][key4].version = uespLog.DATA_VERSION
+					else
+						uespLogSavedVars[key1][key2][key3][key4] = nil  -- Delete unknown section
+					end
+			
+				end
+			end
+		end
+	end
+	
+end
+
+
 SLASH_COMMANDS["/umi"] = SLASH_COMMANDS["/uespmineitems"]
 
 
@@ -4518,6 +4532,7 @@ SLASH_COMMANDS["/uespreset"] = function (cmd)
 		uespLog.clearSection("achievements")
 		uespLog.SetTotalInspiration(0)
 		uespLog.clearAllSections()
+		uespLog.clearSavedVar()
 		uespLog.Msg("UESP::Reset all logged data")
 	elseif (cmd == "globals") then
 		uespLog.clearSection("globals")

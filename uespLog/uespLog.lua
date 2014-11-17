@@ -434,6 +434,7 @@ uespLog.MINEITEMS_AUTODELAY = 2000 -- Delay in ms
 uespLog.MINEITEMS_AUTOLOOPCOUNT = 100
 uespLog.MINEITEMS_AUTOMAXLOOPCOUNT = 200
 uespLog.mineItemsAutoNextItemId = 1
+uespLog.mineItemsEnabled = false
 
 uespLog.DEFAULT_DATA = 
 {
@@ -4395,6 +4396,18 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 	
 	for word in cmd:gmatch("%S+") do table.insert(cmds, word) end
 	
+	if (cmds[1] == "enable") then
+		uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Enabled use of /uespmineitems (/umi)!")
+		uespLog.DebugMsgColor(uespLog.mineColor, ".         WARNING -- This feature is experimental and can crash the")
+		uespLog.DebugMsgColor(uespLog.mineColor, ".         ESO client! Use at your own risk....")
+		uespLog.mineItemsEnabled = true
+		return
+	elseif (not uespLog.mineItemsEnabled) then
+		uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Use of /uespmineitems (/umi) is currently disabled!")
+		uespLog.DebugMsgColor(uespLog.mineColor, ".         Enable with: /uespmineitems enable")
+		return
+	end
+	
 	if (cmds[1] == "start" or cmds[1] == "begin") then
 		
 		if (cmds[2] ~= nil) then
@@ -4415,11 +4428,11 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 	local startNumber = tonumber(cmds[1])
 	
 	if (startNumber == nil) then
-		uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Invalid input to /uespmineitems, expected format:")
-		uespLog.DebugMsgColor(uespLog.mineColor, ".    /uespmineitems [itemId]")
-		uespLog.DebugMsgColor(uespLog.mineColor, ".    /uespmineitems status")
-		uespLog.DebugMsgColor(uespLog.mineColor, ".    /uespmineitems start [startId]")
-		uespLog.DebugMsgColor(uespLog.mineColor, ".    /uespmineitems end")
+		uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Invalid input to /uespmineitems (/umi)! Expected format is one of:")
+		uespLog.DebugMsgColor(uespLog.mineColor, ".              /uespmineitems [itemId]")
+		uespLog.DebugMsgColor(uespLog.mineColor, ".              /uespmineitems status")
+		uespLog.DebugMsgColor(uespLog.mineColor, ".              /uespmineitems start [startId]")
+		uespLog.DebugMsgColor(uespLog.mineColor, ".              /uespmineitems stop")
 		return
 	end
 	

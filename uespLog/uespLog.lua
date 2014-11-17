@@ -3134,7 +3134,7 @@ SLASH_COMMANDS["/uespmail"] = function (cmd)
 	
 	if (displayHelp) then
 		uespLog.Msg("UESP::Format of /uespmail is:")
-		uespLog.Msg(".      /uespmail deletenotify on|off")
+		uespLog.Msg(".      /uespmail deletenotify [on||off]")
 	end
 	
 end

@@ -399,21 +399,23 @@ def FindLuaFunctions_ParseFunction(filename, function, lineNumber, luaFunctions)
     newFunc.fullName = newFunc.namespace + newFunc.namespaceType + newFunc.name
     newFunc.filename = filename
 
+    niceName = CreateNiceFunctionName(newFunc.fullName)
+
     #print "\t\t", newFunc.fullName
 
     if (newFunc.local != ""):
         return newFunc
 
-    if (newFunc.fullName in luaFunctions):
+    if (niceName in luaFunctions):
         totalLuaDuplicates += 1
-        print "\tDuplicate function " + newFunc.fullName + " found!"
-        print "\t\tExisting Found in " + luaFunctions[newFunc.fullName].filename + " Line " + luaFunctions[newFunc.fullName].line
+        print "\tDuplicate function " + niceName + " found!"
+        print "\t\tExisting Found in " + luaFunctions[niceName].filename + " Line " + luaFunctions[niceName].line
         print "\t\t     New Found in " + newFunc.filename + " Line " + newFunc.line
-        print "\t\tExisting Def: " + luaFunctions[newFunc.fullName].fullString
+        print "\t\tExisting Def: " + luaFunctions[niceName].fullString
         print "\t\t     New Def: " + newFunc.fullString
         return None
 
-    luaFunctions[newFunc.fullName] = newFunc
+    luaFunctions[niceName] = newFunc
     return newFunc
 
 
@@ -610,7 +612,7 @@ def CreateFunctionCallHTML_Footer(outFile):
 
 
 def CreateNiceFunctionName(funcName):
-    return funcName.replace(":", ";")
+    return funcName.replace(":", ".")
 
 
 def CreateFunctionFilename(funcName):

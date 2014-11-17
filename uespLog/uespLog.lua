@@ -4502,7 +4502,7 @@ function uespLog.clearSavedVar()
 		for key2, value2 in pairs(value1) do			-- @User
 			for key3, value3 in pairs(value2) do		-- $AccountWide
 				for key4, value4 in pairs(value3) do	-- globals, all, info, settings, ....
-					uespLog.DebugExtraMsg("UESP::Clearing SavedVar Section "..tostring(key4))
+					uespLog.DebugExtraMsg("UESP::Clearing saved data section "..tostring(key4))
 					
 					if (key4 == "settings" or key4 == "info") then
 						-- Keep data

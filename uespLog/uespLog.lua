@@ -166,6 +166,8 @@
 --			  clear the saved variable data back to an empty state which can usually fix this.
 --			- Added short initialization message on startup.
 --
+--		- v0.22 -
+--			- Added "/uespmail deletenotify on|off" to turn the mail delete notification prompt on/off.
 --
 
 
@@ -176,7 +178,6 @@ uespLog = { }
 uespLog.version = "0.21"
 uespLog.releaseDate = "17 November 2014"
 uespLog.DATA_VERSION = 3
-
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
 uespLog.MAX_LOGSTRING_LENGTH = 1900
@@ -455,6 +456,7 @@ uespLog.DEFAULT_SETTINGS =
 		["craftIngredient"] = true,
 		["craftAutoLoot"] = false,
 		["craftAutoLootMinProvLevel"] = 1,
+		["mailDeleteNotify"] = false,
 	}
 }
 
@@ -500,6 +502,50 @@ function uespLog.AddTotalInspiration(value)
 	end
 	
 	uespLog.savedVars.settings.data.totalInspiration = uespLog.savedVars.settings.data.totalInspiration + value
+end
+
+
+function uespLog.IsMailDeleteNotify()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	return uespLog.savedVars.settings.data.mailDeleteNotify
+end
+
+
+function uespLog.SetMailDeleteNotify(flag)
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	uespLog.savedVars.settings.data.mailDeleteNotify = flag
+end	
+
+
+function uespLog.NotifyDeleteMailAdded (self)
+
+	if not self.mailId or not self:IsMailDeletable() then
+		return
+	end
+
+	local numAttachments, attachedMoney = GetMailAttachmentInfo(self.mailId)
+	self.pendingDelete = true
+
+	if numAttachments > 0 and attachedMoney > 0 then
+		ZO_Dialogs_ShowDialog("DELETE_MAIL_ATTACHMENTS_AND_MONEY")
+	elseif numAttachments > 0 then
+		ZO_Dialogs_ShowDialog("DELETE_MAIL_ATTACHMENTS")
+	elseif attachedMoney > 0 then
+		ZO_Dialogs_ShowDialog("DELETE_MAIL_MONEY")
+	elseif uespLog.IsMailDeleteNotify() then
+		ZO_Dialogs_ShowDialog("DELETE_MAIL")
+	else
+		self.confirmedDelete = false
+		self:ConfirmDelete()
+	end
+		
 end
 
 
@@ -1001,6 +1047,10 @@ function uespLog.Initialize( self, addOnName )
 	ALCHEMY.tooltip:GetNamedChild("Icon"):SetHandler("OnMouseUp", OnTooltipMouseUp)
 	ENCHANTING.resultTooltip:SetHandler("OnMouseUp", uespLog.EnchantingOnTooltipMouseUp)
 	ENCHANTING.resultTooltip:GetNamedChild("Icon"):SetHandler("OnMouseUp", OnTooltipMouseUp)
+	
+	uespLog.Old_NotifyDeleteMailAdded = MAIL_INBOX.Delete
+	MAIL_INBOX.Delete = uespLog.NotifyDeleteMailAdded 
+	MAIL_INBOX:RefreshData()
 	
 	zo_callLater(uespLog.InitTradeData, 1000) 
 	zo_callLater(uespLog.outputInitMessage, 500)
@@ -3055,6 +3105,36 @@ SLASH_COMMANDS["/uesplog"] = function (cmd)
 		uespLog.Msg("Turned UESP data logging off.")
 	elseif (cmd == "") then
 		uespLog.Msg("UESP data logging is currently " .. uespLog.BoolToOnOff(uespLog.IsLogData()) .. ". Use 'on' or 'off' to set!")
+	end
+	
+end
+
+
+SLASH_COMMANDS["/uespmail"] = function (cmd)
+	local cmds = { }
+	local displayHelp = false
+	
+	for i in string.gmatch(cmd, "%S+") do cmds[#cmds + 1] = i end
+	
+	if (#cmds <= 0 or cmds[1] == "help") then
+		displayHelp = true
+	elseif (cmds[1] == "deletenotify") then
+		if (cmds[2] == "on") then
+			uespLog.SetMailDeleteNotify(true)
+			uespLog.Msg("Turned UESP delete mail notify on.")
+		elseif (cmds[2] == "off") then
+			uespLog.SetMailDeleteNotify(false)
+			uespLog.Msg("Turned UESP delete mail notify off.")
+		elseif (cmds[3] == "") then
+			uespLog.Msg("UESP delete mail notify is currently " .. uespLog.BoolToOnOff(uespLog.IsMailDeleteNotify()) .. ". Use 'on' or 'off' to set!")
+		else
+			displayHelp = true
+		end
+	end
+	
+	if (displayHelp) then
+		uespLog.Msg("UESP::Format of /uespmail is:")
+		uespLog.Msg(".      /uespmail deletenotify on|off")
 	end
 	
 end

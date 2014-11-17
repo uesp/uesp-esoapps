@@ -393,6 +393,48 @@ uespLog.currentConversationData = {
     zone = "",
 }
 
+uespLog.MINEITEM_LEVELS = {
+	{  1, 49,   2,   6, "dropped" },
+	{  1, 49,   7,   9, "dropped" },
+	{  1,  1,  30,  34, "crafted" },
+	{  4,  4,  25,  29, "crafted" },
+	{  6, 49,  20,  24, "crafted" },
+	{ 50, 50,  39,  48, "quest" },
+	{ 50, 50,  51,  60, "dropped" },
+	{ 50, 50,  61,  70, "dropped" },
+	{ 50, 50,  81,  90, "dropped" },
+	{ 50, 50,  91, 100, "dropped" },
+	{ 50, 50, 101, 110, "dropped" },
+	{ 50, 50, 111, 120, "dropped/sold" },
+	{ 50, 50, 125, 134, "crafted" },
+	{ 50, 50, 135, 144, "crafted" },
+	{ 50, 50, 145, 154, "crafted" },
+	{ 50, 50, 155, 164, "crafted" },
+	{ 50, 50, 165, 174, "crafted" },
+	{ 50, 50, 235, 235, "store" },
+	{ 50, 50, 236, 240, "crafted" },
+	{ 50, 50, 241, 245, "dropped" },
+	{ 50, 50, 253, 253, "store" },
+	{ 50, 50, 254, 258, "crafted" },
+	{ 50, 50, 259, 263, "dropped" },
+	{ 50, 50, 272, 276, "crafted" },
+	{ 50, 50, 277, 281, "dropped" },
+	{ 50, 50, 290, 294, "crafted" },
+	{ 50, 50, 295, 299, "dropped" },
+	{ 50, 50, 308, 312, "crafted" },
+	{ 50, 50, 313, 317, "dropped" },
+}
+
+uespLog.mineItemBadCount = 0
+uespLog.mineItemCount = 0
+uespLog.mineUpdateItemCount = 0
+uespLog.mineNextItemId = 1
+uespLog.isAutoMiningItems = false
+uespLog.MINEITEMS_AUTODELAY = 2000 -- Delay in ms
+uespLog.MINEITEMS_AUTOLOOPCOUNT = 100
+uespLog.MINEITEMS_AUTOMAXLOOPCOUNT = 200
+uespLog.mineItemsAutoNextItemId = 1
+
 uespLog.DEFAULT_DATA = 
 {
 	data = {}
@@ -4117,7 +4159,7 @@ uespLog.IsIgnoredNPC = function (name)
 end
 
 
-uespLog.clearSection = function(section)
+uespLog.ClearSavedVarSection = function(section)
 
 	if (uespLog.savedVars[section] ~= nil) then
 		uespLog.savedVars[section].data = { }
@@ -4126,103 +4168,10 @@ uespLog.clearSection = function(section)
 end
 
 
-uespLog.MINEITEM_LEVELS = {
-	{  1, 49,   2,   6, "dropped" },
-	{  1, 49,   7,   9, "dropped" },
-	{  1,  1,  30,  34, "crafted" },
-	{  4,  4,  25,  29, "crafted" },
-	{  6, 49,  20,  24, "crafted" },
-	{ 50, 50,  39,  48, "quest" },
-	{ 50, 50,  51,  60, "dropped" },
-	{ 50, 50,  61,  70, "dropped" },
-	{ 50, 50,  81,  90, "dropped" },
-	{ 50, 50,  91, 100, "dropped" },
-	{ 50, 50, 101, 110, "dropped" },
-	{ 50, 50, 111, 120, "dropped/sold" },
-	{ 50, 50, 125, 134, "crafted" },
-	{ 50, 50, 135, 144, "crafted" },
-	{ 50, 50, 145, 154, "crafted" },
-	{ 50, 50, 155, 164, "crafted" },
-	{ 50, 50, 165, 174, "crafted" },
-	{ 50, 50, 235, 235, "store" },
-	{ 50, 50, 236, 240, "crafted" },
-	{ 50, 50, 241, 245, "dropped" },
-	{ 50, 50, 253, 253, "store" },
-	{ 50, 50, 254, 258, "crafted" },
-	{ 50, 50, 259, 263, "dropped" },
-	{ 50, 50, 272, 276, "crafted" },
-	{ 50, 50, 277, 281, "dropped" },
-	{ 50, 50, 290, 294, "crafted" },
-	{ 50, 50, 295, 299, "dropped" },
-	{ 50, 50, 308, 312, "crafted" },
-	{ 50, 50, 313, 317, "dropped" },
-}
-
-
 function uespLog.IsValidItemLink (itemLink)
 	return (GetItemLinkItemType(itemLink) > 0)
 end
 
---[[
-ITEMTYPE_ADDITIVE
-ITEMTYPE_ALCHEMY_BASE
-ITEMTYPE_ARMOR
-ITEMTYPE_ARMOR_BOOSTER
-ITEMTYPE_ARMOR_TRAIT
-ITEMTYPE_AVA_REPAIR
-ITEMTYPE_BLACKSMITHING_BOOSTER
-ITEMTYPE_BLACKSMITHING_MATERIAL
-ITEMTYPE_BLACKSMITHING_RAW_MATERIAL
-ITEMTYPE_CLOTHIER_BOOSTER
-ITEMTYPE_CLOTHIER_MATERIAL
-ITEMTYPE_CLOTHIER_RAW_MATERIAL
-ITEMTYPE_COLLECTIBLE
-
-ITEMTYPE_COSTUME
-ITEMTYPE_DISGUISE
-
-ITEMTYPE_ENCHANTING_RUNE
-ITEMTYPE_ENCHANTMENT_BOOSTER
-ITEMTYPE_FLAVORING
-
-ITEMTYPE_GLYPH_ARMOR
-ITEMTYPE_GLYPH_JEWELRY
-ITEMTYPE_GLYPH_WEAPON
-ITEMTYPE_INGREDIENT
-ITEMTYPE_LOCKPICK
-ITEMTYPE_LURE
-ITEMTYPE_NONE
-ITEMTYPE_PLUG
-
-ITEMTYPE_RAW_MATERIAL
-ITEMTYPE_REAGENT
-ITEMTYPE_RECIPE
-ITEMTYPE_SCROLL
-ITEMTYPE_SIEGE
-ITEMTYPE_SOUL_GEM
-ITEMTYPE_SPICE
-ITEMTYPE_STYLE_MATERIAL
-ITEMTYPE_TABARD
-ITEMTYPE_TOOL
-ITEMTYPE_TRASH
-ITEMTYPE_TROPHY
-ITEMTYPE_WEAPON
-ITEMTYPE_WEAPON_BOOSTER
-ITEMTYPE_WEAPON_TRAIT
-ITEMTYPE_WOODWORKING_BOOSTER
-ITEMTYPE_WOODWORKING_MATERIAL
-ITEMTYPE_WOODWORKING_RAW_MATERIAL
---]]
-
-uespLog.MineItemBadCount = 0
-uespLog.MineItemCount = 0
-uespLog.MineUpdateItemCount = 0
-uespLog.MineNextItemId = 1
-uespLog.IsAutoMiningItems = false
-uespLog.MineItemsAutoDelay = 2000 -- Delay in ms
-uespLog.MineItemsAutoLoopCount = 100
-uespLog.MineItemsAutoMaxLoopCount = 200
-uespLog.MineItemsAutoNextItemId = 1
 
 function uespLog.MineItemIterateLevels (itemId)
 	local i, value
@@ -4243,7 +4192,7 @@ function uespLog.MineItemIterateLevels (itemId)
 		for level = levelStart, levelEnd do
 			for quality = qualityStart, qualityEnd do
 				setCount = setCount + 1
-				uespLog.MineItemCount = uespLog.MineItemCount + 1
+				uespLog.mineItemCount = uespLog.mineItemCount + 1
 				
 				itemLink = uespLog.MakeItemLinkEx( { itemId = itemId, level = level, quality = quality, style = 1 } )
 				
@@ -4252,11 +4201,11 @@ function uespLog.MineItemIterateLevels (itemId)
 					uespLog.LogItemLink(itemLink, "mineitem", extraData)
 				else
 					badItems = badItems + 1
-					uespLog.MineItemBadCount = uespLog.MineItemBadCount + 1
+					uespLog.mineItemBadCount = uespLog.mineItemBadCount + 1
 				end				
 				
-				if (uespLog.MineItemCount % uespLog.MineUpdateItemCount == 0) then
-					uespLog.DebugMsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.MineItemCount).." items, "..tostring(uespLog.MineItemBadCount).." bad...")
+				if (uespLog.mineItemCount % uespLog.mineUpdateItemCount == 0) then
+					uespLog.DebugMsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad...")
 				end
 			end
 		end
@@ -4272,16 +4221,16 @@ function uespLog.MineItemIterateOther (itemId)
 	local extraData = uespLog.GetTimeData()
 	
 	itemLink = uespLog.MakeItemLinkEx( { itemId = itemId, level = 1, quality = 1, style = 0 } )
-	uespLog.MineItemCount = uespLog.MineItemCount + 1
+	uespLog.mineItemCount = uespLog.mineItemCount + 1
 	
-	if (uespLog.MineItemCount % uespLog.MineUpdateItemCount == 0) then
-		uespLog.DebugMsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.MineItemCount).." items, "..tostring(uespLog.MineItemBadCount).." bad...")
+	if (uespLog.mineItemCount % uespLog.mineUpdateItemCount == 0) then
+		uespLog.DebugMsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad...")
 	end
 	
 	if (uespLog.IsValidItemLink(itemLink)) then
 		uespLog.LogItemLink(itemLink, "mineitem", extraData)
 	else
-		uespLog.MineItemBadCount = uespLog.MineItemBadCount + 1
+		uespLog.mineItemBadCount = uespLog.mineItemBadCount + 1
 		return 1, 1
 	end
 	
@@ -4328,8 +4277,8 @@ function uespLog.MineItems (startId, endId)
 	local badCount = 0
 	local itemId
 	
-	uespLog.MineItemBadCount = 0
-	uespLog.MineItemCount = 0
+	uespLog.mineItemBadCount = 0
+	uespLog.mineItemCount = 0
 	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Mining items from IDs "..tostring(startId).." to "..tostring(endId))
 	
 	logData = { }
@@ -4342,102 +4291,102 @@ function uespLog.MineItems (startId, endId)
 		uespLog.MineItemIterate(itemId)
 	end
 	
-	uespLog.MineNextItemId = endId + 1
+	uespLog.mineNextItemId = endId + 1
 	
 	logData = { }
 	logData.event = "mineItem::End"
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
-	uespLog.DebugMsgColor(uespLog.mineColor, ".    Finished Mining "..tostring(uespLog.MineItemCount).." items, "..tostring(uespLog.MineItemBadCount).." bad")
+	uespLog.DebugMsgColor(uespLog.mineColor, ".    Finished Mining "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad")
 end
 
 
 function uespLog.MineItemsAutoLoop ()
-	local initItemCount = uespLog.MineItemCount
-	local initBadCount = uespLog.MineItemBadCount
-	local initItemId = uespLog.MineItemsAutoNextItemId
+	local initItemCount = uespLog.mineItemCount
+	local initBadCount = uespLog.mineItemBadCount
+	local initItemId = uespLog.mineItemsAutoNextItemId
 	local itemId
 	local i
 	
-	if (not uespLog.IsAutoMiningItems) then
+	if (not uespLog.isAutoMiningItems) then
 		return
 	end
 	
-	for i = 1, uespLog.MineItemsAutoLoopCount do
-		itemId = uespLog.MineItemsAutoNextItemId
-		uespLog.MineItemsAutoNextItemId = uespLog.MineItemsAutoNextItemId + 1
+	for i = 1, uespLog.MINEITEMS_AUTOLOOPCOUNT do
+		itemId = uespLog.mineItemsAutoNextItemId
+		uespLog.mineItemsAutoNextItemId = uespLog.mineItemsAutoNextItemId + 1
 		
 		uespLog.MineItemIterate(itemId)
 		
-		if (uespLog.MineItemCount - initItemCount > uespLog.MineItemsAutoMaxLoopCount) then
+		if (uespLog.mineItemCount - initItemCount > uespLog.MINEITEMS_AUTOMAXLOOPCOUNT) then
 			break
 		end
 	end
 
 		-- Chain the call to keep going if required
-	if (uespLog.IsAutoMiningItems) then
-		zo_callLater(uespLog.MineItemsAutoLoop, uespLog.MineItemsAutoDelay)
+	if (uespLog.isAutoMiningItems) then
+		zo_callLater(uespLog.MineItemsAutoLoop, uespLog.MINEITEMS_AUTODELAY)
 	end
 	
-	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Auto-mined "..tostring(uespLog.MineItemCount - initItemCount).." items, "..
-			tostring(uespLog.MineItemBadCount - initBadCount).." bad, with IDs "..tostring(initItemId).."-"..tostring(itemId)..
-			" (Total "..tostring(uespLog.MineItemCount).." items)")	
+	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Auto-mined "..tostring(uespLog.mineItemCount - initItemCount).." items, "..
+			tostring(uespLog.mineItemBadCount - initBadCount).." bad, with IDs "..tostring(initItemId).."-"..tostring(itemId)..
+			" (Total "..tostring(uespLog.mineItemCount).." items)")	
 end
 
 
 function uespLog.MineItemsAutoStart ()
 	local logData
 
-	if (uespLog.IsAutoMiningItems) then
+	if (uespLog.isAutoMiningItems) then
 		return
 	end
 	
-	uespLog.MineItemBadCount = 0
-	uespLog.MineItemCount = 0
+	uespLog.mineItemBadCount = 0
+	uespLog.mineItemCount = 0
 	
 	logData = { }
-	logData.itemId = uespLog.MineItemsAutoNextItemId
+	logData.itemId = uespLog.mineItemsAutoNextItemId
 	logData.event = "mineItem::AutoStart"
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
-	uespLog.IsAutoMiningItems = true
-	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Started auto-mining items at ID "..tostring(uespLog.MineItemsAutoNextItemId))
+	uespLog.isAutoMiningItems = true
+	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Started auto-mining items at ID "..tostring(uespLog.mineItemsAutoNextItemId))
 	
-	zo_callLater(uespLog.MineItemsAutoLoop, uespLog.MineItemsAutoDelay)
+	zo_callLater(uespLog.MineItemsAutoLoop, uespLog.MINEITEMS_AUTODELAY)
 end
 
 
 function uespLog.MineItemsAutoEnd ()
 	local logData
 
-	if (not uespLog.IsAutoMiningItems) then
+	if (not uespLog.isAutoMiningItems) then
 		return
 	end
 	
-	uespLog.IsAutoMiningItems = false
+	uespLog.isAutoMiningItems = false
 	
 	logData = { }
-	logData.itemId = uespLog.MineItemsAutoNextItemId
-	logData.itemCount = uespLog.MineItemCount
-	logData.badCount = uespLog.MineItemBadCount
+	logData.itemId = uespLog.mineItemsAutoNextItemId
+	logData.itemCount = uespLog.mineItemCount
+	logData.badCount = uespLog.mineItemBadCount
 	logData.event = "mineItem::AutoEnd"
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
-	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Stopped auto-mining items at ID "..tostring(uespLog.MineItemsAutoNextItemId))
-	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Total auto-mined "..tostring(uespLog.MineItemCount).." items, "..tostring(uespLog.MineItemBadCount).." bad")	
+	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Stopped auto-mining items at ID "..tostring(uespLog.mineItemsAutoNextItemId))
+	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Total auto-mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad")	
 end
 
 
 function uespLog.MineItemsAutoStatus ()
 	
-	if (uespLog.IsAutoMiningItems) then
+	if (uespLog.isAutoMiningItems) then
 		uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Currently auto-mining items.")
-		uespLog.DebugMsgColor(uespLog.mineColor, "UESP:Total auto-mined "..tostring(uespLog.MineItemCount).." items, "..tostring(uespLog.MineItemBadCount).." bad")	
+		uespLog.DebugMsgColor(uespLog.mineColor, "UESP:Total auto-mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad")	
 	else
 		uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Not currently auto-mining items.")
 	end
 	
-	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Next auto-mine itemId is "..tostring(uespLog.MineItemsAutoNextItemId))
+	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Next auto-mine itemId is "..tostring(uespLog.mineItemsAutoNextItemId))
 end
 
 
@@ -4449,7 +4398,7 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 	if (cmds[1] == "start" or cmds[1] == "begin") then
 		
 		if (cmds[2] ~= nil) then
-			uespLog.MineItemsAutoNextItemId = tonumber(cmds[2])
+			uespLog.mineItemsAutoNextItemId = tonumber(cmds[2])
 		end
 		
 		uespLog.MineItemsAutoStart()
@@ -4462,7 +4411,7 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		return
 	end
 	
-	if (cmds[1] == nil) then cmds[1] = uespLog.MineNextItemId end
+	if (cmds[1] == nil) then cmds[1] = uespLog.mineNextItemId end
 	local startNumber = tonumber(cmds[1])
 	
 	if (startNumber == nil) then
@@ -4479,7 +4428,7 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 end
 
 
-function uespLog.clearAllSections()
+function uespLog.ClearAllSavedVarSections()
 
 	for key, value in pairs(uespLog.savedVars) do
 	
@@ -4496,7 +4445,7 @@ function uespLog.clearAllSections()
 end
 
 
-function uespLog.clearSavedVar()
+function uespLog.ClearRootSavedVar()
 	
 	for key1, value1 in pairs(uespLogSavedVars) do  	-- Default
 		for key2, value2 in pairs(value1) do			-- @User
@@ -4527,18 +4476,18 @@ SLASH_COMMANDS["/umi"] = SLASH_COMMANDS["/uespmineitems"]
 SLASH_COMMANDS["/uespreset"] = function (cmd)
 	
 	if (cmd == "all") then
-		uespLog.clearSection("all")
-		uespLog.clearSection("globals")
-		uespLog.clearSection("achievements")
+		uespLog.ClearSavedVarSection("all")
+		uespLog.ClearSavedVarSection("globals")
+		uespLog.ClearSavedVarSection("achievements")
 		uespLog.SetTotalInspiration(0)
-		uespLog.clearAllSections()
-		uespLog.clearSavedVar()
+		uespLog.ClearAllSavedVarSections()
+		uespLog.ClearRootSavedVar()
 		uespLog.Msg("UESP::Reset all logged data")
 	elseif (cmd == "globals") then
-		uespLog.clearSection("globals")
+		uespLog.ClearSavedVarSection("globals")
 		uespLog.Msg("UESP::Reset logged global data")
 	elseif (cmd == "achievements") then
-		uespLog.clearSection("achievements")
+		uespLog.ClearSavedVarSection("achievements")
 		uespLog.Msg("UESP::Reset logged achievement data")
 	elseif (cmd == "inspiration") then
 		uespLog.SetTotalInspiration(0)

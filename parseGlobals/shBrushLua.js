@@ -5,11 +5,12 @@ SyntaxHighlighter.brushes.Lua = function()
 
 	this.regexList = [
 		{ regex: new RegExp('--\\[\\[[\\s\\S]*?\\]\\]--', 'gm'),	css: 'comments' },
-		{ regex: new RegExp('--[^\\[]{2}.*$', 'gm'),			    css: 'comments' },	// one line comments
+		{ regex: new RegExp('--[^\\[\n]?.*$', 'gm'),			    css: 'comments' },	// one line comments
 		{ regex: SyntaxHighlighter.regexLib.doubleQuotedString,     css: 'string' },    // strings
 		{ regex: SyntaxHighlighter.regexLib.singleQuotedString,     css: 'string' },    // strings
 		{ regex: new RegExp(this.getKeywords(keywords), 'gm'),		css: 'keyword' },	// keyword
 		{ regex: new RegExp(this.getKeywords(funcs), 'gm'),		    css: 'func' },		// functions
+		{ regex: new RegExp('[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?', 'gm'),	css: 'number' },	// numbers		
 		];
 }
 

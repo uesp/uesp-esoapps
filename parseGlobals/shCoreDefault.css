@@ -170,7 +170,7 @@
   background: none !important;
 }
 .syntaxhighlighter.printing .line .number {
-  color: #bbbbbb !important;
+  color: #bb3333 !important;
 }
 .syntaxhighlighter.printing .line .content {
   color: black !important;
@@ -289,6 +289,10 @@
 }
 .syntaxhighlighter .string, .syntaxhighlighter .string a {
   color: blue !important;
+}
+
+.syntaxhighlighter .number {
+  color: #bb3333;
 }
 .syntaxhighlighter .keyword {
   color: #006699 !important;

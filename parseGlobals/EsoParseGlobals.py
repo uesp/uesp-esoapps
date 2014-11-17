@@ -345,7 +345,7 @@ def CreateGlobalHTML_Footer(globalData, outFile, types):
 
 def CreateGlobalHTML(globalData, filename, types = None):
     path = ntpath.dirname(filename)
-    shutil.copyfile("esoglobaldata.css", path + "\\esoglobaldata.css")
+    shutil.copyfile("esoglobaldata.css", path + "/esoglobaldata.css")
 
     with open (filename, "w") as outFile:
         CreateGlobalHTML_Header(globalData, outFile, types)
@@ -504,17 +504,20 @@ def FindLuaFunctions(searchPath):
     totalFiles = 0
 
     for subdir, dirs, files in os.walk(searchPath):
-        subPath = subdir + "\\"
+        subPath = subdir.replace("\\", "/") + "/"
 
-        if ("\\gamepad\\" in subPath or
-            "\\pregame\\" in subPath or
-            "\\pregamelocalization\\" in subPath):
-            print "\tSkipping " + subdir + "..."
+        if ("/gamepad/" in subPath or
+            "/pregame/" in subPath or
+            "/pregamelocalization/" in subPath):
+            print "\tSkipping " + subPath + "..."
             totalIgnoredLuaFiles += 1
             continue
         
         for filename in files:
-            if (FindLuaFunctions_CheckFile(subPath + filename, luaFunctions)):
+            fullFilename = subPath + filename
+            fullFilename = fullFilename.replace("\\", "/")
+            
+            if (FindLuaFunctions_CheckFile(fullFilename, luaFunctions)):
                 totalFiles += 1
             
     print "Found " + str(totalFiles) + " LUA files"
@@ -531,12 +534,14 @@ def DumpLuaFunctionCall(outFile, funcName, funcCalls):
     outFile.write("()\n")
 
     for call in funcCalls:
+        relFile = os.path.relpath(call.filename, LUA_ROOT_PATH).replace("\\", "/")
+        
         outFile.write("\t")
         outFile.write(call.fullString)
         #outFile.write("\n")
         #outFile.write("\t\t")
         outFile.write(" -- ")
-        outFile.write(call.filename)
+        outFile.write(relFile)
         outFile.write(":")
         outFile.write(call.line)
         outFile.write("\n")        
@@ -575,7 +580,7 @@ def CreateFunctionCallHTML_Header(outFile, funcName):
         outFile.write("No function definition found!\n")
     else:
         
-        outFile.write("Function definition found in {0}\n".format(CreateLuaFileLink(funcData.filename, funcData.line, "..\\")))
+        outFile.write("Function definition found in {0}\n".format(CreateLuaFileLink(funcData.filename, funcData.line, "../")))
                       
     #outFile.write("<br /><br />\n")
     return
@@ -590,7 +595,7 @@ def CreateFunctionCallHTML_Call(outFile, funcName, funcCall):
     for call in funcCall:
         outFile.write("\t<li>\n")
         #outFile.write("<div class=\"esofc_filename\">{0}:{1}</div>\n".format(call.filename, call.line))
-        outFile.write("<div class=\"esofc_filename\">{0}</div>\n".format(CreateLuaFileLink(call.filename, call.line, "..\\")))
+        outFile.write("<div class=\"esofc_filename\">{0}</div>\n".format(CreateLuaFileLink(call.filename, call.line, "../")))
         outFile.write(" -- <div class=\"esofc_record\">{0}</div>\n".format(call.fullString))
         outFile.write("\t</li>\n")
 
@@ -620,7 +625,7 @@ def CreateFunctionFilename(funcName):
 
 
 def GetFunctionLinkName(funcName):
-    filename = "functioncalls\\" + CreateNiceFunctionName(funcName)
+    filename = "functioncalls/" + CreateNiceFunctionName(funcName)
     
     if filename.endswith("()"):
         filename = filename[:-2]
@@ -630,8 +635,8 @@ def GetFunctionLinkName(funcName):
 
 
 def CreateLuaFileLink(filename, line, relPath = ""):
-    baseFilename = os.path.relpath(filename, LUA_ROOT_PATH)
-    link = "<a href=\"" + relPath + "src\\" + baseFilename + ".html#" + str(line) + "\">" + baseFilename + ":" + str(line) + "</a>"
+    baseFilename = os.path.relpath(filename, LUA_ROOT_PATH).replace("\\", "/")
+    link = "<a href=\"" + relPath + "src/" + baseFilename + ".html#" + str(line) + "\">" + baseFilename + ":" + str(line) + "</a>"
     return link
 
 
@@ -656,12 +661,12 @@ def CreateFunctionCallHTML(path):
 def CreateLuaSource_Header(outFile, filename, relPath):
     outFile.write("\t<head>\n")
     outFile.write("\t\t<title>UESP:ESO Data -- {0}</title>\n".format(filename))
-    outFile.write("\t\t<link rel=\"stylesheet\" href=\"{0}\\esoluafile.css\" type=\"text/css\" />\n".format(relPath))
-    outFile.write("\t\t<link rel=\"stylesheet\" href=\"{0}\\shCore.css\" type=\"text/css\" />\n".format(relPath))
-    outFile.write("\t\t<link rel=\"stylesheet\" href=\"{0}\\shCoreDefault.css\" type=\"text/css\" />\n".format(relPath))
-    outFile.write("\t\t<script type=\"text/javascript\" src=\"{0}\\shCore.js\"></script>\n".format(relPath))
-    outFile.write("\t\t<script type=\"text/javascript\" src=\"{0}\\shBrushLua.js\"></script>\n".format(relPath))
-    outFile.write("\t\t<script type=\"text/javascript\" src=\"{0}\\jquery.js\"></script>\n".format(relPath))
+    outFile.write("\t\t<link rel=\"stylesheet\" href=\"{0}/esoluafile.css\" type=\"text/css\" />\n".format(relPath))
+    outFile.write("\t\t<link rel=\"stylesheet\" href=\"{0}/shCore.css\" type=\"text/css\" />\n".format(relPath))
+    outFile.write("\t\t<link rel=\"stylesheet\" href=\"{0}/shCoreDefault.css\" type=\"text/css\" />\n".format(relPath))
+    outFile.write("\t\t<script type=\"text/javascript\" src=\"{0}/shCore.js\"></script>\n".format(relPath))
+    outFile.write("\t\t<script type=\"text/javascript\" src=\"{0}/shBrushLua.js\"></script>\n".format(relPath))
+    outFile.write("\t\t<script type=\"text/javascript\" src=\"{0}/jquery.js\"></script>\n".format(relPath))
     outFile.write("\t</head>\n")
     outFile.write("<body>\n")
     outFile.write("<h1 class=\"esofc_title\">ESO LUA File: {0}</h1>\n".format(filename))
@@ -688,7 +693,7 @@ def CreateLuaSource_Footer(outFile):
     #outFile.write("window.location.hash = '';\n")
     outFile.write("setTimeout(function() { $('.gutter .line').each(function(i) {\n")
     outFile.write("\t $(this).attr('id', $(this).text()); \n")
-    outFile.write("}); $('html,body').animate({scrollTop: $('#'+initialHash).offset().top},'slow'); }, 500);\n")
+    outFile.write("}); if (initialHash) $('html,body').animate({scrollTop: $('#'+initialHash).offset().top},'fast'); }, 500);\n")
     outFile.write("</script>\n")
     outFile.write("<hr />\n")
     outFile.write("<i>")
@@ -727,7 +732,7 @@ def CreateLuaSource(inputPath, outputPath):
     shutil.copyfile("esoluafile.css", OUTPUT_PATH + "esoluafile.css")
     
     for root, dirs, files in os.walk(inputPath):
-        subPath = root + "\\"
+        subPath = root.replace("\\", "/") + "/"
 
         subDir = os.path.relpath(subPath, inputPath)
         outputSubDir = os.path.join(outputPath, subDir)
@@ -740,7 +745,10 @@ def CreateLuaSource(inputPath, outputPath):
             outputFilename = os.path.join(outputSubDir, filename)
             shutil.copyfile(subPath + filename, outputFilename)
 
-            relPath = os.path.join("..\\", os.path.relpath(outputPath, os.path.dirname(outputFilename)))
+            relPath = os.path.join("../", os.path.relpath(outputPath, os.path.dirname(outputFilename)))
+            relPath = relPath.replace("\\", "/")
+            relFilename = relFilename.replace("\\", "/")
+            outputFilename = outputFilename.replace("\\", "/")
 
             if (filename.endswith(".lua")):
                 CreateLuaSource_LUA(outputFilename, relFilename, relPath)
@@ -768,14 +776,14 @@ print "Parsed into " + str(len(globalData)) + " root global objects"
 
 DumpGlobalData(globalData, OUTPUT_PATH + "test.txt")
 
-CreateFunctionCallHTML(OUTPUT_PATH + "functioncalls\\")
+CreateFunctionCallHTML(OUTPUT_PATH + "functioncalls/")
 
-CreateGlobalHTML(globalData, OUTPUT_PATH + "test_all.html")
-CreateGlobalHTML(globalData, OUTPUT_PATH + "test_func.html", [ "function" ])
-CreateGlobalHTML(globalData, OUTPUT_PATH + "test_var.html", [ "number", "string", "boolean" ] )
-CreateGlobalHTML(globalData, OUTPUT_PATH + "test_data.html", [ "userdata", "table" ])
+CreateGlobalHTML(globalData, OUTPUT_PATH + "all.html")
+CreateGlobalHTML(globalData, OUTPUT_PATH + "func.html", [ "function" ])
+CreateGlobalHTML(globalData, OUTPUT_PATH + "var.html", [ "number", "string", "boolean" ] )
+CreateGlobalHTML(globalData, OUTPUT_PATH + "data.html", [ "userdata", "table" ])
 
-CreateLuaSource(LUA_ROOT_PATH, OUTPUT_PATH + "src\\")
+CreateLuaSource(LUA_ROOT_PATH, OUTPUT_PATH + "src/")
 
 
         

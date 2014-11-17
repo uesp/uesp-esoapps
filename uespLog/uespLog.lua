@@ -159,6 +159,7 @@
 --			- BUG: Sometimes the saved variable data gets corrupted. This seems to occur during a global
 --			  dump on rare occasions and is most likely an ESO/LUA engine bug. Use "/uespreset all" to
 --			  clear the saved variable data back to an empty state which can usually fix this.
+--			- Added short initialization message on startup.
 --
 --
 
@@ -1004,12 +1005,18 @@ function uespLog.Initialize( self, addOnName )
 	ENCHANTING.resultTooltip:GetNamedChild("Icon"):SetHandler("OnMouseUp", OnTooltipMouseUp)
 	
 	zo_callLater(uespLog.InitTradeData, 1000) 
-	
+	zo_callLater(uespLog.outputInitMessage, 500)
 end
-
 
 	--	Hook initialization onto the ADD_ON_LOADED event  
 EVENT_MANAGER:RegisterForEvent("uespLog" , EVENT_ADD_ON_LOADED, uespLog.Initialize)
+
+
+function uespLog.outputInitMessage ()
+	local flagStr = uespLog.BoolToOnOff(uespLog.IsDebug())
+	if (uespLog.IsDebugExtra()) then flagStr = "EXTRA" end
+	uespLog.Msg("UESP::Add-on initialized...debug output is currently "..tostring(flagStr)..".")
+end
 
 
 function uespLog.EnchantingOnTooltipMouseUp(control, button, upInside)
@@ -3030,10 +3037,10 @@ SLASH_COMMANDS["/uespdebug"] = function (cmd)
 	elseif (cmd == "extra") then
 		uespLog.SetDebug(true)
 		uespLog.SetDebugExtra(true)
-		uespLog.Msg("Turned UESP log messages to DEBUG mode.")
+		uespLog.Msg("Turned UESP log messages to EXTRA mode.")
 	elseif (cmd == "") then
 		local flagStr = uespLog.BoolToOnOff(uespLog.IsDebug())
-		if (uespLog.IsDebugExtra()) then flagStr = "DEBUG" end
+		if (uespLog.IsDebugExtra()) then flagStr = "EXTRA" end
 		uespLog.Msg("uespdebug is currently " .. flagStr .. ". Use on/off/extra to set!")
 	end
 	

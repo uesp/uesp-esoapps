@@ -3125,11 +3125,13 @@ SLASH_COMMANDS["/uespmail"] = function (cmd)
 		elseif (cmds[2] == "off") then
 			uespLog.SetMailDeleteNotify(false)
 			uespLog.Msg("Turned UESP delete mail notify off.")
-		elseif (cmds[3] == "") then
+		elseif (cmds[2] == "") then
 			uespLog.Msg("UESP delete mail notify is currently " .. uespLog.BoolToOnOff(uespLog.IsMailDeleteNotify()) .. ". Use 'on' or 'off' to set!")
 		else
 			displayHelp = true
 		end
+	else
+		displayHelp = true
 	end
 	
 	if (displayHelp) then

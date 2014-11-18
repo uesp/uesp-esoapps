@@ -3184,7 +3184,10 @@ SLASH_COMMANDS["/uespdump"] = function(cmd)
 		else
 			uespLog.DebugMsg("UESP::Dump globals iterative currently running...")
 		end
-		
+	
+	elseif (cmds[1] == "globalprefix") then
+		local l1, l2, l3 = globalprefixes()
+		uespLog.DumpGlobals(3, l2)
 	elseif (cmds[1] == "smith") then
 		uespLog.DumpSmithItems(false)
 	elseif (cmds[1] == "smithset") then
@@ -3906,7 +3909,7 @@ function uespLog.DumpObject(prefix, varName, a, level, maxLevel)
 end
 
 
-function uespLog.DumpGlobals (maxLevel)
+function uespLog.DumpGlobals (maxLevel, baseObject)
 	
 		-- Clear global object
 	uespLog.savedVars["globals"].data = { }
@@ -3916,6 +3919,10 @@ function uespLog.DumpGlobals (maxLevel)
 	uespLog.dumpMetaTable = { }
 	uespLog.dumpIndexTable = { }
 	uespLog.dumpTableTable = { }
+	
+	if (baseObject == nil) then
+		baseObject = _G
+	end
 	
 	if (maxLevel == nil) then
 		maxLevel = 3
@@ -3934,7 +3941,7 @@ function uespLog.DumpGlobals (maxLevel)
 	logData.apiVersion = GetAPIVersion()
 	uespLog.AppendDataToLog("globals", logData, uespLog.GetTimeData())
 	
-	uespLog.DumpObject("", "_G", _G, 0, maxLevel)
+	uespLog.DumpObject("", "_G", baseObject, 0, maxLevel)
 	
 	logData = {} 
 	logData.event = "Global::End"

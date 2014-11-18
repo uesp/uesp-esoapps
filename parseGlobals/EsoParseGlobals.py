@@ -7,6 +7,7 @@ import sys
 import datetime
 import shutil
 import ntpath
+import EsoLuaFile
 #from skipdict import SkipDict
 
 OUTPUT_PATH = "d:\\temp\\esoglobals\\"

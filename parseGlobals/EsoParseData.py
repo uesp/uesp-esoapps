@@ -19,7 +19,7 @@ INPUT_GLOBAL_FILENAME = "d:\\esoexport\\goodimages10\\globals_6b.txt"
 OUTPUT_PATH = "d:\\temp\\esodata\\"
 INPUT_LUA_PATH = "d:\\esoexport\\gamemnf10\\esoui\\"
 
-'''
+
 esoGlobals = EsoGlobals.LoadGlobals(INPUT_GLOBAL_FILENAME)
 esoGlobals.Dump(OUTPUT_PATH + "globals.txt")
 esoGlobals.CreateHTML(OUTPUT_PATH + "globals.html")
@@ -27,15 +27,18 @@ esoGlobals.DumpDuplicateFunctions(OUTPUT_PATH + "globaldupfuncs.txt")
 
 esoFiles = EsoLuaFile.LoadAllFiles(INPUT_LUA_PATH, INPUT_LUA_PATH)
 esoFunctions = EsoFunctionInfo.FindAllFunctions(esoFiles)
-esoFunctionDb = EsoFunctionDb.CreateDb(esoFunctions)
+esoFunctionCalls = EsoFunctionInfo.FindAllFunctionCalls(esoFiles)
+esoFunctionDb = EsoFunctionDb.CreateDb(esoFunctions, esoFunctionCalls)
+esoFunctionDb.DumpFunctionCalls(OUTPUT_PATH + "functioncalls.txt")
+
 esoFunctionDb.CreateFunctionValueMap(esoGlobals)
 esoFunctionDb.MatchGlobals(esoGlobals)
 
 esoFunctionDb.DumpGlobalFunctions(OUTPUT_PATH + "funcs.txt")
 esoFunctionDb.DumpMissingFunctions(OUTPUT_PATH + "missingfuncs.txt", esoGlobals)
 
+esoFunctionDb.CheckNameValueDups(OUTPUT_PATH + "namedupfuncs.txt")
 
-'''
 
 '''
 #esoLuaFile = EsoLuaFile.LoadFile("d:\\esoexport\\gamemnf10\\esoui\\libraries\\zo_menubar\\zo_menubar.lua", "d:\\esoexport\\gamemnf10\\esoui\\")
@@ -55,11 +58,12 @@ for call in esoFunctionCalls:
     print "\t{0}:{1} to {2}:{3}".format(call.startLinePos, call.startCharPos, call.endLinePos, call.endCharPos)
     pass
 
-'''
 esoLuaFiles = EsoLuaFile.LoadAllFiles(INPUT_LUA_PATH, INPUT_LUA_PATH)
 esoFunctionCalls = EsoFunctionInfo.FindAllFunctionCalls(esoLuaFiles)
 
-'''
+esoFunctionDb = EsoFunctionDb.CreateDb([], esoFunctionCalls)
+esoFunctionDb.DumpFunctionCalls(OUTPUT_PATH + "functioncalls.txt")
+
 esoFunctions = EsoFunctionInfo.FindLuaFunctions(esoLuaFile)
 
 for function in esoFunctions:

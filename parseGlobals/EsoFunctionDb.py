@@ -21,6 +21,21 @@ class CEsoFunctionDb:
         self.globalFunctions = { }
         self.localFunctions = { }
         self.globalFunctionValueMap = { }
+        self.functionCalls = { }
+
+
+    def AddCallInfos(self, calls):
+        
+        for call in calls:
+            self.AddCallInfo(call)
+            
+    
+    def AddCallInfo(self, call):
+
+        if (not call.name in self.functionCalls):
+            self.functionCalls[call.name] = []
+
+        self.functionCalls[call.name].append(call)
 
 
     def AddInfos(self, functionInfos):
@@ -151,21 +166,85 @@ class CEsoFunctionDb:
 
             for funcName in self.globalFunctions:
                 funcs = self.globalFunctions[funcName]
-
                 outFile.write("{0}()\n".format(funcName))
 
                 for func in funcs:
                     outFile.write("\t{0}:{1} -- {2}\n".format(func.filename, func.startLinePos, func.fullDefString))
+    
+
+    def DumpFunctionCalls(self, filename):
+        print "Dumping function calls to", filename
+
+        with open(filename, "w") as outFile:
+            sortedKeys = sorted(self.functionCalls)
+
+            for key in sortedKeys:
+                calls = self.functionCalls[key]
+                outFile.write("{0}()\n".format(key))
+
+                for call in calls:
+                    outFile.write("\t{0}:{1} -- {2}\n".format(call.filename, call.startLinePos, call.fullString))
+
+
+    def CheckNameValueDups(self, filename):
+        nameMap = { }
+        nameMapCount = { }
+        nameMapFuncs = { }
+        missCount = 0
+        matchCount = 0
+
+        print "Checking for duplicate global function name/values, outputing to {0}...".format(filename)
+
+        for key in self.globalFunctions:
+            funcs = self.globalFunctions[key]
+
+            for func in funcs:
+                if (not func.name in nameMap):
+                    nameMap[func.name] = func
+                    nameMapCount[func.name] = 1
+                    nameMapFuncs[func.name] = [ ]
+                elif (nameMap[func.name].value != func.value):
+                    #print "\t{0}() has value mismatch ({1} != {2})".format(func.name, func.value, nameMap[func.name].value)
+                    missCount += 1
+                    nameMapCount[func.name] += 1
+                else:
+                    matchCount += 1
+                    
+                nameMapFuncs[func.name].append(func)
+
+        sortedKeys = sorted(nameMapCount.keys())
+        uniqueCount = 0
+        noDupCount = 0
+
+        with open(filename, "w") as outFile:
+
+            for key in sortedKeys:
+                count = nameMapCount[key]
+                
+                if (count <= 1):
+                    noDupCount += 1
+                    continue
+                
+                outFile.write("{0}() = {1} duplicates\n".format(key, count))
+                uniqueCount += 1
+
+                funcs = nameMapFuncs[key]
+
+                for func in sorted(funcs):
+                    outFile.write("\t{0}() = {1}\n".format(func.fullName, func.value))
+
+        print "\tFound {0} matches and {1} misses for {2} different functions, {3} unique names, {4} with no duplicates.".format(matchCount, missCount, len(nameMap), uniqueCount, noDupCount)
+                
         
         
 
-def CreateDb(functions):
+def CreateDb(functions = [], functionCalls = []):
     functionDb = CEsoFunctionDb()
 
     print "Creating function database from {0} functions...".format(len(functions))
 
-    for func in functions:
-        functionDb.AddInfo(func)
+    functionDb.AddInfos(functions)
+    functionDb.AddCallInfos(functionCalls)
 
     print "\tFound {0} global and {1} local unique function definitions!".format(len(functionDb.globalFunctions), len(functionDb.localFunctions))
         

@@ -160,7 +160,7 @@ def FindAllFunctionCalls(esoLuaFiles):
     print "Finding all function calls in {0} Lua files...".format(len(esoLuaFiles))
 
     for file in esoLuaFiles:
-        print file.relFilename
+        #print file.relFilename
         functionCalls.extend(FindFunctionCalls(file))
 
     print "\tFound {0} function calls!".format(len(functionCalls))

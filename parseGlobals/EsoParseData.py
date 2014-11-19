@@ -19,7 +19,7 @@ INPUT_GLOBAL_FILENAME = "d:\\esoexport\\goodimages10\\globals_6b.txt"
 OUTPUT_PATH = "d:\\temp\\esodata\\"
 INPUT_LUA_PATH = "d:\\esoexport\\gamemnf10\\esoui\\"
 
-
+'''
 esoGlobals = EsoGlobals.LoadGlobals(INPUT_GLOBAL_FILENAME)
 esoGlobals.Dump(OUTPUT_PATH + "globals.txt")
 esoGlobals.CreateHTML(OUTPUT_PATH + "globals.html")
@@ -36,13 +36,30 @@ esoFunctionDb.DumpMissingFunctions(OUTPUT_PATH + "missingfuncs.txt", esoGlobals)
 
 
 '''
-#esoLuaFile = EsoLuaFile.LoadLuaFile("d:\\esoexport\\gamemnf10\\esoui\\libraries\\zo_menubar\\zo_menubar.lua", "d:\\esoexport\\gamemnf10\\esoui\\")
-#esoLuaFile = EsoLuaFile.LoadLuaFile("d:\\esoexport\\gamemnf10\\esoui\\pregame\\statemanager\\pc\\pregamestates.lua", "d:\\esoexport\\gamemnf10\\esoui\\")
-#esoLuaFile = EsoLuaFile.LoadLuaFile("d:\\esoexport\\gamemnf10\\esoui\\pregame\\charactercreate\\zo_charactercreate.lua", "d:\\esoexport\\gamemnf10\\esoui\\")
-#esoLuaFile = EsoLuaFile.LoadLuaFile("d:\\esoexport\\gamemnf10\\esoui\\libraries\\zo_templates\\optionswindowtemplate.lua", "d:\\esoexport\\gamemnf10\\esoui\\")
-esoLuaFile = EsoLuaFile.LoadLuaFile("d:\\esoexport\\gamemnf10\\esoui\\ingame\\slashcommands\\slashcommands.lua", "d:\\esoexport\\gamemnf10\\esoui\\")
+
+'''
+#esoLuaFile = EsoLuaFile.LoadFile("d:\\esoexport\\gamemnf10\\esoui\\libraries\\zo_menubar\\zo_menubar.lua", "d:\\esoexport\\gamemnf10\\esoui\\")
+#esoLuaFile = EsoLuaFile.LoadFile("d:\\esoexport\\gamemnf10\\esoui\\pregame\\statemanager\\pc\\pregamestates.lua", "d:\\esoexport\\gamemnf10\\esoui\\")
+#esoLuaFile = EsoLuaFile.LoadFile("d:\\esoexport\\gamemnf10\\esoui\\pregame\\charactercreate\\zo_charactercreate.lua", "d:\\esoexport\\gamemnf10\\esoui\\")
+#esoLuaFile = EsoLuaFile.LoadFile("d:\\esoexport\\gamemnf10\\esoui\\libraries\\zo_templates\\optionswindowtemplate.lua", "d:\\esoexport\\gamemnf10\\esoui\\")
+#esoLuaFile = EsoLuaFile.LoadFile("d:\\esoexport\\gamemnf10\\esoui\\ingame\\slashcommands\\slashcommands.lua", "d:\\esoexport\\gamemnf10\\esoui\\")
+#esoLuaFile = EsoLuaFile.LoadFile("d:\\esoexport\\gamemnf10\\esoui\\app\\loadingscreen\\loadingscreen.lua", "d:\\esoexport\\gamemnf10\\esoui\\")
+esoLuaFile = EsoLuaFile.LoadFile("d:\\esoexport\\gamemnf10\\esoui\\libraries\\globals\\debugutils.lua", "d:\\esoexport\\gamemnf10\\esoui\\")
+esoFunctionCalls = EsoFunctionInfo.FindFunctionCalls(esoLuaFile)
 
 
+for call in esoFunctionCalls:
+    print call.fullString
+    print "\tName={0},   NiceName={2},  FullName={1}".format(call.name, call.fullName, call.niceName)
+    print "\tVars={0},   Params={1}".format(call.allVariables, call.allParams)
+    print "\t{0}:{1} to {2}:{3}".format(call.startLinePos, call.startCharPos, call.endLinePos, call.endCharPos)
+    pass
+
+'''
+esoLuaFiles = EsoLuaFile.LoadAllFiles(INPUT_LUA_PATH, INPUT_LUA_PATH)
+esoFunctionCalls = EsoFunctionInfo.FindAllFunctionCalls(esoLuaFiles)
+
+'''
 esoFunctions = EsoFunctionInfo.FindLuaFunctions(esoLuaFile)
 
 for function in esoFunctions:
@@ -50,7 +67,7 @@ for function in esoFunctions:
     #print function.fullString
     print "\t{0}:{1} to {2}:{3}".format(function.startLinePos, function.startCharPos, function.endLinePos, function.endCharPos)
 
-esoLuaFiles = EsoLuaFile.LoadAllLuaFiles(INPUT_LUA_PATH, INPUT_LUA_PATH)
+esoLuaFiles = EsoLuaFile.LoadAllFiles(INPUT_LUA_PATH, INPUT_LUA_PATH)
 tokenCount = 0
 funcCount = 0
 

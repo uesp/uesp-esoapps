@@ -69,6 +69,32 @@ class CLuaTokenIterator:
         return True
 
 
+    def SeekIndex(self, deltaIndex):
+        targetIndex = self.index + deltaIndex
+        
+        if (targetIndex < 0 or targetIndex >= len(self.tokens)):
+            return None
+
+        self.index = targetIndex;
+        self.isError = False
+        self.lastToken = self.tokens[self.index]
+        
+        return self.lastToken
+
+
+    def SeekAbs(self, index):
+        targetIndex = index
+        
+        if (targetIndex < 0 or targetIndex >= len(self.tokens)):
+            return None
+
+        self.index = targetIndex;
+        self.isError = False
+        self.lastToken = self.tokens[self.index]
+        
+        return self.lastToken
+
+
     def PeekIndex(self, deltaIndex, tokenType, tokenName = ""):
         
         if (self.isError):
@@ -105,9 +131,116 @@ class CLuaTokenIterator:
         return True
 
 
-    def Consume(self, tokenType, tokenName = ""):
-        if (self.isError):
-            return None
+    def ConsumeBehindToBracket(self, startBracket, endBracket):
+        tokenType = Token.operator
+        bracketCount = 0        
+        
+        while not self.isError:
+            
+            if (self.index >= len(self.tokens) or self.index < 0):
+                self.isError = True
+                self.errorMsg = "ERROR {0}:{1} -- Unexpected end of file found, expected a {2}!".format(self.lastToken.linePos, self.lastToken.charPos, Token.toString(tokenType))
+                self.Report()
+                return None
+
+            self.lastToken = self.tokens[self.index]
+
+            if (self.lastToken.type == Token.operator and self.lastToken.token == endBracket):
+                bracketCount += 1
+            elif (self.lastToken.type == Token.operator and self.lastToken.token == startBracket):
+                bracketCount -= 1
+                if (bracketCount == 0): break
+
+            self.index -= 1
+            self.isError = False
+
+        return self.ConsumeBehind(Token.operator, startBracket)
+    
+
+    def ConsumeToBracket(self, startBracket, endBracket):
+        tokenType = Token.operator
+        bracketCount = 0        
+        
+        while not self.isError:
+            
+            if (self.index >= len(self.tokens)):
+                self.isError = True
+                self.errorMsg = "ERROR {0}:{1} -- Unexpected end of file found, expected a {2}!".format(self.lastToken.linePos, self.lastToken.charPos, Token.toString(tokenType))
+                self.Report()
+                return None
+
+            self.lastToken = self.tokens[self.index]
+
+            if (self.lastToken.type == Token.operator and self.lastToken.token == startBracket):
+                bracketCount += 1
+            elif (self.lastToken.type == Token.operator and self.lastToken.token == endBracket):
+                bracketCount -= 1
+                if (bracketCount == 0): break
+
+            self.index += 1
+            self.isError = False
+
+        return self.Consume(Token.operator, endBracket)
+
+
+    def GetTokenIndex(self, deltaIndex):
+        targetIndex = self.index + deltaIndex
+        if (targetIndex < 0 or targetIndex >= len(self.tokens)): return None
+        return self.tokens[targetIndex]
+
+
+    def ConsumeUpTo(self, tokenType = Token.none, tokenName = ""):
+        return self.ConsumeTo(tokenType, tokenName, False)
+        
+
+    def ConsumeTo(self, tokenType = Token.none, tokenName = "", includeLast = True):
+        
+        while not self.isError:
+            
+            if (self.index >= len(self.tokens)):
+                self.isError = True
+                self.errorMsg = "ERROR {0}:{1} -- Unexpected end of file found, expected a {2}!".format(self.lastToken.linePos, self.lastToken.charPos, Token.toString(tokenType))
+                self.Report()
+                return None
+
+            self.lastToken = self.tokens[self.index]
+
+            if (tokenType == Token.none or self.lastToken.type == tokenType):
+                if (tokenName != "" and self.lastToken.token == tokenName):
+                    break
+
+            self.index += 1
+            self.isError = False
+
+        if (includeLast): return self.Consume(tokenType, tokenName)
+        return self.lastToken
+
+
+    def ConsumeBehindTo(self, tokenType = Token.none, tokenName = ""):
+        
+        while not self.isError:
+            
+            if (self.index < 0 or self.index >= len(self.tokens)):
+                self.isError = True
+                self.errorMsg = "ERROR {0}:{1} -- Unexpected end of file found, expected a {2}!".format(self.lastToken.linePos, self.lastToken.charPos, Token.toString(tokenType))
+                self.Report()
+                return None
+
+            self.lastToken = self.tokens[self.index]
+
+            if (tokenType == Token.none or self.lastToken.type == tokenType):
+                if (tokenName != "" and self.lastToken.token == tokenName):
+                    break
+
+            self.index -= 1
+            self.isError = False
+
+        return self.ConsumeBehind(tokenType, tokenName)
+
+
+    def Consume(self, tokenType = Token.none, tokenName = ""):
+        
+        if (self.isError): return None
         
         if (self.index >= len(self.tokens)):
             self.isError = True
@@ -134,13 +267,42 @@ class CLuaTokenIterator:
         return self.lastToken
 
 
+    def ConsumeBehind(self, tokenType = Token.none, tokenName = ""):
+        
+        if (self.isError): return None
+        
+        if (self.index >= len(self.tokens) or self.index < 0):
+            self.isError = True
+            self.errorMsg = "ERROR {0}:{1} -- Unexpected end of file found, expected a {2}!".format(self.lastToken.linePos, self.lastToken.charPos, Token.toString(tokenType))
+            self.Report()
+            return None
+
+        self.lastToken = self.tokens[self.index]
+
+        if (tokenType != Token.none and self.lastToken.type != tokenType):
+            self.isError = True
+            self.errorMsg = "ERROR {0}:{1} -- Expected a {2}({4}) but found a {3}({5})!".format(self.lastToken.linePos, self.lastToken.charPos, Token.toString(tokenType), Token.toString(self.lastToken.type), tokenName, self.lastToken.token)
+            self.Report()
+            return None
+
+        if (tokenName != "" and self.lastToken.token != tokenName):
+            self.isError = True
+            self.errorMsg = "ERROR {0}:{1} -- Expected '{2}' but found '{3}'!".format(self.lastToken.linePos, self.lastToken.charPos, tokenName, self.lastToken.token)
+            self.Report()
+            return None
+
+        self.isError = False
+        self.index -= 1
+        return self.lastToken
+
+
     def IsValidDeltaIndex(self, deltaIndex):
         targetIndex = self.index + deltaIndex
         return targetIndex >= 0 and targetIndex < len(self.tokens)
 
 
     def IsValid(self):
-        return not self.isError and self.index < len(self.tokens)
+        return not self.isError and self.index < len(self.tokens) and self.index >= 0
 
 
     def Report(self, customMsg = ""):
@@ -155,7 +317,7 @@ class CLuaTokenIterator:
             errorMsg = "\tReached end of tokens!"
 
         if (customMsg != ""):
-            print "\tERROR {0}:{1} -- {2}".format(token.linePos, token.charPos, customMsg)
+            print "\tERROR {0}:{1} -- {2} (token = '{3}')".format(token.linePos, token.charPos, customMsg, token.token)
             
         if (errorMsg != ""):
             print errorMsg
@@ -241,6 +403,7 @@ class CLuaTokenizer:
 
         stringStartIndex = self.tokens[startIndex].index
         stringEndIndex = self.tokens[endIndex].index + len(self.tokens[endIndex].token)
+        if (self.tokens[endIndex].type == Token.string): stringEndIndex += 2
 
         return self.origSource[stringStartIndex:stringEndIndex]
 

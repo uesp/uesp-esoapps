@@ -69,6 +69,25 @@ class CLuaTokenIterator:
         return True
 
 
+    def PeekIndex(self, deltaIndex, tokenType, tokenName = ""):
+        
+        if (self.isError):
+            return False
+
+        targetIndex = self.index + deltaIndex
+
+        if (targetIndex < 0 or targetIndex >= len(self.tokens)):
+            return False
+
+        if (tokenType != Token.none and self.tokens[targetIndex].type != tokenType):
+            return False
+
+        if (tokenName != "" and self.tokens[targetIndex].token != tokenName):
+            return False
+
+        return True
+
+
     def PeekBehind(self, tokenType, tokenName = ""):
         
         if (self.isError):
@@ -82,6 +101,8 @@ class CLuaTokenIterator:
 
         if (tokenName != "" and self.tokens[self.index-1].token != tokenName):
             return False
+
+        return True
 
 
     def Consume(self, tokenType, tokenName = ""):
@@ -98,7 +119,7 @@ class CLuaTokenIterator:
 
         if (tokenType != Token.none and self.lastToken.type != tokenType):
             self.isError = True
-            self.errorMsg = "ERROR {0}:{1} -- Expected a {2} but found a {3}!".format(self.lastToken.linePos, self.lastToken.charPos, Token.toString(tokenType), Token.toString(self.lastToken.type))
+            self.errorMsg = "ERROR {0}:{1} -- Expected a {2}({4}) but found a {3}({5})!".format(self.lastToken.linePos, self.lastToken.charPos, Token.toString(tokenType), Token.toString(self.lastToken.type), tokenName, self.lastToken.token)
             self.Report()
             return None
 

@@ -26,7 +26,13 @@ INPUT_LUA_PATH = "d:\\esoexport\\gamemnf10\\esoui\\"
 #esoGlobals.CreateHTML(OUTPUT_PATH + "globals.html")
 
 '''
-esoLuaFile = EsoLuaFile.LoadLuaFile("d:\\esoexport\\gamemnf10\\esoui\\libraries\\zo_menubar\\zo_menubar.lua", "d:\\esoexport\\gamemnf10\\esoui\\")
+#esoLuaFile = EsoLuaFile.LoadLuaFile("d:\\esoexport\\gamemnf10\\esoui\\libraries\\zo_menubar\\zo_menubar.lua", "d:\\esoexport\\gamemnf10\\esoui\\")
+#esoLuaFile = EsoLuaFile.LoadLuaFile("d:\\esoexport\\gamemnf10\\esoui\\pregame\\statemanager\\pc\\pregamestates.lua", "d:\\esoexport\\gamemnf10\\esoui\\")
+#esoLuaFile = EsoLuaFile.LoadLuaFile("d:\\esoexport\\gamemnf10\\esoui\\pregame\\charactercreate\\zo_charactercreate.lua", "d:\\esoexport\\gamemnf10\\esoui\\")
+#esoLuaFile = EsoLuaFile.LoadLuaFile("d:\\esoexport\\gamemnf10\\esoui\\libraries\\zo_templates\\optionswindowtemplate.lua", "d:\\esoexport\\gamemnf10\\esoui\\")
+esoLuaFile = EsoLuaFile.LoadLuaFile("d:\\esoexport\\gamemnf10\\esoui\\ingame\\slashcommands\\slashcommands.lua", "d:\\esoexport\\gamemnf10\\esoui\\")
+
+
 esoFunctions = EsoFunctionInfo.FindLuaFunctions(esoLuaFile)
 
 for function in esoFunctions:
@@ -48,4 +54,5 @@ for file in esoLuaFiles:
     funcCount += len(esoFunctions)
 
 print tokenCount, funcCount
+
 

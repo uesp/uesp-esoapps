@@ -3,6 +3,7 @@ import os.path
 import shutil
 import datetime
 from string import Template
+from operator import attrgetter
 
 
 class CEsoGlobalInfo:
@@ -10,6 +11,7 @@ class CEsoGlobalInfo:
     def __init__(self):
         self.type = ""
         self.access = ""
+        self.fullName = ""
         self.name = ""
         self.value = ""
         self.meta = ""
@@ -36,7 +38,47 @@ class CEsoGlobals:
         self.headerTemplate = Template(open('templates/esoglobal_header.txt', 'r').read())
         self.footerTemplate = Template(open('templates/esoglobal_footer.txt', 'r').read())
         self.globals = { }
+        self.functionValueMap = { }
+        self.allFunctions = [ ]
 
+    
+    def CreateFunctionMap(self):
+
+        for func in self.allFunctions:
+            
+            if (not func.value in self.functionValueMap):
+                self.functionValueMap[func.value] = []
+                
+            self.functionValueMap[func.value].append(func)
+
+
+    def DumpDuplicateFunctions(self, filename):
+        print "Dumping all duplicate functions to", filename
+        dupFuncs = { }
+        dupFuncCount = 0
+        
+        for key in self.functionValueMap:
+            funcs = self.functionValueMap[key]
+            
+            if (len(funcs) > 1):
+                dupFuncs[funcs[0].fullName] = funcs
+
+        with open(filename, "w") as outFile:
+            index = 0
+            
+            for key in dupFuncs:
+                funcs = dupFuncs[key]
+                index += 1
+                outFile.write( "{0}) Duplicate set of {1} functions\n".format(index, len(funcs)) )
+
+                sortedFuncs = sorted(funcs, key=attrgetter('fullName'))
+
+                for func in sortedFuncs:
+                    dupFuncCount += 1
+                    outFile.write( "\t{0}()\n".format(func.fullName) )
+
+        print "\tOutput {0} duplicate functions in {1} unique sets".format(dupFuncCount, len(dupFuncs))
+        
 
     def DumpRecord(self, outFile, root, header, types):
         sortedKeys = sorted(root.keys())
@@ -228,18 +270,22 @@ class CEsoGlobals:
 
     def CreateGlobalInstance(self, parsedName):
         currentParent = self.globals
+        parentName = ""
         currentInstance = None
         
         for name in parsedName:
             
             if (name in currentParent):
                 currentInstance = currentParent[name]
+                parentName += currentInstance.name + "."
                 currentParent = currentParent[name].children
             else:
                 currentParent[name] = CEsoGlobalInfo()
                 currentInstance = currentParent[name]
                 currentParent[name].name = name
+                currentParent[name].fullName = parentName + name
                 currentParent = currentParent[name].children
+                parentName += currentInstance.name + "."
         
         return currentInstance
 
@@ -277,6 +323,10 @@ class CEsoGlobals:
         for log in parsedLogLines:
             event = log.get('event', '')
             name = log.get('name', '')
+
+            if (name.endswith("()")):
+                name = name[:-2]
+
             parsedName = self.parseName.findall(name)
 
             if event == "Global::Start":
@@ -288,9 +338,6 @@ class CEsoGlobals:
                 continue
 
             instance = self.CreateGlobalInstance(parsedName)
-
-            if (instance.name.endswith("()")):
-                instance.name = instance.name[:-2]
             
             instance.type = log.get('type', '')
             instance.access = log.get('label', '')
@@ -301,6 +348,9 @@ class CEsoGlobals:
             instance.firstTable = log.get('firstTable', '') == "1"
             instance.firstMeta = log.get('firstMeta', '') == "1"
             instance.firstIndex = log.get('firstIndex', '') == "1"
+
+            if (instance.type == "function"):
+                self.allFunctions.append(instance)
                     
         return True
 
@@ -316,5 +366,14 @@ class CEsoGlobals:
         self.logLineCount = len(parsedLogLines)
         self.ParseGlobalData(parsedLogLines)
 
-        print "Loaded", str(self.logLineCount), "log lines into", str(len(self.globals)), "root global objects"
+        self.CreateFunctionMap()
+
+        print "\tLoaded {0} log lines into {1} root global objects".format(self.logLineCount, len(self.globals))
+        print "\tFound {0} unique functions out of {1} total".format(len(self.functionValueMap), len(self.allFunctions))
         return True
+
+
+def LoadGlobals(filename):
+    esoGlobals = CEsoGlobals()
+    esoGlobals.LoadParseFile(filename)
+    return esoGlobals

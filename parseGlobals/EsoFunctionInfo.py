@@ -27,6 +27,7 @@ class CEsoFunctionInfo:
         self.namespace = ""
         self.namespaceType = ""
         self.isLocal = False
+        self.isObject = False
         self.allParams = ""
         self.params = []
         self.startLinePos = -1
@@ -38,7 +39,6 @@ class CEsoFunctionInfo:
         self.endLinePos = -1
         self.endCharPos = -1
         self.endTokenIndex = -1
-
 
 
 class CEsoFunctionCallInfo:
@@ -57,29 +57,108 @@ def ParseLuaFunction(esoLuaFile, i):
     tokens = esoLuaFile.GetTokens()
     token = tokens[i]
     newFunction = CEsoFunctionInfo()
+    newFunction.filename = esoLuaFile.relFilename
     startIndex = i
+    startNameTokenIndex = -1
+    endNameTokenIndex = -1
 
     tokenIter = CLuaTokenIterator(tokens, i)
 
     if (tokenIter.PeekBehind(Token.keyword, "local")):
-        tokenIter = CLuaTokenIterator(tokens, i-1)
+        tokenIter = CLuaTokenIterator(tokens, i - 1)
         startIndex = i - 1
-        newFunction.isLocal = True
-        
-    token = tokenIter.lastToken
+        token = tokenIter.lastToken
+        newFunction.startTokenIndex = tokenIter.index
+        newFunction.startLinePos = token.linePos
+        newFunction.startCharPos = token.charPos
+    elif (tokenIter.PeekIndex(-1, Token.operator, "=")):
+        deltaIndex = -1
+                
+        if (tokenIter.PeekIndex(-2, Token.name)):
+            deltaIndex -= 1
+            
+            if (tokenIter.PeekIndex(-3, Token.operator, ".")):
+                if (tokenIter.PeekIndex(-4, Token.name)):
+                    deltaIndex -= 2
+                    
+            if (tokenIter.PeekIndex(deltaIndex-1, Token.keyword, "local")):
+                deltaIndex -= 1
+        elif (tokenIter.PeekIndex(-2, Token.operator, "]")):
+            if (tokenIter.PeekIndex(-3, Token.string) or tokenIter.PeekIndex(-3, Token.number) or tokenIter.PeekIndex(-3, Token.name)):
+                if (tokenIter.PeekIndex(-4, Token.operator, "[")):
+                    deltaIndex -= 3
+        else:
+            tokenIter.Report("Unknown function definition format found!")
 
-    newFunction.startTokenIndex = tokenIter.index
-    newFunction.startLinePos = token.linePos
-    newFunction.startCharPos = token.charPos
-    newFunction.filename = esoLuaFile.relFilename
+        tokenIter = CLuaTokenIterator(tokens, i + deltaIndex)
+        startIndex = i + deltaIndex
+        newFunction.isObject = True
+        token = tokenIter.lastToken
+        newFunction.startTokenIndex = tokenIter.index
+        newFunction.startLinePos = token.linePos
+        newFunction.startCharPos = token.charPos
+
+        if (tokenIter.Peek(Token.keyword, "local")):
+            token = tokenIter.Consume(Token.keyword, "local")
+            newFunction.isLocal = True
+
+        startNameTokenIndex = tokenIter.index
+
+        if (tokenIter.Peek(Token.name)):
+            token = tokenIter.Consume(Token.name)
+                 
+            if (tokenIter.Peek(Token.operator, ".")):
+                newFunction.namespace = token.token
+                newFunction.namespaceType = "."
+                token = tokenIter.Consume(Token.operator, ".")
+
+                token = tokenIter.Consume(Token.name)
+                if (not token): return None, tokenIter.index
+
+                newFunction.name = token.token
+            else:
+                newFunction.name = token.token
+        elif (tokenIter.Peek(Token.operator, "[")):
+            startArrayToken = tokenIter.index
+            token = tokenIter.Consume(Token.operator, "[")
+            
+            if (tokenIter.Peek(Token.string)):
+                token = tokenIter.Consume(Token.string)
+            elif (tokenIter.Peek(Token.number)):
+                token = tokenIter.Consume(Token.number)
+            elif (tokenIter.Peek(Token.name)):
+                token = tokenIter.Consume(Token.name)
+            else:
+                tokenIter.Report("Unknown function definition format found!") 
+                return None, tokenIter.index
+
+            token = tokenIter.Consume(Token.operator, "]")
+            if (not token): return None, tokenIter.index
+
+            newFunction.name = esoLuaFile.tokenizer.Rebuild(startArrayToken, tokenIter.index - 1)
+        elif (tokenIter.Peek(Token.operator, "=")):
+            newFunction.name = ""
+        else:
+            print tokenIter.lastToken.token
+            tokenIter.Report("Unknown function definition format found!") 
+            return None, tokenIter.index
+
+        endNameTokenIndex = tokenIter.index - 1
+
+        token = tokenIter.Consume(Token.operator, "=")
+        if (not token): return None, tokenIter.index
+    else:
+        token = tokenIter.lastToken
+        newFunction.startTokenIndex = tokenIter.index
+        newFunction.startLinePos = token.linePos
+        newFunction.startCharPos = token.charPos
 
     if (tokenIter.Peek(Token.keyword, "local")):
+        newFunction.isLocal = True
         tokenIter.Consume(Token.keyword, "local")
 
     token = tokenIter.Consume(Token.keyword, "function")
-    startNameTokenIndex = -1
-    endNameTokenIndex = -1
-    
+        
     if (tokenIter.Peek(Token.name)):
         startNameTokenIndex = tokenIter.index
         token = tokenIter.Consume(Token.name)
@@ -143,8 +222,6 @@ def ParseLuaFunction(esoLuaFile, i):
     if (not token or token.token != ")"):
         tokenIter.Report("Unexpected end of file while looking for function parameter list!")
         return None, tokenIter.index
-
-
 
     newFunction.endDefTokenIndex = tokenIter.index - 1
     newFunction.endDefLinePos = token.linePos

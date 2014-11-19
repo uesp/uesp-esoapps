@@ -29,6 +29,7 @@ class CEsoFunctionInfo:
         self.isLocal = False
         self.isObject = False
         self.allParams = ""
+        self.value = ""
         self.params = []
         self.startLinePos = -1
         self.startCharPos = -1
@@ -84,9 +85,19 @@ def ParseLuaFunction(esoLuaFile, i):
             if (tokenIter.PeekIndex(deltaIndex-1, Token.keyword, "local")):
                 deltaIndex -= 1
         elif (tokenIter.PeekIndex(-2, Token.operator, "]")):
-            if (tokenIter.PeekIndex(-3, Token.string) or tokenIter.PeekIndex(-3, Token.number) or tokenIter.PeekIndex(-3, Token.name)):
-                if (tokenIter.PeekIndex(-4, Token.operator, "[")):
-                    deltaIndex -= 3
+            deltaIndex -= 1
+
+            while (tokenIter.IsValidDeltaIndex(deltaIndex - 1) and not tokenIter.PeekIndex(deltaIndex - 1, Token.operator, "[")):
+                deltaIndex -= 1
+
+            if tokenIter.PeekIndex(deltaIndex - 1, Token.operator, "["):
+                deltaIndex -= 1
+
+                if tokenIter.PeekIndex(deltaIndex - 1, Token.name):
+                    deltaIndex -= 1
+
+            if (tokenIter.PeekIndex(deltaIndex - 1, Token.keyword, "local")):
+                deltaIndex -= 1
         else:
             tokenIter.Report("Unknown function definition format found!")
 
@@ -104,7 +115,7 @@ def ParseLuaFunction(esoLuaFile, i):
 
         startNameTokenIndex = tokenIter.index
 
-        if (tokenIter.Peek(Token.name)):
+        if (tokenIter.Peek(Token.name) and not tokenIter.PeekIndex(+1, Token.operator, "[")):
             token = tokenIter.Consume(Token.name)
                  
             if (tokenIter.Peek(Token.operator, ".")):
@@ -118,19 +129,16 @@ def ParseLuaFunction(esoLuaFile, i):
                 newFunction.name = token.token
             else:
                 newFunction.name = token.token
-        elif (tokenIter.Peek(Token.operator, "[")):
+        elif (tokenIter.Peek(Token.operator, "[") or tokenIter.PeekIndex(+1, Token.operator, "[")):
             startArrayToken = tokenIter.index
+
+            if (tokenIter.Peek(Token.name)):
+                token = tokenIter.Consume(Token.name)
+                
             token = tokenIter.Consume(Token.operator, "[")
             
-            if (tokenIter.Peek(Token.string)):
-                token = tokenIter.Consume(Token.string)
-            elif (tokenIter.Peek(Token.number)):
-                token = tokenIter.Consume(Token.number)
-            elif (tokenIter.Peek(Token.name)):
-                token = tokenIter.Consume(Token.name)
-            else:
-                tokenIter.Report("Unknown function definition format found!") 
-                return None, tokenIter.index
+            while (tokenIter.IsValid() and not tokenIter.Peek(Token.operator, "]")):
+                token = tokenIter.Consume(Token.none)
 
             token = tokenIter.Consume(Token.operator, "]")
             if (not token): return None, tokenIter.index
@@ -263,7 +271,7 @@ def ParseLuaFunction(esoLuaFile, i):
     return newFunction, i
 
 
-def FindLuaFunctions(esoLuaFile):
+def FindFunctions(esoLuaFile):
     functions = []
     tokens = esoLuaFile.GetTokens()
     i = 0
@@ -279,4 +287,16 @@ def FindLuaFunctions(esoLuaFile):
         
         i += 1
  
+    return functions
+
+
+def FindAllFunctions(esoLuaFiles):
+    functions = []
+
+    print "Finding all functions in {0} Lua files...".format(len(esoLuaFiles))
+
+    for file in esoLuaFiles:
+        functions.extend(FindFunctions(file))
+
+    print "\tFound {0} functions!".format(len(functions))
     return functions

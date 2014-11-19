@@ -134,6 +134,11 @@ class CLuaTokenIterator:
         return self.lastToken
 
 
+    def IsValidDeltaIndex(self, deltaIndex):
+        targetIndex = self.index + deltaIndex
+        return targetIndex >= 0 and targetIndex < len(self.tokens)
+
+
     def IsValid(self):
         return not self.isError and self.index < len(self.tokens)
 

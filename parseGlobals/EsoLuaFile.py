@@ -35,20 +35,22 @@ class CEsoLuaFile:
         self.fullFilename = filename.replace("\\", "/")
         self.relFilename = os.path.relpath(filename, relPath).replace("\\", "/")
         self.creationDate = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        print "Loading and Parsing Lua file", self.relFilename, "..."
+        #print "Loading and Parsing Lua file", self.relFilename, "..."
 
         self.fileContents = open(filename, "r").read()
         return self.Parse()
 
 
-def LoadLuaFile(filename, relPath = ""):
+def LoadFile(filename, relPath = ""):
     newFile = CEsoLuaFile()
     newFile.LoadParseFile(filename, relPath)
     return newFile
     
 
-def LoadAllLuaFiles(path, relPath = ""):
+def LoadAllFiles(path, relPath = ""):
     luaFiles = []
+
+    print "Loading all Lua files from", relPath, "..."
     
     for root, dirs, files in os.walk(path):
         for filename in files:
@@ -56,5 +58,6 @@ def LoadAllLuaFiles(path, relPath = ""):
                 newFile = CEsoLuaFile()
                 newFile.LoadParseFile(root + "\\" + filename, relPath)
                 luaFiles.append(newFile)
-    
+
+    print "\tFound {0} files!".format(len(luaFiles))
     return luaFiles

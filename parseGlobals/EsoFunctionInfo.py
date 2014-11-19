@@ -46,12 +46,125 @@ class CEsoFunctionCallInfo:
     
     def __init__(self):
         self.filename = ""
-        self.line = ""
+        self.startLinePos = ""
+        self.startCharPos = ""
+        self.startTokenIndex = -1
+        self.endLinePos = ""
+        self.endCharPos = ""
+        self.endTokenIndex = -1
         self.fullString = ""
-        self.vars = ""
+        self.allVariables = ""
+        self.variables = []
         self.name = ""
+        self.fullName = ""
+        self.niceName = ""
         self.allParams = ""
         self.params = []
+
+
+def ParseLuaFunctionCall(esoLuaFile, tokenIter):
+    origTokenIndex = tokenIter.index
+
+        # Find start of function name
+    while tokenIter.IsValid():
+
+        if (tokenIter.PeekIndex(-1, Token.operator, ".") or tokenIter.PeekIndex(-1, Token.operator, ":")):
+            tokenIter.SeekIndex(-1)
+            isBracket = False
+            
+            if (tokenIter.PeekIndex(-1, Token.operator, ")")):
+                tokenIter.ConsumeBehindToBracket("(", ")")
+                tokenIter.Consume()
+                isBracket = True
+            elif (tokenIter.PeekIndex(-1, Token.operator, "]")):
+                tokenIter.ConsumeBehindTo(Token.operator, "[")
+                tokenIter.Consume()
+            
+            if (tokenIter.PeekIndex(-1, Token.name)):
+                tokenIter.SeekIndex(-1)
+            elif isBracket:
+                break
+            else:
+                tokenIter.Report("1Unknown function call format found!")
+                break
+        else:
+            break
+
+        # Find start of function variables
+    if tokenIter.Peek(Token.operator, "="):
+        pass
+
+    tokenIter.Consume()
+
+    if (not tokenIter.IsValid()):
+        tokenIter.Report("2Unknown function call format found!")
+        tokenIter.SeekAbs(origTokenIndex + 1)
+        return None
+
+    newFuncCall = CEsoFunctionCallInfo()
+    newFuncCall.filename = esoLuaFile.relFilename
+    newFuncCall.startTokenIndex = tokenIter.index - 1
+    newFuncCall.startLinePos = tokenIter.lastToken.linePos
+    newFuncCall.startCharPos = tokenIter.lastToken.charPos
+
+    while tokenIter.IsValid() and tokenIter.index < origTokenIndex:
+        tokenIter.ConsumeUpTo(Token.operator, "(")
+        if (tokenIter.index < origTokenIndex): tokenIter.Consume()
+        
+    newFuncCall.name = tokenIter.GetTokenIndex(-1).token
+    nameEndTokenIndex = tokenIter.index - 1
+    startParamTokenIndex = tokenIter.index + 1
+
+    token = tokenIter.ConsumeToBracket("(", ")")
+
+    if token is None:
+        tokenIter.Report("3Unknown function call format found!")
+        tokenIter.SeekAbs(origTokenIndex + 1)
+        return None
+
+    newFuncCall.endTokenIndex = tokenIter.index - 1
+    newFuncCall.endLinePos = tokenIter.lastToken.linePos
+    newFuncCall.endCharPos = tokenIter.lastToken.charPos + len(tokenIter.lastToken.token) - 1
+
+    newFuncCall.fullString = esoLuaFile.tokenizer.Rebuild(newFuncCall.startTokenIndex, newFuncCall.endTokenIndex)
+    newFuncCall.allVariables = ""
+    newFuncCall.fullName = esoLuaFile.tokenizer.Rebuild(newFuncCall.startTokenIndex, nameEndTokenIndex)
+    newFuncCall.niceName =  newFuncCall.fullName.replace(":", ".")
+    newFuncCall.allParams = esoLuaFile.tokenizer.Rebuild(startParamTokenIndex, newFuncCall.endTokenIndex - 1)
+
+    tokenIter.SeekAbs(origTokenIndex + 1)
+    return newFuncCall
+
+
+def FindFunctionCalls(esoLuaFile):
+    functionCalls = []
+    tokens = esoLuaFile.GetTokens()
+    tokenIter = CLuaTokenIterator(esoLuaFile.GetTokens(), 0)
+
+    while tokenIter.IsValid():
+        
+        if (tokenIter.Peek(Token.keyword, "function")):
+            tokenIter.ConsumeTo(Token.operator, ")")
+        elif (tokenIter.Peek(Token.name) and tokenIter.PeekIndex(1, Token.operator, "(")):
+            newFuncCall = ParseLuaFunctionCall(esoLuaFile, tokenIter)
+            if (newFuncCall): functionCalls.append(newFuncCall)
+        else:
+            tokenIter.Consume()
+ 
+    return functionCalls
+
+
+def FindAllFunctionCalls(esoLuaFiles):
+    functionCalls = []
+
+    print "Finding all function calls in {0} Lua files...".format(len(esoLuaFiles))
+
+    for file in esoLuaFiles:
+        print file.relFilename
+        functionCalls.extend(FindFunctionCalls(file))
+
+    print "\tFound {0} function calls!".format(len(functionCalls))
+    return functionCalls
 
 
 def ParseLuaFunction(esoLuaFile, i):
@@ -211,7 +324,7 @@ def ParseLuaFunction(esoLuaFile, i):
                 token2 = tokenIter.Consume(Token.name)
 
                 if (not token2):
-                    tokenIter.isError = false
+                    tokenIter.isError = False
                     newFunction.params.append(token.token + ":")
                 else:
                     token = token2
@@ -281,9 +394,7 @@ def FindFunctions(esoLuaFile):
         
         if (token.type == EsoLuaTokenizer.Token.keyword and token.token == "function"):
             newFunc, lastDefIndex = ParseLuaFunction(esoLuaFile, i)
-
-            if (newFunc):
-                functions.append(newFunc)
+            if (newFunc): functions.append(newFunc)
         
         i += 1
  

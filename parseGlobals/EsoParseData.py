@@ -13,13 +13,19 @@ import EsoLuaFile
 from EsoLuaFile import CEsoLuaFile
 import EsoFunctionInfo
 import EsoFunctionDb
+import EsoEnvironment
 
 
 INPUT_GLOBAL_FILENAME = "d:\\esoexport\\goodimages10\\globals_6b.txt"
 OUTPUT_PATH = "d:\\temp\\esodata\\"
 INPUT_LUA_PATH = "d:\\esoexport\\gamemnf10\\esoui\\"
 
+esoEnvironment = EsoEnvironment.CEsoEnvironment()
+esoEnvironment.LoadGlobals(INPUT_GLOBAL_FILENAME)
+esoEnvironment.LoadLuaFiles(INPUT_LUA_PATH)
 
+
+'''
 esoGlobals = EsoGlobals.LoadGlobals(INPUT_GLOBAL_FILENAME)
 esoGlobals.Dump(OUTPUT_PATH + "globals.txt")
 esoGlobals.CreateHTML(OUTPUT_PATH + "globals.html")
@@ -30,7 +36,7 @@ esoGlobals.DumpDuplicateFunctions(OUTPUT_PATH + "globaldupfuncs.txt")
 
 esoFiles = EsoLuaFile.LoadAllFiles(INPUT_LUA_PATH, INPUT_LUA_PATH)
 EsoLuaFile.CreateHtmlAllFiles(esoFiles, "d:\\temp\\esodata1\\src\\", esoGlobals)
-
+'''
 
 '''
 esoFiles = EsoLuaFile.LoadAllFiles(INPUT_LUA_PATH, INPUT_LUA_PATH)

@@ -186,6 +186,65 @@ class CEsoFunctionDb:
                     outFile.write("\t{0}:{1} -- {2}\n".format(call.filename, call.startLinePos, call.fullString))
 
 
+    def DumpMissingFunctionCalls(self, filename):
+        nameMap = { }
+
+        for key in self.globalFunctions:
+            funcs = self.globalFunctions[key]
+
+            for func in funcs:
+                if (not func.name in nameMap):
+                    nameMap[func.name] = func
+
+        print "Dumping missing function calls to", filename
+
+        with open(filename, "w") as outFile:
+            sortedKeys = sorted(self.functionCalls)
+            
+            for key in sortedKeys:
+                calls = self.functionCalls[key]
+                if (key in nameMap): continue
+
+                outFile.write("{0}()\n".format(key))
+
+                for call in sorted(calls):
+                    if (not call.fullName in self.globalFunctions):
+                        outFile.write("\t{0} -- {1}:{2}\n".format(call.fullString, call.filename, call.startLinePos))
+
+
+    def CheckFunctionCalls(self):
+        matchCount = 0
+        missCount = 0
+        nameMatchCount = 0
+        nameMissCount = 0
+        nameMap = { }
+
+        for key in self.globalFunctions:
+            funcs = self.globalFunctions[key]
+
+            for func in funcs:
+                if (not func.name in nameMap):
+                    nameMap[func.name] = func
+
+        print "Checking for function call in global function definitions..."
+
+        for key in self.functionCalls:
+            calls = self.functionCalls[key]
+
+            for call in calls:
+                if (call.fullName in self.globalFunctions):
+                    matchCount += 1
+                else:
+                    missCount += 1
+
+                if (call.name in nameMap):
+                    nameMatchCount += 1
+                else:
+                    nameMissCount += 1
+
+        print "\tFound {0} matches and {1} misses (name lookup has {2} matches and {3} misses).".format(matchCount, missCount, nameMatchCount, nameMissCount)
+
+
     def CheckNameValueDups(self, filename):
         nameMap = { }
         nameMapCount = { }

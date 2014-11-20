@@ -34,12 +34,13 @@ esoFunctionDb.DumpFunctionCalls(OUTPUT_PATH + "functioncalls.txt")
 esoFunctionDb.CreateFunctionValueMap(esoGlobals)
 esoFunctionDb.MatchGlobals(esoGlobals)
 
-esoFunctionDb.DumpGlobalFunctions(OUTPUT_PATH + "funcs.txt")
+esoFunctionDb.DumpGlobalFunctions(OUTPUT_PATH + "globalfuncs.txt")
 esoFunctionDb.DumpMissingFunctions(OUTPUT_PATH + "missingfuncs.txt", esoGlobals)
 
 esoFunctionDb.CheckNameValueDups(OUTPUT_PATH + "namedupfuncs.txt")
 esoFunctionDb.CheckFunctionCalls()
 esoFunctionDb.DumpMissingFunctionCalls(OUTPUT_PATH + "missingfunccalls.txt")
+esoFunctionDb.DumpUnusedFunctions(OUTPUT_PATH + "unusedfunc.txt", esoGlobals)
 
 
 '''

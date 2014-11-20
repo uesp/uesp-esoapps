@@ -4,6 +4,21 @@
 	font-size: 1em;
 }
 
+#esolf_fileroot {
+	margin-top: 0.5em;
+}
+
+h2 {
+	margin-bottom: 0.1em;
+	margin-top: 0.3em;
+}
+
+a.esolf_pathlink {
+	font-size: 0.8em;
+	font-family: sans-serif;
+	text-decoration: none;
+}
+
 .esolf_linenumbers {
 	color: #999;
 	vertical-align: top;

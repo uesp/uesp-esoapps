@@ -1,0 +1,8 @@
+<html>
+	<head>
+		<title>UESP:ESO Lua Directory -- ${luaPath}</title>
+		<link rel="stylesheet" href="${resourcePath}/esoluadir.css" type="text/css" />
+	</head>
+<body>
+<h1>ESO Lua Files</h1>
+<h2>Index of ${luaPath}</h2>

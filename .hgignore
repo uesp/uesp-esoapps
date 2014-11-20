@@ -19,6 +19,7 @@ uespLog/Installs/**
 
 #
 parseGlobals/test*
+*.pyc
 
 *.obj
 *.pdb

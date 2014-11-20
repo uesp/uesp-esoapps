@@ -350,8 +350,6 @@ class CLuaTokenizer:
          ";",     ":",     ",",     ".",     "..",    "...",
     ]
 
-    KEEP_COMMENTS = False
-
 
     def __init__(self):
         self.charPos = 0
@@ -360,6 +358,7 @@ class CLuaTokenizer:
         self.sourceLines = []
         self.tokens = []
         self.tokensWithComments = []
+        self.KEEP_COMMENTS = False
 
 
     @staticmethod
@@ -685,26 +684,9 @@ def TestTokenAll(path):
             if (filename.endswith(".lua")):
                 fullFilename = root + "\\" + filename
                 fileCount += 1
-                print fileCount, fullFilename
-                tokenizer.TokenizeFile(fullFilename)
                 
-            
+                print "{0}: Tokenizing Lua file {1}".format(fileCount, fullFilename)
+                tokens = tokenizer.TokenizeFile(fullFilename)                
+                print "\tFound {0} tokens...".format(len(tokens))
     return
 
-
-# test = CLuaTokenizer()
-# test.TokenizeFile("d:\\esoexport\\gamemnf10\\esoui\\libraries\\zo_menubar\\zo_menubar.lua")
-# print "Found {0} tokens...".format(len(test.tokens))
-
-# TestTokenAll("d:\\esoexport\\gamemnf10\\esoui\\")
-
-'''
-for t in test.tokens:
-    if (t.type == Token.string):
-        print "{0}:{1} = \"{2}\"".format(t.linePos, t.charPos, t.token)
-    elif (t.type == Token.keyword):
-        print "{0}:{1} = Keyword {2}".format(t.linePos, t.charPos, t.token)
-    else:
-        print "{0}:{1} = {2}".format(t.linePos, t.charPos, t.token)
-
-'''

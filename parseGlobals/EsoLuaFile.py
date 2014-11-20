@@ -28,6 +28,7 @@ class CEsoLuaFile:
 
     def Parse(self):
         self.tokenizer.Tokenize(self.fileContents)
+        self.tokenizer.TokenizeWithComments(self.fileContents)
         return True
         
 
@@ -50,7 +51,7 @@ def LoadFile(filename, relPath = ""):
 def LoadAllFiles(path, relPath = ""):
     luaFiles = []
 
-    print "Loading all Lua files from", relPath, "..."
+    print "Loading and parsing all Lua files from", relPath, "..."
     
     for root, dirs, files in os.walk(path):
         for filename in files:

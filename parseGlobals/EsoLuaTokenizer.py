@@ -330,7 +330,7 @@ class CLuaToken:
         self.token = ""
         self.linePos = -1
         self.charPos = -1
-        self.index = -1
+        self.charIndex = -1
 
 
 
@@ -359,6 +359,7 @@ class CLuaTokenizer:
         self.origSource = ""
         self.sourceLines = []
         self.tokens = []
+        self.tokensWithComments = []
 
 
     @staticmethod
@@ -401,9 +402,8 @@ class CLuaTokenizer:
         if (endIndex >= len(self.tokens)): endIndex = len(self.tokens) - 1
         if (startIndex > endIndex): return ""
 
-        stringStartIndex = self.tokens[startIndex].index
-        stringEndIndex = self.tokens[endIndex].index + len(self.tokens[endIndex].token)
-        if (self.tokens[endIndex].type == Token.string): stringEndIndex += 2
+        stringStartIndex = self.tokens[startIndex].charIndex
+        stringEndIndex = self.tokens[endIndex].charIndex + len(self.tokens[endIndex].token)
 
         return self.origSource[stringStartIndex:stringEndIndex]
 
@@ -425,7 +425,7 @@ class CLuaTokenizer:
             newToken = CLuaToken()
             newToken.linePos = startLinePos
             newToken.charPos = startCharPos
-            newToken.index = startIndex
+            newToken.charIndex = startIndex
             newToken.token = self.origSource[startIndex:i+1]
             newToken.type = Token.comment
             self.tokens.append(newToken)
@@ -458,7 +458,7 @@ class CLuaTokenizer:
             newToken = CLuaToken()
             newToken.linePos = startLinePos
             newToken.charPos = startCharPos
-            newToken.index = startIndex
+            newToken.charIndex = startIndex
             newToken.token = self.origSource[startIndex:i+1]
             newToken.type = Token.comment
             self.tokens.append(newToken)
@@ -498,7 +498,7 @@ class CLuaTokenizer:
         newToken = CLuaToken()
         newToken.linePos = startLinePos
         newToken.charPos = startCharPos
-        newToken.index = startIndex
+        newToken.charIndex = startIndex
         newToken.token = self.origSource[startIndex:i+1]
         newToken.type = Token.operator
         
@@ -553,7 +553,7 @@ class CLuaTokenizer:
         newToken = CLuaToken()
         newToken.linePos = startLinePos
         newToken.charPos = startCharPos
-        newToken.index = startIndex
+        newToken.charIndex = startIndex
         newToken.token = self.origSource[startIndex:i+1]
         newToken.type = Token.number
         
@@ -577,7 +577,7 @@ class CLuaTokenizer:
         newToken = CLuaToken()
         newToken.linePos = startLinePos
         newToken.charPos = startCharPos
-        newToken.index = startIndex
+        newToken.charIndex = startIndex
         newToken.token = self.origSource[startIndex:i+1]
 
         if (newToken.token in self.LUA_KEYWORDS):
@@ -594,7 +594,7 @@ class CLuaTokenizer:
         startCharPos = self.charPos + 1
         startLinePos = self.linePos
         stringChar = self.origSource[i]
-        startIndex = i + 1
+        startIndex = i
         
         i += 1
         self.charPos += 1
@@ -626,8 +626,8 @@ class CLuaTokenizer:
         newToken.type = Token.string
         newToken.linePos = startLinePos
         newToken.charPos = startCharPos
-        newToken.token = self.origSource[startIndex:i]
-        newToken.index = startIndex - 1
+        newToken.token = self.origSource[startIndex:i+1]
+        newToken.charIndex = startIndex
 
         self.tokens.append(newToken)
         return i, True

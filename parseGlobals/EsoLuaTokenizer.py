@@ -630,11 +630,33 @@ class CLuaTokenizer:
 
         self.tokens.append(newToken)
         return i, True
+
+
+            # Note: This is much slower than just tokenizing a file twice
+    def CopyTokensWithoutComments(self):
+        self.tokens = list(self.tokensWithComments)
+
+        for token in self.tokensWithComments:
+            if (token.type == Token.comment):
+                self.tokens.remove(token)
     
 
     def TokenizeFile(self, filename):
         luaContents = open(filename, "r").read()
         return self.Tokenize(luaContents)
+
+
+    def TokenizeWithComments(self, luaString):
+        origFlag = self.KEEP_COMMENTS
+        self.KEEP_COMMENTS = True
+        origTokens = self.tokens
+                
+        Result = self.Tokenize(luaString)
+
+        self.tokensWithComments = self.tokens
+        self.tokens = origTokens
+        self.KEEP_COMMENTS = origFlag
+        return Result
 
 
     def Tokenize(self, luaString):

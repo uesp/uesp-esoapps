@@ -104,9 +104,7 @@ class CEsoLuaFile:
                 lineIndex = 0
 
                 for line in lines:
-                    if len(line) == 0:
-                        outFile.write("&nbsp;")
-                    else:
+                    if len(line) != 0:
                         outFile.write("<code class='esolf_space'>{0}</code>".format(line))
 
                     if (lineIndex + 1 < len(lines)):
@@ -128,7 +126,7 @@ class CEsoLuaFile:
                 if obj is None:
                     tooltip = ""
                 elif obj.type == "number" and obj.string != "":
-                    tooltip = "\"{1}\"({0})".format(obj.value, obj.string)
+                    tooltip = "({0})\"{1}\"".format(obj.value, obj.string)
                 elif obj.type == "number":
                     tooltip = obj.value
                 elif obj.type == "string":
@@ -140,10 +138,15 @@ class CEsoLuaFile:
                 elif obj.type == "table":
                     tooltip = "table:" + obj.value
 
+                if len(tooltip) > 100: tooltip = tooltip[:100] + "..."
+                tooltip = tooltip.replace(">", "&gt;").replace("<", "&lt;")
+
+            outputText = token.token.replace(">", "&gt;").replace("<", "&lt;")
+
             if (tooltip == ""):
-                outFile.write("<code class='esolf_{0}'>{1}</code>".format(Token.toString(token.type), token.token))
+                outFile.write("<code class='esolf_{0}'>{1}</code>".format(Token.toString(token.type), outputText))
             else:
-                outFile.write("<code class='esolf_{0}' tooltip='{2}'>{1}</code>".format(Token.toString(token.type), token.token, tooltip))
+                outFile.write("<code class='esolf_{0}' tooltip='{2}'>{1}</code>".format(Token.toString(token.type), outputText, tooltip))
 
             lastToken = token
 

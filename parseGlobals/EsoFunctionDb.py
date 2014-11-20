@@ -3,6 +3,7 @@ import collections
 import os.path
 import re
 import operator
+from operator import attrgetter
 import sys
 import datetime
 import shutil
@@ -163,14 +164,28 @@ class CEsoFunctionDb:
         print "Dumping globals functions to", filename
 
         with open(filename, "w") as outFile:
+            sortedKeys = sorted(self.globalFunctions)
 
-            for funcName in self.globalFunctions:
+            for funcName in sortedKeys:
                 funcs = self.globalFunctions[funcName]
-                outFile.write("{0}()\n".format(funcName))
+                outFile.write("{0}() = '{1}'\n".format(funcName, funcs[0].value))
 
                 for func in funcs:
                     outFile.write("\t{0}:{1} -- {2}\n".format(func.filename, func.startLinePos, func.fullDefString))
-    
+
+
+    def DumpUnusedFunctions(self, filename, esoGlobals):
+        print "Dumping unused functions to", filename
+
+        with open(filename, "w") as outFile:
+            sortedFuncs = sorted(esoGlobals.allFunctions, key=attrgetter('fullName'))
+
+            for func in sortedFuncs:
+                if (func.fullName in self.globalFunctions): continue
+                if (func.fullName in self.functionCalls): continue
+
+                outFile.write("{0}() = {1}\n".format(func.fullName, func.value))
+            
 
     def DumpFunctionCalls(self, filename):
         print "Dumping function calls to", filename

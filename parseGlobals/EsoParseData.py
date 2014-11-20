@@ -38,6 +38,8 @@ esoFunctionDb.DumpGlobalFunctions(OUTPUT_PATH + "funcs.txt")
 esoFunctionDb.DumpMissingFunctions(OUTPUT_PATH + "missingfuncs.txt", esoGlobals)
 
 esoFunctionDb.CheckNameValueDups(OUTPUT_PATH + "namedupfuncs.txt")
+esoFunctionDb.CheckFunctionCalls()
+esoFunctionDb.DumpMissingFunctionCalls(OUTPUT_PATH + "missingfunccalls.txt")
 
 
 '''

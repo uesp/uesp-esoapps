@@ -1,0 +1,7 @@
+<html>
+	<head>
+		<title>UESP:ESO Lua File -- ${filename}</title>
+		<link rel="stylesheet" href="${resourcePath}/esoluafile.css" type="text/css" />
+	</head>
+<body>
+<h1>${filename}</h1>

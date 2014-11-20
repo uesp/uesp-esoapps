@@ -1,57 +1,77 @@
-/*
 
-Original style from softwaremaniacs.org (c) Ivan Sagalaev <Maniac@SoftwareManiacs.Org>
-
-*/
-
-/* Pretty printing styles. Used with prettify.js. */
-
-/* SPAN elements with the classes below are added by prettyprint. */
-.pln { color: #000 }  /* plain text */
-
-@media screen {
-  .str { color: #080 }  /* string content */
-  .kwd { color: #008 }  /* a keyword */
-  .com { color: #800 }  /* a comment */
-  .typ { color: #606 }  /* a type name */
-  .lit { color: #066 }  /* a literal value */
-  /* punctuation, lisp open bracket, lisp close bracket */
-  .pun, .opn, .clo { color: #660 }
-  .tag { color: #008 }  /* a markup tag name */
-  .atn { color: #606 }  /* a markup attribute name */
-  .atv { color: #080 }  /* a markup attribute value */
-  .dec, .var { color: #606 }  /* a declaration; a variable name */
-  .fun { color: red }  /* a function name */
+#esolf_fileroot, #esolf_fileroot code {
+	font-family: "Consolas", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace !important;
+	font-size: 1em;
 }
 
-/* Use higher contrast and text-weight for printable form. */
-@media print, projection {
-  .str { color: #060 }
-  .kwd { color: #006; font-weight: bold }
-  .com { color: #600; font-style: italic }
-  .typ { color: #404; font-weight: bold }
-  .lit { color: #044 }
-  .pun, .opn, .clo { color: #440 }
-  .tag { color: #006; font-weight: bold }
-  .atn { color: #404 }
-  .atv { color: #060 }
+.esolf_linenumbers {
+	color: #999;
+	vertical-align: top;
+	text-align: right;
+	padding: 1px;
+	padding-right: 5px;
+	border-right: solid #99ff99 5px;
 }
 
-/* Put a border around prettyprinted code snippets. */
-pre.prettyprint { padding: 2px; }
+.esolf_codelines {
+	vertical-align: top;
+	padding: 1px;
+	padding-left: 5px;
+}
 
-/* Specify class=linenums on a pre to get line numbering */
-ol.linenums { margin-top: 0; margin-bottom: 0; color: #999; background-color: #eee; } /* IE indents via margin-left */
+.esolf_codeline {
+}
 
-/* Alternate shading for lines */
-li.L1,
-li.L3,
-li.L5,
-li.L7,
-li.L9 { background: #fff; margin-left: 5px; }
+.esolf_footer {
+	font-size: 0.9em;
+	font-style: italic;
+	color: #666;
+}
 
-li.L0,
-li.L2,
-li.L4,
-li.L6,
-li.L8 { background: #f8f8f8; margin-left: 5px; }
+.esolf_name, .esolf_keyword, .esolf_space, .esolf_table, .esolf_userdata, .esolf_string, .esolf_number, .esolf_none, .esolf_other, .esolf_operator, .esolf_comment  {
+	display: inline;
+}
+
+.esolf_name:hover, .esolf_keyword:hover, .esolf_table:hover, .esolf_userdata:hover, .esolf_string:hover, .esolf_number:hover, .esolf_other:hover, .esolf_comment:hover {
+	background-color: #ccc;
+}
+
+[tooltip]:hover:before {            
+    position : absolute;
+    content : attr(tooltip);
+	background: #ffff99;
+	color: black;
+	border: 1px solid gray;
+	font-size: 1em;
+	margin: -16px 0 0 16px;
+	padding: 0px 2px 0px 2px;
+}
+
+[tooltip]:hover:after {
+	content: '';
+	margin: 0;
+	width: 0;
+	height: 0;
+}
+
+.esolf_keyword {
+	font-weight: 600;
+	color: #0000ff;
+}
+
+.esolf_string {
+	color: #aa00aa;
+}
+
+.esolf_number {
+	color: #bb3333;
+}
+
+.esolf_comment {
+	color: #008200;
+}
+
+.esolf_operator {
+	color: #000099;
+	font-weight: 400;
+}

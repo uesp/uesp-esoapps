@@ -25,6 +25,14 @@ esoGlobals.Dump(OUTPUT_PATH + "globals.txt")
 esoGlobals.CreateHTML(OUTPUT_PATH + "globals.html")
 esoGlobals.DumpDuplicateFunctions(OUTPUT_PATH + "globaldupfuncs.txt")
 
+#esoFile = EsoLuaFile.LoadFile("d:\\esoexport\\gamemnf10\\esoui\\libraries\\globals\\debugutils.lua", "d:\\esoexport\\gamemnf10\\esoui\\")
+#esoFile.CreateHtml("d:\\temp\\esodata1\\src\\", esoGlobals)
+
+esoFiles = EsoLuaFile.LoadAllFiles(INPUT_LUA_PATH, INPUT_LUA_PATH)
+EsoLuaFile.CreateHtmlAllFiles(esoFiles, "d:\\temp\\esodata1\\src\\", esoGlobals)
+
+
+'''
 esoFiles = EsoLuaFile.LoadAllFiles(INPUT_LUA_PATH, INPUT_LUA_PATH)
 esoFunctions = EsoFunctionInfo.FindAllFunctions(esoFiles)
 esoFunctionCalls = EsoFunctionInfo.FindAllFunctionCalls(esoFiles)
@@ -41,7 +49,7 @@ esoFunctionDb.CheckNameValueDups(OUTPUT_PATH + "namedupfuncs.txt")
 esoFunctionDb.CheckFunctionCalls()
 esoFunctionDb.DumpMissingFunctionCalls(OUTPUT_PATH + "missingfunccalls.txt")
 esoFunctionDb.DumpUnusedFunctions(OUTPUT_PATH + "unusedfunc.txt", esoGlobals)
-
+'''
 
 '''
 #esoLuaFile = EsoLuaFile.LoadFile("d:\\esoexport\\gamemnf10\\esoui\\libraries\\zo_menubar\\zo_menubar.lua", "d:\\esoexport\\gamemnf10\\esoui\\")

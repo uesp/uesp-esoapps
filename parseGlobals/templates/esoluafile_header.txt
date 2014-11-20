@@ -6,4 +6,4 @@
 <body>
 <h1>ESO Lua File</h1>
 <h2>${filename}</h2>
-<a href="luadir.html" class="esolf_pathlink">[&#x25c4; back to folders]</a>
+<a href="luadir.html" class="esolf_pathlink">[&#x25c4; back to folders ]</a>

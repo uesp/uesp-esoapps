@@ -1,0 +1,15 @@
+.esold_footer {
+	font-size: 0.9em;
+	font-style: italic;
+	color: #666;
+}
+
+.esold_list {
+	font-family: "Courier New", Courier, monospace;
+	font-weight: bold;
+}
+
+.esold_list li {
+	padding: 3px;
+	list-style-type: none;
+}

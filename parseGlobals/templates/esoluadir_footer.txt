@@ -1,0 +1,11 @@
+<hr />
+<div class="esold_footer" id="endoffile">
+This file was generated automatically on ${creationDate}. Data was exported from ESO on ${parseDate} ${parseTime}, API version ${parseVersion}. 
+All file contents are Copyright (c) 2014 Zenimax Online Studios. All trademarks and registered trademarks present in the file are proprietary 
+to ZeniMax Online Studios, the inclusion of which implies no affiliation with the UESP. The use of this file data is believed to fall 
+under the fair dealing clause of Canadian copyright law.")
+<p />
+Contact <a href="mailto:dave@uesp.net">Daveh</a> for issues or information regarding this page.
+</div>
+</body>
+</html>

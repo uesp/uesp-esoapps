@@ -22,13 +22,71 @@ class CEsoEnvironment:
     def __init__(self):
         self.globalData = CEsoGlobals()
         self.luaFiles = []
-        self.functions = CEsoFunctionInfo()
-        self.functionCalls = CEsoFunctionCallInfo()
+        self.functionInfos = CEsoFunctionInfo()
+        self.functionCallInfos = CEsoFunctionCallInfo()
         self.functionDb = CEsoFunctionDb()
         self.luaDirHeaderTemplate = Template(open('templates/esoluadir_header.txt', 'r').read())
         self.luaDirFooterTemplate = Template(open('templates/esoluadir_footer.txt', 'r').read())
         self.luaFileHeaderTemplate = Template(open('templates/esoluafile_header.txt', 'r').read())
         self.luaFileFooterTemplate = Template(open('templates/esoluafile_footer.txt', 'r').read())
+
+        self.allFunctions = { }
+        #self.allFunctionsNameMap = { }
+
+
+    def AddFunction(self, funcInfo):
+        
+        if (not funcInfo.niceName in self.allFunctions):
+            self.allFunctions[funcInfo.niceName] = []
+
+        self.allFunctions[funcInfo.niceName].append(funcInfo)
+
+        if (not funcInfo.name in self.allFunctions):
+            self.allFunctions[funcInfo.name] = []
+
+        self.allFunctions[funcInfo.name].append(funcInfo)
+
+
+    def AddFunctionIfNew(self, name, fullName):
+        niceName = fullName.replace(":", ".")
+        
+        if (niceName in self.allFunctions and name in self.allFunctions): return self.allFunctions[name]
+
+        funcInfo = CEsoFunctionInfo()
+        funcInfo.fullName = fullName
+        funcInfo.niceName = niceName
+        funcInfo.name = name
+
+        if (not niceName in self.allFunctions):
+            self.allFunctions[funcInfo.fullName] = []
+            self.allFunctions[funcInfo.fullName].append(funcInfo)
+
+        if (not name in self.allFunctions):
+            self.allFunctions[funcInfo.name] = []
+            self.allFunctions[funcInfo.name].append(funcInfo)
+
+        return funcInfo
+
+
+    def CreateAllFunctions(self):
+        print "Creating all function records from data..."
+
+        for funcInfo in self.functionInfos:
+            self.AddFunction(funcInfo)
+
+        for callInfo in self.functionCallInfos:
+            self.AddFunctionIfNew(callInfo.name, callInfo.fullName)
+
+        for func in self.globalData.allFunctions:
+            self.AddFunctionIfNew(func.name, func.fullName)
+
+        count = 0
+        
+        for funcs in self.allFunctions:
+            count += len(funcs)
+                
+        print "\tFound {0} unique function names with {1} total functions!".format(len(self.allFunctions), count)
+        return True
 
 
     def LoadGlobals(self, filename):
@@ -38,12 +96,14 @@ class CEsoEnvironment:
     def LoadLuaFiles(self, path):
         self.luaFiles = EsoLuaFile.LoadAllFiles(path, path)
         
-        self.functions = EsoFunctionInfo.FindAllFunctions(self.luaFiles)
-        self.functionCalls = EsoFunctionInfo.FindAllFunctionCalls(self.luaFiles)
+        self.functionInfos = EsoFunctionInfo.FindAllFunctions(self.luaFiles)
+        self.functionCallInfos = EsoFunctionInfo.FindAllFunctionCalls(self.luaFiles)
         
-        self.functionDb = EsoFunctionDb.CreateDb(self.functions, self.functionCalls)
+        self.functionDb = EsoFunctionDb.CreateDb(self.functionInfos, self.functionCallInfos)
         self.functionDb.CreateFunctionValueMap(self.globalData)
         self.functionDb.MatchGlobals(self.globalData)
+
+        self.CreateAllFunctions()
 
 
     def CreateGlobalTemplateVars(self):
@@ -264,4 +324,6 @@ class CEsoEnvironment:
 
         
             
+
+
 

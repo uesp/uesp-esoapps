@@ -13,8 +13,9 @@ h2, h1 {
 	margin-top: 0.3em;
 }
 
-a.eso_functionlink {
+a.eso_functionlink, a.eso_functionlink :visited {
 	text-decoration: none;
+	color: #000088;
 }
 
 a.esolf_pathlink {

@@ -26,6 +26,8 @@ esoEnvironment.LoadLuaFiles(INPUT_LUA_PATH)
 esoEnvironment.CreateLuaFilesHtml(OUTPUT_PATH + "src\\")
 esoEnvironment.CreateLuaFilesDirTree(OUTPUT_PATH + "src\\")
 
+esoEnvironment.CreateAllFunctionHtml(OUTPUT_PATH + "data\\")
+
 '''
 esoGlobals = EsoGlobals.LoadGlobals(INPUT_GLOBAL_FILENAME)
 esoGlobals.Dump(OUTPUT_PATH + "globals.txt")

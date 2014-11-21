@@ -3,6 +3,7 @@ import operator
 import sys
 import datetime
 import shutil
+import re
 from operator import attrgetter
 from string import Template
 import EsoGlobals
@@ -33,8 +34,49 @@ class CEsoEnvironment:
         self.functionHeaderTemplate = Template(open('templates/esofunction_header.txt', 'r').read())
         self.functionFooterTemplate = Template(open('templates/esofunction_footer.txt', 'r').read())
 
+        self.luaFileOutputPath = ""
+        self.functionOutputPath = ""
+
         self.allFunctions = { }
-        #self.allFunctionsNameMap = { }
+        self.functionValueMap = { }
+        self.functionNameValueMap = { }
+
+
+    def GetFunctionNameAliases(self, funcName):
+        funcName = funcName.replace(":", ".")
+        if (funcName not in self.functionNameValueMap): return []
+        funcValue = self.functionNameValueMap[funcName]
+        if (funcValue not in self.functionValueMap): return []
+        return self.functionValueMap[funcValue]
+    
+
+    def CreateFunctionValueMap(self):
+        print "Creating function value map..."
+        
+        matchCount = 0
+        missCount = 0
+
+        for obj in self.globalData.allFunctions:
+            self.functionNameValueMap[obj.fullName] = obj.value
+            
+            if (obj.fullName in self.allFunctions):
+                matchCount += 1
+                funcInfos = self.allFunctions[obj.fullName]
+                globalFuncs = []
+
+                for func in funcInfos:
+                    if not func.isLocal:
+                        func.value = obj.value
+                        globalFuncs.append(func)
+
+                if (not obj.value in self.functionValueMap):
+                    self.functionValueMap[obj.value] = []
+
+                self.functionValueMap[obj.value].extend(globalFuncs)
+            else:
+                missCount += 1
+        
+        print "\tSet values of {0} functions with {1} misses!".format(matchCount, missCount)
 
 
     def AddFunction(self, funcInfo):
@@ -43,6 +85,8 @@ class CEsoEnvironment:
             self.allFunctions[funcInfo.niceName] = []
 
         self.allFunctions[funcInfo.niceName].append(funcInfo)
+
+        if (funcInfo.niceName == funcInfo.name): return
 
         if (not funcInfo.name in self.allFunctions):
             self.allFunctions[funcInfo.name] = []
@@ -61,8 +105,10 @@ class CEsoEnvironment:
         funcInfo.name = name
 
         if (not niceName in self.allFunctions):
-            self.allFunctions[funcInfo.fullName] = []
-            self.allFunctions[funcInfo.fullName].append(funcInfo)
+            self.allFunctions[niceName] = []
+            self.allFunctions[niceName].append(funcInfo)
+
+        if (niceName == name): return funcInfo
 
         if (not name in self.allFunctions):
             self.allFunctions[funcInfo.name] = []
@@ -92,48 +138,122 @@ class CEsoEnvironment:
         return True
 
 
+    def SanitizeFunctionName(self, funcName):
+        return re.sub('[*?|:<>\/()\[\]\"\']', '_', funcName)
+
+
     def GetFunctionNameSubPath(self, funcName):
         if (len(funcName) < 3): return ""
-        return funcName[0] + "/" + funcName[1] + "/" + funcName[2]
+        funcName = self.SanitizeFunctionName(funcName)
+        return funcName[0].lower() + "/" + funcName[1].lower() + "/" + funcName[2].lower()
 
 
-    def GetFunctionCalls(self, funcName):
-        if (not funcName in self.functionCallInfos): return []
-        return self.functionCallInfos[funcName]
+    def CreateLuaFileLink(self, outputPath, filename, linePos = None):
+        relPath = os.path.join(os.path.relpath(self.luaFileOutputPath, outputPath), "").replace("\\", "/")
+        link = ""
+        
+        if (linePos is None or linePos <= 0):
+            link = "<a href='{1}{0}' class='eso_filelink'>{0}</a>".format(filename, relPath)
+        else:
+            link = "<a href='{2}{0}.html#{1}' class='eso_filelink'>{0}:{1}</a>".format(filename, linePos, relPath)
+            
+        return link
 
 
-    def CreateFunctionHtmlContent(self, outFile, funcName, functions):
+    def CreateLuaFunctionLink(self, outputPath, niceName, funcName):
+        niceName = self.SanitizeFunctionName(niceName)
+        subPath = self.GetFunctionNameSubPath(niceName)
+        targetPath = os.path.join(self.functionOutputPath, subPath)
+        relPath = os.path.relpath(targetPath, outputPath)
+        relPath = os.path.join(relPath, "").replace("\\", "/")
+
+        if not funcName.endswith("()"): funcName += "()"
+        link = "<a href='{0}{1}.html' class='eso_functionlink'>{2}</a>".format(relPath, niceName, funcName)
+        return link
+    
+
+    def CreateFunctionHtmlContent(self, outFile, funcName, functions, outputPath):
         funcAliasCount = 0
-        funcDefCount = 0
+        funcGlobalDefCount = 0
+        funcLocalDefCount = 0
         funcCallCount = 0
 
-        outFile.write("<h3>Function Aliases</h3>\n")
+        funcParts = filter(None, re.split("[.:\[\]]+", funcName))
+
+        if (len(funcParts) > 0 and funcParts[-1] != funcName):
+            funcLink = self.CreateLuaFunctionLink(outputPath, funcParts[-1], funcParts[-1])
+            outFile.write("<div class='esofn_seealso'>See also: {0}</div>".format(funcLink))
+        
+        outFile.write("<h3 id='esofn_aliases'>Function Aliases</h3>\n")
         outFile.write("<ul class='esofn_aliaslist'>\n")
+
+        aliases = self.GetFunctionNameAliases(funcName)
+
+        for func in aliases:
+            if (func.fullName != funcName):
+                funcAliasCount += 1
+                funcLink = self.CreateLuaFunctionLink(outputPath, func.niceName, func.fullName)
+                outFile.write("<li>{0}</li>\n".format(funcLink))
 
         if (funcAliasCount == 0):
             outFile.write("<li>No known aliases for this function.</li>\n")
 
         outFile.write("</ul>\n")
-        outFile.write("<h3>Function Definitions</h3>\n")
+        outFile.write("<h3 id='esofn_globaldefs'>Global Function Definitions</h3>\n")
         outFile.write("<ul class='esofn_deflist'>\n")
 
         for func in functions:
             if (func.filename == ""): continue
-            funcDefCount += 1
-            outFile.write("<li>{0}:{1} -- {2}</li>\n".format(func.filename, func.startLinePos, func.fullDefString))
+            if (func.isLocal): continue
+            funcGlobalDefCount += 1
+            fileLink = self.CreateLuaFileLink(outputPath, func.filename, func.startLinePos)
 
-        if (funcDefCount == 0):
-            outFile.write("<li>No known definitions for this function.</li>\n")
-        
+            if (funcName == func.niceName):
+                funcLink = "<div class='eso_functionlink'>{0}</div>".format(func.fullDefString)
+            else:
+                funcLink = self.CreateLuaFunctionLink(outputPath, func.niceName, func.fullDefString)
+                
+            outFile.write("<li>{0} -- {1}</li>\n".format(fileLink, funcLink))
+
+        if (funcGlobalDefCount == 0):
+            outFile.write("<li>No known global definitions for this function.</li>\n")
+       
         outFile.write("</ul>\n")
-        outFile.write("<h3>Function Calls</h3>\n")
+        outFile.write("<h3 id='esofn_localdefs'>Local Function Definitions</h3>\n")
+        outFile.write("<ul class='esofn_deflist'>\n")
+        
+        for func in functions:
+            if (func.filename == ""): continue
+            if (not func.isLocal): continue
+            funcLocalDefCount += 1
+            fileLink = self.CreateLuaFileLink(outputPath, func.filename, func.startLinePos)
+
+            if (funcName == func.niceName):
+                funcLink = "<div class='eso_functionlink'>{0}</div>".format(func.fullDefString)
+            else:
+                funcLink = self.CreateLuaFunctionLink(outputPath, func.niceName, func.fullDefString)
+                
+            outFile.write("<li>{0} -- {1}</</li>\n".format(fileLink, funcLink))
+
+        if (funcLocalDefCount == 0):
+            outFile.write("<li>No known local definitions for this function.</li>\n")
+       
+        outFile.write("</ul>\n")
+        outFile.write("<h3 id='esofn_calls'>Function Calls</h3>\n")
         outFile.write("<ul class='esofn_calllist'>\n")
 
-        funcCalls = self.GetFunctionCalls(funcName)
-
+        funcCalls = self.functionDb.GetFunctionCalls(funcName)
+        
         for call in funcCalls:
             funcCallCount += 1
-            outFile.write("<li>{0}:{1} -- {2}</li>\n".format(call.filename, call.startLinePos, func.fullString))
+            fileLink = self.CreateLuaFileLink(outputPath, call.filename, call.startLinePos)
+
+            if (call.niceName == funcName):
+                funcLink = "<div class='eso_functionlink'>{0}</div>".format(call.fullString)
+            else:
+                funcLink = self.CreateLuaFunctionLink(outputPath, call.niceName, call.fullString)
+                
+            outFile.write("<li>{0} -- {1}</li>\n".format(fileLink, funcLink))
 
         if (funcCallCount == 0):
             outFile.write("<li>No known calls of this function.</li>\n")
@@ -142,8 +262,9 @@ class CEsoEnvironment:
 
 
     def CreateFunctionHtml(self, outputBasePath, funcName, functions):
-        outputPath = os.path.join(outputBasePath, self.GetFunctionNameSubPath(funcName), "").replace("\\", "/")
-        outputFilename = outputPath + funcName + ".html"
+        niceName = self.SanitizeFunctionName(funcName)
+        outputPath = os.path.join(outputBasePath, self.GetFunctionNameSubPath(niceName), "").replace("\\", "/")
+        outputFilename = outputPath + niceName + ".html"
 
         if (not os.path.exists(outputPath)): os.makedirs(outputPath)
 
@@ -151,24 +272,34 @@ class CEsoEnvironment:
         templateVars["name"] = funcName + "()"
         templateVars["resourcePath"] = os.path.relpath(outputBasePath, outputFilename).replace("\\", "/")
 
-        print "Creating ", outputFilename
-
         with open(outputFilename, "w") as outFile:
             outFile.write(self.functionHeaderTemplate.safe_substitute(templateVars))
-            self.CreateFunctionHtmlContent(outFile, funcName, functions)
+            self.CreateFunctionHtmlContent(outFile, funcName, functions, outputPath)
             outFile.write(self.functionFooterTemplate.safe_substitute(templateVars))
+
+
+    def CopyResources(self, outputPath):
+        if (not os.path.exists(outputPath)): os.makedirs(outputPath)
+
+        for root, dirs, files in os.walk("resources"):
+            for filename in files:
+                fullFilename = root + "/" + filename
+                shutil.copyfile(fullFilename, os.path.join(outputPath, "") + filename)
             
 
     def CreateAllFunctionHtml(self, outputBasePath):
-        
+        self.functionOutputPath = outputBasePath.replace("\\", "/")
         print "Creating all function HTML files in {0}...".format(outputBasePath)
 
         if (not os.path.exists(outputBasePath)): os.makedirs(outputBasePath)
-        shutil.copyfile("resources/esofunction.css", os.path.join(outputBasePath, "") + "esofunction.css")
+        funcIndex = 0
 
         for funcName in self.allFunctions:
             funcs = self.allFunctions[funcName]
             self.CreateFunctionHtml(outputBasePath, funcName, funcs)
+
+            funcIndex += 1
+            if funcIndex % 1000 == 0: print "\tCreated {0} of {1} function files".format(funcIndex, len(self.allFunctions))
 
 
     def LoadGlobals(self, filename):
@@ -180,12 +311,12 @@ class CEsoEnvironment:
         
         self.functionInfos = EsoFunctionInfo.FindAllFunctions(self.luaFiles)
         self.functionCallInfos = EsoFunctionInfo.FindAllFunctionCalls(self.luaFiles)
-        
+
         self.functionDb = EsoFunctionDb.CreateDb(self.functionInfos, self.functionCallInfos)
-        self.functionDb.CreateFunctionValueMap(self.globalData)
         self.functionDb.MatchGlobals(self.globalData)
 
         self.CreateAllFunctions()
+        self.CreateFunctionValueMap()
 
 
     def CreateGlobalTemplateVars(self):
@@ -305,23 +436,14 @@ class CEsoEnvironment:
         return True
 
 
-    def CopyLuaFileHtmlResources(self, outputPath):
-        shutil.copyfile("resources/esoluafile.css", os.path.join(outputPath, '') + "esoluafile.css")
-        return True
-
-
-    def CreateLuaFileHtml(self, luaFile, outputBasePath, copyResources = True):
+    def CreateLuaFileHtml(self, luaFile, outputBasePath):
         outputBasePath = os.path.join(outputBasePath, "").replace("\\", "/")
         outputFilename = outputBasePath + luaFile.relFilename
         outputHtmlFilename = outputFilename  + ".html"
+        
         path = os.path.dirname(outputFilename)
         if not os.path.exists(path): os.makedirs(path)
-
-        if copyResources:
-            self.CopyLuaFileHtmlResources(os.path.dirname(os.path.dirname(outputBasePath)))
-            
-        shutil.copyfile(luaFile.fullFilename, outputFilename)
-
+        
         templateVars = self.CreateLuaFileTemplateVars(luaFile)
         templateVars["resourcePath"] = os.path.relpath(outputBasePath, outputFilename).replace("\\", "/")
 
@@ -334,12 +456,11 @@ class CEsoEnvironment:
 
 
     def CreateLuaFilesHtml(self, outputBasePath):
-        hasOutputResources = False
         print "Creating HTML versions of {0} Lua files...".format(len(self.luaFiles))
-
+        self.luaFileOutputPath = outputBasePath.replace("\\", "/")
+        
         for luaFile in self.luaFiles:
-            self.CreateLuaFileHtml(luaFile, outputBasePath, not hasOutputResources)
-            hasOutputResources = True
+            self.CreateLuaFileHtml(luaFile, outputBasePath)
 
 
     def OutputLuaFilesDirTree(self, root, outputBasePath, parentPath):
@@ -400,7 +521,6 @@ class CEsoEnvironment:
             root[filename] = luaFile
 
         #print rootFiles
-        shutil.copyfile("resources/esoluadir.css", os.path.dirname(os.path.dirname(os.path.join(outputBasePath, ''))) + "/esoluadir.css")
         self.OutputLuaFilesDirTree(rootFiles, outputBasePath, "")
         
 

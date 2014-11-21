@@ -1,0 +1,8 @@
+<html>
+	<head>
+		<title>UESP:ESO Function -- ${name}</title>
+		<link rel="stylesheet" href="${resourcePath}/esofunction.css" type="text/css" />
+	</head>
+<body>
+<h1>ESO Function Data</h1>
+<h2>${name}</h2>

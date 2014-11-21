@@ -1,0 +1,7 @@
+<hr />
+<div class="esofn_footer" id="endoffile">
+This file was generated automatically on ${creationDate}. Data was exported from ESO on ${parseDate} ${parseTime}, API version ${parseVersion}. <br />
+Contact <a href="mailto:dave@uesp.net">Daveh</a> for issues or information regarding this page.
+</div>
+</body>
+</html>

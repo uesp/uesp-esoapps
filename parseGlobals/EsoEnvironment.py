@@ -366,12 +366,12 @@ class CEsoEnvironment:
         lineNumber = 1
 
         for line in lines:
-            outFile.write("\t<div id='{0}' class='esolf_lineno'>{0}</div>".format(lineNumber))
+            outFile.write("\t<div class='esolf_lineno'>{0}</div>".format(lineNumber))
             lineNumber += 1
 
         outFile.write("</td>\n")
         outFile.write("<td class='esolf_codelines'>\n")
-        outFile.write("\t<div class='esolf_codeline'>")
+        outFile.write("\t<div id='1' class='esolf_codeline'>")
         lineNumber = 1
 
         for token in tokens:
@@ -391,13 +391,13 @@ class CEsoEnvironment:
                     if (lineIndex + 1 < len(lines)):
                         lineIndex += 1
                         outFile.write("</div>\n")
-                        outFile.write("\t<div class='esolf_codeline'>")
+                        outFile.write("\t<div id='{0}' class='esolf_codeline'>".format(lineNumber + lineIndex))
                         
                 lineNumber = token.linePos
             elif (lineNumber != token.linePos):
-                outFile.write("</div>\n")
-                outFile.write("\t<div class='esolf_codeline'>")
                 lineNumber = token.linePos
+                outFile.write("</div>\n")
+                outFile.write("\t<div id='{0}' class='esolf_codeline'>".format(lineNumber))
 
             tooltip = ""
             outputText = token.token.replace(">", "&gt;").replace("<", "&lt;")
@@ -436,7 +436,7 @@ class CEsoEnvironment:
                     lineIndex += 1
                     outFile.write("<code class='esolf_{0}'>{1}</code>".format("comment", line))
                     outFile.write("</div>\n")
-                    outFile.write("\t<div class='esolf_codeline'>")
+                    outFile.write("\t<div id='{0}' class='esolf_codeline'>".format(lineNumber + lineIndex))
                     
                 outputText = lines[-1]
 

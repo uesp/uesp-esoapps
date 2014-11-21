@@ -1,3 +1,14 @@
+<script type="text/javascript">
+	var lastHashValue = null;
+	$(window.location.hash).addClass("esolf_highlight");
+	lastHashValue = window.location.hash;
+	
+	$(window).bind('hashchange', function(){
+		if (lastHashValue) $(lastHashValue).removeClass("esolf_highlight");
+		$(window.location.hash).addClass("esolf_highlight");
+		lastHashValue = window.location.hash;
+	});
+</script>
 <hr />
 <div class="esolf_footer" id="endoffile">
 This file was generated automatically on ${creationDate}. Data was exported from ESO on ${parseDate} ${parseTime}, API version ${parseVersion}. 

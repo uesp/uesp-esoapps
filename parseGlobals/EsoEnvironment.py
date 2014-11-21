@@ -549,8 +549,22 @@ class CEsoEnvironment:
         self.OutputLuaFilesDirTree(rootFiles, outputBasePath, "")
         
 
+    def CreateAll(self, outputPath):
+        self.SetOutputPath(outputPath)
+        self.CopyResources(outputPath)
+
+        self.globalData.Dump(outputPath + "globals.txt")
+        self.globalData.CreateHTML(outputPath + "globals.html")
+        self.globalData.DumpDuplicateFunctions(outputPath + "globaldupfuncs.txt")
+
+        self.functionDb.DumpFunctionCalls(outputPath + "functioncalls.txt")
+        self.functionDb.DumpGlobalFunctions(outputPath + "globalfuncs.txt")
+        self.functionDb.DumpLocalFunctions(outputPath + "localfuncs.txt")
+        self.functionDb.DumpMissingFunctions(outputPath + "missingfuncs.txt", self.globalData)
+        self.functionDb.DumpUnusedFunctions(outputPath + "unusedfunc.txt", self.globalData)
         
-            
-
-
+        self.CreateLuaFilesHtml(outputPath + "src\\")
+        self.CreateLuaFilesDirTree(outputPath + "src\\")
+        self.CreateAllFunctionHtml(outputPath + "data\\")
+        
 

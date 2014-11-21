@@ -3,6 +3,7 @@ import operator
 import sys
 import datetime
 import shutil
+from operator import attrgetter
 from string import Template
 import EsoGlobals
 from EsoGlobals import CEsoGlobals
@@ -29,6 +30,8 @@ class CEsoEnvironment:
         self.luaDirFooterTemplate = Template(open('templates/esoluadir_footer.txt', 'r').read())
         self.luaFileHeaderTemplate = Template(open('templates/esoluafile_header.txt', 'r').read())
         self.luaFileFooterTemplate = Template(open('templates/esoluafile_footer.txt', 'r').read())
+        self.functionHeaderTemplate = Template(open('templates/esofunction_header.txt', 'r').read())
+        self.functionFooterTemplate = Template(open('templates/esofunction_footer.txt', 'r').read())
 
         self.allFunctions = { }
         #self.allFunctionsNameMap = { }
@@ -87,6 +90,85 @@ class CEsoEnvironment:
                 
         print "\tFound {0} unique function names with {1} total functions!".format(len(self.allFunctions), count)
         return True
+
+
+    def GetFunctionNameSubPath(self, funcName):
+        if (len(funcName) < 3): return ""
+        return funcName[0] + "/" + funcName[1] + "/" + funcName[2]
+
+
+    def GetFunctionCalls(self, funcName):
+        if (not funcName in self.functionCallInfos): return []
+        return self.functionCallInfos[funcName]
+
+
+    def CreateFunctionHtmlContent(self, outFile, funcName, functions):
+        funcAliasCount = 0
+        funcDefCount = 0
+        funcCallCount = 0
+
+        outFile.write("<h3>Function Aliases</h3>\n")
+        outFile.write("<ul class='esofn_aliaslist'>\n")
+
+        if (funcAliasCount == 0):
+            outFile.write("<li>No known aliases for this function.</li>\n")
+
+        outFile.write("</ul>\n")
+        outFile.write("<h3>Function Definitions</h3>\n")
+        outFile.write("<ul class='esofn_deflist'>\n")
+
+        for func in functions:
+            if (func.filename == ""): continue
+            funcDefCount += 1
+            outFile.write("<li>{0}:{1} -- {2}</li>\n".format(func.filename, func.startLinePos, func.fullDefString))
+
+        if (funcDefCount == 0):
+            outFile.write("<li>No known definitions for this function.</li>\n")
+        
+        outFile.write("</ul>\n")
+        outFile.write("<h3>Function Calls</h3>\n")
+        outFile.write("<ul class='esofn_calllist'>\n")
+
+        funcCalls = self.GetFunctionCalls(funcName)
+
+        for call in funcCalls:
+            funcCallCount += 1
+            outFile.write("<li>{0}:{1} -- {2}</li>\n".format(call.filename, call.startLinePos, func.fullString))
+
+        if (funcCallCount == 0):
+            outFile.write("<li>No known calls of this function.</li>\n")
+
+        outFile.write("</ul>\n")
+
+
+    def CreateFunctionHtml(self, outputBasePath, funcName, functions):
+        outputPath = os.path.join(outputBasePath, self.GetFunctionNameSubPath(funcName), "").replace("\\", "/")
+        outputFilename = outputPath + funcName + ".html"
+
+        if (not os.path.exists(outputPath)): os.makedirs(outputPath)
+
+        templateVars = self.CreateGlobalTemplateVars()
+        templateVars["name"] = funcName + "()"
+        templateVars["resourcePath"] = os.path.relpath(outputBasePath, outputFilename).replace("\\", "/")
+
+        print "Creating ", outputFilename
+
+        with open(outputFilename, "w") as outFile:
+            outFile.write(self.functionHeaderTemplate.safe_substitute(templateVars))
+            self.CreateFunctionHtmlContent(outFile, funcName, functions)
+            outFile.write(self.functionFooterTemplate.safe_substitute(templateVars))
+            
+
+    def CreateAllFunctionHtml(self, outputBasePath):
+        
+        print "Creating all function HTML files in {0}...".format(outputBasePath)
+
+        if (not os.path.exists(outputBasePath)): os.makedirs(outputBasePath)
+        shutil.copyfile("resources/esofunction.css", os.path.join(outputBasePath, "") + "esofunction.css")
+
+        for funcName in self.allFunctions:
+            funcs = self.allFunctions[funcName]
+            self.CreateFunctionHtml(outputBasePath, funcName, funcs)
 
 
     def LoadGlobals(self, filename):

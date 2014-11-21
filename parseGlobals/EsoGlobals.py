@@ -40,6 +40,8 @@ class CEsoGlobals:
         self.globals = { }
         self.functionValueMap = { }
         self.allFunctions = [ ]
+        self.globalObjectCount = 0
+        self.globalDupFuncCount = 0
 
     
     def CreateFunctionMap(self):
@@ -69,7 +71,10 @@ class CEsoGlobals:
             for key in dupFuncs:
                 funcs = dupFuncs[key]
                 index += 1
-                outFile.write( "{0}) Duplicate set of {1} functions with value {2}\n".format(index, len(funcs), key) )
+                
+                value = ""
+                if len(funcs) != 0: value = funcs[0].value
+                outFile.write( "{0}) Duplicate set of {1} functions with value {2}\n".format(index, len(funcs), value) )
 
                 sortedFuncs = sorted(funcs, key=attrgetter('fullName'))
 
@@ -77,6 +82,7 @@ class CEsoGlobals:
                     dupFuncCount += 1
                     outFile.write( "\t{0}()\n".format(func.fullName) )
 
+        self.globalDupFuncCount = dupFuncCount
         print "\tOutput {0} duplicate functions in {1} unique sets".format(dupFuncCount, len(dupFuncs))
         
 
@@ -286,7 +292,8 @@ class CEsoGlobals:
                 currentParent[name].fullName = parentName + name
                 currentParent = currentParent[name].children
                 parentName += currentInstance.name + "."
-        
+
+        self.globalObjectCount += 1
         return currentInstance
 
 

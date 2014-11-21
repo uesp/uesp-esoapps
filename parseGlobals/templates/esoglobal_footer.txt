@@ -1,14 +1,13 @@
 <hr />
-<div class="esog_footer">
-<a name="endoffile" />
+<div class="esog_footer" id ="endoffile">
 <b>Data Notes:</b>
 <ul>
 <li>The hex numbers for tables, functions, userdata, and meta/index will change each time the UI is reloaded.</li>
 <li>Only one of each unique table/userdata/index/meta object is listed to save space. Use the links to jump to the expanded definition of an object.</li>
 <li>Hover over an object to get its complete name.</li>
 </ul>
-This file was generated automatically on ${creationDate}. Data (${types}) was exported from ESO on ${parseDate} ${parseTime}, API version ${parseVersion}. 
-Contact <a href="mailto:dave@uesp.net">Daveh</a> for issues or information regarding this page.
+This file was generated automatically on ${creationDate}. Data (${types}) was exported from ESO on ${parseDate} ${parseTime}, API version ${parseVersion}.<br />
+Contact <a href="mailto:dave@uesp.net">Daveh</a> for issues or information regarding this page. Source code is available on <a href="https://code.google.com/p/uesp/source/browse?repo=esoapps#hg%2FparseGlobals">Google Code:uesp</a>.
 </div>
 </body>
 </html>

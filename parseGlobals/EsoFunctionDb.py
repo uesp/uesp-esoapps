@@ -22,6 +22,8 @@ class CEsoFunctionDb:
         self.globalFunctions = { }
         self.localFunctions = { }
         self.functionCalls = { }
+        self.unusedFuncCount = 0
+        self.missingFuncCount = 0
 
 
     def GetFunctionCalls(self, funcName):
@@ -118,10 +120,12 @@ class CEsoFunctionDb:
 
     def DumpMissingFunctions(self, filename, esoGlobals):
         print "Dumping missing functions to", filename
+        self.missingFuncCount = 0
 
         with open(filename, "w") as outFile:
-            for func in sorted(esoGlobals.allFunctions):
+            for func in sorted(esoGlobals.allFunctions,  key=attrgetter('fullName')):
                 if (not func.fullName in self.globalFunctions):
+                    self.missingFuncCount += 1
                     outFile.write("{0}()\n".format(func.fullName))
 
 
@@ -157,6 +161,7 @@ class CEsoFunctionDb:
 
     def DumpUnusedFunctions(self, filename, esoGlobals):
         print "Dumping unused functions to", filename
+        self.unusedFuncCount = 0
 
         with open(filename, "w") as outFile:
             sortedFuncs = sorted(esoGlobals.allFunctions, key=attrgetter('fullName'))
@@ -165,6 +170,7 @@ class CEsoFunctionDb:
                 if (func.fullName in self.globalFunctions): continue
                 if (func.fullName in self.functionCalls): continue
 
+                self.unusedFuncCount += 1
                 outFile.write("{0}() = {1}\n".format(func.fullName, func.value))
             
 

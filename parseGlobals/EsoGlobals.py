@@ -69,7 +69,7 @@ class CEsoGlobals:
             for key in dupFuncs:
                 funcs = dupFuncs[key]
                 index += 1
-                outFile.write( "{0}) Duplicate set of {1} functions\n".format(index, len(funcs)) )
+                outFile.write( "{0}) Duplicate set of {1} functions with value {2}\n".format(index, len(funcs), key) )
 
                 sortedFuncs = sorted(funcs, key=attrgetter('fullName'))
 

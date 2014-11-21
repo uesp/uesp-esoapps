@@ -120,13 +120,13 @@ class CEsoFunctionDb:
         print "Dumping missing functions to", filename
 
         with open(filename, "w") as outFile:
-            for func in esoGlobals.allFunctions:
+            for func in sorted(esoGlobals.allFunctions):
                 if (not func.fullName in self.globalFunctions):
                     outFile.write("{0}()\n".format(func.fullName))
 
 
     def DumpGlobalFunctions(self, filename):
-        print "Dumping globals functions to", filename
+        print "Dumping global functions to", filename
 
         with open(filename, "w") as outFile:
             sortedKeys = sorted(self.globalFunctions)
@@ -138,6 +138,22 @@ class CEsoFunctionDb:
                 for func in funcs:
                     outFile.write("\t{0}:{1} -- {2}\n".format(func.filename, func.startLinePos, func.fullDefString))
 
+
+    def DumpLocalFunctions(self, filename):
+        print "Dumping local functions to", filename
+        
+        with open(filename, "w") as outFile:
+
+            for fileName in sorted(self.localFunctions.keys()):
+                funcNames = self.localFunctions[fileName]
+                outFile.write("Local Functions in {0}:\n".format(fileName))
+
+                for funcName in funcNames.keys():
+                    funcs = funcNames[funcName]
+                    
+                    for func in funcs:
+                        outFile.write("\t{0:>5}: {1}\n".format(func.startLinePos, func.fullDefString))
+                                  
 
     def DumpUnusedFunctions(self, filename, esoGlobals):
         print "Dumping unused functions to", filename

@@ -160,14 +160,14 @@ class CEsoEnvironment:
         return link
 
 
-    def CreateLuaFunctionLink(self, outputPath, niceName, funcName):
+    def CreateLuaFunctionLink(self, outputPath, niceName, funcName, includeBrackets = True):
         niceName = self.SanitizeFunctionName(niceName)
         subPath = self.GetFunctionNameSubPath(niceName)
         targetPath = os.path.join(self.functionOutputPath, subPath)
         relPath = os.path.relpath(targetPath, outputPath)
         relPath = os.path.join(relPath, "").replace("\\", "/")
 
-        if not funcName.endswith("()"): funcName += "()"
+        if includeBrackets and not funcName.endswith(")") : funcName += "()"
         link = "<a href='{0}{1}.html' class='eso_functionlink'>{2}</a>".format(relPath, niceName, funcName)
         return link
     
@@ -242,9 +242,15 @@ class CEsoEnvironment:
         outFile.write("<h3 id='esofn_calls'>Function Calls</h3>\n")
         outFile.write("<ul class='esofn_calllist'>\n")
 
-        funcCalls = self.functionDb.GetFunctionCalls(funcName)
+        funcParts = re.split("[:.]+", funcName)
+        lastFuncName = funcName
+        if len(funcParts) >= 1: lastFuncName = funcParts[-1]
+        
+        funcCalls = self.functionDb.GetFunctionCalls(lastFuncName)
         
         for call in funcCalls:
+            if lastFuncName != funcName and call.niceName != funcName: continue
+            
             funcCallCount += 1
             fileLink = self.CreateLuaFileLink(outputPath, call.filename, call.startLinePos)
 
@@ -342,7 +348,7 @@ class CEsoEnvironment:
         return templateVars
         
 
-    def CreateLuaFileHtmlContent(self, outFile, luaFile):
+    def CreateLuaFileHtmlContent(self, outFile, luaFile, outputPath):
         tokens = luaFile.tokenizer.tokensWithComments
                 
         lastToken = EsoLuaTokenizer.CLuaToken()
@@ -372,8 +378,6 @@ class CEsoEnvironment:
             startIndex = lastToken.charIndex + len(lastToken.token)
             endIndex = token.charIndex
             deltaString = luaFile.fileContents[startIndex : endIndex]
-            #print "{0}: {1} - {2} = '{3}'".format(lineNumber, startIndex, endIndex, deltaString)
-            #print "{0}:{2} - {1}, delta='{3}'".format(lineNumber, token.token, token.linePos, deltaString)
 
             if (len(deltaString) > 0):
                 deltaString = deltaString.replace("\t", "     ").replace(" ", "&nbsp;")
@@ -396,6 +400,7 @@ class CEsoEnvironment:
                 lineNumber = token.linePos
 
             tooltip = ""
+            outputText = token.token.replace(">", "&gt;").replace("<", "&lt;")
             
             if (token.type == Token.name):
                 obj = self.globalData.GetGlobal(token.token)
@@ -418,7 +423,22 @@ class CEsoEnvironment:
                 if len(tooltip) > 100: tooltip = tooltip[:100] + "..."
                 tooltip = tooltip.replace(">", "&gt;").replace("<", "&lt;")
 
-            outputText = token.token.replace(">", "&gt;").replace("<", "&lt;")
+                if (token.token in self.allFunctions):
+                    outputText = self.CreateLuaFunctionLink(outputPath, token.token, token.token, False)
+
+                    # Output multi-line comments        
+            elif (token.type == Token.comment):
+                lines = outputText.split("\n")
+                lineIndex = 0
+
+                while lineIndex + 1 < len(lines):
+                    line = lines[lineIndex]
+                    lineIndex += 1
+                    outFile.write("<code class='esolf_{0}'>{1}</code>".format("comment", line))
+                    outFile.write("</div>\n")
+                    outFile.write("\t<div class='esolf_codeline'>")
+                    
+                outputText = lines[-1]
 
             if (tooltip == ""):
                 outFile.write("<code class='esolf_{0}'>{1}</code>".format(Token.toString(token.type), outputText))
@@ -449,7 +469,7 @@ class CEsoEnvironment:
 
         with open(outputHtmlFilename, "w") as outFile:
             outFile.write(self.luaFileHeaderTemplate.safe_substitute(templateVars))
-            self.CreateLuaFileHtmlContent(outFile, luaFile)
+            self.CreateLuaFileHtmlContent(outFile, luaFile, path)
             outFile.write(self.luaFileFooterTemplate.safe_substitute(templateVars))
         
         return True
@@ -462,6 +482,11 @@ class CEsoEnvironment:
         for luaFile in self.luaFiles:
             self.CreateLuaFileHtml(luaFile, outputBasePath)
 
+
+    def SetOutputPath(self, outputPath):
+        self.luaFileOutputPath = os.path.join(outputPath, "src", "").replace("\\", "/")
+        self.functionOutputPath = os.path.join(outputPath, "data", "").replace("\\", "/")
+        
 
     def OutputLuaFilesDirTree(self, root, outputBasePath, parentPath):
         outputDirs = ""

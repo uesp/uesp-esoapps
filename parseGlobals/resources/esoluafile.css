@@ -18,6 +18,10 @@ a.eso_functionlink, a.eso_functionlink :visited {
 	color: #000088;
 }
 
+.esolf_highlight {
+	background: #ffff33;
+}
+
 a.esolf_pathlink {
 	font-size: 0.8em;
 	font-family: sans-serif;

@@ -24,6 +24,7 @@ esoEnvironment = EsoEnvironment.CEsoEnvironment()
 esoEnvironment.LoadGlobals(INPUT_GLOBAL_FILENAME)
 esoEnvironment.LoadLuaFiles(INPUT_LUA_PATH)
 
+esoEnvironment.SetOutputPath(OUTPUT_PATH)
 esoEnvironment.CopyResources(OUTPUT_PATH)
 esoEnvironment.CreateLuaFilesHtml(OUTPUT_PATH + "src\\")
 esoEnvironment.CreateLuaFilesDirTree(OUTPUT_PATH + "src\\")

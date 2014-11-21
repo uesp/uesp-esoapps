@@ -1,0 +1,17 @@
+<h3>Main</h3>
+<ul>
+	<li><a href="src/luadir.html">Lua Source Code</a> -- Browse the ${luaFileCount} Lua source code files starting at the root directory.</li>
+	<li><a href="globals.html">Global Objects</a> -- All ${globalObjectCount} global objects as exported from the game.</li>
+	<li><a href="functions.html">Functions</a> -- An alphabetical listing of all ${funcCount} Lua functions.</li>
+</ul>
+
+<h3>Text Files</h3>
+<ul>
+	<li><a href="globals.txt">Global Objects</a> -- Output of all ${globalObjectCount} global objects from the game.</li>
+	<li><a href="globalfuncs.txt">Global Function Definitions</a> -- All ${globalFuncCount} global function definitions found from the Lua source files.</li>
+	<li><a href="localfuncs.txt">Local Function Definitions</a> -- All ${localFuncCount}  local function definitions found from the Lua source files.</li>
+	<li><a href="functioncalls.txt">Function Calls</a> -- All ${funcCallCount} function calls found from the Lua source files.</li>
+	<li><a href="globaldupfuncs.txt">Global Duplicate Functions</a> -- The ${globalDupFuncCount} global functions that point to the same function object.</li>
+	<li><a href="missingfuncs.txt">Missing Function Definitions</a> --  ${missingFuncCount} functions that are missing a source code definition.</li>
+	<li><a href="unusedfunc.txt">Unused Functions</a> --  ${unusedFuncCount} functions that are not used in any Lua source file.</li>
+</ul>

@@ -33,6 +33,9 @@ class CEsoEnvironment:
         self.luaFileFooterTemplate = Template(open('templates/esoluafile_footer.txt', 'r').read())
         self.functionHeaderTemplate = Template(open('templates/esofunction_header.txt', 'r').read())
         self.functionFooterTemplate = Template(open('templates/esofunction_footer.txt', 'r').read())
+        self.mainHeaderTemplate = Template(open('templates/esomain_header.txt', 'r').read())
+        self.mainContentTemplate = Template(open('templates/esomain_content.txt', 'r').read())
+        self.mainFooterTemplate = Template(open('templates/esomain_footer.txt', 'r').read())
 
         self.luaFileOutputPath = ""
         self.functionOutputPath = ""
@@ -547,6 +550,27 @@ class CEsoEnvironment:
 
         #print rootFiles
         self.OutputLuaFilesDirTree(rootFiles, outputBasePath, "")
+
+
+    def CreateMainPage(self, outputPath):
+        templateVars = self.CreateGlobalTemplateVars()
+        templateVars["funcCount"] = len(self.allFunctions)
+        templateVars["localFuncCount"] = len(self.functionDb.localFunctions)
+        templateVars["globalFuncCount"] = len(self.functionDb.globalFunctions)
+        templateVars["funcCallCount"] = len(self.functionDb.functionCalls)
+        templateVars["globalObjectCount"] = self.globalData.globalObjectCount
+        templateVars["luaFileCount"] = len(self.luaFiles)
+        templateVars["globalDupFuncCount"] = self.globalData.globalDupFuncCount
+        templateVars["missingFuncCount"] = self.functionDb.missingFuncCount
+        templateVars["unusedFuncCount"] = self.functionDb.unusedFuncCount
+
+        outputFilename = os.path.join(outputPath, "index.html").replace("\\", "/")
+
+        with open(outputFilename, "w") as outFile:
+            outFile.write(self.mainHeaderTemplate.safe_substitute(templateVars))
+            outFile.write(self.mainContentTemplate.safe_substitute(templateVars))
+            outFile.write(self.mainFooterTemplate.safe_substitute(templateVars))
+            
         
 
     def CreateAll(self, outputPath):
@@ -566,5 +590,8 @@ class CEsoEnvironment:
         self.CreateLuaFilesHtml(outputPath + "src\\")
         self.CreateLuaFilesDirTree(outputPath + "src\\")
         self.CreateAllFunctionHtml(outputPath + "data\\")
+
+        self.CreateMainPage(outputPath)
         
+
 

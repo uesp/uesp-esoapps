@@ -21,8 +21,13 @@ class CEsoFunctionDb:
     def __init__(self):
         self.globalFunctions = { }
         self.localFunctions = { }
-        self.globalFunctionValueMap = { }
         self.functionCalls = { }
+
+
+    def GetFunctionCalls(self, funcName):
+        funcName = funcName.replace(":", ".")
+        if (not funcName in self.functionCalls): return []
+        return self.functionCalls[funcName]
 
 
     def AddCallInfos(self, calls):
@@ -81,46 +86,6 @@ class CEsoFunctionDb:
         if (not filename in self.localFunctions): return None
         if (not niceName in self.localFunctions[filename]): return None
         return self.localFunctions[filename][niceName]
-
-
-    def CreateFunctionValueMap(self, esoGlobals):
-        print "Creating function value map from global data..."
-        
-        matchCount = 0
-        missCount = 0
-
-        for obj in esoGlobals.allFunctions:
-            if (obj.fullName in self.globalFunctions):
-                matchCount += 1
-                funcInfos = self.globalFunctions[obj.fullName]
-
-                for func in funcInfos:
-                    func.value = obj.value
-
-                if (not obj.value in self.globalFunctionValueMap):
-                    self.globalFunctionValueMap[obj.value] = []
-
-                self.globalFunctionValueMap[obj.value].extend(funcInfos)
-            else:
-                missCount += 1
-        
-        print "\tSet values of {0} functions with {1} misses!".format(matchCount, missCount)
-        self.UpdateFunctionDuplicates(esoGlobals)
-        
-
-    def UpdateFunctionDuplicates(self, esoGlobals):
-        matchCount = 0
-
-        for obj in esoGlobals.allFunctions:
-            if (not obj.fullName in self.globalFunctions and obj.value in self.globalFunctionValueMap):
-                funcAlias = self.globalFunctionValueMap[obj.value][0]
-                self.globalFunctions[obj.fullName] = []
-                self.globalFunctions[obj.fullName].append(funcAlias)
-                matchCount += 1
-                #print "\tUpdated function {0} with its alias {1}.".format(obj.fullName, funcAlias.fullName)
-            
-        print "\tUpdated {0} duplicate functions names.".format(matchCount)
-        return matchCount
 
 
     def MatchGlobalsChildren(self, root):

@@ -667,7 +667,6 @@ class CEsoEnvironment:
             outFile.write(self.mainHeaderTemplate.safe_substitute(templateVars))
             outFile.write(self.mainContentTemplate.safe_substitute(templateVars))
             outFile.write(self.mainFooterTemplate.safe_substitute(templateVars))
-            
         
 
     def CreateAll(self, outputPath):

@@ -52,3 +52,47 @@ a.eso_filelink:hover {
 ul {
 	margin-top: 0.5em;
 }
+
+.esofn_letters , .eosfn_letters  {
+	font-family: "Arial", sans-serif;
+	font-size: 0.9em;
+	font-weight: bold;
+	text-align: center;
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+
+.eosfn_letters   a {
+	padding: 2px;
+	min-width: 1.1em;
+	vertical-align: top;
+	border-left: solid 1px #ccc;
+	border-right: solid 1px #ccc;
+	display: inline-block;
+	text-align: center;	
+}
+
+.eosfn_letters   a:hover {
+	background: #777;
+}
+
+[tooltip]:hover:before {            
+    position : absolute;
+    content : attr(tooltip);
+	background: #ffff99;
+	color: black;
+	border: 1px solid gray;
+	font-size: 1em;
+	margin: -18px 0 0 -10px;
+	padding: 0px 2px 0px 2px;
+	height: 1.2em;
+	overflow: hidden;
+}
+
+[tooltip]:hover:after {
+	content: '';
+	margin: 0;
+	width: 0;
+	height: 0;
+}

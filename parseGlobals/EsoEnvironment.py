@@ -4,6 +4,7 @@ import sys
 import datetime
 import shutil
 import re
+import string
 from operator import attrgetter
 from string import Template
 import EsoGlobals
@@ -36,13 +37,18 @@ class CEsoEnvironment:
         self.mainHeaderTemplate = Template(open('templates/esomain_header.txt', 'r').read())
         self.mainContentTemplate = Template(open('templates/esomain_content.txt', 'r').read())
         self.mainFooterTemplate = Template(open('templates/esomain_footer.txt', 'r').read())
+        self.mainFuncHeaderTemplate = Template(open('templates/esomainfunc_header.txt', 'r').read())
+        self.mainFuncFooterTemplate = Template(open('templates/esomainfunc_footer.txt', 'r').read())
 
         self.luaFileOutputPath = ""
         self.functionOutputPath = ""
 
+        self.INVALID_FUNCNAME_CHARS = "[*?|:<>\/()\[\]\"\']"
+
         self.allFunctions = { }
         self.functionValueMap = { }
         self.functionNameValueMap = { }
+        self.functionLetterCounts = { }
 
 
     def GetFunctionNameAliases(self, funcName):
@@ -142,7 +148,7 @@ class CEsoEnvironment:
 
 
     def SanitizeFunctionName(self, funcName):
-        return re.sub('[*?|:<>\/()\[\]\"\']', '_', funcName)
+        return re.sub( self.INVALID_FUNCNAME_CHARS, "_", funcName)
 
 
     def GetFunctionNameSubPath(self, funcName):
@@ -552,6 +558,97 @@ class CEsoEnvironment:
         self.OutputLuaFilesDirTree(rootFiles, outputBasePath, "")
 
 
+    def CountFunctionLetters(self):
+        self.functionLetterCounts = { }
+        letters = self.GetFunctionHeaderLetters()
+
+        for letter in letters:
+            self.functionLetterCounts[letter] = 0
+
+        for funcName in self.allFunctions:
+            
+            if len(funcName) < 1:
+                self.functionLetterCounts['_'] += 1
+            elif funcName[0] in self.INVALID_FUNCNAME_CHARS:
+                self.functionLetterCounts['_'] += 1
+            else:
+                letter = funcName[0].upper()
+                if letter not in self.functionLetterCounts: self.functionLetterCounts[letter] = 0
+                self.functionLetterCounts[letter] += 1
+
+
+    def GetFunctionHeaderLetters(self):
+        return "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
+
+
+    def CreateFunctionLetterHeader(self, currentLetter = ""):
+        letters = self.GetFunctionHeaderLetters()
+        result = ""
+
+        if currentLetter == "":
+            result += "<a tooltip='{1}'>{0}</a>".format("All", len(self.allFunctions))
+        else:
+            result += "<a href='functions.html' tooltip='{1}'>{0}</a>".format("All", len(self.allFunctions))
+
+        for letter in letters:
+            if (letter == currentLetter):
+                result += "<a tooltip='{1}'>{0}</a>".format(letter, self.functionLetterCounts[letter])
+            else:
+                result += "<a href='functions_{0}.html' tooltip='{1}'>{0}</a>".format(letter, self.functionLetterCounts[letter])
+
+        return result
+            
+
+    def CreateAllFunctionPages(self, outputPath):
+        print "Creating all function pages to", outputPath
+        self.CountFunctionLetters()
+        self.CreateFunctionPage(outputPath)
+
+        for letter in self.functionLetterCounts:
+            self.CreateFunctionPage(outputPath, letter)
+
+
+    def CreateFunctionPageContent(self, outFile, outputPath, letter = ""):
+        firstLetter = ""
+
+        outFile.write("<ul class='esofn_funclist'>\n")
+
+        for funcName in sorted(self.allFunctions):
+                            
+            if len(funcName) < 1:
+                firstLetter = "_"
+            elif funcName[0] in self.INVALID_FUNCNAME_CHARS:
+                firstLetter = "_"
+            else:
+                firstLetter = funcName[0].upper()
+
+            if letter != "" and firstLetter != letter: continue
+        
+            funcLink = self.CreateLuaFunctionLink(outputPath, funcName, funcName)
+            outFile.write("<li>{0}</li>\n".format(funcLink))
+
+        outFile.write("</ul>\n")        
+
+
+    def CreateFunctionPage(self, outputPath, letter = ''):
+        templateVars = self.CreateGlobalTemplateVars()
+        templateVars["funcLetter"] = letter
+        templateVars["letterHeader"] = self.CreateFunctionLetterHeader(letter)
+
+        filename = "functions_{0}.html".format(letter)
+
+        if (letter == ""):
+            templateVars["funcLetter"] = "All"
+            filename = "functions.html"
+            
+        outputFilename = os.path.join(outputPath, filename).replace("\\", "/")
+
+        with open(outputFilename, "w") as outFile:
+            outFile.write(self.mainFuncHeaderTemplate.safe_substitute(templateVars))
+            self.CreateFunctionPageContent(outFile, outputPath, letter)
+            outFile.write(self.mainFuncFooterTemplate.safe_substitute(templateVars))
+
+
     def CreateMainPage(self, outputPath):
         templateVars = self.CreateGlobalTemplateVars()
         templateVars["funcCount"] = len(self.allFunctions)
@@ -589,6 +686,7 @@ class CEsoEnvironment:
         
         self.CreateLuaFilesHtml(outputPath + "src\\")
         self.CreateLuaFilesDirTree(outputPath + "src\\")
+        self.CreateAllFunctionPages(outputPath)
         self.CreateAllFunctionHtml(outputPath + "data\\")
 
         self.CreateMainPage(outputPath)

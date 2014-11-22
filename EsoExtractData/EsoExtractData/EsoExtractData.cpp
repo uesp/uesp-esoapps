@@ -15,7 +15,7 @@
  *		- Converts any .lang file to a CSV format if it can.
  *		- Language file now exported in a normal CSV format (with commas and internal
  *		  double-quotes escaped to \").
- *		- Added the -k/--skipsubfiles option to start at a specific DAT file index.
+ *		- Added the -b/--beginarchive option to start at a specific DAT file index.
  *		- Added the -l/--lang option to convert a .LANG file to a CSV.
  *
  */
@@ -1151,7 +1151,7 @@ cmdparamdef_t g_Cmds[] =
 
 const char g_AppDescription[] = "\
 ExportMnf v0.17 is a simple command line application to load and export files\n\
-from ESO's MNF and DAT files.\n\
+from ESO's MNF and DAT files. Created by Daveh (dave@uesp.net).\n\
 \n\
 WARNING: This app is in early development and is fragile. User discretion is\n\
 advised.\n\

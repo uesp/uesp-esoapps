@@ -5,7 +5,10 @@ INPUT_GLOBAL_FILENAME = "d:\\esoexport\\goodimages10\\globals_6b.txt"
 INPUT_LUA_PATH = "d:\\esoexport\\gamemnf10\\esoui\\"
 OUTPUT_PATH = "d:\\temp\\esodata\\"
 
-esoEnvironment = EsoEnvironment.CEsoEnvironment()
+    # Set to your specific Google CSE ID if you want site search
+GOOGLE_SEARCH_ENGINE_ID = "012503365948233236492:dsuicagnjii"
+
+esoEnvironment = EsoEnvironment.CEsoEnvironment(GOOGLE_SEARCH_ENGINE_ID)
 esoEnvironment.LoadGlobals(INPUT_GLOBAL_FILENAME)
 esoEnvironment.LoadLuaFiles(INPUT_LUA_PATH)
 esoEnvironment.CreateAll(OUTPUT_PATH)

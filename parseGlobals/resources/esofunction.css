@@ -1,52 +1,6 @@
-.esofn_footer, .eso_footer {
-	font-size: 0.9em;
-	font-style: italic;
-	color: #666;
-}
-
-h1 {
-	margin-top: 0.1em;
-	margin-bottom: 0.3em;
-}
-
 h2 {
 	font-family: "Consolas", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace !important;
 	color: blue;
-	margin-top: 0.1em;
-	margin-bottom: 0.3em;
-}
-
-.eso_functionlink {
-	font-family: "Consolas", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace !important;
-	display: inline;
-}
-
-.eso_filelink {
-	display: inline;
-	font-family: "Courier New", Courier, monospace !important;
-	font-weight: bold;
-	font-size: 0.9em;
-}
-
-h3 {
-	border-bottom: solid 1px #aaa;
-	margin-bottom: 0.1em;
-}
-
-a.eso_functionlink {
-	text-decoration: none;
-}
-
-a.eso_functionlink:hover {
-	background: #ccc;
-}
-
-a.eso_filelink {
-	text-decoration: none;
-}
-
-a.eso_filelink:hover {
-	background: #ccc;
 }
 
 ul {
@@ -75,24 +29,4 @@ ul {
 
 .eosfn_letters   a:hover {
 	background: #777;
-}
-
-[tooltip]:hover:before {            
-    position : absolute;
-    content : attr(tooltip);
-	background: #ffff99;
-	color: black;
-	border: 1px solid gray;
-	font-size: 1em;
-	margin: -18px 0 0 -10px;
-	padding: 0px 2px 0px 2px;
-	height: 1.2em;
-	overflow: hidden;
-}
-
-[tooltip]:hover:after {
-	content: '';
-	margin: 0;
-	width: 0;
-	height: 0;
 }

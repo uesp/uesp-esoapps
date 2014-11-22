@@ -1,7 +1,9 @@
 <html>
 	<head>
 		<title>UESP:ESO Functions</title>
+		<link rel="stylesheet" href="esocommon.css" type="text/css" />
 		<link rel="stylesheet" href="esofunction.css" type="text/css" />
+		<script type="text/javascript" src="jquery.js"></script>
 	</head>
 <body>
 <h1>ESO Functions: ${funcLetter}</h1>

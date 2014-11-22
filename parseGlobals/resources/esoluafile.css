@@ -1,4 +1,3 @@
-
 #esolf_fileroot, #esolf_fileroot code {
 	font-family: "Consolas", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace !important;
 	font-size: 1em;
@@ -6,16 +5,6 @@
 
 #esolf_fileroot {
 	margin-top: 0.8em;
-}
-
-h2, h1 {
-	margin-bottom: 0.1em;
-	margin-top: 0.3em;
-}
-
-a.eso_functionlink, a.eso_functionlink :visited {
-	text-decoration: none;
-	color: #000088;
 }
 
 .esolf_highlight {
@@ -51,38 +40,12 @@ a.esolf_pathlink {
 	height: 1.2em;
 }
 
-.esolf_footer {
-	font-size: 0.9em;
-	font-style: italic;
-	color: #666;
-}
-
 .esolf_name, .esolf_keyword, .esolf_space, .esolf_table, .esolf_userdata, .esolf_string, .esolf_number, .esolf_none, .esolf_other, .esolf_operator, .esolf_comment  {
 	display: inline;
 }
 
 .esolf_name:hover, .esolf_keyword:hover, .esolf_table:hover, .esolf_userdata:hover, .esolf_string:hover, .esolf_number:hover, .esolf_other:hover, .esolf_comment:hover {
 	background-color: #ccc;
-}
-
-[tooltip]:hover:before {            
-    position : absolute;
-    content : attr(tooltip);
-	background: #ffff99;
-	color: black;
-	border: 1px solid gray;
-	font-size: 1em;
-	margin: -16px 0 0 16px;
-	padding: 0px 2px 0px 2px;
-	height: 1.2em;
-	overflow: hidden;
-}
-
-[tooltip]:hover:after {
-	content: '';
-	margin: 0;
-	width: 0;
-	height: 0;
 }
 
 .esolf_keyword {

@@ -1,5 +1,5 @@
 <hr />
-<div class="esog_footer" id ="endoffile">
+<div class="eso_footer" id ="endoffile">
 <b>Data Notes:</b>
 <ul>
 <li>The hex numbers for tables, functions, userdata, and meta/index will change each time the UI is reloaded.</li>

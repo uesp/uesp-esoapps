@@ -35,8 +35,6 @@ class CEsoGlobals:
         self.parseLine = re.compile("([a-zA-Z]+){(.*?)}  ")
         self.parseName = re.compile("([a-zA-Z0-9_()]+)[.:]?")
         self.logLineCount = 0
-        self.headerTemplate = Template(open('templates/esoglobal_header.txt', 'r').read())
-        self.footerTemplate = Template(open('templates/esoglobal_footer.txt', 'r').read())
         self.globals = { }
         self.functionValueMap = { }
         self.allFunctions = [ ]
@@ -143,115 +141,6 @@ class CEsoGlobals:
         with open (filename, "w") as outFile:
             self.DumpRecord(outFile, self.globals, "", types)
 
-        return True
-
-
-    def CreateTemplateVars(self, types):
-        templateVars = { }
-        
-        templateVars['creationDate'] = self.creationDate
-        templateVars['parseDate'] = self.parseDate
-        templateVars['parseTime'] = self.parseTime
-        templateVars['parseVersion'] = self.parseVersion
-        templateVars['types'] = ", ".join(types) if types else "all"
-        
-        return templateVars
-
-
-    def CreateHTMLRecord(self, outFile, root, lineHeader, level, parentName, types = None):
-        sortedKeys = sorted(root.keys())
-
-        for key in sortedKeys:
-            obj = root[key]
-
-            if (types and not obj.type in types):
-                continue
-
-            if (parentName == ""):
-                completeName = obj.name
-            else:
-                completeName = parentName + "." + obj.name
-            
-            metaName = ""
-            tableName = ""
-            indexName = ""
-            tableLink = ""
-            metaLink = ""
-            indexLink = ""
-            accessClass = ""
-
-            if (obj.firstTable):
-                tableName = "table_" + obj.value
-                outFile.write("<a name=\"{0}\" />\n".format(tableName))
-            else:
-                tableLink = " <a class=\"esog_table\" href=\"#table_{0}\">table:{0}</a>".format(obj.value)
-
-            if (obj.firstMeta and obj.meta != ""):
-                metaLink = " <div class=\"esog_meta\">meta:" + obj.meta + "</div>"
-                metaName = "meta_" + obj.meta
-                outFile.write("<a name=\"{0}\" />\n".format(metaName))
-            elif (obj.meta != ""):
-                metaLink = " <a class=\"esog_meta\" href=\"#meta_{0}\">meta:{0}</a>".format(obj.meta)
-
-            if (obj.firstIndex and obj.index != ""):
-                indexLink = " <div class=\"esog_index\">index:" + obj.index + "</div>"
-                indexName = "index_" + obj.index
-                outFile.write("<a name=\"{0}\" />\n".format(indexName))
-            elif (obj.index != ""):
-                indexLink = " <a class=\"esog_index\" href=\"#index_{0}\">index:{0}</a>".format(obj.index)
-
-            if (obj.access == "Private"):
-                accessClass = " esog_private"
-
-            outFile.write(lineHeader + "<div class=\"esog_section{0}\" title=\"{1}\">\n".format(level, completeName))
-            thisTitle = obj.name
-            
-            if (obj.type == "table"):
-                
-                if (tableLink == ""):
-                    thisTitle += " = <div class='esog_table'>" + obj.type + ":" + obj.value + tableLink + "</div>"
-                else:
-                    thisTitle += " = <div class='esog_table'>" + tableLink + "</div>"
-                    
-            elif (obj.type == "function"):
-                #thisTitle = "<a href=\"{1}\">{0}</a>".format(obj.name, GetFunctionLinkName(completeName))
-                thisTitle += "() = <div class='esog_function'>" + obj.type + ":" + obj.value + metaLink + "</div>"
-            elif (obj.type == "userdata"):
-                thisTitle += " = <div class='esog_userdata'>" + obj.type + ":" + obj.value + metaLink + indexLink + "</div>"
-            elif (obj.type == "number" and obj.name.startswith("SI_")):
-                thisTitle += " (" + obj.value + ") = \"" + obj.string + "\""
-            elif (obj.access == "Private"):
-                thisTitle += " = Private"
-            elif (obj.type == "number"):
-                thisTitle += " = <div class='esog_number'>" + obj.value + "</div>"
-            elif (obj.type == "string"):
-                thisTitle += " = <div class='esog_string'>\"" + obj.value + "\"</div>"
-            else:
-                thisTitle += " = " + obj.value
-            
-            outFile.write(lineHeader + "\t<div class=\"esog_title{1}\">{0}</div>".format(thisTitle, accessClass))
-            outFile.write("\n")
-
-            outFile.write(lineHeader + "\t<div class=\"esog_children\">\n")
-            self.CreateHTMLRecord(outFile, obj.children, lineHeader + "\t", level+1, completeName, None)
-            outFile.write(lineHeader + "\t</div>\n")
-            
-            outFile.write("</div>\n")
-            
-        return        
-
-    def CreateHTML(self, filename, types = []):
-        print "Creating global HTML file", filename, "..."
-        templateVars = self.CreateTemplateVars(types)
-
-        relPath =  os.path.join(os.path.dirname(filename), '')
-        shutil.copyfile("resources/esoglobaldata.css", relPath + "esoglobaldata.css")
-
-        with open(filename, "w") as outFile:
-            outFile.write(self.headerTemplate.safe_substitute(templateVars))
-            self.CreateHTMLRecord(outFile, self.globals, "", 1, "", types)
-            outFile.write(self.footerTemplate.safe_substitute(templateVars))
-            
         return True
 
 

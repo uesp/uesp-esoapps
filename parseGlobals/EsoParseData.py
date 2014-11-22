@@ -15,11 +15,10 @@ esoEnvironment.CreateAll(OUTPUT_PATH)
 
 # TODO
 # - Automatically create/update API version page
-# - Search function
 # - Sort call data better?
 # - Object tree?
 # - Function call values?
 # - Include file size in directory files
 # - Better directory format
 # - Include XML and other files in directory lists
-# - Common header/CSS/JS files
+# - Common header/toolbar

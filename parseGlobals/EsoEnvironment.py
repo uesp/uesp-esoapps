@@ -22,7 +22,7 @@ from EsoLuaTokenizer import Token
 
 class CEsoEnvironment:
 
-    def __init__(self):
+    def __init__(self, searchEngineID = ""):
         self.globalData = CEsoGlobals()
         self.luaFiles = []
         self.functionInfos = CEsoFunctionInfo()
@@ -42,9 +42,17 @@ class CEsoEnvironment:
         self.globalHeaderTemplate = Template(open('templates/esoglobal_header.txt', 'r').read())
         self.globalFooterTemplate = Template(open('templates/esoglobal_footer.txt', 'r').read())
 
+        self.googleSearchEngineID = searchEngineID
+
+        if searchEngineID == "":
+            self.searchHeaderTemplate = ""
+        else:
+            self.searchHeaderTemplate = Template(open('templates/esosearch_header.txt', 'r').read())        
+
         self.luaFileOutputPath = ""
         self.functionOutputPath = ""
         self.outputPath = ""
+        
 
         self.INVALID_FUNCNAME_CHARS = "[*?|:<>\/()\[\]\"\']"
 
@@ -292,6 +300,7 @@ class CEsoEnvironment:
 
         with open(outputFilename, "w") as outFile:
             outFile.write(self.functionHeaderTemplate.safe_substitute(templateVars))
+            outFile.write(self.searchHeaderTemplate.safe_substitute(templateVars))
             self.CreateFunctionHtmlContent(outFile, funcName, functions, outputPath)
             outFile.write(self.functionFooterTemplate.safe_substitute(templateVars))
 
@@ -345,6 +354,7 @@ class CEsoEnvironment:
         templateVars["parseVersion"] = self.globalData.parseVersion
         templateVars["creationDate"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         templateVars['types'] = ", ".join(types) if types else "all"
+        templateVars['googleSearchEngineID'] = self.googleSearchEngineID
 
         return templateVars
 
@@ -482,6 +492,7 @@ class CEsoEnvironment:
 
         with open(outputHtmlFilename, "w") as outFile:
             outFile.write(self.luaFileHeaderTemplate.safe_substitute(templateVars))
+            outFile.write(self.searchHeaderTemplate.safe_substitute(templateVars))
             self.CreateLuaFileHtmlContent(outFile, luaFile, path)
             outFile.write(self.luaFileFooterTemplate.safe_substitute(templateVars))
         
@@ -528,6 +539,7 @@ class CEsoEnvironment:
         
         with open(filename, "w") as outFile:
             outFile.write(self.luaDirHeaderTemplate.safe_substitute(templateVars))
+            outFile.write(self.searchHeaderTemplate.safe_substitute(templateVars))
             outFile.write("<ul class='esold_list'>\n")
             outFile.write(outputDirs)
             outFile.write(outputFiles)
@@ -649,6 +661,7 @@ class CEsoEnvironment:
 
         with open(outputFilename, "w") as outFile:
             outFile.write(self.mainFuncHeaderTemplate.safe_substitute(templateVars))
+            outFile.write(self.searchHeaderTemplate.safe_substitute(templateVars))
             self.CreateFunctionPageContent(outFile, outputPath, letter)
             outFile.write(self.mainFuncFooterTemplate.safe_substitute(templateVars))
 
@@ -669,6 +682,7 @@ class CEsoEnvironment:
 
         with open(outputFilename, "w") as outFile:
             outFile.write(self.mainHeaderTemplate.safe_substitute(templateVars))
+            outFile.write(self.searchHeaderTemplate.safe_substitute(templateVars))
             outFile.write(self.mainContentTemplate.safe_substitute(templateVars))
             outFile.write(self.mainFooterTemplate.safe_substitute(templateVars))
         
@@ -785,6 +799,7 @@ class CEsoEnvironment:
 
         with open(filename, "w") as outFile:
             outFile.write(self.globalHeaderTemplate.safe_substitute(templateVars))
+            outFile.write(self.searchHeaderTemplate.safe_substitute(templateVars))
             self.CreateGlobalHtmlRecord(outFile, self.globalData.globals, "", 1, "", types)
             outFile.write(self.globalFooterTemplate.safe_substitute(templateVars))
             

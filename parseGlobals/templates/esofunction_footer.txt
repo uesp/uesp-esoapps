@@ -1,5 +1,5 @@
 <hr />
-<div class="esofn_footer" id="endoffile">
+<div class="eso_footer" id="endoffile">
 This file was generated automatically on ${creationDate}. Data was exported from ESO on ${parseDate} ${parseTime}, API version ${parseVersion}. <br />
 Contact <a href="mailto:dave@uesp.net">Daveh</a> for issues or information regarding this page. Source code is available on <a href="https://code.google.com/p/uesp/source/browse?repo=esoapps#hg%2FparseGlobals">Google Code:uesp</a>.
 </div>

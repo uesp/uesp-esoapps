@@ -28,8 +28,10 @@ Current ESO data is available at:
 			[1] = "event{Global::Start}...
 	 to
 			[XXXX] = "event{Global::End}...",
-   - Edit EsoParseData.py to reference the global txt file just created. Modify
-     the output path in the same file if desired.
+   - Use the Windows EsoExtractData command line program (http://www.uesp.net/wiki/File:EsoExportMnf.zip)
+     to extract the Game.Mnf/Dat ESO files
+   - Edit EsoParseData.py to reference the global txt file and the "esoui" directory
+     from the extracted Game.Mnf data. Modify the output path in the same file if desired.
    - Run EsoParseData.py.
    - If everything works you'll get a bunch of status output and no errors.
    - Test load the new content.

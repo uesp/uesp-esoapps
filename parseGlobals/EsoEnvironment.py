@@ -41,7 +41,8 @@ class CEsoEnvironment:
         self.mainFuncFooterTemplate = Template(open('templates/esomainfunc_footer.txt', 'r').read())
         self.globalHeaderTemplate = Template(open('templates/esoglobal_header.txt', 'r').read())
         self.globalFooterTemplate = Template(open('templates/esoglobal_footer.txt', 'r').read())
-
+        self.apiVersionTemplate = Template(open('templates/esoapiversion_main.txt', 'r').read())
+        
         self.googleSearchEngineID = searchEngineID
 
         if searchEngineID == "":
@@ -707,6 +708,7 @@ class CEsoEnvironment:
         self.CreateAllFunctionPages(outputPath)
         self.CreateAllFunctionHtml(outputPath + "data\\")
 
+        self.CreateApiVersionHtml(outputPath + "api.html")
         self.CreateMainPage(outputPath)
         
 
@@ -802,4 +804,36 @@ class CEsoEnvironment:
             outFile.write(self.searchHeaderTemplate.safe_substitute(templateVars))
             self.CreateGlobalHtmlRecord(outFile, self.globalData.globals, "", 1, "", types)
             outFile.write(self.globalFooterTemplate.safe_substitute(templateVars))
+
+
+    def CreateApiVersionHtml(self, filename):
+        print "Creating API version Html file", filename, "..."
+
+        apiVersionHistory = open("templates/esoapiversion_history.txt", "r").read()
+        apiLines = apiVersionHistory.split("\n")
+        apiVersion = self.globalData.parseVersion
+        foundLineIndex = -1
+        i = 0
+
+        while i < len(apiLines):
+            if apiLines[i].find(apiVersion) >= 0:
+                foundLineIndex = i
+                break
             
+            i += 1
+
+        newLine = "<li><a href='v{0}/'><b>v{0}</b></a> -- Created on {1}</li>".format(apiVersion, self.globalData.creationDate)
+
+        if foundLineIndex >= 0:
+            apiLines[foundLineIndex] = newLine
+        else:
+            apiLines.append(newLine)
+
+        apiVersionHistory = "\n".join(apiLines)
+        open("templates/esoapiversion_history.txt", "w").write(apiVersionHistory)
+
+        templateVars = self.CreateGlobalTemplateVars()
+        templateVars["apiVersionHistory"] = apiVersionHistory
+
+        with open(filename, "w") as outFile:
+            outFile.write(self.apiVersionTemplate.safe_substitute(templateVars))

@@ -822,7 +822,7 @@ class CEsoEnvironment:
             
             i += 1
 
-        newLine = "<li><a href='v{0}/'><b>v{0}</b></a> -- Created on {1}</li>".format(apiVersion, self.globalData.creationDate)
+        newLine = "<li><a href='{0}/'><b>v{0}</b></a> -- Created on {1}</li>".format(apiVersion, self.globalData.creationDate)
 
         if foundLineIndex >= 0:
             apiLines[foundLineIndex] = newLine

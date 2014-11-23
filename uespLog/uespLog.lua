@@ -3187,7 +3187,7 @@ SLASH_COMMANDS["/uespdump"] = function(cmd)
 	
 	elseif (cmds[1] == "globalprefix") then
 		local l1, l2, l3 = globalprefixes()
-		uespLog.DumpGlobals(3, l2)
+		uespLog.DumpGlobals(tonumber(cmds[2]), l2)
 	elseif (cmds[1] == "smith") then
 		uespLog.DumpSmithItems(false)
 	elseif (cmds[1] == "smithset") then

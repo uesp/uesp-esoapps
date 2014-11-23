@@ -273,13 +273,14 @@ namespace eso {
 	bool CMnfFile::LinkToZosft (CZosftFile& ZosftFile)
 	{
 		size_t FoundCount = 0;
+		bool IsEsoMnf = StringEndsWith(m_Filename, "eso.mnf");
 
 		PrintLog("Looking up all MNF entries in given ZOSFT file...");
 
 		for (size_t i = 0; i < m_FileTable.size(); ++i)
 		{
-				/* Skip entries with a non-zero Unknown1 */
-			if (m_FileTable[i].Unknown1 != 0) continue;
+				/* Skip entries with a non-zero Unknown1 for ESO.mnf files */
+			if (IsEsoMnf && m_FileTable[i].Unknown1 != 0) continue;
 
 			zosft_filetable_t* pEntry = ZosftFile.LookupIndex(m_FileTable[i].FileIndex);
 			
@@ -601,7 +602,6 @@ namespace eso {
 		PrintLog("Sorted MNF file table in %g ms...", EndTime - StartTime);
 
 		StartTime = GetTimerMS();
-
 
 		if (ExportOptions.ArchiveIndex >= 0)
 			PrintError("Saving %u sub-files (%u-%u) from archive %04d in MNF file...", ArchiveCount, StartIndex, EndIndex, ExportOptions.ArchiveIndex);

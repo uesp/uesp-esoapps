@@ -923,21 +923,12 @@ bool CuespLogMonitorDlg::SendQueuedDataThread()
 bool CuespLogMonitorDlg::CheckAndSendLogData ()
 {
 	bool Result = true;
-
-	if (WaitForSingleObject(m_hSendQueueMutex, INFINITE) != WAIT_OBJECT_0) 
-	{ 
-		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to wait for send queue mutex!");
-		return false;
-	}
-	
+		
 	Result &= CheckAndSendLogDataAll();
 	Result &= CheckAndSendLogDataGlobal();
 	Result &= CheckAndSendLogDataAchievement();
 
 	Result &= BackupData();
-
-	ReleaseMutex(m_hSendQueueMutex);
-
 	Result &= SendQueuedData();
 
 	if (Result)
@@ -1211,10 +1202,10 @@ DWORD CuespLogMonitorDlg::SendQueueThreadProc()
 
 	while(!m_StopSendQueueThread)
 	{
-		if (WaitForSingleObject(m_hSendQueueMutex, INFINITE) == WAIT_OBJECT_0) 
+		//if (WaitForSingleObject(m_hSendQueueMutex, INFINITE) == WAIT_OBJECT_0) 
 		{ 
 			SendQueuedDataThread();
-			ReleaseMutex(m_hSendQueueMutex);
+			//ReleaseMutex(m_hSendQueueMutex);
 		}
 
 		Sleep(100);
@@ -1711,6 +1702,15 @@ bool CuespLogMonitorDlg::DoLogCheck(const bool OverrideEnable)
 {
 	if (!OverrideEnable && !m_Options.Enabled) return true;
 
+		/* Make sure we can obtain the mutex */
+	if (WaitForSingleObject(m_hSendQueueMutex, 1000) != WAIT_OBJECT_0) 
+	{ 
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "Skipping log check...failed to acquire send queue mutex!");
+		return false;
+	}
+
+	ReleaseMutex(m_hSendQueueMutex);
+
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Checking log...");
 	//PrintLogLine(ULM_LOGLEVEL_INFO, "Pre-TimeStamp: %I64d", m_Options.LastTimeStamp);
 	//PrintLogLine(ULM_LOGLEVEL_INFO, "Pre-Backup TimeStamp: %I64d", m_Options.LastBackupTimeStamp);
@@ -1719,7 +1719,7 @@ bool CuespLogMonitorDlg::DoLogCheck(const bool OverrideEnable)
 	{
 		PrintLogLine(ULM_LOGLEVEL_INFO, "Sending remaining queued log data...");
 
-		if (SendQueuedData()) 
+		if (SendQueuedData())
 		{
 			m_Options.LastTimeStamp = m_LastParsedTimeStamp;
 		}
@@ -1728,8 +1728,19 @@ bool CuespLogMonitorDlg::DoLogCheck(const bool OverrideEnable)
 	if (!HasLogChanged()) return false;
 	if (!LoadSavedVars()) return false;
 
+	if (WaitForSingleObject(m_hSendQueueMutex, 1000) != WAIT_OBJECT_0) 
+	{ 
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to wait for send queue mutex!");
+		return false;
+	}
+
 			/* Send any data that needs to be updated */
-	if (!CheckAndSendLogData()) return false;
+	if (!CheckAndSendLogData()) 
+	{
+		ReleaseMutex(m_hSendQueueMutex);
+		return false;
+	}
+
 	UpdateLogFileSize();
 
 	bool Result = DeleteOldLogData();
@@ -1737,6 +1748,8 @@ bool CuespLogMonitorDlg::DoLogCheck(const bool OverrideEnable)
 
 	eso::PrintLog("LUA Stack size = %d", lua_gettop(m_pLuaState));
 	lua_settop(m_pLuaState, 0);
+
+	ReleaseMutex(m_hSendQueueMutex);
 
 	//PrintLogLine(ULM_LOGLEVEL_INFO, "Post-TimeStamp: %I64d", m_Options.LastTimeStamp);
 	//PrintLogLine(ULM_LOGLEVEL_INFO, "Post-Backup TimeStamp: %I64d", m_Options.LastBackupTimeStamp);

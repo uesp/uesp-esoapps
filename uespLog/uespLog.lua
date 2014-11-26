@@ -1019,7 +1019,7 @@ function uespLog.Initialize( self, addOnName )
 	uespLog.isAutoMiningItems = uespLog.savedVars.settings.data.isAutoMiningItems or uespLog.isAutoMiningItems
 	uespLog.mineItemLastReloadTimeMS = GetGameTimeMilliseconds()
 	
-	zo_callLater(uespLog.InitAutoMining, 1500)
+	zo_callLater(uespLog.InitAutoMining, 5000)
 			
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_RETICLE_TARGET_CHANGED, uespLog.OnTargetChange)
 	
@@ -1102,8 +1102,8 @@ function uespLog.Initialize( self, addOnName )
 	MAIL_INBOX.Delete = uespLog.NotifyDeleteMailAdded 
 	MAIL_INBOX:RefreshData()
 	
-	zo_callLater(uespLog.InitTradeData, 1200) 
-	zo_callLater(uespLog.outputInitMessage, 1000)
+	zo_callLater(uespLog.InitTradeData, 500) 
+	zo_callLater(uespLog.outputInitMessage, 4000)
 end
 
 	--	Hook initialization onto the ADD_ON_LOADED event  
@@ -1128,6 +1128,8 @@ function uespLog.InitAutoMining ()
 		else
 			uespLog.MsgColor(uespLog.mineColor, "UESP::Auto-restarting item mining at ID "..tostring(uespLog.mineItemsAutoNextItemId).." in 10 secs...")
 			zo_callLater(uespLog.MineItemsAutoLoop, 10000)
+			uespLog.MineItemsOutputStartLog()
+			uespLog.mineItemAutoRestartOutputEnd = false
 		end
 	end
 	
@@ -2702,26 +2704,20 @@ end
 	--uespLog.DebugMsg("Chat Message "..tostring(messageType))
 	
 	local numLinks = 0
-	local timeData = uespLog.GetTimeData()
-	local logData = { }
+	
 	
 	for link in string.gmatch(chatText, "|H.-:item:.-|h.-|h") do
 		numLinks = numLinks + 1
-		--uespLog.DebugMsg("Found link: "..tostring(link))
 		
-		logData = { }
-		logData.itemLink = link
-		logData.event = "ItemLink"
+		local logData = uespLog.GetTimeData()
 		logData.msgType = messageType
-		
-		uespLog.AppendDataToLog("all", logData, timeData)
+		uespLog.LogItemLink(link, "ItemLink", logData)
     end
 	
 	if (numLinks > 0) then
 		uespLog.DebugExtraMsg("Logged "..tostring(numLinks).." item links from chat message.")
 	end
 	
-	--uespLog.DebugMsg("Chat Message with "..tostring(numLinks).." links")
  end
 
 
@@ -3553,7 +3549,6 @@ function uespLog.CreateItemLinkLog (itemLink)
 	local flavourText
 	local logData = { }
 	
-	logData.event = event
 	logData.itemLink = itemLink
 	
 	logData.name = GetItemLinkName(itemLink)
@@ -4817,7 +4812,7 @@ function uespLog.MineItemsAutoLoop ()
 				uespLog.MsgColor(uespLog.mineColor, "UESP::Item mining auto reloading UI....")
 				SLASH_COMMANDS["/reloadui"]()
 			else
-				uespLog.MsgColor(uespLog.mineColor, "UESP::Item mining auto UI reload in "..tostring(reloadTime/1000).." secs...")
+				uespLog.MsgColor(uespLog.mineColor, "UESP::Item mining auto UI reload in "..tostring(math.ceil(reloadTime/5000)*5).." secs...")
 			end
 			
 			break
@@ -4847,8 +4842,8 @@ function uespLog.MineItemsAutoLoop ()
 	
 	if (initItemId < uespLog.mineItemsAutoNextItemId) then
 		uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Auto-mined "..tostring(uespLog.mineItemCount - initItemCount).." items, "..
-				tostring(uespLog.mineItemBadCount - initBadCount).." bad, with IDs "..tostring(initItemId).."-"..tostring(itemId)..
-				" (Total "..tostring(uespLog.mineItemCount).." items)")	
+				tostring(uespLog.mineItemBadCount - initBadCount).." bad, IDs "..tostring(initItemId).."-"..tostring(itemId)..
+				" (total "..tostring(uespLog.mineItemCount).." items)")	
 	end
 end
 
@@ -4863,16 +4858,25 @@ function uespLog.MineItemsAutoStart ()
 	uespLog.mineItemBadCount = 0
 	uespLog.mineItemCount = 0
 	
-	logData = { }
-	logData.itemId = uespLog.mineItemsAutoNextItemId
-	logData.event = "mineItem::AutoStart"
-	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	uespLog.MineItemsOutputStartLog()
 	
 	uespLog.isAutoMiningItems = true
 	uespLog.savedVars.settings.data.isAutoMiningItems = uespLog.isAutoMiningItems
 	uespLog.MsgColor(uespLog.mineColor, "UESP::Started auto-mining items at ID "..tostring(uespLog.mineItemsAutoNextItemId))
 	
 	zo_callLater(uespLog.MineItemsAutoLoop, uespLog.MINEITEMS_AUTODELAY)
+end
+
+
+function uespLog.MineItemsOutputStartLog ()
+	local logData = { }
+	
+	logData = { }
+	logData.itemId = uespLog.mineItemsAutoNextItemId
+	logData.event = "mineItem::AutoStart"
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
+	uespLog.mineItemAutoRestartOutputEnd = false
 end
 
 
@@ -4885,6 +4889,7 @@ function uespLog.MineItemsOutputEndLog ()
 	logData.event = "mineItem::AutoEnd"
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
+	uespLog.mineItemAutoRestartOutputEnd = true
 end
 
 
@@ -4902,7 +4907,9 @@ function uespLog.MineItemsAutoEnd ()
 	uespLog.isAutoMiningItems = false
 	uespLog.savedVars.settings.data.isAutoMiningItems = false
 	
-	uespLog.MineItemsOutputEndLog()
+	if (not uespLog.mineItemAutoRestartOutputEnd) then
+		uespLog.MineItemsOutputEndLog()
+	end
 	
 	uespLog.MsgColor(uespLog.mineColor, "UESP::Stopped auto-mining items at ID "..tostring(uespLog.mineItemsAutoNextItemId))
 	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Total auto-mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad")	
@@ -4968,6 +4975,8 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		end
 		
 		uespLog.MsgColor(uespLog.mineColor, "UESP::Turned on item mining auto reload and restart!")
+		uespLog.MsgColor(uespLog.mineColor, ".   WARNING::This will reload the UI and clear log data automatically!")
+		uespLog.MsgColor(uespLog.mineColor, ".                      To stop use: /uespmineitem end")
 		uespLog.MineItemsAutoStart()
 		return
 	end

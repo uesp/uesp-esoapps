@@ -4763,7 +4763,7 @@ function uespLog.MineItems (startId, endId)
 	logData = { }
 	logData.startId = startId
 	logData.endId = endId
-	logData.event = "mineItem::Start"
+	logData.event = "mineitem::Start"
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 
 	for itemId = startId, endId do
@@ -4773,7 +4773,7 @@ function uespLog.MineItems (startId, endId)
 	uespLog.mineNextItemId = endId + 1
 	
 	logData = { }
-	logData.event = "mineItem::End"
+	logData.event = "mineitem::End"
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
 	uespLog.DebugMsgColor(uespLog.mineColor, ".    Finished Mining "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad")
@@ -4873,7 +4873,7 @@ function uespLog.MineItemsOutputStartLog ()
 	
 	logData = { }
 	logData.itemId = uespLog.mineItemsAutoNextItemId
-	logData.event = "mineItem::AutoStart"
+	logData.event = "mineItem::Start"
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
 	uespLog.mineItemAutoRestartOutputEnd = false
@@ -4886,7 +4886,7 @@ function uespLog.MineItemsOutputEndLog ()
 	logData.itemId = uespLog.mineItemsAutoNextItemId
 	logData.itemCount = uespLog.mineItemCount
 	logData.badCount = uespLog.mineItemBadCount
-	logData.event = "mineItem::AutoEnd"
+	logData.event = "mineItem::End"
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
 	uespLog.mineItemAutoRestartOutputEnd = true

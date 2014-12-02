@@ -3571,7 +3571,6 @@ function uespLog.CreateItemLinkLog (itemLink)
 	
 	if (hasCharges) then
 		logData.maxCharges = GetItemLinkMaxEnchantCharges(itemLink)
-		logData.numCharges = GetItemLinkNumEnchantCharges(itemLink)
 	end
 	
 	hasEnchant, enchantName, enchantDesc = GetItemLinkEnchantInfo(itemLink)
@@ -3590,7 +3589,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 	end
 	
 	logData.trait, logData.traitDesc = GetItemLinkTraitInfo(itemLink)
-	isSetItem, setName, numSetBonuses = GetItemLinkSetInfo(itemLink)
+	local isSetItem, setName, numSetBonuses, numSetEquipped, maxSetEquipped = GetItemLinkSetInfo(itemLink)
 	
 	if (logData.traitDesc == "") then
 		logData.traitDesc = nil
@@ -3599,6 +3598,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 	if (isSetItem) then
 		logData.setName = setName
 		logData.setBonusCount = numSetBonuses
+		logData.setMaxCount = maxSetEquipped
 		local i
 		
 		for i = 1, numSetBonuses do
@@ -3768,7 +3768,6 @@ function uespLog.LogItemLinkShort (itemLink, event, extraData)
 	
 	if (hasCharges) then
 		logData.maxCharges = GetItemLinkMaxEnchantCharges(itemLink)
-		logData.numCharges = GetItemLinkNumEnchantCharges(itemLink)
 	end
 	
 	hasEnchant, enchantName, enchantDesc = GetItemLinkEnchantInfo(itemLink)
@@ -4929,6 +4928,51 @@ function uespLog.MineItemsAutoStatus ()
 	uespLog.MsgColor(uespLog.mineColor, "UESP::Next auto-mine itemId is "..tostring(uespLog.mineItemsAutoNextItemId))
 end
 
+uespLog.MINEITEM_QUALITYMAP_ITEMID = 47000
+
+
+function uespLog.MineItemsQualityMapLogItem(itemLink, intLevel, intSubtype, extraData)
+	local logData = { }
+	local reqLevel = GetItemLinkRequiredLevel(itemLink)
+	local reqVetLevel = GetItemLinkRequiredVeteranRank(itemLink)
+	local quality = GetItemLinkQuality(itemLink)
+	local level = 0
+	
+	if (reqVetLevel ~= nil and reqVetLevel > 0) then
+		level = reqVetLevel + 49
+	elseif (reqLevel ~= nil and reqLevel > 0) then
+		level = reqLevel
+	end
+	
+	logData.event = "mineItem::quality"
+	logData.itemLink = itemLink
+	logData.intLevel = intLevel
+	logData.intSubtype = intSubtype
+	logData.level = level
+	logData.quality = quality
+	logData.csv = tostring(intLevel) .. ", "..tostring(intSubtype)..", "..tostring(level)..", "..tostring(quality)
+
+	uespLog.AppendDataToLog("all", logData, extraData)
+end
+
+
+function uespLog.MineItemsQualityMap(level)
+	local extraData = uespLog.GetTimeData()
+	level = level or 1
+		
+	uespLog.MsgColor(uespLog.mineColor, "UESP::Creating type quality map for item #"..tostring(uespLog.MINEITEM_QUALITYMAP_ITEMID).." at level "..tostring(level))
+	
+	for subtype = 1, 400 do
+		local itemLink = uespLog.MakeItemLink(uespLog.MINEITEM_QUALITYMAP_ITEMID, level, subtype)
+			
+		if (uespLog.IsValidItemLink(itemLink)) then
+			 uespLog.MineItemsQualityMapLogItem(itemLink, level, subtype, extraData)
+		end
+		
+	end
+	
+end
+
 
 SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 	local cmds = { }
@@ -4962,6 +5006,10 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		return
 	elseif (cmds[1] == "status") then
 		uespLog.MineItemsAutoStatus()
+		return
+	elseif (cmds[1] == "qualitymap") then
+		uespLog.MineItemsQualityMap(1)
+		uespLog.MineItemsQualityMap(50)
 		return
 	elseif (cmds[1] == "autostart") then
 		uespLog.mineItemAutoReload = true

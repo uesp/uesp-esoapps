@@ -4669,7 +4669,7 @@ function uespLog.MineItemIterateLevelsShort (itemId)
 				setCount = setCount + 1
 				uespLog.mineItemCount = uespLog.mineItemCount + 1
 				
-				itemLink = uespLog.MakeItemLinkEx( { itemId = itemId, level = level, quality = quality, style = 1 } )
+				itemLink = uespLog.MakeItemLinkEx( { itemId = itemId, level = level, quality = quality, style = 0 } )
 				
 				if (uespLog.IsValidItemLink(itemLink)) then
 					

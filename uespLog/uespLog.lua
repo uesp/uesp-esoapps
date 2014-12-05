@@ -410,7 +410,7 @@ uespLog.currentConversationData = {
 }
 
 uespLog.MINEITEM_LEVELS = {
-	{  1, 49,   2,   6, "dropped" },
+	{  1, 49,   1,   6, "dropped" },
 	{  1, 49,   7,   9, "dropped" },
 	{  1,  1,  30,  34, "crafted" },
 	{  4,  4,  25,  29, "crafted" },
@@ -428,8 +428,8 @@ uespLog.MINEITEM_LEVELS = {
 	{ 50, 50, 155, 164, "crafted" },
 	{ 50, 50, 165, 174, "crafted" },
 	{ 50, 50, 235, 235, "store" },
-	{ 50, 50, 236, 240, "crafted" },
-	{ 50, 50, 241, 245, "dropped" },
+	{ 50, 50, 236, 240, "crafted" }, --VR11
+	{ 50, 50, 241, 245, "dropped" }, --VR11
 	{ 50, 50, 253, 253, "store" },
 	{ 50, 50, 254, 258, "crafted" },
 	{ 50, 50, 259, 263, "dropped" },

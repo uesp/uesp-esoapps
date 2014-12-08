@@ -179,7 +179,8 @@
 --			- Changed color of item mining output to be more unique.
 --			- Added the "/uespmineitem qualitymap".
 --			- Added the "/uespmineitem subtype [number]" for only mining items of a certain type.
---			- Added the "/ut" shortcut for "/uesptime"
+--			- Added the "/ut" shortcut for "/uesptime".
+--			- Added the "/uespmakeenchant" (/ume) command.
 --
 
 
@@ -414,11 +415,11 @@ uespLog.currentConversationData = {
 }
 
 uespLog.MINEITEM_LEVELS = {
-	{  1, 49,   1,   6, "dropped" },
-	{  1, 49,   7,   9, "dropped" },
+	{  1, 50,   1,   6, "dropped" },
+	{  1, 50 ,   7,   9, "dropped" },
 	{  1,  1,  30,  34, "crafted" },
 	{  4,  4,  25,  29, "crafted" },
-	{  6, 49,  20,  24, "crafted" },
+	{  6, 50,  20,  24, "crafted" },
 	{ 50, 50,  39,  48, "quest" },
 	{ 50, 50,  51,  60, "dropped" },
 	{ 50, 50,  61,  70, "dropped" },
@@ -951,6 +952,30 @@ function uespLog.ParseLink(link)
     end
 	
 	return "", "", "", "", link
+end
+
+
+function uespLog.MakeNiceLink(link)
+	
+	if type(link) == "string" then
+		local color, data, text = link:match("|H(.-):(.-)|h(.-)|h")
+		
+		if (color == nil or text == nil or data == nil) then
+			return link, ""
+		end
+		
+		local niceName = link
+		local niceLink = link
+		
+		if (text ~= nil) then
+			niceName = text:gsub("%^.*", "")
+			niceLink = "|H"..color..":"..data.."|h["..niceName.."]|h"
+		end
+		
+		return niceLink, niceName
+    end
+	
+	return link, ""
 end
 
 
@@ -2688,7 +2713,7 @@ function uespLog.OnMailMessageTakeAttachedItem (eventCode, mailId)
 		logData = { }
 		logData.event = "MailItem"
 		logData.tradeType = tradeType
-		logData.itemLink = lastItem.itemLink
+		logData.itemLink = uespLog.MakeNiceLink(lastItem.itemLink)
 		logData.qnt = lastItem.stack
 		logData.icon = lastItem.icon
 		
@@ -5430,6 +5455,27 @@ SLASH_COMMANDS["/uespsmithinfo"] = function (cmd)
 end
 
 
+function uespLog.MakeEnchantLink(enchantId, inputLevel, inputType, inputItemId, inputItemLevel, inputItemType)
+	local enchantLevel = inputLevel or 1
+	local enchantType = inputType or 1
+	local itemId = inputItemId or 70
+	local itemLevel = inputItemLevel or 1
+	local itemType = inputItemType or 1
+		
+	local itemLink = "|H0:item:"..tostring(itemId)..":"..tostring(itemType)..":"..tostring(itemLevel)..":"..tostring(enchantId)..":"..tostring(enchantType)..":"..tostring(enchantLevel)..":0:0:0:0:0:0:0:0:0:0:0:0:0:0|h[Item "..tostring(itemId).."]|h"
+
+	local itemName = GetItemLinkName(itemLink)
+	
+	if (itemName ~= "" and itemName ~= nil) then
+		itemLink = "|H0:item:"..tostring(itemId)..":"..tostring(itemType)..":"..tostring(itemLevel)..":"..tostring(enchantId)..":"..tostring(enchantType)..":"..tostring(enchantLevel)..":0:0:0:0:0:0:0:0:0:0:0:0:0:0|h["..tostring(itemName).."]|h"
+		itemLink = "|H0:item:"..tostring(itemId)..":"..tostring(itemType)..":"..tostring(itemLevel)..":"..tostring(enchantId)..":"..tostring(enchantType)..":"..tostring(enchantLevel)..":"..tostring(enchantId)..":"..tostring(enchantType)..":"..tostring(enchantLevel)..":0:0:0:0:0:0:0:0:0:0:0|h["..tostring(itemName).."]|h"
+	end
+	
+	return itemLink
+end
+
+
+
 function uespLog.MakeItemLink(itemId, inputLevel, inputQuality)
 	local itemLevel = inputLevel or 1
 	local itemQuality = inputQuality or 1
@@ -5527,12 +5573,28 @@ SLASH_COMMANDS["/uespmakelink"] = function (cmd)
 	uespLog.DebugExtraMsg("UESP::Item Style "..tostring(itemStyle))
 	
 	ZO_PopupTooltip_SetLink(itemLink)
-	
-	--ZO_LinkHandler_InsertLink(zo_strformat(SI_TOOLTIP_ITEM_NAME, itemLink))
-	--ZO_LinkHandler_InsertLink(itemLink)
 end
 
 SLASH_COMMANDS["/uml"] = SLASH_COMMANDS["/uespmakelink"]
+
+
+SLASH_COMMANDS["/uespmakeenchant"] = function (cmd)
+	local cmds = { }
+	for word in cmd:gmatch("%S+") do table.insert(cmds, word) end
+	local enchantId = cmds[1]
+	
+	if (enchantId == nil) then
+		uespLog.Msg("UESP::Use the format: /uespmakeenchant [id] [level] [subtype] [itemid] [itemlevel] [itemsubtype]")
+		return
+	end
+	
+	local itemLink = uespLog.MakeEnchantLink(enchantId, cmds[2], cmds[3], cmds[4], cmds[5], cmds[6])
+	uespLog.Msg("UESP::Created Enchant Link "..itemLink)
+	
+	ZO_PopupTooltip_SetLink(itemLink)
+end
+
+SLASH_COMMANDS["/ume"] = SLASH_COMMANDS["/uespmakeenchant"]
 
 
 SLASH_COMMANDS["/uesptestdump"] = function(cmd)

@@ -1526,7 +1526,7 @@ function uespLog.ShowItemInfo (itemLink)
 	local recipeQuality = GetItemLinkRecipeQualityRequirement(itemLink)
 	local resultItemLink = GetItemLinkRecipeResultItemLink(itemLink)
 	local refinedItemLink = GetItemLinkRefinedMaterialItemLink(itemLink)
-	local hasTraitAbility, traitAbilityDescription, traitCooldown = GetItemLinkTraitOnUseAbilityInfo(itemLink)
+	local hasTraitAbility, traitAbilityDescription, traitCooldown = GetItemLinkTraitOnUseAbilityInfo(itemLink) -- TODO: GetItemLinkTraitOnUseAbilityInfo(itemLink, 1..GetMaxTraits())
 	local materialLevelDescription = GetItemLinkMaterialLevelDescription(itemLink)
 	
 	local flagString = ""
@@ -3672,7 +3672,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 		logData.maxGlyphLevel = glyphMaxVetLevel + 49
 	end
 	
-	local hasTraitAbility, traitAbilityDescription, traitCooldown = GetItemLinkTraitOnUseAbilityInfo(itemLink)
+	local hasTraitAbility, traitAbilityDescription, traitCooldown = GetItemLinkTraitOnUseAbilityInfo(itemLink) -- TODO: GetItemLinkTraitOnUseAbilityInfo(itemLink, 1..GetMaxTraits())
 	
 	if (hasTraitAbility) then
 		logData.traitAbility = traitAbilityDescription

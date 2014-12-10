@@ -181,6 +181,8 @@
 --			- Added the "/uespmineitem subtype [number]" for only mining items of a certain type.
 --			- Added the "/ut" shortcut for "/uesptime".
 --			- Added the "/uespmakeenchant" (/ume) command.
+--			- Fixed showing and logging of item trait abilities (crafted potions).
+--
 --
 
 
@@ -1526,7 +1528,6 @@ function uespLog.ShowItemInfo (itemLink)
 	local recipeQuality = GetItemLinkRecipeQualityRequirement(itemLink)
 	local resultItemLink = GetItemLinkRecipeResultItemLink(itemLink)
 	local refinedItemLink = GetItemLinkRefinedMaterialItemLink(itemLink)
-	local hasTraitAbility, traitAbilityDescription, traitCooldown = GetItemLinkTraitOnUseAbilityInfo(itemLink) -- TODO: GetItemLinkTraitOnUseAbilityInfo(itemLink, 1..GetMaxTraits())
 	local materialLevelDescription = GetItemLinkMaterialLevelDescription(itemLink)
 	
 	local flagString = ""
@@ -1595,8 +1596,15 @@ function uespLog.ShowItemInfo (itemLink)
 		uespLog.MsgColor(uespLog.itemColor, ".    UseAbility: "..tostring(useAbilityHeader).." -- "..tostring(useAbilityDesc).."     Cooldown: "..tostring(useAbilityCooldown/1000).." sec")
 	end
 	
-	if (hasTraitAbility) then
-		uespLog.MsgColor(uespLog.itemColor, ".    TraitAbility: "..tostring(traitAbilityDescription).."   Cooldown: "..tostring(traitCooldown/1000).." sec")
+	local traitAbilityCount = 0
+	
+	for i = 1, GetMaxTraits() do
+		local hasTraitAbility, traitAbilityDescription, traitCooldown = GetItemLinkTraitOnUseAbilityInfo(itemLink, i)
+		
+		if (hasTraitAbility) then
+			traitAbilityCount = traitAbilityCount + 1
+			uespLog.MsgColor(uespLog.itemColor, ".    TraitAbility" .. tostring(traitAbilityCount) .. ": "..tostring(traitAbilityDescription).."   Cooldown: "..tostring(traitCooldown/1000).." sec")
+		end
 	end
 	
 	if (isSetItem) then
@@ -3672,13 +3680,18 @@ function uespLog.CreateItemLinkLog (itemLink)
 		logData.maxGlyphLevel = glyphMaxVetLevel + 49
 	end
 	
-	local hasTraitAbility, traitAbilityDescription, traitCooldown = GetItemLinkTraitOnUseAbilityInfo(itemLink) -- TODO: GetItemLinkTraitOnUseAbilityInfo(itemLink, 1..GetMaxTraits())
+	local traitAbilityCount = 0
 	
-	if (hasTraitAbility) then
-		logData.traitAbility = traitAbilityDescription
-		logData.traitCooldown = traitCooldown
+	for i = 1, GetMaxTraits() do
+		local hasTraitAbility, traitAbilityDescription, traitCooldown = GetItemLinkTraitOnUseAbilityInfo(itemLink, i)
+		
+		if (hasTraitAbility) then
+			traitAbilityCount = traitAbilityCount + 1
+			logData["traitAbility" .. tostring(traitAbilityCount) ] = traitAbilityDescription
+			logData["traitCooldown" .. tostring(traitAbilityCount) ] = traitCooldown
+		end
 	end
-	
+
 	local levelsDescription = GetItemLinkMaterialLevelDescription(itemLink)
 	
 	if (levelsDescription ~= nil and levelsDescription ~= "") then
@@ -5192,8 +5205,17 @@ uespLog.ShowResearchInfo = function (craftingType)
 end
 
 
-SLASH_COMMANDS["/uesptest"] = function (cmd)
+SLASH_COMMANDS["/uesptestpotion"] = function (cmd)
+	local cmds = { }
+	for word in cmd:gmatch("%S+") do table.insert(cmds, word) end
+	
+	local itemLink = uespLog.MakeItemLinkEx( { itemId = cmds[3] or 54339, level = cmds[1] or 1, quality = cmds[2] or 1, potionEffect = cmds[4] or 8454917 } )
+	uespLog.Msg("UESP::Make test link ".. itemLink)
+	ZO_PopupTooltip_SetLink(itemLink)
+end
 
+
+SLASH_COMMANDS["/uesptest"] = function (cmd)
 	local logString = ""
 	
 	for i = 1, 500 do

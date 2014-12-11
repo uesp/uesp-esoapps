@@ -3,7 +3,7 @@ import EsoEnvironment
     # Modify below constants to point to relevant files/paths
 INPUT_GLOBAL_FILENAME = "d:\\esoexport\\gamemnf11\\globals7.txt"
 INPUT_LUA_PATH = "d:\\esoexport\\gamemnf11\\esoui\\"
-OUTPUT_PATH = "d:\\temp\\esodata\\v100010\\"
+OUTPUT_PATH = "d:\\temp\\esodata\\100010\\"
 
     # Set to your specific Google CSE ID if you want site search
 GOOGLE_SEARCH_ENGINE_ID = "012503365948233236492:dsuicagnjii"

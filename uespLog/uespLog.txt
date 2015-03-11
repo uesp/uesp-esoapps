@@ -1,6 +1,6 @@
 ## Title: UespLog
 ## Title: UespLog
-## APIVersion: 100010
+## APIVersion: 100011
 ## SavedVariables: uespLogSavedVars
 
 uespLog.lua

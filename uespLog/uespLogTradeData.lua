@@ -1127,7 +1127,7 @@ function uespLog.CraftAutoLoot()
 		if (tradeType == nil or tradeType >= MinProvLevel or alwaysLoot) then
 			LootItemById(lootId)
 		else
-			uespLog.OnLootGained("LootGained", "player", itemLink, count, nil, nil, true, extraLogData)
+			uespLog.OnLootGained("LootGained", "player", itemLink, count, nil, nil, true, false, extraLogData)
 		end
 	end
 	

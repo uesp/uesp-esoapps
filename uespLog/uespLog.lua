@@ -185,6 +185,7 @@
 --			- Fixed crash on looting items from Update 6.
 --			- Fixed crash due to renamed INTERACT_WINDOW object.
 --			- Changed API version to 100011.
+--			- Fixed issue with autolooting.
 --
 --
 

@@ -1093,18 +1093,6 @@ function uespLog.CraftAutoLoot()
 	local numLoot = GetNumLootItems()
 	local MinProvLevel = uespLog.GetCraftAutoLootMinProvLevel()
 	
-	if (LOOT_WINDOW.returnScene) then
-		SCENE_MANAGER:Hide("loot")
-		SCENE_MANAGER:Show(LOOT_WINDOW.returnScene)
-		SCENE_MANAGER:Hide(LOOT_WINDOW.returnScene)
-	else
-		SCENE_MANAGER:Hide("loot")
-	end
-	
-	LOOT_WINDOW.control:SetHidden(true)
-	--SCENE_MANAGER:Hide("loot")
-	--LOOT_WINDOW:Hide()
-	
 	uespLog.DebugExtraMsg("UESP::Auto looting "..tostring(numLoot).." items...")
 	LootMoney()
 	
@@ -1117,10 +1105,12 @@ function uespLog.CraftAutoLoot()
 	extraLogData.skippedLoot = 1
 	
 	for lootIndex = 1, numLoot do
-		local lootId, name, icon, count, quality, value, isQuest = GetLootItemInfo(lootIndex)
+		local lootId, name, icon, count, quality, value, isQuest, isStolen = GetLootItemInfo(lootIndex)
 		local itemLink = GetLootItemLink(lootId)
 		local itemId = uespLog.GetItemLinkID(itemLink)
-		local tradeType, alwaysLoot = uespLog.GetItemTradeType(itemId)
+		local tradeType, alwaysLoot = uespLog.GetItemTradeType(lootId)
+		
+		-- uespLog.DebugExtraMsg("UESP::Auto looting "..tostring(itemLink))
 		
 		extraLogData.tradeType = tradeType
 		
@@ -1130,6 +1120,18 @@ function uespLog.CraftAutoLoot()
 			uespLog.OnLootGained("LootGained", "player", itemLink, count, nil, nil, true, false, extraLogData)
 		end
 	end
+	
+	if (LOOT_WINDOW.returnScene) then
+		SCENE_MANAGER:Hide("loot")
+		SCENE_MANAGER:Show(LOOT_WINDOW.returnScene)
+		SCENE_MANAGER:Hide(LOOT_WINDOW.returnScene)
+	else
+		SCENE_MANAGER:Hide("loot")
+	end
+	
+	LOOT_WINDOW.control:SetHidden(true)
+	--SCENE_MANAGER:Hide("loot")
+	--LOOT_WINDOW:Hide()
 	
 	--LOOT_WINDOW.control:SetHidden(false)
 	EndLooting()
@@ -1160,7 +1162,7 @@ function uespLog.CreateNiceLink(link)
 end
 
 
-function uespLog.OnLootUpdated (eventCode)
+function uespLog.OnLootUpdated (eventCode, actionName, isOwned)
 
 	if (uespLog.IsCraftAutoLoot()) then
 		uespLog.CraftAutoLoot()

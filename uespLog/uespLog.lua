@@ -557,6 +557,7 @@ end
 
 
 function uespLog.SetMailDeleteNotify(flag)
+
 	if (uespLog.savedVars.settings == nil) then
 		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
 	end
@@ -575,16 +576,16 @@ function uespLog.NotifyDeleteMailAdded (self)
 	self.pendingDelete = true
 
 	if numAttachments > 0 and attachedMoney > 0 then
-		ZO_Dialogs_ShowDialog("DELETE_MAIL_ATTACHMENTS_AND_MONEY")
+		ZO_Dialogs_ShowDialog("DELETE_MAIL_ATTACHMENTS_AND_MONEY", self.mailId)
 	elseif numAttachments > 0 then
-		ZO_Dialogs_ShowDialog("DELETE_MAIL_ATTACHMENTS")
+		ZO_Dialogs_ShowDialog("DELETE_MAIL_ATTACHMENTS", self.mailId)
 	elseif attachedMoney > 0 then
-		ZO_Dialogs_ShowDialog("DELETE_MAIL_MONEY")
+		ZO_Dialogs_ShowDialog("DELETE_MAIL_MONEY", self.mailId)
 	elseif uespLog.IsMailDeleteNotify() then
-		ZO_Dialogs_ShowDialog("DELETE_MAIL")
+		ZO_Dialogs_ShowDialog("DELETE_MAIL", { callback = function(...) self:ConfirmDelete(...) end, mailId = self.mailId } )
 	else
 		self.confirmedDelete = false
-		self:ConfirmDelete()
+		self:ConfirmDelete(self.mailId)
 	end
 		
 end

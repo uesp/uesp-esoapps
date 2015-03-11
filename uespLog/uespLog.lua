@@ -166,7 +166,7 @@
 --			  clear the saved variable data back to an empty state which can usually fix this.
 --			- Added short initialization message on startup.
 --
---		- v0.22 -
+--		- v0.22 - 11 March 2015
 --			- Added "/uespmail deletenotify on|off" to turn the mail delete notification prompt on/off.
 --			- Created item links use the item's name if available and valid.
 --			- Added the "/uespcomparelink" (/ucl) command for testing item link comparisons.
@@ -182,16 +182,18 @@
 --			- Added the "/ut" shortcut for "/uesptime".
 --			- Added the "/uespmakeenchant" (/ume) command.
 --			- Fixed showing and logging of item trait abilities (crafted potions).
+--			- Fixed crash on looting items from Update 6.
+--			- Fixed crash due to renamed INTERACT_WINDOW object.
+--			- Changed API version to 100011.
 --
 --
-
 
 
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
 uespLog.version = "0.22"
-uespLog.releaseDate = "24 November 2014"
+uespLog.releaseDate = "11 March 2015"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -1790,8 +1792,8 @@ function uespLog.OnConversationUpdated (eventCode, conversationBodyText, convers
 	uespLog.lastConversationOption.Important = ""
 	
 		-- Manually update the interaction window
-	--INTERACT_WINDOW:InitializeInteractWindow(conversationBodyText)
-    --INTERACT_WINDOW:PopulateChatterOptions(conversationOptionCount, true)
+	--INTERACTION:InitializeInteractWindow(conversationBodyText)
+    --INTERACTION:PopulateChatterOptions(conversationOptionCount, true)
 end
 
 
@@ -1856,8 +1858,8 @@ function uespLog.OnChatterBegin (eventCode, optionCount)
 	uespLog.DebugLogMsg("chatter begin...")
 	
 		-- Manually call the original function to update the chat window
-	INTERACT_WINDOW:InitializeInteractWindow(ChatterGreeting)
-	INTERACT_WINDOW:PopulateChatterOptions(optionCount, false)
+	INTERACTION:InitializeInteractWindow(ChatterGreeting)
+	INTERACTION:PopulateChatterOptions(optionCount, false)
 end
 
 
@@ -2352,7 +2354,7 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 end
 
 
-function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSound, lootType, self, extraLogData)
+function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSound, lootType, self, isPickPocket, extraLogData)
 	local logData = { }
 	local posData = uespLog.GetLastTargetData()
 	local msgType = "item"

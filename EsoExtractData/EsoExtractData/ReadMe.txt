@@ -95,6 +95,13 @@ There are several more advanced command line options which may be useful:
 	esoextractdata -l en.lang
 		Convert the given LANG file into a CSV (en.lang.csv).
 
+	esoextractdata -l en.lang -p
+		Convert the given LANG file into a CSV (en.lang.csv) using a format
+		that can be used to convert directly to PO (Pootle) files.
+
+	esoextractdata -l en.lang -o test.csv
+		Manually specify the output file for CSV/LANG conversions.
+
 	esoextractdata -x en.csv
 		Convert the given CSV file into a LANG (en.lang). The CSV file should
 		be in the same format as one created from the "-l" option including:

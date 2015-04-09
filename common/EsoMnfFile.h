@@ -36,6 +36,7 @@ namespace eso {
 		std::string ZosOutputFileTable;
 		std::string LangFilename;
 		std::string CreateLangFilename;
+		std::string OutputFilename;
 		int MnfStartIndex;
 		int MnfEndIndex;
 		int ArchiveIndex;
@@ -43,6 +44,7 @@ namespace eso {
 		int BeginArchiveIndex;
 		bool ConvertDDS;
 		bool SkipSubFiles;
+		bool UsePOCSVFormat;
 
 		mnf_exportoptions_t() :
 					MnfStartIndex(-1), 
@@ -51,7 +53,8 @@ namespace eso {
 					MnfFileIndex(-1),
 					BeginArchiveIndex(-1),
 					ConvertDDS(false),
-					SkipSubFiles(false)
+					SkipSubFiles(false),
+					UsePOCSVFormat(false)
 		{
 		}
 

@@ -54,7 +54,7 @@ bool CEsoLangFile::CreateFromCsv (const eso::CCsvFile& CsvFile)
 		Record.Unknown = atoi(r->at(1).c_str());
 		Record.Index   = atoi(r->at(2).c_str());
 		Record.Offset  = atoi(r->at(3).c_str());
-		Record.Text    = ReplaceStrings(ReplaceStrings(ReplaceStrings(r->at(4), "\\n", "\x0a"), "\\r", "\x0d"), "\\\"", "\"");
+		Record.Text    = ReplaceStrings(ReplaceStrings(ReplaceStrings(r->at(4), "\\n", "\x0a"), "\\r", "\x0d"), "\"\"", "\"");
 
 		++RecordCount;
 	}
@@ -74,21 +74,34 @@ bool CEsoLangFile::CreateFromCsv (const eso::CCsvFile& CsvFile)
 }
 
 
-bool CEsoLangFile::DumpCsv (const std::string Filename)
+bool CEsoLangFile::DumpCsv (const std::string Filename, const bool UsePOFormat)
 {
 	CFile File;
 
 	if (!File.Open(Filename, "wb")) return false;
 
-	File.Printf("\"ID\",\"Unknown\",\"Index\",\"Offset\",\"Text\"\n");
+	if (UsePOFormat)
+		File.Printf("\"Location\",\"Source\",\"Target\"\n");
+	else
+		File.Printf("\"ID\",\"Unknown\",\"Index\",\"Offset\",\"Text\"\n");
 
 	for (size_t i = 0; i < m_Records.size(); ++i)
 	{
 		lang_record_t& Record = m_Records[i];
 
-		File.Printf("\"%d\",\"%d\",\"%d\",\"%d\",\"", Record.Id, Record.Unknown, Record.Index, Record.Offset);
-		DumpTextFile(File, Record);
-		File.Printf("\"\n");
+		if (UsePOFormat)
+		{
+			std::string Location;
+			File.Printf("\"%d-%d-%d\",\"", Record.Id, Record.Unknown, Record.Offset);
+			DumpTextFile(File, Record);
+			File.Printf("\",\"\"\n");
+		}
+		else
+		{
+			File.Printf("\"%d\",\"%d\",\"%d\",\"%d\",\"", Record.Id, Record.Unknown, Record.Index, Record.Offset);
+			DumpTextFile(File, Record);
+			File.Printf("\"\n");
+		}
 	}
 
 	return true;
@@ -102,7 +115,7 @@ bool CEsoLangFile::DumpTextFile (CFile& File, lang_record_t& Record)
 	while (*pText)
 	{
 		if (*pText == '"')
-			File.Printf("\\\"");
+			File.Printf("\"\"");
 		else
 			File.WriteChar(*pText);
 	

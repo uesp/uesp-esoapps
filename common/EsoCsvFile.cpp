@@ -101,7 +101,11 @@ namespace eso
 
 			case '"':
 
-				if (*pParse == QuoteChar && !LastQuote)
+				if (QuoteChar != 0 && pParse[1] == '"' && !LastQuote)
+				{
+					++pParse;
+				}
+				else if (QuoteChar != 0 && !LastQuote)
 				{
 					QuoteChar = 0;
 					pEnd = pParse;

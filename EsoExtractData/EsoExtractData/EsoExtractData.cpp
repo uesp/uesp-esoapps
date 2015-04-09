@@ -38,6 +38,12 @@
  *		- Added the "-o" option for specifying the output filename for -l/-x commands.
  *		- Added the "-p" option for outputting LANG CSV files in a PO compatible format.
  *
+ * v0.22 -- 9 April 2015
+ *		- Added the "--posourcetext" to use the source text column (2) in a PO-CSV file when
+ *		  converting it to a LANG file.
+ *		- Assume a PO-CSV file (3 columns) when the -p option is used with -x.
+ *		- Fix the location column (1) when creating a PO-CSV file (offset was used instead of index).
+ *
  */
 
 
@@ -1154,27 +1160,28 @@ bool DoConvertExistingRiffFiles (const std::string RootPath)
 
 cmdparamdef_t g_Cmds[] = 
 {
-	// VarName        Opt  LongOpt           Description                                                 Req   Option Value  Mult   Default
-	{ "mnffile",      "", "",				"Input MNF filename to load.",								false, false, true,  false, "" },
-	{ "outputpath",   "", "",				"Path to save extracted data files to.",					false, false, true,  false, "" },
-	{ "mnfft",        "m", "mnfft",			"Dump the MNF filetable to the specified text file.",		false, true,  true,  false, "" },
-	{ "zosft",        "z", "zosft",			"Dump the ZOS filetable to the specified text file.",		false, true,  true,  false, "" },
-	{ "startindex",   "s", "startindex",	"Start exporting sub-files at the given file index.",		false, true,  true,  false, "-1" },
-	{ "endindex",     "e", "endindex",	    "Stop exporting sub-files at the given file index.",		false, true,  true,  false, "-1" },
-	{ "archiveindex", "a", "archive",		"Only export MNF file with the given index.",				false, true,  true,  false, "-1" },
-	{ "beginarchive", "b", "beginarchive",	"start with the given MNF file index.",						false, true,  true,  false, "-1" },
-	{ "fileindex",    "f", "fileindex",		"Only export MNF the subfile with the given file index.",	false, true,  true,  false, "-1" },
-	{ "convertdds",   "c", "convertdds",    "(Doesn't Work Yet) Attempt to convert DDS files to PNG.",	false, true,  false, false, "0" },
-	{ "skipsubfiles", "k", "skipsubfiles",	"Don't export subfiles from the MNF data.",		            false, true,  false, false, "0" },
-	{ "langfile",     "l", "lang",	        "Convert the given .lang file to a CSV.",		            false, false, true,  false, "" },
-	{ "createlang",   "x", "createlang",    "Convert the given language CSV file to a .LANG.",	        false, false, true,  false, "" },
-	{ "outputfile",   "o", "outputfile",    "Specify the output file for -l and -x.",				    false, false, true,  false, "" },
-	{ "pocsv",        "p", "pocsv",         "Output the LANG CSV file in a PO compatible format.",	    false, true,  false, false, "0" },
+	// VarName        Opt  LongOpt           Description													Req   Option Value  Mult   Default
+	{ "mnffile",       "", "",				"Input MNF filename to load.",									false, false, true,  false, "" },
+	{ "outputpath",    "", "",				"Path to save extracted data files to.",						false, false, true,  false, "" },
+	{ "mnfft",        "m", "mnfft",			"Dump the MNF filetable to the specified text file.",			false, true,  true,  false, "" },
+	{ "zosft",        "z", "zosft",			"Dump the ZOS filetable to the specified text file.",			false, true,  true,  false, "" },
+	{ "startindex",   "s", "startindex",	"Start exporting sub-files at the given file index.",			false, true,  true,  false, "-1" },
+	{ "endindex",     "e", "endindex",	    "Stop exporting sub-files at the given file index.",			false, true,  true,  false, "-1" },
+	{ "archiveindex", "a", "archive",		"Only export MNF file with the given index.",					false, true,  true,  false, "-1" },
+	{ "beginarchive", "b", "beginarchive",	"start with the given MNF file index.",							false, true,  true,  false, "-1" },
+	{ "fileindex",    "f", "fileindex",		"Only export MNF the subfile with the given file index.",		false, true,  true,  false, "-1" },
+	{ "convertdds",   "c", "convertdds",    "(Doesn't Work Yet) Attempt to convert DDS files to PNG.",		false, true,  false, false, "0" },
+	{ "skipsubfiles", "k", "skipsubfiles",	"Don't export subfiles from the MNF data.",						false, true,  false, false, "0" },
+	{ "langfile",     "l", "lang",	        "Convert the given .lang file to a CSV.",						false, false, true,  false, "" },
+	{ "createlang",   "x", "createlang",    "Convert the given language CSV file to a .LANG.",				false, false, true,  false, "" },
+	{ "outputfile",   "o", "outputfile",    "Specify the output file for -l and -x.",						false, false, true,  false, "" },
+	{ "pocsv",        "p", "pocsv",         "Use a CSV file in a PO compatible format.",		   	        false, true,  false, false, "0" },
+	{ "posourcetext",  "", "posourcetext",  "Use the source text when converting a PO-CSV file to a LANG.", false, true,  false, false, "0" },
 	{ "",   "", "", "", false, false, false, false, "" }
 };
 
 const char g_AppDescription[] = "\
-ExportMnf v0.21 is a simple command line application to load and export files\n\
+ExportMnf v0.22 is a simple command line application to load and export files\n\
 from ESO's MNF and DAT files. Created by Daveh (dave@uesp.net).\n\
 \n\
 WARNING: This app is in early development and is fragile. User discretion is\n\
@@ -1243,10 +1250,11 @@ int _tmain(int argc, _TCHAR* argv[])
 	ExportOptions.ConvertDDS = CmdParamHandler.HasParamValue("convertdds");
 	ExportOptions.SkipSubFiles = CmdParamHandler.HasParamValue("skipsubfiles");
 	ExportOptions.UsePOCSVFormat = CmdParamHandler.HasParamValue("pocsv");
+	ExportOptions.UsePOSourceText = CmdParamHandler.HasParamValue("posourcetext");
 	ExportOptions.LangFilename = CmdParamHandler.GetParamValue("langfile");
 	ExportOptions.CreateLangFilename = CmdParamHandler.GetParamValue("createlang");
 	ExportOptions.OutputFilename = CmdParamHandler.GetParamValue("outputfile");
-
+	
 		/* Handle a .LANG file conversion to CSV */
 	if (!ExportOptions.LangFilename.empty())
 	{
@@ -1286,7 +1294,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		{
 			PrintError("Loaded CSV file '%s'...", ExportOptions.CreateLangFilename.c_str());
 
-			if (LangFile.CreateFromCsv(CsvFile))
+			if (LangFile.CreateFromCsv(CsvFile, ExportOptions.UsePOCSVFormat, ExportOptions.UsePOSourceText))
 			{
 				PrintError("Created the LANG file from the CSV data...");
 

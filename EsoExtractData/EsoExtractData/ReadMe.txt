@@ -1,5 +1,5 @@
 
-	EsoExtractData v0.21 (formally EsoExportMnf)
+	EsoExtractData v0.22 (formally EsoExportMnf)
 	by Dave Humphrey (dave@uesp.net)
 	9 April 2015
 -------------------------------
@@ -97,7 +97,10 @@ There are several more advanced command line options which may be useful:
 
 	esoextractdata -l en.lang -p
 		Convert the given LANG file into a CSV (en.lang.csv) using a format
-		that can be used to convert directly to PO (Pootle) files.
+		that can be used to convert directly to PO (Pootle) files. The CSV
+		file will have 3 columns (location, source, target) with the location
+		data having the format "ID-UNKNOWN-INDEX" to uniquely identify the
+		text.
 
 	esoextractdata -l en.lang -o test.csv
 		Manually specify the output file for CSV/LANG conversions.
@@ -112,6 +115,9 @@ There are several more advanced command line options which may be useful:
  			- Text column must be quoted to preserve commas in texts.
  			- Resulting LANG file will be larger than the original due to 
 			  duplicate texts not being merged.
+
+    esoextractdata -x en.csv -p
+	    Convert a PO compatible CSV file into a LANG file.
  
 
 

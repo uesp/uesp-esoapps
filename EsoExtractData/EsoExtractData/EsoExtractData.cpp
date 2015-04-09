@@ -33,6 +33,11 @@
  *			  not being merged.
  *			- Output filename will be the same filename with ".CSV" replaced with ".LANG".
  *
+ * v0.21 -- 9 April 2015
+ *		- Escape quotes in text as double-quotes ("") instead of \" in CSV files to import correctly.
+ *		- Added the "-o" option for specifying the output filename for -l/-x commands.
+ *		- Added the "-p" option for outputting LANG CSV files in a PO compatible format.
+ *
  */
 
 
@@ -1149,6 +1154,7 @@ bool DoConvertExistingRiffFiles (const std::string RootPath)
 
 cmdparamdef_t g_Cmds[] = 
 {
+	// VarName        Opt  LongOpt           Description                                                 Req   Option Value  Mult   Default
 	{ "mnffile",      "", "",				"Input MNF filename to load.",								false, false, true,  false, "" },
 	{ "outputpath",   "", "",				"Path to save extracted data files to.",					false, false, true,  false, "" },
 	{ "mnfft",        "m", "mnfft",			"Dump the MNF filetable to the specified text file.",		false, true,  true,  false, "" },
@@ -1162,11 +1168,13 @@ cmdparamdef_t g_Cmds[] =
 	{ "skipsubfiles", "k", "skipsubfiles",	"Don't export subfiles from the MNF data.",		            false, true,  false, false, "0" },
 	{ "langfile",     "l", "lang",	        "Convert the given .lang file to a CSV.",		            false, false, true,  false, "" },
 	{ "createlang",   "x", "createlang",    "Convert the given language CSV file to a .LANG.",	        false, false, true,  false, "" },
+	{ "outputfile",   "o", "outputfile",    "Specify the output file for -l and -x.",				    false, false, true,  false, "" },
+	{ "pocsv",        "p", "pocsv",         "Output the LANG CSV file in a PO compatible format.",	    false, true,  false, false, "0" },
 	{ "",   "", "", "", false, false, false, false, "" }
 };
 
 const char g_AppDescription[] = "\
-ExportMnf v0.20 is a simple command line application to load and export files\n\
+ExportMnf v0.21 is a simple command line application to load and export files\n\
 from ESO's MNF and DAT files. Created by Daveh (dave@uesp.net).\n\
 \n\
 WARNING: This app is in early development and is fragile. User discretion is\n\
@@ -1234,20 +1242,25 @@ int _tmain(int argc, _TCHAR* argv[])
 	ExportOptions.MnfFileIndex = CmdParamHandler.GetParamValueAsInt("fileindex");
 	ExportOptions.ConvertDDS = CmdParamHandler.HasParamValue("convertdds");
 	ExportOptions.SkipSubFiles = CmdParamHandler.HasParamValue("skipsubfiles");
+	ExportOptions.UsePOCSVFormat = CmdParamHandler.HasParamValue("pocsv");
 	ExportOptions.LangFilename = CmdParamHandler.GetParamValue("langfile");
 	ExportOptions.CreateLangFilename = CmdParamHandler.GetParamValue("createlang");
+	ExportOptions.OutputFilename = CmdParamHandler.GetParamValue("outputfile");
 
 		/* Handle a .LANG file conversion to CSV */
 	if (!ExportOptions.LangFilename.empty())
 	{
 		CEsoLangFile LangFile;
 		std::string OutputCSVFilename = ExportOptions.LangFilename + ".csv";
+		if (!ExportOptions.OutputFilename.empty()) OutputCSVFilename = ExportOptions.OutputFilename;
+
+		PrintError("Converting LANG file '%s' to CSV '%s'...", ExportOptions.LangFilename.c_str(), OutputCSVFilename.c_str());
 
 		if (LangFile.Load(ExportOptions.LangFilename))
 		{
 			PrintError("Loaded LANG file '%s'...", ExportOptions.LangFilename.c_str());
 
-			if (LangFile.DumpCsv(OutputCSVFilename))
+			if (LangFile.DumpCsv(OutputCSVFilename, ExportOptions.UsePOCSVFormat))
 				PrintError("Saved the LANG file to '%s'!", OutputCSVFilename.c_str());
 			else
 				PrintError("Failed to save the LANG file '%s'!", OutputCSVFilename.c_str());
@@ -1265,6 +1278,9 @@ int _tmain(int argc, _TCHAR* argv[])
 		CCsvFile     CsvFile(true);
 		std::string  OutputLangFilename = RemoveFileExtension(ExportOptions.CreateLangFilename);
 		if (!StringEndsWith(OutputLangFilename, ".lang")) OutputLangFilename += ".lang";
+		if (!ExportOptions.OutputFilename.empty()) OutputLangFilename = ExportOptions.OutputFilename;
+
+		PrintError("Converting CSV file '%s' to LANG '%s'...", ExportOptions.CreateLangFilename.c_str(), OutputLangFilename.c_str());
 
 		if (CsvFile.Load(ExportOptions.CreateLangFilename))
 		{

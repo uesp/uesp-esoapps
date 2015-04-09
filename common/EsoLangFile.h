@@ -40,7 +40,7 @@ public:
 
 	bool CreateFromCsv (const eso::CCsvFile& CsvFile);
 
-	bool DumpCsv (const std::string Filename);
+	bool DumpCsv (const std::string Filename, const bool UsePOFormat = false);
 	bool DumpTextFile (eso::CFile& File, lang_record_t& Record);
 
 	bool Load (const std::string Filename);

@@ -1,5 +1,5 @@
 
-	EsoExtractData v0.20 (formally EsoExportMnf)
+	EsoExtractData v0.21 (formally EsoExportMnf)
 	by Dave Humphrey (dave@uesp.net)
 	9 April 2015
 -------------------------------

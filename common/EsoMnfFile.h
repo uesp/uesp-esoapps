@@ -45,6 +45,7 @@ namespace eso {
 		bool ConvertDDS;
 		bool SkipSubFiles;
 		bool UsePOCSVFormat;
+		bool UsePOSourceText;
 
 		mnf_exportoptions_t() :
 					MnfStartIndex(-1), 
@@ -54,7 +55,8 @@ namespace eso {
 					BeginArchiveIndex(-1),
 					ConvertDDS(false),
 					SkipSubFiles(false),
-					UsePOCSVFormat(false)
+					UsePOCSVFormat(false),
+					UsePOSourceText(false)
 		{
 		}
 

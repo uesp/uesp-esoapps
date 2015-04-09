@@ -24,19 +24,10 @@ void CEsoLangFile::Destroy()
 }
 
 
-bool CEsoLangFile::CreateFromCsv (const eso::CCsvFile& CsvFile)
+int CEsoLangFile::CreateRecordsFromCSV (const eso::CCsvFile& CsvFile, const bool UsePOSourceText)
 {
-	int RowCount = 0;
 	int RecordCount = 0;
-
-	Destroy();
-
-	m_Records.clear();
-	m_RecordCount = CsvFile.GetNumDataRows();
-	m_Records.reserve(m_RecordCount + 100);
-	m_Records.resize(m_RecordCount);
-
-	size_t StartTextOffset = m_RecordCount*TEXT_RECORD_SIZE + 8;
+	int RowCount = 0;
 
 	for (auto r = CsvFile.GetData().begin(); r != CsvFile.GetData().end(); ++r, ++RowCount)
 	{
@@ -59,6 +50,62 @@ bool CEsoLangFile::CreateFromCsv (const eso::CCsvFile& CsvFile)
 		++RecordCount;
 	}
 
+	return RecordCount;
+}
+
+
+int CEsoLangFile::CreateRecordsFromPOCSV (const eso::CCsvFile& CsvFile, const bool UsePOSourceText)
+{
+	int RecordCount = 0;
+	int RowCount = 0;
+	int Offset = 0;
+
+	for (auto r = CsvFile.GetData().begin(); r != CsvFile.GetData().end(); ++r, ++RowCount)
+	{
+		if (RowCount == 0 && CsvFile.HasHeaderRow()) continue;
+		
+		if (r->size() < 3) 
+		{
+			PrintError("%d: Need at least 3 columns in a PO-CSV row to convert to LANG data!", RowCount + 1);
+			continue;
+		}
+
+		lang_record_t& Record = m_Records[RecordCount];
+
+		int Result = sscanf(r->at(0).c_str(), "%u-%u-%u", &Record.Id, &Record.Unknown, &Record.Index);
+		if (Result != 3) PrintError("%d: Failed to convert column 1 value '%s' to ID/Unknown/Index values!", RowCount + 1, r->at(0).c_str());
+
+		Record.Offset  = Offset;
+
+		if (UsePOSourceText)
+			Record.Text = ReplaceStrings(ReplaceStrings(ReplaceStrings(r->at(1), "\\n", "\x0a"), "\\r", "\x0d"), "\"\"", "\"");
+		else
+			Record.Text = ReplaceStrings(ReplaceStrings(ReplaceStrings(r->at(2), "\\n", "\x0a"), "\\r", "\x0d"), "\"\"", "\"");
+
+		Offset += Record.Text.length() + 1;
+		++RecordCount;
+	}
+
+	return RecordCount;
+}
+
+
+bool CEsoLangFile::CreateFromCsv (const eso::CCsvFile& CsvFile, const bool UsePOFormat, const bool UsePOSourceText)
+{
+	int RecordCount = 0;
+
+	Destroy();
+
+	m_Records.clear();
+	m_RecordCount = CsvFile.GetNumDataRows();
+	m_Records.reserve(m_RecordCount + 100);
+	m_Records.resize(m_RecordCount);
+
+	if (UsePOFormat)
+		RecordCount = CreateRecordsFromPOCSV(CsvFile, UsePOSourceText);
+	else
+		RecordCount = CreateRecordsFromCSV(CsvFile, UsePOSourceText);
+
 	if (m_RecordCount != RecordCount)
 	{
 		PrintError("Warning: Expected %d language records from CSV but only found %d!", m_RecordCount, RecordCount);
@@ -67,7 +114,7 @@ bool CEsoLangFile::CreateFromCsv (const eso::CCsvFile& CsvFile)
 	}
 	else
 	{
-		PrintError("Found %d language records from CSV data...", m_RecordCount);
+		PrintError("Created %d language records from CSV data...", m_RecordCount);
 	}
 
 	return true;
@@ -92,7 +139,7 @@ bool CEsoLangFile::DumpCsv (const std::string Filename, const bool UsePOFormat)
 		if (UsePOFormat)
 		{
 			std::string Location;
-			File.Printf("\"%d-%d-%d\",\"", Record.Id, Record.Unknown, Record.Offset);
+			File.Printf("\"%d-%d-%d\",\"", Record.Id, Record.Unknown, Record.Index);
 			DumpTextFile(File, Record);
 			File.Printf("\",\"\"\n");
 		}

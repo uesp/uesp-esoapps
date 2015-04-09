@@ -33,12 +33,16 @@ protected:
 protected:
 	bool ParseData (eso::byte* pData, const fpos_t Size);
 
+	int CreateRecordsFromCSV   (const eso::CCsvFile& CsvFile, const bool UsePOSourceText);
+	int CreateRecordsFromPOCSV (const eso::CCsvFile& CsvFile, const bool UsePOSourceText);
+
+
 public:
 	CEsoLangFile();
 	virtual ~CEsoLangFile();
 	virtual void Destroy();
 
-	bool CreateFromCsv (const eso::CCsvFile& CsvFile);
+	bool CreateFromCsv (const eso::CCsvFile& CsvFile, const bool UsePOFormat = false, const bool UsePOSourceText = false);
 
 	bool DumpCsv (const std::string Filename, const bool UsePOFormat = false);
 	bool DumpTextFile (eso::CFile& File, lang_record_t& Record);

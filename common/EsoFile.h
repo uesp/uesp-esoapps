@@ -30,6 +30,9 @@ namespace eso {
 		virtual bool ReadByte    (byte&    Output) = 0;
 		virtual bool ReadBytes   (byte*   pOutput, const size_t Count) = 0;
 
+		virtual bool WriteString (const std::string Data) = 0;
+		virtual bool WriteDword  (dword Output, const bool LittleEndian = true) = 0;
+
 		virtual bool   Seek (const fpos_t Pos, const int SeekType = SEEK_SET) = 0;
 		virtual fpos_t Tell (void) = 0;
 
@@ -79,6 +82,8 @@ namespace eso {
 		
 		virtual bool WriteBytes (const byte* pData, const size_t Size);
 		virtual bool WriteChar (const char Data);
+		virtual bool WriteString (const std::string Data);
+		virtual bool WriteDword   (dword Output, const bool LittleEndian = true);
 	};
 
 
@@ -113,6 +118,9 @@ namespace eso {
 		virtual fpos_t Tell (void) { return (fpos_t) m_Pos; }
 
 		void SetBuffer (byte* pBuffer, const size_t MaxSize, const bool DeleteBuffer = false);
+
+		virtual bool WriteString (const std::string Data) { return false; }
+		virtual bool WriteDword   (dword Output, const bool LittleEndian = true) { return false; }
 	};
 
 };

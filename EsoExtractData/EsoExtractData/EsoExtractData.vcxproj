@@ -152,6 +152,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\common\CmdParamHandler.h" />
     <ClInclude Include="..\..\common\EsoCommon.h" />
+    <ClInclude Include="..\..\common\EsoCsvFile.h" />
     <ClInclude Include="..\..\common\EsoDatFile.h" />
     <ClInclude Include="..\..\common\EsoFile.h" />
     <ClInclude Include="..\..\common\EsoLangFile.h" />
@@ -169,6 +170,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\common\EsoCommon.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - Eso.mnf|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - Game.mnf|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\common\EsoCsvFile.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - Eso.mnf|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release - Game.mnf|Win32'">NotUsing</PrecompiledHeader>

@@ -20,6 +20,19 @@
  *
  * v0.18 -- 23 November 2014
  *		- Fixed output of Game.Mnf with filenames.
+ *
+ * v0.20 -- 9 April 2015
+ *		- All cells are quoted when saving a LANG file as a CSV.
+ *		- Translate DOS linefeeds in LANG file texts as "\r" (was "\n" as previously).
+ *		- Convert a language CSV file back to a LANG file using the "-x" option:
+ *			- First row must be a header: ID,Unknown,Index,Offset,Text
+ *			- Column order is currently fixed.
+ *			- Convert \r, \n and \" to their respectice characters.
+ *			- Text column must be quoted to preserve commas in texts.
+ *			- Resulting LANG file will be larger than the original due to duplicate texts
+ *			  not being merged.
+ *			- Output filename will be the same filename with ".CSV" replaced with ".LANG".
+ *
  */
 
 
@@ -37,7 +50,7 @@
 #include "EsoZosftFile.h"
 #include "CmdParamHandler.h"
 #include "EsoLangFile.h"
-
+#include "EsoCsvFile.h"
 
 using namespace eso;
 
@@ -1148,11 +1161,12 @@ cmdparamdef_t g_Cmds[] =
 	{ "convertdds",   "c", "convertdds",    "(Doesn't Work Yet) Attempt to convert DDS files to PNG.",	false, true,  false, false, "0" },
 	{ "skipsubfiles", "k", "skipsubfiles",	"Don't export subfiles from the MNF data.",		            false, true,  false, false, "0" },
 	{ "langfile",     "l", "lang",	        "Convert the given .lang file to a CSV.",		            false, false, true,  false, "" },
+	{ "createlang",   "x", "createlang",    "Convert the given language CSV file to a .LANG.",	        false, false, true,  false, "" },
 	{ "",   "", "", "", false, false, false, false, "" }
 };
 
 const char g_AppDescription[] = "\
-ExportMnf v0.18 is a simple command line application to load and export files\n\
+ExportMnf v0.20 is a simple command line application to load and export files\n\
 from ESO's MNF and DAT files. Created by Daveh (dave@uesp.net).\n\
 \n\
 WARNING: This app is in early development and is fragile. User discretion is\n\
@@ -1169,6 +1183,23 @@ int _tmain(int argc, _TCHAR* argv[])
 	mnf_exportoptions_t ExportOptions;
 
 	OpenLog("exportmnf.log");
+
+	/*
+	CCsvFile CsvFile(true);
+
+	CsvFile.Load("d:\\temp\\en.lang.csv");
+	//CsvFile.Dump();
+	CsvFile.Save("d:\\temp\\test.lang.csv");
+
+	CEsoLangFile LangFile;
+	LangFile.CreateFromCsv(CsvFile);
+	LangFile.Save("d:\\temp\\test.lang");
+
+	CEsoLangFile LangFile1;
+	LangFile1.Load("d:\\temp\\en.lang");
+	LangFile1.DumpCsv("d:\\temp\\en.lang.csv");
+
+	return 0; //*/
 
 	CCmdParamHandler CmdParamHandler("ExportMnf", g_AppDescription, g_Cmds);
 
@@ -1204,8 +1235,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	ExportOptions.ConvertDDS = CmdParamHandler.HasParamValue("convertdds");
 	ExportOptions.SkipSubFiles = CmdParamHandler.HasParamValue("skipsubfiles");
 	ExportOptions.LangFilename = CmdParamHandler.GetParamValue("langfile");
+	ExportOptions.CreateLangFilename = CmdParamHandler.GetParamValue("createlang");
 
-		/* Handle a .LANG file seperately */
+		/* Handle a .LANG file conversion to CSV */
 	if (!ExportOptions.LangFilename.empty())
 	{
 		CEsoLangFile LangFile;
@@ -1223,6 +1255,38 @@ int _tmain(int argc, _TCHAR* argv[])
 		else
 		{
 			PrintError("Failed to load the LANG file '%s'!", ExportOptions.LangFilename.c_str());
+		}
+	}
+
+		/* Handle a .LANG file creation from CSV */
+	if (!ExportOptions.CreateLangFilename.empty())
+	{
+		CEsoLangFile LangFile;
+		CCsvFile     CsvFile(true);
+		std::string  OutputLangFilename = RemoveFileExtension(ExportOptions.CreateLangFilename);
+		if (!StringEndsWith(OutputLangFilename, ".lang")) OutputLangFilename += ".lang";
+
+		if (CsvFile.Load(ExportOptions.CreateLangFilename))
+		{
+			PrintError("Loaded CSV file '%s'...", ExportOptions.CreateLangFilename.c_str());
+
+			if (LangFile.CreateFromCsv(CsvFile))
+			{
+				PrintError("Created the LANG file from the CSV data...");
+
+				if (LangFile.Save(OutputLangFilename))
+					PrintError("Saved the LANG file to '%s'!", OutputLangFilename.c_str());
+				else
+					PrintError("Failed to save the LANG file to '%s'!", OutputLangFilename.c_str());
+			}
+			else
+			{
+				PrintError("Failed to create the LANG file from CSV data!");
+			}
+		}
+		else
+		{
+			PrintError("Failed to load the CSV file '%s'!", ExportOptions.CreateLangFilename.c_str());
 		}
 	}
 

@@ -163,9 +163,10 @@ namespace eso {
 			return nullptr;
 		}
 
+		pFileData[FileSize] = 0;
 		return pFileData;
 	}
-
+	
 
 	bool CFile::ReadDword64 (dword64& Output, const bool LittleEndian)
 	{
@@ -294,8 +295,24 @@ namespace eso {
 	}
 
 
+	bool CFile::WriteDword (dword Output, const bool LittleEndian)
+	{
+		if (m_pFile == nullptr) return PrintError("Error: No file defined to read from!");
+		if (!LittleEndian) Output = DwordSwap(Output);
+		size_t WriteBytes = fwrite(&Output, 1, sizeof(dword), m_pFile);
+		if (WriteBytes != sizeof(dword)) return PrintError("Error: Only wrote %u of %u bytes at position 0x%llX!", WriteBytes, sizeof(dword), Tell());
+		return true;
+	}
 
 
+	bool CFile::WriteString (const std::string Data)
+	{
+		if (m_pFile == nullptr) return PrintError("Error: No file defined to read from!");
+		size_t WriteBytes = fwrite(Data.c_str(), 1, Data.length(), m_pFile);
+		if (WriteBytes != Data.length()) return PrintError("Error: Only wrote %u of %u bytes at position 0x%llX!", WriteBytes, Data.length(), Tell());
+		return true;
+	}
+	
 
 	CMemoryFile::CMemoryFile() :
 					m_pBuffer(nullptr),

@@ -5,6 +5,7 @@
 	/* Required includes */
 #include "EsoCommon.h"
 #include "EsoFile.h"
+#include "EsoCsvFile.h"
 
 
 struct lang_record_t
@@ -37,11 +38,16 @@ public:
 	virtual ~CEsoLangFile();
 	virtual void Destroy();
 
+	bool CreateFromCsv (const eso::CCsvFile& CsvFile);
+
 	bool DumpCsv (const std::string Filename);
 	bool DumpTextFile (eso::CFile& File, lang_record_t& Record);
 
 	bool Load (const std::string Filename);
 	bool Read (eso::CFile& File);
+
+	bool Save (const std::string Filename);
+	bool Write (eso::CFile& File);
 };
 
 

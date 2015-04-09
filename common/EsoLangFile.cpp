@@ -24,19 +24,69 @@ void CEsoLangFile::Destroy()
 }
 
 
+bool CEsoLangFile::CreateFromCsv (const eso::CCsvFile& CsvFile)
+{
+	int RowCount = 0;
+	int RecordCount = 0;
+
+	Destroy();
+
+	m_Records.clear();
+	m_RecordCount = CsvFile.GetNumDataRows();
+	m_Records.reserve(m_RecordCount + 100);
+	m_Records.resize(m_RecordCount);
+
+	size_t StartTextOffset = m_RecordCount*TEXT_RECORD_SIZE + 8;
+
+	for (auto r = CsvFile.GetData().begin(); r != CsvFile.GetData().end(); ++r, ++RowCount)
+	{
+		if (RowCount == 0 && CsvFile.HasHeaderRow()) continue;
+		
+		if (r->size() < 5) 
+		{
+			PrintError("%d: Need at least 5 columns in CSV row to convert to LANG data!", RowCount + 1);
+			continue;
+		}
+
+		lang_record_t& Record = m_Records[RecordCount];
+
+		Record.Id      = atoi(r->at(0).c_str());
+		Record.Unknown = atoi(r->at(1).c_str());
+		Record.Index   = atoi(r->at(2).c_str());
+		Record.Offset  = atoi(r->at(3).c_str());
+		Record.Text    = ReplaceStrings(ReplaceStrings(ReplaceStrings(r->at(4), "\\n", "\x0a"), "\\r", "\x0d"), "\\\"", "\"");
+
+		++RecordCount;
+	}
+
+	if (m_RecordCount != RecordCount)
+	{
+		PrintError("Warning: Expected %d language records from CSV but only found %d!", m_RecordCount, RecordCount);
+		m_RecordCount = RecordCount;
+		m_Records.resize(m_RecordCount);
+	}
+	else
+	{
+		PrintError("Found %d language records from CSV data...", m_RecordCount);
+	}
+
+	return true;
+}
+
+
 bool CEsoLangFile::DumpCsv (const std::string Filename)
 {
 	CFile File;
 
 	if (!File.Open(Filename, "wb")) return false;
 
-	File.Printf("ID, Unknown, Index, Offset, Text\n");
+	File.Printf("\"ID\",\"Unknown\",\"Index\",\"Offset\",\"Text\"\n");
 
 	for (size_t i = 0; i < m_Records.size(); ++i)
 	{
 		lang_record_t& Record = m_Records[i];
 
-		File.Printf("%d, %d, %d, %d, \"", Record.Id, Record.Unknown, Record.Index, Record.Offset);
+		File.Printf("\"%d\",\"%d\",\"%d\",\"%d\",\"", Record.Id, Record.Unknown, Record.Index, Record.Offset);
 		DumpTextFile(File, Record);
 		File.Printf("\"\n");
 	}
@@ -109,8 +159,8 @@ bool CEsoLangFile::ParseData (eso::byte* pData, const fpos_t Size)
 		if (TextOffset < Size)
 		{
 			std::string Temp = ParseBufferString(pData, TextOffset, (size_t)Size);
-			std::replace(Temp.begin(), Temp.end(), '\x0d', '\x0a');
-			Record.Text = ReplaceStrings(Temp, "\x0a", "\\n");
+			//std::replace(Temp.begin(), Temp.end(), '\x0d', '\x0a');
+			Record.Text = ReplaceStrings(ReplaceStrings(Temp, "\x0d", "\\r"), "\x0a", "\\n");
 		}
 		else
 			PrintLog("Warning: Read passed end of file (offset 0x%08X) in text record #%d", TextOffset, i);
@@ -131,4 +181,42 @@ bool CEsoLangFile::Read (CFile& File)
 	delete[] pFileBuffer;
 
 	return Result;
+}
+
+
+bool CEsoLangFile::Save (const std::string Filename)
+{
+	CFile File;
+	if (!File.Open(Filename, "wb")) return false;
+	return Write(File);
+}
+
+
+bool CEsoLangFile::Write (CFile& File)
+{
+	dword Offset = 0;
+
+	if (!File.WriteDword(m_FileId, false)) return false;
+	if (!File.WriteDword(m_RecordCount, false)) return false;
+	
+	for (size_t i = 0; i < m_RecordCount; ++i)
+	{
+		lang_record_t& Record = m_Records[i];
+		Record.Offset = Offset;
+		
+		if (!File.WriteDword(Record.Id, false)) return false;
+		if (!File.WriteDword(Record.Unknown, false)) return false;
+		if (!File.WriteDword(Record.Index, false)) return false;
+		if (!File.WriteDword(Record.Offset, false)) return false;
+
+		Offset += Record.Text.length() + 1;
+	}
+
+	for (size_t i = 0; i < m_RecordCount; ++i)
+	{
+		if (!File.WriteString(m_Records[i].Text)) return false;
+		if (!File.WriteChar(0)) return false;
+	}
+
+	return true;
 }

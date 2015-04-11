@@ -155,6 +155,23 @@ bool CEsoLangFile::DumpCsv (const std::string Filename, const bool UsePOFormat)
 }
 
 
+bool CEsoLangFile::DumpText (const std::string Filename, const bool UsePOFormat)
+{
+	CFile File;
+
+	if (!File.Open(Filename, "wb")) return false;
+
+	for (size_t i = 0; i < m_Records.size(); ++i)
+	{
+		lang_record_t& Record = m_Records[i];
+		File.Printf("%s\n", Record.Text.c_str());
+		if (UsePOFormat) File.Printf("\n");
+	}
+
+	return true;
+}
+
+
 bool CEsoLangFile::DumpTextFile (CFile& File, lang_record_t& Record)
 {
 	const char* pText = Record.Text.c_str();
@@ -178,9 +195,7 @@ bool CEsoLangFile::Load (const std::string Filename)
 	CFile File;
 
 	if (!File.Open(Filename, "rb")) return false;
-
 	if (!Read(File)) return false;
-	
 
 	return true;
 }
@@ -219,7 +234,6 @@ bool CEsoLangFile::ParseData (eso::byte* pData, const fpos_t Size)
 		if (TextOffset < Size)
 		{
 			std::string Temp = ParseBufferString(pData, TextOffset, (size_t)Size);
-			//std::replace(Temp.begin(), Temp.end(), '\x0d', '\x0a');
 			Record.Text = ReplaceStrings(ReplaceStrings(Temp, "\x0d", "\\r"), "\x0a", "\\n");
 		}
 		else

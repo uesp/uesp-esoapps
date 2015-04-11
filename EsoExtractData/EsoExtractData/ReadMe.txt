@@ -1,7 +1,7 @@
 
-	EsoExtractData v0.22 (formally EsoExportMnf)
+	EsoExtractData v0.23 (formally EsoExportMnf)
 	by Dave Humphrey (dave@uesp.net)
-	9 April 2015
+	11 April 2015
 -------------------------------
 EsoextractData is a simple Windows command line application that loads and exports
 data found in ESO's (Elder Scrolls Online) MNF and DAT files.
@@ -118,6 +118,13 @@ There are several more advanced command line options which may be useful:
 
     esoextractdata -x en.csv -p
 	    Convert a PO compatible CSV file into a LANG file.
+
+	esoextractdata -l en.lang -t
+	    Convert the LANG file to a plain text file (one text per line).
+
+	esoextractdata -l en.lang -t -p
+	    Convert the LANG file to a plain text file that is compatible with
+		Pootle (txt2po) with an extra blank line between texts.
  
 
 

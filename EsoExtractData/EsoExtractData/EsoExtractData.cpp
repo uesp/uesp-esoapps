@@ -44,6 +44,9 @@
  *		- Assume a PO-CSV file (3 columns) when the -p option is used with -x.
  *		- Fix the location column (1) when creating a PO-CSV file (offset was used instead of index).
  *
+ * v0.23 -- 11 April 2015
+ *		- Added the "-t" option to output LANG file in a plain text format.
+ *
  */
 
 
@@ -1175,13 +1178,14 @@ cmdparamdef_t g_Cmds[] =
 	{ "langfile",     "l", "lang",	        "Convert the given .lang file to a CSV.",						false, false, true,  false, "" },
 	{ "createlang",   "x", "createlang",    "Convert the given language CSV file to a .LANG.",				false, false, true,  false, "" },
 	{ "outputfile",   "o", "outputfile",    "Specify the output file for -l and -x.",						false, false, true,  false, "" },
-	{ "pocsv",        "p", "pocsv",         "Use a CSV file in a PO compatible format.",		   	        false, true,  false, false, "0" },
+	{ "pocsv",        "p", "pocsv",         "Import/Export the CSV/Text file in a PO compatible format.",   false, true,  false, false, "0" },
 	{ "posourcetext",  "", "posourcetext",  "Use the source text when converting a PO-CSV file to a LANG.", false, true,  false, false, "0" },
+	{ "langtext",     "t", "langtext",      "Output the LANG file in plain text format.",		   	        false, true,  false, false, "0" },
 	{ "",   "", "", "", false, false, false, false, "" }
 };
 
 const char g_AppDescription[] = "\
-ExportMnf v0.22 is a simple command line application to load and export files\n\
+ExportMnf v0.23 is a simple command line application to load and export files\n\
 from ESO's MNF and DAT files. Created by Daveh (dave@uesp.net).\n\
 \n\
 WARNING: This app is in early development and is fragile. User discretion is\n\
@@ -1249,6 +1253,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	ExportOptions.MnfFileIndex = CmdParamHandler.GetParamValueAsInt("fileindex");
 	ExportOptions.ConvertDDS = CmdParamHandler.HasParamValue("convertdds");
 	ExportOptions.SkipSubFiles = CmdParamHandler.HasParamValue("skipsubfiles");
+	ExportOptions.UseLangText = CmdParamHandler.HasParamValue("langtext");
 	ExportOptions.UsePOCSVFormat = CmdParamHandler.HasParamValue("pocsv");
 	ExportOptions.UsePOSourceText = CmdParamHandler.HasParamValue("posourcetext");
 	ExportOptions.LangFilename = CmdParamHandler.GetParamValue("langfile");
@@ -1259,19 +1264,21 @@ int _tmain(int argc, _TCHAR* argv[])
 	if (!ExportOptions.LangFilename.empty())
 	{
 		CEsoLangFile LangFile;
-		std::string OutputCSVFilename = ExportOptions.LangFilename + ".csv";
-		if (!ExportOptions.OutputFilename.empty()) OutputCSVFilename = ExportOptions.OutputFilename;
+		std::string OutputFilename = ExportOptions.LangFilename + (ExportOptions.UseLangText ? ".txt" : ".csv");
+		if (!ExportOptions.OutputFilename.empty()) OutputFilename = ExportOptions.OutputFilename;
 
-		PrintError("Converting LANG file '%s' to CSV '%s'...", ExportOptions.LangFilename.c_str(), OutputCSVFilename.c_str());
+		PrintError("Converting LANG file '%s' to %s '%s'...", ExportOptions.LangFilename.c_str(), ExportOptions.UseLangText ? "TXT" : "CSV", OutputFilename.c_str());
 
 		if (LangFile.Load(ExportOptions.LangFilename))
 		{
 			PrintError("Loaded LANG file '%s'...", ExportOptions.LangFilename.c_str());
 
-			if (LangFile.DumpCsv(OutputCSVFilename, ExportOptions.UsePOCSVFormat))
-				PrintError("Saved the LANG file to '%s'!", OutputCSVFilename.c_str());
+			if (ExportOptions.UseLangText && LangFile.DumpText(OutputFilename, ExportOptions.UsePOCSVFormat))
+				PrintError("Saved the LANG file to '%s'!", OutputFilename.c_str());
+			else if (!ExportOptions.UseLangText && LangFile.DumpCsv(OutputFilename, ExportOptions.UsePOCSVFormat))
+				PrintError("Saved the LANG file to '%s'!", OutputFilename.c_str());
 			else
-				PrintError("Failed to save the LANG file '%s'!", OutputCSVFilename.c_str());
+				PrintError("Failed to save the LANG file '%s'!", OutputFilename.c_str());
 		}
 		else
 		{

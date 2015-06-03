@@ -1797,9 +1797,6 @@ function uespLog.OnConversationUpdated (eventCode, conversationBodyText, convers
 	uespLog.lastConversationOption.Index = ""
 	uespLog.lastConversationOption.Important = ""
 	
-		-- Manually update the interaction window
-	--INTERACTION:InitializeInteractWindow(conversationBodyText)
-    --INTERACTION:PopulateChatterOptions(conversationOptionCount, true)
 end
 
 

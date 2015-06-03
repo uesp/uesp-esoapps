@@ -16,6 +16,7 @@ EsoLogParse/**
 EsoExtractData/Installs/**
 uespLogMonitor/Installs/**
 uespLog/Installs/**
+uespLog/localdeploy.sh
 
 #
 parseGlobals/test*

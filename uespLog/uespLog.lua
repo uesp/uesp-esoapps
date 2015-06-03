@@ -190,13 +190,15 @@
 --		- v0.23 - 3 June 2015
 --			- Fixed bug with Justice System / bounty error (no longer errors out when a guard acosts you).
 --
+--		- v0.24 -
+--			- Fixed item mining due to new item link format (1 more unknown data field)
 --
 
 
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "0.23"
+uespLog.version = "0.24"
 uespLog.releaseDate = "3 June 2015"
 uespLog.DATA_VERSION = 3
 
@@ -5507,11 +5509,11 @@ function uespLog.MakeItemLink(itemId, inputLevel, inputQuality)
 	local itemLevel = inputLevel or 1
 	local itemQuality = inputQuality or 1
 	
-	local itemLink = "|H0:item:"..tostring(itemId)..":"..tostring(itemQuality)..":"..tostring(itemLevel)..":0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h[Item ".. tostring(itemId) .."]|h"
+	local itemLink = "|H0:item:"..tostring(itemId)..":"..tostring(itemQuality)..":"..tostring(itemLevel)..":0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h[Item ".. tostring(itemId) .."]|h"
 	local itemName = GetItemLinkName(itemLink)
 	
 	if (itemName ~= "" and itemName ~= nil) then
-		itemLink = "|H0:item:"..tostring(itemId)..":"..tostring(itemQuality)..":"..tostring(itemLevel)..":0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h[".. tostring(itemName) .."]|h"
+		itemLink = "|H0:item:"..tostring(itemId)..":"..tostring(itemQuality)..":"..tostring(itemLevel)..":0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h[".. tostring(itemName) .."]|h"
 	end
 	
 	return itemLink
@@ -5533,7 +5535,7 @@ function uespLog.MakeItemLinkEx(itemData)
 	local crafted = itemData.crafted or 0
 	
 	local itemLinkBase = "|H0:item:"..tostring(itemId)..":"..tostring(itemQuality)..":"..tostring(itemLevel)..":"
-			..tostring(enchantId)..":"..tostring(enchantQuality)..":"..tostring(enchantLevel)..":0:0:0:0:0:0:0:0:0:"
+			..tostring(enchantId)..":"..tostring(enchantQuality)..":"..tostring(enchantLevel)..":0:0:0:0:0:0:0:0:0:0:"
 			..tostring(style)..":"..tostring(crafted)..":"..tostring(bound)..":"..tostring(charges)..":"..tostring(potionEffect).."|h"
 		
 	local itemLink = itemLinkBase .. "[Item ".. tostring(itemId) .."]|h"

@@ -45,7 +45,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>D:\src\uesp\ESO\common\lua\src;D:\src\uesp\ESO\common\devil\include;D:\src\uesp\ESO\common\zlib;$(IncludePath);D:\src\uesp\ESO\common\OpenSSL-Win32\include;D:\src\uesp\ESO\common</IncludePath>
+    <IncludePath>D:\src\uesp\ESOApps\common\lua\src;D:\src\uesp\ESOApps\common\devil\include;D:\src\uesp\ESOApps\common\zlib;$(IncludePath);D:\src\uesp\ESOApps\common\OpenSSL-Win32\include;D:\src\uesp\ESOApps\common</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

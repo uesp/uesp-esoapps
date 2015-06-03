@@ -41,7 +41,6 @@ parseGlobals/test*
 *.[Cc]ache
 *.ilk
 *.log
-*.lib
 *.sbr
 *.scc
 *.DotSettings

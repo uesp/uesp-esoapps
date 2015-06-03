@@ -187,14 +187,17 @@
 --			- Changed API version to 100011.
 --			- Fixed issue with autolooting.
 --
+--		- v0.23 - 3 June 2015
+--			- Fixed bug with Justice System / bounty error (no longer errors out when a guard acosts you).
+--
 --
 
 
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "0.22"
-uespLog.releaseDate = "11 March 2015"
+uespLog.version = "0.23"
+uespLog.releaseDate = "3 June 2015"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -1080,6 +1083,7 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_BUY_RECEIPT, uespLog.OnBuyReceipt)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SELL_RECEIPT, uespLog.OnSellReceipt)
 
+
     EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LORE_BOOK_ALREADY_KNOWN, uespLog.OnLoreBookAlreadyKnown)
     EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LORE_BOOK_LEARNED, uespLog.OnLoreBookLearned)
 
@@ -1844,7 +1848,7 @@ function uespLog.OnChatterBegin (eventCode, optionCount)
 	logData.event = "ChatterBegin"
 	logData.bodyText = ChatterGreeting
 	logData.optionCount = optionCount
-	--logData.chatText, logData.numOptions, logData.atGreeting = GetChatterData()   -- Still has issue with facial animations
+	-- logData.chatText, logData.numOptions, logData.atGreeting = GetChatterData()   -- Still has issue with facial animations
 		
 	uespLog.AppendDataToLog("all", logData, uespLog.currentConversationData, uespLog.GetTimeData())
 	
@@ -1861,7 +1865,7 @@ function uespLog.OnChatterBegin (eventCode, optionCount)
 	
 		-- Manually call the original function to update the chat window
 	INTERACTION:InitializeInteractWindow(ChatterGreeting)
-	INTERACTION:PopulateChatterOptions(optionCount, false)
+	INTERACTION.optionCount, INTERACTION.importantOptions = INTERACTION:PopulateChatterOptions(optionCount, false)
 end
 
 

@@ -190,7 +190,7 @@
 --		- v0.23 - 3 June 2015
 --			- Fixed bug with Justice System / bounty error (no longer errors out when a guard acosts you).
 --
---		- v0.24 -
+--		- v0.24 - 5 June 2015
 --			- Fixed item mining due to new item link format (1 more unknown data field).
 --			- Added a basic settings menu using LibAddonMenu-2.0. Settings can
 --			  be accessed through the game's Settings--Addon menu or via "/uespset".

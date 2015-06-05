@@ -501,11 +501,6 @@ end
 
 
 function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
-
-	if (not uespLog.IsCraftDisplay()) then
-		return
-	end
-	
 	--local bagId list.dataEntry.data.bagId
 	--local slotIndex = list.dataEntry.data.slotIndex
 	
@@ -546,7 +541,7 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 	styleIconControl:ClearAnchors()
 	styleIconControl:SetAnchor(CENTER, rowControl, CENTER, 90 + iconOffset)
 	
-	if (itemStyleIcon ~= nil and uespLog.IsCraftStyleDisplay()) then
+	if (itemStyleIcon ~= nil and uespLog.IsCraftStyleDisplay() and uespLog.IsCraftDisplay()) then
 		styleIconControl:SetHidden(false)		
 		styleIconControl:SetTexture(itemStyleIcon)
 		--iconControl:SetColor(unpack(uespLog.TRADE_KNOWN_COLOR))
@@ -554,7 +549,7 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 	
 	if (iconTexture ~= nil) then
 	
-		if (uespLog.IsCraftIngredientDisplay()) then
+		if (uespLog.IsCraftIngredientDisplay() and uespLog.IsCraftDisplay()) then
 			iconControl:SetHidden(false)		
 			iconControl:SetTexture(iconTexture)
 	
@@ -568,7 +563,7 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 	local recipeName = uespLog.GetRecipeNameFromLink(itemLink)
 	
 	if (recipeName ~= nil) then
-		if (uespLog.IsCraftRecipeDisplay()) then
+		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
 			if (uespLog.IsRecipeKnown(recipeName)) then
 				iconControl:SetHidden(false)		
 				iconControl:SetTexture(uespLog.TRADE_KNOWN_TEXTURE)
@@ -594,7 +589,7 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 		return
 	end
 
-	if (uespLog.IsCraftTraitDisplay()) then
+	if (uespLog.IsCraftTraitDisplay() and uespLog.IsCraftDisplay()) then
 	
 		if (isResearchable == 9) then
 			iconControl:SetHidden(false)		
@@ -886,12 +881,21 @@ function uespLog.IsCraftIngredientDisplay()
 end
 
 
+function uespLog.UpdateCraftDisplay()
+	ZO_ScrollList_RefreshVisible(ZO_PlayerInventoryBackpack)
+	ZO_ScrollList_RefreshVisible(ZO_PlayerBankBackpack)
+	ZO_ScrollList_RefreshVisible(ZO_GuildBankBackpack)	
+	ZO_ScrollList_RefreshVisible(ZO_SmithingTopLevelDeconstructionPanelInventoryBackpack)
+end
+
+
 function uespLog.SetCraftDisplay(flag)
 	if (uespLog.savedVars.settings == nil) then
 		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
 	end
 	
 	uespLog.savedVars.settings.data.craft = flag
+	uespLog.UpdateCraftDisplay()
 end	
 
 
@@ -935,6 +939,7 @@ function uespLog.SetCraftRecipeDisplay(flag)
 	end
 	
 	uespLog.savedVars.settings.data.craftRecipe = flag
+	uespLog.UpdateCraftDisplay()
 end	
 
 
@@ -944,6 +949,7 @@ function uespLog.SetCraftTraitDisplay(flag)
 	end
 	
 	uespLog.savedVars.settings.data.craftTrait = flag
+	uespLog.UpdateCraftDisplay()
 end	
 
 
@@ -953,6 +959,7 @@ function uespLog.SetCraftIngredientDisplay(flag)
 	end
 	
 	uespLog.savedVars.settings.data.craftIngredient = flag
+	uespLog.UpdateCraftDisplay()
 end	
 
 

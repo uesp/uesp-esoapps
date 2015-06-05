@@ -191,7 +191,12 @@
 --			- Fixed bug with Justice System / bounty error (no longer errors out when a guard acosts you).
 --
 --		- v0.24 -
---			- Fixed item mining due to new item link format (1 more unknown data field)
+--			- Fixed item mining due to new item link format (1 more unknown data field).
+--			- Added a basic settings menu using LibAddonMenu-2.0
+--			- Bundled uespLogMonitor updated to v0.16 (minor performance based improvements). Settings can
+--			  be accessed through the game's Settings--Addon menu or via "/uespset".
+--			- Added the "/uespreset log" option to reset just the normal logged data section.
+--			- Fixed display issue when turning crafting display on/off.
 --
 
 
@@ -1064,6 +1069,8 @@ function uespLog.Initialize( self, addOnName )
 	uespLog.mineItemLastReloadTimeMS = GetGameTimeMilliseconds()
 	
 	zo_callLater(uespLog.InitAutoMining, 5000)
+	
+	uespLog.InitSettingsMenu()
 			
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_RETICLE_TARGET_CHANGED, uespLog.OnTargetChange)
 	
@@ -2911,7 +2918,7 @@ function uespLog.getDayOfMonth (yearDay)
 end
 
 
-function uespLog.getMoonPhaseStr(inputTimeStamp)
+function uespLog.getMoonPhaseStr(inputTimeStamp, includeDetails)
 	local timeStamp = inputTimeStamp or GetTimeStamp()
 	
 	local moonOffsetTime = timeStamp - uespLog.DEFAULT_MOONPHASESTARTTIME
@@ -2939,13 +2946,19 @@ function uespLog.getMoonPhaseStr(inputTimeStamp)
 		phaseStr = "New"
 	end	
 	
-	local result = string.format("%s (%0.2f)", phaseStr, moonPhase)
+	local result
+	
+	if (includeDetails) then
+		result = string.format("%s (%0.2f)", phaseStr, moonPhase)
+	else
+		result = phaseStr
+	end
 	
 	return result	
 end
 
 
-function uespLog.getGameTimeStr(inputTimestamp)
+function uespLog.getGameTimeStr(inputTimestamp, includeDetails)
 	local timeStamp = inputTimestamp or GetTimeStamp()
 
 	local offsetTime = timeStamp - (uespLog.DEFAULT_GAMETIME_OFFSET - uespLog.GAMETIME_REALSECONDS_OFFSET) - uespLog.GAMETIME_DAY_OFFSET * uespLog.DEFAULT_REALSECONDSPERGAMEDAY
@@ -2964,9 +2977,15 @@ function uespLog.getGameTimeStr(inputTimestamp)
 	local minuteStr = string.format("%02d", minute)
 	local secondStr = string.format("%02d", second)
 	
-	local TimeStr = "2E "..tostring(year).." "..monthStr.."("..tostring(month).."), "..weekDayStr.."("..tostring(weekDay).."), "..hourStr..":"..minuteStr..":"..secondStr
-	--"2E 582 Hearth's Fire, Morndas 08:12:11" 
+	local TimeStr
 	
+		--"2E 582 Hearth's Fire, Morndas 08:12:11" 
+	if (includeDetails) then
+		TimeStr = "2E "..tostring(year).." "..monthStr.."("..tostring(month).."), "..weekDayStr.."("..tostring(weekDay).."), "..hourStr..":"..minuteStr..":"..secondStr
+	else
+		TimeStr = "2E "..tostring(year).." "..monthStr..", "..weekDayStr..", "..hourStr..":"..minuteStr..":"..secondStr
+	end
+		
 	return TimeStr
 end
 
@@ -2978,8 +2997,8 @@ function uespLog.ShowTime (inputTimestamp)
 	local timeStampFmt = GetDateStringFromTimestamp(timeStamp)
 	local version = _VERSION
 	local apiVersion = GetAPIVersion()
-	local gameTimeStr = uespLog.getGameTimeStr(timeStamp)
-	local moonPhaseStr = uespLog.getMoonPhaseStr(timeStamp)
+	local gameTimeStr = uespLog.getGameTimeStr(timeStamp, true)
+	local moonPhaseStr = uespLog.getMoonPhaseStr(timeStamp, true)
 		
 	uespLog.MsgColor(uespLog.timeColor, "UESP::Game Time = " .. gameTimeStr .. " (est)")
 	uespLog.MsgColor(uespLog.timeColor, "UESP::Moon Phase = " .. moonPhaseStr .. " (est)")
@@ -3339,7 +3358,47 @@ uespLog.countSection = function(section)
 end
 
 
-function uespLog.countTraits (craftingSkillType)
+function uespLog.GetSectionCounts(section)
+	local size = 0
+	local count = 0
+	
+	if (uespLog.savedVars[section] ~= nil) then
+		count, size = uespLog.countVariable(uespLog.savedVars[section].data)
+	end
+
+	return count, size
+end
+
+
+function uespLog.GetTraitCounts(craftingSkillType)
+	local numLines = GetNumSmithingResearchLines(craftingSkillType)
+	local numTraitItems = GetNumSmithingTraitItems()
+	local tradeName = uespLog.GetCraftingName(craftingSkillType)
+	local totalTraits = 0
+	local totalKnown = 0
+	
+	for researchLineIndex = 1, numLines do
+		local name, icon, numTraits, timeRequiredForNextResearchSecs = GetSmithingResearchLineInfo(craftingSkillType, researchLineIndex)
+	
+		for traitIndex = 1, numTraits do
+			local traitType, traitDescription, known = GetSmithingResearchLineTraitInfo(craftingSkillType, researchLineIndex, traitIndex)
+			
+			if (traitType ~= nil and traitType ~= 0) then
+			
+				if (known) then
+					totalKnown = totalKnown + 1
+				end
+				
+				totalTraits = totalTraits + 1
+			end
+		end
+	end
+
+	return totalTraits, totalKnown
+end
+
+
+function uespLog.countTraits(craftingSkillType)
 	local numLines = GetNumSmithingResearchLines(craftingSkillType)
 	local numTraitItems = GetNumSmithingTraitItems()
 	local tradeName = uespLog.GetCraftingName(craftingSkillType)
@@ -4346,7 +4405,7 @@ function uespLog.DumpRecipes ()
 end
 
 
-function uespLog.CountRecipes()
+function uespLog.GetRecipeCounts()
 	local numRecipeLists = GetNumRecipeLists()
 	local recipeCount = 0
 	local knownCount = 0
@@ -4364,11 +4423,17 @@ function uespLog.CountRecipes()
 		end
 	end
 	
+	return recipeCount, knownCount
+end
+
+	
+function uespLog.CountRecipes()
+	local recipeCount, knownCount = uespLog.GetRecipeCounts()
 	uespLog.MsgColor(uespLog.countColor, "UESP::You know "..tostring(knownCount).."/"..tostring(recipeCount).." recipes.")	
 end
 
 
-function uespLog.CountAchievements()
+function uespLog.GetAchievementCounts()
 	local numCategories = GetNumAchievementCategories()
 	local achCount = 0
 	local completeCount = 0
@@ -4401,6 +4466,12 @@ function uespLog.CountAchievements()
 		end
 	end
 	
+	return achCount, completeCount
+end
+	
+	
+function uespLog.CountAchievements()	
+	local achCount, completeCount = uespLog.GetAchievementCounts()
 	uespLog.MsgColor(uespLog.countColor, "UESP::You have "..tostring(completeCount).."/"..tostring(achCount).." achievements.")	
 end
 
@@ -5117,6 +5188,9 @@ SLASH_COMMANDS["/uespreset"] = function (cmd)
 		uespLog.ClearAllSavedVarSections()
 		uespLog.ClearRootSavedVar()
 		uespLog.Msg("UESP::Reset all logged data")
+	elseif (cmd == "log") then
+		uespLog.ClearSavedVarSection("all")
+		uespLog.Msg("UESP::Reset regular logged data")
 	elseif (cmd == "globals") then
 		uespLog.ClearSavedVarSection("globals")
 		uespLog.Msg("UESP::Reset logged global data")
@@ -5127,7 +5201,7 @@ SLASH_COMMANDS["/uespreset"] = function (cmd)
 		uespLog.SetTotalInspiration(0)
 		uespLog.Msg("UESP::Reset crafting inspiration total")
 	else
-		uespLog.Msg("UESP::Parameter expected...use one of: all, globals, achievements, inspiration")
+		uespLog.Msg("UESP::Parameter expected...use one of: all, ;log, globals, achievements, inspiration")
 	end
 
 end

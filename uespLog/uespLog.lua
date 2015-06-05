@@ -192,9 +192,9 @@
 --
 --		- v0.24 -
 --			- Fixed item mining due to new item link format (1 more unknown data field).
---			- Added a basic settings menu using LibAddonMenu-2.0
---			- Bundled uespLogMonitor updated to v0.16 (minor performance based improvements). Settings can
+--			- Added a basic settings menu using LibAddonMenu-2.0. Settings can
 --			  be accessed through the game's Settings--Addon menu or via "/uespset".
+--			- Bundled uespLogMonitor updated to v0.16 (minor performance based improvements). 
 --			- Added the "/uespreset log" option to reset just the normal logged data section.
 --			- Fixed display issue when turning crafting display on/off.
 --
@@ -204,7 +204,7 @@
 uespLog = { }
 
 uespLog.version = "0.24"
-uespLog.releaseDate = "3 June 2015"
+uespLog.releaseDate = "5 June 2015"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

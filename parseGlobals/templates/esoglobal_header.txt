@@ -1,7 +1,7 @@
 <html>
 	<head>
 		<title>UESP:ESO Globals v${parseVersion}</title>
-		<link rel="stylesheet" href="${resourcePath}/esocommon.css" type="text/css" />
+		<link rel="stylesheet" href="${resourcePath}esocommon.css" type="text/css" />
 		<link rel="stylesheet" href="esoglobaldata.css" type="text/css" />
 		<script type="text/javascript" src="${resourcePath}/jquery.js"></script>
 	</head>

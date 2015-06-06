@@ -1,7 +1,7 @@
 <hr />
 <div class="eso_footer" id="endoffile">
 This file was generated automatically on ${creationDate}. Data was exported from ESO on ${parseDate} ${parseTime}, API version ${parseVersion}. <br />
-Contact <a href="mailto:dave@uesp.net">Daveh</a> for issues or information regarding this page. Source code is available on <a href="https://code.google.com/p/uesp/source/browse?repo=esoapps#hg%2FparseGlobals">Google Code:uesp</a>.
+Contact <a href="mailto:dave@uesp.net">Daveh</a> for issues or information regarding this page. Source code is available on <a href="https://bitbucket.org/uesp/esoapps/src/4266fc5ca7b178aae8860d996067414731afd83f/parseGlobals/?at=default">BitBucket:uesp</a>.
 </div>
 </body>
 </html>

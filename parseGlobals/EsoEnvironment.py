@@ -290,6 +290,7 @@ class CEsoEnvironment:
 
     def CreateFunctionHtml(self, outputBasePath, funcName, functions):
         niceName = self.SanitizeFunctionName(funcName)
+        outputBasePath = os.path.join(outputBasePath, "").replace("\\", "/")
         outputPath = os.path.join(outputBasePath, self.GetFunctionNameSubPath(niceName), "").replace("\\", "/")
         outputFilename = outputPath + niceName + ".html"
 
@@ -298,7 +299,7 @@ class CEsoEnvironment:
         templateVars = self.CreateGlobalTemplateVars()
         templateVars["name"] = funcName + "()"
         templateVars["resourcePath"] = os.path.relpath(outputBasePath, outputFilename).replace("\\", "/")
-
+				
         with open(outputFilename, "w") as outFile:
             outFile.write(self.functionHeaderTemplate.safe_substitute(templateVars))
             outFile.write(self.searchHeaderTemplate.safe_substitute(templateVars))

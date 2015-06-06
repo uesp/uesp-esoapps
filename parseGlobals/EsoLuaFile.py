@@ -41,6 +41,11 @@ class CEsoLuaFile:
         print "\tLoading and Parsing Lua file", self.relFilename, "..."
 
         self.fileContents = open(filename, "r").read()
+        
+		# Skip UTF-8 BOM at the start of some files
+	if (self.fileContents[:3] == "\xEF\xBB\xBF"):
+		self.fileContents = self.fileContents[3:]
+			
         return self.Parse()
     
 

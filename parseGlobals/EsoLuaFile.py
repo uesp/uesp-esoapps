@@ -6,7 +6,6 @@ import operator
 import sys
 import datetime
 import shutil
-import ntpath
 from string import Template
 import EsoLuaTokenizer
 from EsoLuaTokenizer import CLuaTokenizer
@@ -39,7 +38,7 @@ class CEsoLuaFile:
         self.fullFilename = filename.replace("\\", "/")
         self.relFilename = os.path.relpath(filename, relPath).replace("\\", "/")
         self.creationDate = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        #print "Loading and Parsing Lua file", self.relFilename, "..."
+        print "\tLoading and Parsing Lua file", self.relFilename, "..."
 
         self.fileContents = open(filename, "r").read()
         return self.Parse()

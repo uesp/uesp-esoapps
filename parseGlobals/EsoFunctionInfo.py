@@ -6,7 +6,6 @@ import operator
 import sys
 import datetime
 import shutil
-import ntpath
 import EsoLuaFile
 import EsoLuaTokenizer
 from EsoLuaTokenizer import CLuaTokenizer
@@ -85,7 +84,7 @@ def ParseLuaFunctionCall(esoLuaFile, tokenIter):
             elif isBracket:
                 break
             else:
-                tokenIter.Report("1Unknown function call format found!")
+                tokenIter.Report("Unknown function call format found (1)!")
                 break
         else:
             break
@@ -97,7 +96,7 @@ def ParseLuaFunctionCall(esoLuaFile, tokenIter):
     tokenIter.Consume()
 
     if (not tokenIter.IsValid()):
-        tokenIter.Report("2Unknown function call format found!")
+        tokenIter.Report("Unknown function call format found (2)!")
         tokenIter.SeekAbs(origTokenIndex + 1)
         return None
 
@@ -118,7 +117,7 @@ def ParseLuaFunctionCall(esoLuaFile, tokenIter):
     token = tokenIter.ConsumeToBracket("(", ")")
 
     if token is None:
-        tokenIter.Report("3Unknown function call format found!")
+        tokenIter.Report("Unknown function call format found (3)!")
         tokenIter.SeekAbs(origTokenIndex + 1)
         return None
 
@@ -160,7 +159,7 @@ def FindAllFunctionCalls(esoLuaFiles):
     print "Finding all function calls in {0} Lua files...".format(len(esoLuaFiles))
 
     for file in esoLuaFiles:
-        #print file.relFilename
+        print "\t", file.relFilename
         functionCalls.extend(FindFunctionCalls(file))
 
     print "\tFound {0} function calls!".format(len(functionCalls))
@@ -212,7 +211,7 @@ def ParseLuaFunction(esoLuaFile, i):
             if (tokenIter.PeekIndex(deltaIndex - 1, Token.keyword, "local")):
                 deltaIndex -= 1
         else:
-            tokenIter.Report("Unknown function definition format found!")
+            tokenIter.Report("Unknown function definition format found (4)!")
 
         tokenIter = CLuaTokenIterator(tokens, i + deltaIndex)
         startIndex = i + deltaIndex
@@ -261,7 +260,7 @@ def ParseLuaFunction(esoLuaFile, i):
             newFunction.name = ""
         else:
             print tokenIter.lastToken.token
-            tokenIter.Report("Unknown function definition format found!") 
+            tokenIter.Report("Unknown function definition format found (5)!") 
             return None, tokenIter.index
 
         endNameTokenIndex = tokenIter.index - 1

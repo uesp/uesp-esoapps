@@ -1,10 +1,10 @@
 <html>
 	<head>
-		<title>UESP:ESO Lua Directory -- ${luaPath}</title>
+		<title>UESP:ESO Lua Directory v${parseVersion} -- ${luaPath}</title>
 		<link rel="stylesheet" href="${resourcePath}/esocommon.css" type="text/css" />
 		<link rel="stylesheet" href="${resourcePath}/esoluadir.css" type="text/css" />
 		<script type="text/javascript" src="${resourcePath}/jquery.js"></script>
 	</head>
 <body>
-<h1>ESO Lua Files</h1>
+<h1>ESO Lua Files v${parseVersion}</h1>
 <h2>Index of ${luaPath}</h2>

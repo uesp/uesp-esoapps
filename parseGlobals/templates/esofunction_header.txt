@@ -1,10 +1,10 @@
 <html>
 	<head>
-		<title>UESP:ESO Function -- ${name}</title>
+		<title>UESP:ESO Function v${parseVersion} -- ${name}</title>
 		<link rel="stylesheet" href="${resourcePath}/esocommon.css" type="text/css" />
 		<link rel="stylesheet" href="${resourcePath}/esofunction.css" type="text/css" />
 		<script type="text/javascript" src="${resourcePath}/jquery.js"></script>
 	</head>
 <body>
-<h1>ESO Function Data</h1>
+<h1>ESO Function Data v${parseVersion}</h1>
 <h2>${name}</h2>

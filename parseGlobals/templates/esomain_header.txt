@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<title>UESP:ESO Data</title>
+		<title>UESP:ESO Data v${parseVersion}</title>
 		<link rel="stylesheet" href="esocommon.css" type="text/css" />
 		<link rel="stylesheet" href="esomain.css" type="text/css" />
 		<script type="text/javascript" src="jquery.js"></script>

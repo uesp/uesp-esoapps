@@ -1,4 +1,6 @@
 import EsoEnvironment
+import EsoLuaFile
+import EsoFunctionInfo
 
     # Modify below constants to point to relevant files/paths
 INPUT_GLOBAL_FILENAME = "d:\\esoexport\\gamemnf13\\globals7.txt"

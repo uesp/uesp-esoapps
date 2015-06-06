@@ -77,6 +77,7 @@ def ParseLuaFunctionCall(esoLuaFile, tokenIter):
                 isBracket = True
             elif (tokenIter.PeekIndex(-1, Token.operator, "]")):
                 tokenIter.ConsumeBehindTo(Token.operator, "[")
+                if (tokenIter.Peek(Token.operator, "]")): tokenIter.ConsumeBehindTo(Token.operator, "[")
                 tokenIter.Consume()
             
             if (tokenIter.PeekIndex(-1, Token.name)):

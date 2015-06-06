@@ -7,7 +7,6 @@ from operator import attrgetter
 import sys
 import datetime
 import shutil
-import ntpath
 import EsoGlobals
 from EsoGlobals import CEsoGlobals
 import EsoLuaFile

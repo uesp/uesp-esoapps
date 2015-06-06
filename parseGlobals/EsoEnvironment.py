@@ -356,7 +356,7 @@ class CEsoEnvironment:
         templateVars["creationDate"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         templateVars['types'] = ", ".join(types) if types else "all"
         templateVars['googleSearchEngineID'] = self.googleSearchEngineID
-	templateVars["resourcePath"] = ""
+        templateVars["resourcePath"] = ""
 
         return templateVars
 

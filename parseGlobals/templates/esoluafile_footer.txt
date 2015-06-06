@@ -16,7 +16,7 @@ File content is Copyright (c) 2014 Zenimax Online Studios. All trademarks and re
 to ZeniMax Online Studios, the inclusion of which implies no affiliation with the UESP. The use of this file data is believed to fall 
 under the fair dealing clause of Canadian copyright law.
 <p />
-Contact <a href="mailto:dave@uesp.net">Daveh</a> for issues or information regarding this page.  Source code is available on <a href="https://code.google.com/p/uesp/source/browse?repo=esoapps#hg%2FparseGlobals">Google Code:uesp</a>.
+Contact <a href="mailto:dave@uesp.net">Daveh</a> for issues or information regarding this page.  Source code is available on <a href="https://bitbucket.org/uesp/esoapps/src/4266fc5ca7b178aae8860d996067414731afd83f/parseGlobals/?at=default">BitBucket:uesp</a>.
 </div>
 </body>
 </html>

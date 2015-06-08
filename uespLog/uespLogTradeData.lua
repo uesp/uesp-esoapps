@@ -358,8 +358,9 @@ function uespLog.AddCraftDetailsToToolTip (ThisToolTip, itemLink, bagId, slotInd
 	local color1, color2, color3
 	local itemStyleIcon, itemStyleText = uespLog.GetItemStyleIcon(itemLink)
 	local addedBlankLine = false
+	local itemType = GetItemLinkItemType(itemLink)
 	
-	if (itemStyleIcon ~= nil and uespLog.IsCraftStyleDisplay()) then
+	if (itemStyleIcon ~= nil and (itemType == 1 or itemType == 2) and uespLog.IsCraftStyleDisplay()) then
 		color1, color2, color3 = unpack(uespLog.TRADE_STYLE_COLOR)
 		ThisToolTip:AddLine("", "ZoFontWinH5", color1, color2, color3, BOTTOM, MODIFY_TEXT_TYPE_NONE)
 		ThisToolTip:AddLine("Item Style: "..itemStyleText, "ZoFontWinH4", color1, color2, color3, BOTTOM, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_CENTER)
@@ -481,6 +482,7 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 	local iconTexture, iconColor = uespLog.GetTradeIconTexture(itemId, itemLink)
 	local nameControl = rowControl:GetNamedChild("Name")
 	local itemStyleIcon, itemStyleText = uespLog.GetItemStyleIcon(itemLink)
+	local itemType = GetItemLinkItemType(itemLink)
 	local iconOffset = 0
 	
 	if (list == LOOT_WINDOW.list) then
@@ -498,7 +500,7 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 	styleIconControl:ClearAnchors()
 	styleIconControl:SetAnchor(CENTER, rowControl, CENTER, 90 + iconOffset)
 	
-	if (itemStyleIcon ~= nil and uespLog.IsCraftStyleDisplay() and uespLog.IsCraftDisplay()) then
+	if (itemStyleIcon ~= nil and (itemType == 1 or itemType == 2) and uespLog.IsCraftStyleDisplay() and uespLog.IsCraftDisplay()) then
 		styleIconControl:SetHidden(false)		
 		styleIconControl:SetTexture(itemStyleIcon)
 		--iconControl:SetColor(unpack(uespLog.TRADE_KNOWN_COLOR))

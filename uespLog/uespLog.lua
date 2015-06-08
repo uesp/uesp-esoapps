@@ -197,6 +197,7 @@
 --			- Bundled uespLogMonitor updated to v0.16 (minor performance based improvements). 
 --			- Added the "/uespreset log" option to reset just the normal logged data section.
 --			- Fixed display issue when turning crafting display on/off.
+--			- Removed the autoloot function since ingredients don't have levels after update #6.
 --
 
 
@@ -1091,7 +1092,6 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_INVENTORY_ITEM_USED, uespLog.OnInventoryItemUsed)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_BUY_RECEIPT, uespLog.OnBuyReceipt)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SELL_RECEIPT, uespLog.OnSellReceipt)
-
 
     EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LORE_BOOK_ALREADY_KNOWN, uespLog.OnLoreBookAlreadyKnown)
     EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LORE_BOOK_LEARNED, uespLog.OnLoreBookLearned)

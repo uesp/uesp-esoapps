@@ -800,15 +800,11 @@ function uespLog.DisplayUespCraftHelp()
 	uespLog.Msg("UESP:: /uespcraft trait on/off      -- Turns trait display on/off")
 	uespLog.Msg("UESP:: /uespcraft recipe on/off     -- Turns recipe display on/off")
 	uespLog.Msg("UESP:: /uespcraft ingredient on/off -- Turns ingredient display on/off")
-	uespLog.Msg("UESP:: /uespcraft autoloot on/off   -- Turns craft autoloot on/off")
-	uespLog.Msg("UESP:: /uespcraft minprovlevel #    -- Set the minimum provisioner level of ingredients to autoloot")
     uespLog.Msg("UESP:: Craft display is "..uespLog.BoolToOnOff(uespLog.IsCraftDisplay()))
 	uespLog.Msg("UESP:: Craft style display is "..uespLog.BoolToOnOff(uespLog.IsCraftStyleDisplay()))
 	uespLog.Msg("UESP:: Craft trait display is "..uespLog.BoolToOnOff(uespLog.IsCraftTraitDisplay()))
 	uespLog.Msg("UESP:: Craft recipe display is "..uespLog.BoolToOnOff(uespLog.IsCraftRecipeDisplay()))
 	uespLog.Msg("UESP:: Craft ingredient display is "..uespLog.BoolToOnOff(uespLog.IsCraftIngredientDisplay()))
-	uespLog.Msg("UESP:: Craft autoloot is "..uespLog.BoolToOnOff(uespLog.IsCraftAutoLoot()))
-	uespLog.Msg("UESP:: Autoloot min provisioner level is "..uespLog.GetCraftAutoLootMinProvLevel())
 end
 
 
@@ -1023,26 +1019,9 @@ SLASH_COMMANDS["/uespcraft"] = function (cmd)
 		end
 		
 	elseif (cmdWords[1] == "autoloot") then
-	
-		if (cmdWords[2] == "on") then
-			uespLog.SetCraftAutoLoot(true)
-			uespLog.Msg("UESP::Turned craft autoloot on")
-		elseif (cmdWords[2] == "off") then
-			uespLog.SetCraftAutoLoot(false)
-			uespLog.Msg("UESP::Turned craft autoloot off")
-		else
-			uespLog.Msg("UESP::Craft autoloot is "..uespLog.BoolToOnOff(uespLog.IsCraftAutoLoot()))
-		end
-		
+		uespLog.Msg("UESP::Craft autoloot is deprecated since update #6")
 	elseif (cmdWords[1] == "minprovlevel") then
-	
-		if (cmdWords[2] ~= "" and cmdWords[2] ~= nil) then
-			uespLog.SetCraftAutoLootMinProvLevel(cmdWords[2])
-			uespLog.Msg("UESP::Set craft autoloot min provisioner level to "..uespLog.GetCraftAutoLootMinProvLevel())
-		else
-			uespLog.Msg("UESP::Craft autoloot min provisioner level is "..uespLog.GetCraftAutoLootMinProvLevel())
-		end
-	
+		uespLog.Msg("UESP::Craft autoloot is deprecated since update #6")
 	elseif (cmdWords[1] == "on") then
 		uespLog.SetCraftDisplay(true)
 		uespLog.Msg("UESP::Turned crafting display on")
@@ -1091,12 +1070,6 @@ end
 
 
 function uespLog.CraftAutoLoot()
---LootAll()
---GetLootItemLink(integer lootId, LinkStyle linkStyle)
---Returns: string link
---LootItemById(integer lootId)
---LootMoney()
---EndLooting()
 	local numLoot = GetNumLootItems()
 	local MinProvLevel = uespLog.GetCraftAutoLootMinProvLevel()
 	
@@ -1170,9 +1143,4 @@ end
 
 
 function uespLog.OnLootUpdated (eventCode, actionName, isOwned)
-
-	if (uespLog.IsCraftAutoLoot()) then
-		uespLog.CraftAutoLoot()
-	end
-	
 end

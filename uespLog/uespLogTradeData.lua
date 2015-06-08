@@ -75,6 +75,12 @@ uespLog.PROVISION_ICONS = {
 	[4]   = "uespLog\\images\\newtrade4.dds",
 	[5]   = "uespLog\\images\\newtrade5.dds",
 	[6]   = "uespLog\\images\\newtrade6.dds",
+	[10]   = "uespLog\\images\\newtrade10.dds",
+	[11]   = "uespLog\\images\\newtrade11.dds",
+	[12]   = "uespLog\\images\\newtrade12.dds",
+	[20]   = "uespLog\\images\\newtrade20.dds",
+	[21]   = "uespLog\\images\\newtrade21.dds",
+	[22]   = "uespLog\\images\\newtrade22.dds",
 	[100] = "uespLog\\images\\newspecial1.dds",
 	[101] = "uespLog\\images\\newspecial2.dds",
 }
@@ -87,135 +93,95 @@ uespLog.PROVISION_COLORS = {
 	[4]   = uespLog.TRADE_NORMAL_COLOR,
 	[5]   = uespLog.TRADE_NORMAL_COLOR,
 	[6]   = uespLog.TRADE_NORMAL_COLOR,
+	[10]   = uespLog.TRADE_NORMAL_COLOR,
+	[11]   = uespLog.TRADE_NORMAL_COLOR,
+	[12]   = uespLog.TRADE_NORMAL_COLOR,
+	[20]   = uespLog.TRADE_NORMAL_COLOR,
+	[21]   = uespLog.TRADE_NORMAL_COLOR,
+	[22]   = uespLog.TRADE_NORMAL_COLOR,
 	[100] = uespLog.TRADE_SUPERIOR_COLOR,
 	[101] = uespLog.TRADE_EPIC_COLOR,
 }
 
 
--- Ingredients to not include in autoloot checks (always loot)
-uespLog.AUTOLOOT_ALWAYS_INGREDIENTS = {
-	[28606] = 1,		-- Plump worms
-	[34311] = 1,	 	-- Crawdad
+uespLog.PROVISION_TEXTS = {
+	[1] = "Old Ingredient Level 1",
+	[2] = "Old Ingredient Level 2",
+	[3] = "Old Ingredient Level 3",
+	[4] = "Old Ingredient Level 4",
+	[5] = "Old Ingredient Level 5",
+	[6] = "Old Ingredient Level 6",
+	[10] = "Meat",
+	[11] = "Fruit",
+	[12] = "Vegetable",
+	[20] = "Alcholic",
+	[21] = "Tea",
+	[22] = "Tonic",
+	[100] = "Medium Ingredient",
+	[101] = "Improvement Ingredient",
 }
 
--- 1-6 = Provisioning level
+
+-- 1-6 = Provisioning level (no longer used since update #6)
+-- 10 = Meats
+-- 11 = Fruits
+-- 12 = Vegetables
+-- 20 = Alcholic
+-- 21 = Tea
+-- 22 = Tonic
 -- 100 = Superior ingredient
 -- 101 = Epic ingredient
 uespLog.INGREDIENT_DATA = {
-	[34329] = 1,	--aged meat
-	[40261] = 2, 	--amber malt
-	[28639] = 3,	--ash millet
-	[27003] = 5,	--baker's flour
-	[27057] = 101, 	--barley
-	[40273] = 4, 	--barley mash
-	[33753] = 1,	--battaglir weeds
-	[33754] = 1,	--bear haunch
-	[34321] = 4,	--beef
-	[34348] = 6,	--bervez fruit
-	[33774] = 3,	--black tea
-	[26987] = 2,	--broth
-	[40260] = 1,	--brown malt
-	[27002] = 4,	--cake flour
-	[40268] = 4,	--camaralet grapes
-	[27053] = 100,	--canis root
-	[33752] = 1,	--capon meat
-	[40262] = 3,	--caramalt
-	[28609] = 3,	--chaurus meat
-	[29030] = 2,	--comberry
-	[33756] = 2,	--combwort
-	[27049] = 100,	--concord grapes
-	[26974] = 2,	--cooking fat
-	[40270] = 1,	--corn mash
-	[34311] = 3, 	--crawdad
-	[34345] = 4,	--crystal berry
-	[33771] = 2,	--dark bile
-	[33773] = 3,	--desert heather
-	[28636] = 1,	--dragon's tongue-sap
-	[26966] = 1,	--drippings
-	[34330] = 1,	--dusk beetle
-	[45523] = 6,	--emperor grapes
-	[26977] = 5,	--fatback
-	[33755] = 3,	--flank steak
-	[28610] = 3,	--frog legs
-	[27100] = 101,	--garlic
-	[26990] = 5,	--glace viande
-	[34334] = 2,	--glitter rock
-	[34308] = 2,	--goat bits
-	[28603]	= 1,	--goat meat
-	[45524] = 100,	--golden malt
-	[40266] = 2,	--grasa grapes
-	[27056] = 100,	--groose berry
-	[34305] = 1,	--guar eggs
-	[27043] = 100,	--hallertau hops
-	[34324] = 6,	--honey comb
-	[27035] = 101,	--hops
-	[33758] = 3,	--horker meat
-	[27004] = 6,	--imperial flour
-	[45522] = 6,	--imperial mash
-	[26998] = 6, 	--imperial stock
-	[33768] = 1,	--iron peat
-	[34349] = 6,	--jazbay grapes (1)
-	[27051] = 101,	--jazbay grapes (2)
-	[27052] = 100,	--juniper berry
-	[26989] = 4,	--jus
-	[34346] = 5,	--kaveh beans
-	[28604] = 1, 	--kwama eggs
-	[40267] = 3,	--lado grapes
-	[26976] = 4,	--lard
-	[34307] = 1,	--liver
-	[26999] = 1,	--meal
-	[27000] = 2,	--milled flour
-	[34335] = 3,	--molasses
-	[34309] = 2,	--moon sugar
-	[34347] = 5,	--mountain berries
-	[34323] = 5,	--mudcrab meat
-	[40276] = 1,	--mutton flank
-	[40272] = 3,	--oat mash
-	[27059] = 101,	--oats
-	[27064] = 100,	--onion
-	[33772] = 2,	--orc hops
-	[26962] = 101,	--pepper
-	[34333] = 2,	--pig's milk
-	[26978] = 6,	--pinguis
-	[28608] = 2,	--plump maggots
-	[28607] = 2,	--plump rodent toes
-	[28606] = 1,	--plump worms
-	[34304] = 1,	--pork
-	[27063] = 101,	--potato
-	[27050] = 100,	--raspberry
-	[27058] = 100,	--red wheat
-	[40269] = 5,	--ribier grapes
-	[27060] = 100,	--rice
-	[40274] = 100,	--rice mash
-	[34331] = 1,	--ripe apple
-	[28638] = 3,	--river grapes
-	[27044] = 101,	--saaz hops
-	[26954] = 100,	--salt
-	[34312] = 3,	--saltrice
-	[28605] = 1,	--scuttle meat
-	[34322] = 4,	--shank
-	[33767] = 1,	--shornhelm grapes
-	[27001] = 3,	--sifted flour
-	[28632] = 1,	--snake slime
-	[28634] = 1,	--snake venom
-	[28666] = 100,	--snowberry
-	[34336] = 3,	--spring essence
-	[26988] = 3,	--stock
-	[26975] = 3,	--suet
-	[28637] = 2,	--sujamma berries
-	[34306] = 1,	--sweetmeats
-	[33769] = 1,	--tangerine
-	[26986] = 1,	--thin broth
-	[26802] = 101,	--tomato
-	[33757] = 2,	--venison
-	[33770] = 1,	--wasp squeezings
-	[40263] = 4,	--wheat malt
-	[40271] = 2,	--wheat mash
-	[27048] = 101,	--white grapes
-	[40264] = 5,	--white malt
-	[28635] = 1,	--wild honey
-	[40265] = 1,	--wine grapes
-	[34332] = 1,	--wisp floss
+	[33753] = 10, 	-- Fish
+	[28609] = 10, 	-- Game
+	[34321] = 10, 	-- Poultry
+	[33752] = 10, 	-- Red Meat
+	[33756] = 10, 	-- Small Game
+	[33754] = 10, 	-- White Meat
+	[34311] = 11, 	-- Apples
+	[33755] = 11, 	-- Bananas
+	[28610] = 11, 	-- Jazbay Grapes
+	[34308] = 11, 	-- Melon
+	[34305] = 11, 	-- Pumpkin
+	[28603] = 11, 	-- Tomato
+	[34309] = 12, 	-- Beets
+	[34324] = 12, 	-- Carrots or 28600?
+	[34323] = 12, 	-- Corn
+	[28604] = 12, 	-- Greens
+	[33758] = 12, 	-- Potato
+	[34307] = 12, 	-- Radish
+	[34329] = 20, 	-- Barley
+	[29030] = 20, 	-- Rice or 27060?
+	[28639] = 20, 	-- Rye or 33744?
+	[34345] = 20, 	-- Surilie Grapes or 28650?
+	[34348] = 20, 	-- Wheat
+	[33774] = 20, 	-- Yeast
+	[34334] = 21, 	-- Bittergreen
+	[33768] = 21, 	-- Comberry
+	[33771] = 21, 	-- Jasmine
+	[34330] = 21, 	-- Lotus
+	[33773] = 21, 	-- Mint
+	[28636] = 21, 	-- Rose
+	[34349] = 22, 	-- Acai Berry
+	[33772] = 22, 	-- Coffee
+	[34346] = 22, 	-- Ginkgo
+	[34347] = 22, 	-- Ginseng
+	[34333] = 22, 	-- Guarana
+	[34335] = 22, 	-- Yerba Mate
+	[27057] = 100,	-- Cheese
+	[27100] = 100,	-- Flour
+	[26954] = 100,	-- Garlic
+	[27064] = 100,	-- Millet
+	[27063] = 100,	-- Saltrice or 28625?
+	[27058] = 100,	-- Seasoning
+	[27052] = 100,	-- Ginger
+	[27043] = 100,	-- Honey
+	[27035] = 100,	-- Isinglass
+	[27049] = 100,	-- Lemon
+	[27048] = 100,	-- Metheglin
+	[28666] = 100,	-- Seaweed
+	[26802] = 101,	-- Frost Mirriam
+	[27059] = 101,	-- Bervez Juice
 }
 
 
@@ -404,15 +370,9 @@ function uespLog.AddCraftDetailsToToolTip (ThisToolTip, itemLink, bagId, slotInd
 	
 		if (uespLog.IsCraftIngredientDisplay()) then
 			--ZO_Tooltip_AddDivider(ThisToolTip)		
-			local itemText = ""
+			local itemText = uespLog.GetItemTradeTypeText(tradeType)
 			color1, color2, color3 = unpack(iconColor)
-			
-			if (tradeType >= 1 and tradeType <= 6) then
-				itemText = "Recipe Level "..tostring(tradeType)
-			else
-				itemText = "Special Ingredient"
-			end
-			
+		
 			if (not addedBlankLine) then
 				ThisToolTip:AddLine("", "ZoFontWinH5", color1, color2, color3, BOTTOM, 0)
 			end
@@ -523,10 +483,7 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 	local itemStyleIcon, itemStyleText = uespLog.GetItemStyleIcon(itemLink)
 	local iconOffset = 0
 	
-	--uespLog.DebugMsg("IconTexture = "..tostring(iconTexture))
-	
 	if (list == LOOT_WINDOW.list) then
-		--uespLog.DebugMsg("Loot item link = "..tostring(itemLink))
 		iconOffset = 50
 	end
 	
@@ -742,7 +699,17 @@ end
 
 
 function uespLog.GetItemTradeType(itemId)
-	return uespLog.INGREDIENT_DATA[itemId], uespLog.AUTOLOOT_ALWAYS_INGREDIENTS[itemId]
+	return uespLog.INGREDIENT_DATA[itemId], 0
+end
+
+
+function uespLog.GetItemTradeTypeText(tradeType)
+
+	if (uespLog.PROVISION_TEXTS[tradeType] ~= nil) then
+		return uespLog.PROVISION_TEXTS[tradeType]
+	end
+	
+	return "Unknown"
 end
 
 
@@ -756,15 +723,6 @@ function uespLog.GetTradeIconTexture (itemId, itemLink)
 	if (uespLog.PROVISION_ICONS[tradeType] ~= nil) then
 		return uespLog.PROVISION_ICONS[tradeType], uespLog.PROVISION_COLORS[tradeType]
 	end
-	
-	--[[
-	if (tradeType <= 6) then
-		return "uespLog\\images\\provision"..tostring(tradeType)..".dds", uespLog.TRADE_NORMAL_COLOR
-	elseif (tradeType == 100) then
-		return "uespLog\\images\\provspecial1.dds", uespLog.TRADE_SUPERIOR_COLOR
-	elseif (tradeType == 101) then
-		return "uespLog\\images\\provspecial2.dds", uespLog.TRADE_EPIC_COLOR
-	end --]]
 	
 	return nil, nil
 end

@@ -272,7 +272,7 @@ end
 
 
 function uespLog.AddDetailsToInfoToolTip (row)	
-	uespLog.DebugMsg("InfoRow = "..tostring(row.dataEntry))
+	--uespLog.DebugMsg("InfoRow = "..tostring(row.dataEntry))
 	return uespLog.AddCraftDetailsToToolTip (row)	
 end
 
@@ -574,6 +574,52 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 end
 
 
+function uespLog.CheckIsItemLinkResearchable(itemLink)
+	local itemType = GetItemLinkItemType(itemLink)
+	
+	if (itemType ~= ITEMTYPE_ARMOR and itemType ~= ITEMTYPE_WEAPON) then
+		return -8
+	end
+
+	local traitType = GetItemLinkTraitInfo(itemLink)
+	local traitIndex = traitType
+
+	if (traitIndex == ITEM_TRAIT_TYPE_ARMOR_ORNATE or traitIndex == ITEM_TRAIT_TYPE_WEAPON_ORNATE or traitIndex == ITEM_TRAIT_TYPE_JEWELRY_ORNATE) then
+		return 9
+	elseif (traitIndex == ITEM_TRAIT_TYPE_ARMOR_INTRICATE or traitIndex == ITEM_TRAIT_TYPE_WEAPON_INTRICATE or traitIndex == ITEM_TRAIT_TYPE_JEWELRY_INTRICATE) then
+		return 10
+	end
+	
+	if (traitIndex <= 0) then
+		return -1
+	end
+
+	local _,_,_,_,_,equipType = GetItemLinkInfo(itemLink)
+	
+	if (equipType == EQUIP_TYPE_RING or equipType == EQUIP_TYPE_NECK) then
+		return -5
+	end
+
+	--this used to be "if(itemType == ITEMTYPE_ARMOR)", but shields are not armor even though they are armor
+	if (traitIndex > 10) then
+		traitIndex = traitIndex - 10;
+	end
+
+	if (not (traitIndex >= 1 and traitIndex <= 8)) then
+		--uespLog.DebugMsg("        -4:"..tostring(traitIndex))
+		return -4
+	end
+	
+	local craftType = uespLog.GetItemLinkCraftSkillType(itemLink)
+	
+	if (craftType <= 0) then
+		return -11
+	end
+
+	return uespLog.CheckIsItemLinkResearchableInSkill(itemLink, itemType, equipType, craftType, traitIndex)
+end
+
+
 function uespLog.CheckIsItemResearchable(bagId, slotIndex)
 	local itemType = GetItemType(bagId, slotIndex)
 	
@@ -589,13 +635,17 @@ function uespLog.CheckIsItemResearchable(bagId, slotIndex)
 	elseif (traitIndex == ITEM_TRAIT_TYPE_ARMOR_INTRICATE or traitIndex == ITEM_TRAIT_TYPE_WEAPON_INTRICATE or traitIndex == ITEM_TRAIT_TYPE_JEWELRY_INTRICATE) then
 		return 10
 	end
+	
+	if (traitIndex <= 0) then
+		return -1
+	end
 
 	local _,_,_,_,_,equipType = GetItemInfo(bagId, slotIndex)
 	
 	if (equipType == EQUIP_TYPE_RING or equipType == EQUIP_TYPE_NECK) then
 		return -5
 	end
-
+	
 	--this used to be "if(itemType == ITEMTYPE_ARMOR)", but shields are not armor even though they are armor
 	if (traitIndex > 10) then
 		traitIndex = traitIndex - 10;
@@ -612,6 +662,39 @@ function uespLog.CheckIsItemResearchable(bagId, slotIndex)
 	if (check2 >= 0) then return check2 end
 	
 	return uespLog.CheckIsItemResearchableInSkill(bagId, slotIndex, equipType, CRAFTING_TYPE_WOODWORKING, traitIndex)
+end
+
+
+
+function uespLog.GetItemLinkCraftSkillType (itemLink)
+	local itemType = GetItemLinkItemType(itemLink)
+	
+	if (itemType == ITEMTYPE_ARMOR) then
+		local armorType = GetItemLinkArmorType(itemLink)
+		
+		if (armorType == ARMORTYPE_MEDIUM or armorType == ARMORTYPE_LIGHT) then
+			return CRAFTING_TYPE_CLOTHIER
+		elseif (armorType == ARMORTYPE_HEAVY) then
+			return CRAFTING_TYPE_BLACKSMITHING
+		end		
+	end
+
+	if (itemType == ITEMTYPE_WEAPON) then
+		local weaponType = GetItemLinkWeaponType(itemLink)
+		
+		if (weaponType == WEAPONTYPE_SHIELD) then
+			return CRAFTING_TYPE_WOODWORKING
+		elseif (weaponType == WEAPONTYPE_BOW) then
+			return CRAFTING_TYPE_WOODWORKING
+		elseif (weaponType == WEAPONTYPE_FIRE_STAFF or weaponType == WEAPONTYPE_FROST_STAFF or weaponType == WEAPONTYPE_HEALING_STAFF or weaponType == 15) then
+			return CRAFTING_TYPE_WOODWORKING
+		else
+			return CRAFTING_TYPE_BLACKSMITHING
+		end
+		
+	end
+	
+	return -1
 end
 
 
@@ -633,6 +716,116 @@ function uespLog.CheckIsItemResearchableInSkill(bagId, slotIndex, equipType, cra
 	end
 
 	return 0
+end
+
+
+uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT = {
+
+	[CRAFTING_TYPE_BLACKSMITHING] = {
+		[ITEMTYPE_ARMOR] = {
+			[ARMORTYPE_HEAVY] = {
+				[EQUIP_TYPE_CHEST] = 8,
+				[EQUIP_TYPE_FEET] = 9,
+				[EQUIP_TYPE_HAND] = 10,
+				[EQUIP_TYPE_HEAD] = 11,
+				[EQUIP_TYPE_LEGS] = 12,
+				[EQUIP_TYPE_SHOULDERS] = 13,
+				[EQUIP_TYPE_WAIST] = 14,
+			}
+		},
+		[ITEMTYPE_WEAPON] = {
+			[WEAPONTYPE_AXE] = 1,
+			[WEAPONTYPE_HAMMER] = 2,
+			[WEAPONTYPE_SWORD] = 3,
+			[WEAPONTYPE_TWO_HANDED_AXE] = 4,
+			[WEAPONTYPE_TWO_HANDED_HAMMER] = 5,
+			[WEAPONTYPE_TWO_HANDED_SWORD] = 6,
+			[WEAPONTYPE_DAGGER] = 7,
+		}		
+	},
+	
+	[CRAFTING_TYPE_CLOTHIER] = {
+		[ITEMTYPE_ARMOR] = {
+			[ARMORTYPE_LIGHT] = {
+				[EQUIP_TYPE_CHEST] = 1,
+				[EQUIP_TYPE_FEET] = 2,
+				[EQUIP_TYPE_HAND] = 3,
+				[EQUIP_TYPE_HEAD] = 4,
+				[EQUIP_TYPE_LEGS] = 5,
+				[EQUIP_TYPE_SHOULDERS] = 6,
+				[EQUIP_TYPE_WAIST] = 7,
+			},
+			[ARMORTYPE_MEDIUM] = {
+				[EQUIP_TYPE_CHEST] = 8,
+				[EQUIP_TYPE_FEET] = 9,
+				[EQUIP_TYPE_HAND] = 10,
+				[EQUIP_TYPE_HEAD] = 11,
+				[EQUIP_TYPE_LEGS] = 12,
+				[EQUIP_TYPE_SHOULDERS] = 13,
+				[EQUIP_TYPE_WAIST] = 14,
+			},
+		}
+	},
+	
+	[CRAFTING_TYPE_WOODWORKING] = {
+		[ITEMTYPE_WEAPON] = {
+			[WEAPONTYPE_BOW] = 1,
+			[WEAPONTYPE_FIRE_STAFF] = 2,
+			[WEAPONTYPE_FROST_STAFF] = 3,
+			[15] = 4,		
+			[WEAPONTYPE_HEALING_STAFF] = 5,
+			[WEAPONTYPE_SHIELD] = 6,
+		}
+	},
+}
+
+
+function uespLog.CheckIsItemLinkResearchableInSkill(itemLink, itemType, equipType, craftType, traitIndex)
+	local researchLineIndex = -1
+	local numLines = GetNumSmithingResearchLines(craftType)
+		
+	if (uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT[craftType] == nil) then
+		return -20
+	end
+	
+	if (uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT[craftType][itemType] == nil) then
+		return -21
+	end
+	
+	if (itemType == ITEMTYPE_WEAPON) then
+		local weaponType = GetItemLinkWeaponType(itemLink) 
+		
+		if (uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT[craftType][itemType][weaponType] == nil) then
+			return -22
+		end
+		
+		researchLineIndex = uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT[craftType][itemType][weaponType] 
+		
+	elseif (itemType == ITEMTYPE_ARMOR) then
+		local equipType = GetItemLinkEquipType(itemLink) 
+		local armorType = GetItemLinkArmorType(itemLink)
+		
+		if (uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT[craftType][itemType][armorType] == nil) then
+			return -23
+		end
+		
+		if (uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT[craftType][itemType][armorType][equipType] == nil) then
+			--uespLog.DebugMsg("       -24:"..tostring(armorType).."::"..tostring(equipType))
+			return -24
+		end
+		
+		researchLineIndex = uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT[craftType][itemType][armorType][equipType] 
+	end
+
+	local name, icon, numTraits, timeRequiredForNextResearchSecs = GetSmithingResearchLineInfo(craftType, researchLineIndex)
+    local traitType, traitDescription, known = GetSmithingResearchLineTraitInfo(craftType, researchLineIndex, traitIndex)
+	--uespLog.DebugMsg("UESP::"..itemLink..":"..tostring(traitType)..", "..tostring(traitDescription)..","..tostring(known)..", "..tostring(researchLineIndex)..", "..tostring(name))
+		
+	if (traitType ~= nil and traitType ~= 0 and known) then
+		return 0
+	end
+
+	return 1
 end
 
 
@@ -1104,3 +1297,151 @@ end
 
 function uespLog.OnLootUpdated (eventCode, actionName, isOwned)
 end
+
+
+-- The following is copy/pasted from ingame/tradinghouse/tradinghouse.lua due to use of local
+-- functions needed to hook into the trader listing for updates.
+local SEARCH_RESULTS_DATA_TYPE = 1
+local ITEM_LISTINGS_DATA_TYPE = 2
+local GUILD_SPECIFIC_ITEM_DATA_TYPE = 3
+
+
+local ITEM_RESULT_CURRENCY_OPTIONS =
+{
+    showTooltips = false,
+    font = "ZoFontGameShadow",
+    iconSide = RIGHT,
+}
+
+TRADING_HOUSE.InitializeSearchResults = function(self, control)
+    local searchResultsList = control:GetNamedChild("ItemPaneSearchResults")
+    self.m_searchResultsList = searchResultsList
+    self.m_searchResultsControlsList = {}
+    self.m_searchResultsInfoList = {}
+	
+    local function SetupBaseSearchResultRow(rowControl, result)
+        self.m_searchResultsControlsList[#self.m_searchResultsControlsList+1] = rowControl
+        self.m_searchResultsInfoList[#self.m_searchResultsInfoList+1] = result
+        local slotIndex = result.slotIndex
+        local nameControl = GetControl(rowControl, "Name")
+        nameControl:SetText(zo_strformat(SI_TOOLTIP_ITEM_NAME, result.name))
+        local r, g, b = GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, result.quality)
+        nameControl:SetColor(r, g, b, 1)
+        local sellerControl = GetControl(rowControl, "SellerName")
+        sellerControl:SetText(zo_strformat(SI_TRADING_HOUSE_BROWSE_ITEM_SELLER_NAME, result.sellerName))
+        local sellPriceControl = GetControl(rowControl, "SellPrice")
+        ZO_CurrencyControl_SetSimpleCurrency(sellPriceControl, result.currencyType, result.purchasePrice, ITEM_RESULT_CURRENCY_OPTIONS, nil, self.m_playerMoney[result.currencyType] < result.purchasePrice)
+        local resultControl = GetControl(rowControl, "Button")
+        ZO_Inventory_SetupSlot(resultControl, result.stackCount, result.icon)
+        -- Cached for verification when the player tries to purchase this
+        resultControl.sellerName = result.sellerName
+        resultControl.purchasePrice = result.purchasePrice
+        resultControl.currencyType = result.currencyType
+			
+        return resultControl
+    end
+	
+    local function SetupSearchResultRow(rowControl, result)
+        local resultControl = SetupBaseSearchResultRow(rowControl, result)
+        local timeRemainingControl = GetControl(rowControl, "TimeRemaining")
+        timeRemainingControl:SetText(zo_strformat(SI_TRADING_HOUSE_BROWSE_ITEM_REMAINING_TIME, ZO_FormatTime(result.timeRemaining, TIME_FORMAT_STYLE_SHOW_LARGEST_UNIT_DESCRIPTIVE, TIME_FORMAT_PRECISION_SECONDS, TIME_FORMAT_DIRECTION_DESCENDING)))
+        ZO_Inventory_BindSlot(resultControl, SLOT_TYPE_TRADING_HOUSE_ITEM_RESULT, result.slotIndex)
+		
+		uespLog.AddCraftInfoToTraderSlot(rowControl, result) 	-- Added
+    end
+	
+    local function SetupGuildSpecificItemRow(rowControl, result)
+        local resultControl = SetupBaseSearchResultRow(rowControl, result)
+        ZO_Inventory_BindSlot(resultControl, SLOT_TYPE_GUILD_SPECIFIC_ITEM, result.slotIndex)
+    end
+	
+    ZO_ScrollList_Initialize(searchResultsList)
+    ZO_ScrollList_AddDataType(searchResultsList, SEARCH_RESULTS_DATA_TYPE, "ZO_TradingHouseSearchResult", 52, SetupSearchResultRow, nil, nil, ZO_InventorySlot_OnPoolReset)
+    ZO_ScrollList_AddDataType(searchResultsList, GUILD_SPECIFIC_ITEM_DATA_TYPE, "ZO_TradingHouseSearchResult", 52, SetupGuildSpecificItemRow, nil, nil, ZO_InventorySlot_OnPoolReset)
+    ZO_ScrollList_AddResizeOnScreenResize(searchResultsList)
+end
+-- End of copy/paste from ingame/tradinghouse/tradinghouse.lua
+
+
+function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
+	local iconControl = uespLog.GetIconControl(rowControl)
+	local styleIconControl = uespLog.GetStyleIconControl(rowControl)
+	local slotIndex = result.slotIndex
+	local itemLink = GetTradingHouseSearchResultItemLink(result.slotIndex)
+	local itemId = uespLog.GetItemLinkID(itemLink)	
+	local tradeType = uespLog.GetItemTradeType(itemId)
+	local iconTexture, iconColor = uespLog.GetTradeIconTexture(itemId, itemLink)
+	local itemStyleIcon, itemStyleText = uespLog.GetItemStyleIcon(itemLink)
+	local itemType = GetItemLinkItemType(itemLink)
+	
+	iconControl:SetHidden(true)		
+	iconControl:SetDimensions(32, 32)
+	iconControl:ClearAnchors()
+	iconControl:SetAnchor(CENTER, rowControl, CENTER, 170)
+		
+	styleIconControl:SetHidden(true)		
+	styleIconControl:SetDimensions(32, 32)
+	styleIconControl:ClearAnchors()
+	styleIconControl:SetAnchor(CENTER, rowControl, CENTER, 190)
+	
+	if (itemStyleIcon ~= nil and (itemType == 1 or itemType == 2) and uespLog.IsCraftStyleDisplay() and uespLog.IsCraftDisplay()) then
+		styleIconControl:SetHidden(false)		
+		styleIconControl:SetTexture(itemStyleIcon)
+	end
+	
+	local isResearchable = uespLog.CheckIsItemLinkResearchable(itemLink)
+	--uespLog.DebugMsg("     "..tostring(itemLink).." = "..tostring(isResearchable))
+
+	if (isResearchable >= 0 and uespLog.IsCraftTraitDisplay() and uespLog.IsCraftDisplay()) then
+	
+		if (isResearchable == 9) then
+			iconControl:SetHidden(false)		
+			iconControl:SetTexture(uespLog.TRADE_ORNATE_TEXTURE)
+			iconControl:SetColor(unpack(uespLog.TRADE_UNKNOWN_COLOR))
+			iconControl:SetColor(unpack(uespLog.TRADE_ORNATE_COLOR))
+		elseif (isResearchable == 10) then
+			iconControl:SetHidden(false)		
+			iconControl:SetTexture(uespLog.TRADE_INTRICATE_TEXTURE)
+			iconControl:SetColor(unpack(uespLog.TRADE_INTRICATE_COLOR))
+		elseif (isResearchable > 0) then
+			iconControl:SetHidden(false)
+			iconControl:SetTexture(uespLog.TRADE_UNKNOWN_TEXTURE)
+			iconControl:SetColor(unpack(uespLog.TRADE_UNKNOWN_COLOR))
+		else
+			iconControl:SetHidden(false)
+			iconControl:SetTexture(uespLog.TRADE_KNOWN_TEXTURE)
+			iconControl:SetColor(unpack(uespLog.TRADE_KNOWN_COLOR))
+		end
+		
+	end
+	
+	if (iconTexture ~= nil) then
+		if (uespLog.IsCraftIngredientDisplay() and uespLog.IsCraftDisplay()) then
+			iconControl:SetHidden(false)		
+			iconControl:SetTexture(iconTexture)
+			iconControl:SetColor(unpack(iconColor))
+			if (nameControl ~= nil) then nameControl:SetColor(unpack(iconColor)) end
+		end
+		
+		return
+	end
+	
+	local recipeName = uespLog.GetRecipeNameFromLink(itemLink)
+	
+	if (recipeName ~= nil) then
+		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
+			if (uespLog.IsRecipeKnown(recipeName)) then
+				iconControl:SetHidden(false)		
+				iconControl:SetTexture(uespLog.TRADE_KNOWN_TEXTURE)
+				iconControl:SetColor(unpack(uespLog.TRADE_KNOWN_COLOR))
+			else
+				iconControl:SetHidden(false)		
+				iconControl:SetTexture(uespLog.TRADE_UNKNOWN_TEXTURE)
+				iconControl:SetColor(unpack(uespLog.TRADE_UNKNOWN_COLOR))
+			end
+		end
+	end
+	
+end
+
+

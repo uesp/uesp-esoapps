@@ -124,7 +124,7 @@ function uespLog.InitOptionControlsData()
 	uespLog.optionControlsData:insert({
 		type = "checkbox",
 		name = "Recipe Display",
-		tooltip = "Enable/disable the display of traits on items info\n     /uespcraft recipe on/off",
+		tooltip = "Enable/disable the display of known/unknown on recipes\n     /uespcraft recipe on/off",
 		getFunc = function() return uespLog.IsCraftRecipeDisplay() end,
 		setFunc = function(flag) return uespLog.SetCraftRecipeDisplay(flag) end,
 		disabled = function() return not uespLog.IsCraftDisplay() end
@@ -133,7 +133,7 @@ function uespLog.InitOptionControlsData()
 	uespLog.optionControlsData:insert({
 		type = "checkbox",
 		name = "Ingredient Display",
-		tooltip = "Enable/disable the display of traits on items info\n     /uespcraft ingredient on/off",
+		tooltip = "Enable/disable the display of ingredient information\n     /uespcraft ingredient on/off",
 		getFunc = function() return uespLog.IsCraftIngredientDisplay() end,
 		setFunc = function(flag) return uespLog.SetCraftIngredientDisplay(flag) end,
 		disabled = function() return not uespLog.IsCraftDisplay() end
@@ -159,26 +159,9 @@ function uespLog.InitOptionControlsData()
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "header",
-		name = "Autoloot",
-	})
-	
-	uespLog.optionControlsData:insert({
-		type = "checkbox",
-		name = "Custom Autoloot",
-		tooltip = "Enable/disable the use of custom autolooting\n     /uespcraft autoloot on/off",
-		getFunc = function() return uespLog.IsCraftAutoLoot() end,
-		setFunc = function(flag) return not uespLog.SetCraftAutoLoot(flag) end,
-	})
-	
-	uespLog.optionControlsData:insert({
-		type = "dropdown",
-		name = "Autoloot Min Prov Level",
-		choices = { "1", "2", "3", "4", "5" },
-		tooltip = "Set the lowest level of provision items that will be autolooted\n     /uespcraft minprovlevel [1-5]",
-		getFunc = function() return uespLog.GetCraftAutoLootMinProvLevel() end,
-		setFunc = function(choice) return uespLog.SetCraftAutoLootMinProvLevel(choice) end,
-		disabled = function() return not uespLog.IsCraftAutoLoot() end,
+		type = "description",
+		title = "",
+		text = "",
 	})
 		
 	uespLog.optionControlsData:insert({
@@ -228,12 +211,132 @@ function uespLog.InitOptionControlsData()
 		title = "",
 		text = "",
 	})
+		
+	uespLog.optionControlsData:insert({
+		type = "header",
+		name = "Character Information",
+	})
 	
+	uespLog.optionControlsData:insert({
+		type = "description",
+		title = "",
+		text = "",
+		getFunc = function() return uespLog.GetCharInfoText() end,
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "description",
+		title = "",
+		text = "",
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "description",
+		title = "",
+		text = "",
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "description",
+		title = "",
+		text = "",
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "description",
+		title = "",
+		text = "",
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "description",
+		title = "",
+		text = "",
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "description",
+		title = "",
+		text = "",
+	})
+		
+	uespLog.optionControlsData:insert({
+		type = "description",
+		title = "",
+		text = "",
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "description",
+		title = "",
+		text = "",
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "description",
+		title = "",
+		text = "",
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "description",
+		title = "",
+		text = "",
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "description",
+		title = "",
+		text = "",
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "description",
+		title = "",
+		text = "",
+	})
+
+	uespLog.optionControlsData:insert({
+		type = "description",
+		title = "",
+		text = "",
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "description",
+		title = "",
+		text = "",
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "description",
+		title = "",
+		text = "",
+	})
+
+	uespLog.optionControlsData:insert({
+		type = "description",
+		title = "",
+		text = "",
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "description",
+		title = "",
+		text = "",
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "description",
+		title = "",
+		text = "",
+	})
+		
 	uespLog.optionControlsData:insert({
 		type = "header",
 		name = "Reset Logs",
 	})
-	
+		
 	uespLog.optionControlsData:insert({
 		type = "button",
 		name = "Reset Log",
@@ -389,5 +492,91 @@ function uespLog.GetSettingsCraftInfoText()
 	
 	OutputText = OutputText .. "     " .. tostring(uespLog.GetTotalInspiration()) .. " crafting inspiration since the last reset\n"
 
+	return OutputText
+end
+
+
+function uespLog.GetStatText (statType, statName)
+	local softCap = GetStatSoftCap(statType)
+	local currentStat = GetPlayerStat(statType, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+	local noCapStat = GetPlayerStat(statType, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_DONT_APPLY_SOFT_CAP)
+	local OutputText = ""
+	
+	if (softCap == nil) then
+		OutputText = tostring(statName)..": "..tostring(currentStat).." (no cap)"
+	else
+		OutputText = tostring(statName)..": "..tostring(currentStat).." ("..tostring(noCapStat).." with cap of ".. tostring(softCap)..")"
+	end
+	
+	return OutputText
+end
+
+
+function uespLog.GetPowerStatText(statType, statName)
+	local currentStat, maxValue, effectiveMax = GetUnitPower("player", statType)
+	return tostring(statName)..": "..tostring(currentStat).." (effective max "..tostring(effectiveMax).." of ".. tostring(maxValue)..")"
+end
+
+
+function uespLog.GetCharInfoText()
+	local numPoints = GetAvailableSkillPoints()
+	local numSkyShards = GetNumSkyShards()
+	local OutputText = ""
+	
+	OutputText = OutputText .. "     Skill Points: " .. tostring(numPoints) .. "\n"
+	OutputText = OutputText .. "     Skyshards: " .. tostring(numSkyShards) .. "\n"
+		
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_HEALTH_MAX, "HP") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_MAGICKA_MAX, "Magicka") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_STAMINA_MAX, "Stamina") .. "\n"
+	
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_HEALTH_REGEN_COMBAT, "HP Combat Regen") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_MAGICKA_REGEN_COMBAT, "Magicka Combat Regen") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_STAMINA_REGEN_COMBAT, "Stamina Combat Regen") .. "\n"
+	
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_HEALTH_REGEN_IDLE, "HP Idle Regen") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_MAGICKA_REGEN_IDLE, "Magicka Idle Regen") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_STAMINA_REGEN_IDLE, "Stamina Idle Regen") .. "\n"
+	
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_ARMOR_RATING, "Armor") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_BLOCK, "Block") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_CRITICAL_RESISTANCE, "Critical Resist") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_SPELL_RESIST, "Spell Resist") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_SPELL_MITIGATION, "Spell Mitigation") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_DODGE, "Dodge") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_PARRY, "Parry") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_PHYSICAL_RESIST, "Physical Resist") .. "\n"
+	
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_DAMAGE_RESIST_COLD, "Resist Cold") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_DAMAGE_RESIST_DISEASE, "Resist Disease") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_DAMAGE_RESIST_DROWN, "Resist Drown") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_DAMAGE_RESIST_EARTH, "Resist Earth") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_DAMAGE_RESIST_FIRE, "Resist Fire") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_DAMAGE_RESIST_GENERIC, "Resist Generic") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_DAMAGE_RESIST_MAGIC, "Resist Magic") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_DAMAGE_RESIST_OBLIVION, "Resist Oblivion") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_DAMAGE_RESIST_PHYSICAL, "Resist Physical") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_DAMAGE_RESIST_POISON, "Resist Poison") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_DAMAGE_RESIST_SHOCK, "Resist Shock") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_DAMAGE_RESIST_START, "Resist Start") .. "\n"
+		
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_CRITICAL_STRIKE, "Critical Strike") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_WEAPON_POWER, "Weapon Power") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_SPELL_POWER, "Spell Power") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_SPELL_CRITICAL, "Spell Critical") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_SPELL_PENETRATION, "Spell Penetration") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_POWER, "Power") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_ATTACK_POWER, "Attack Power") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_MISS, "Miss") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_PHYSICAL_PENETRATION, "Physical Penetration") .. "\n"
+	
+	OutputText = OutputText .. "     " .. uespLog.GetPowerStatText(POWERTYPE_HEALTH, "HP") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetPowerStatText(POWERTYPE_MAGICKA, "Magicka") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetPowerStatText(POWERTYPE_STAMINA, "Stamina") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetPowerStatText(POWERTYPE_ULTIMATE, "Ultimate") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetPowerStatText(POWERTYPE_FINESSE, "Finesse") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetPowerStatText(POWERTYPE_WEREWOLF, "Werewolf") .. "\n"
+	OutputText = OutputText .. "     " .. uespLog.GetPowerStatText(POWERTYPE_MOUNT_STAMINA, "Mount Stamina") .. "\n"
+	
 	return OutputText
 end

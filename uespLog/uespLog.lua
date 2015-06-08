@@ -198,6 +198,7 @@
 --			- Added the "/uespreset log" option to reset just the normal logged data section.
 --			- Fixed display issue when turning crafting display on/off.
 --			- Removed the autoloot function since ingredients don't have levels after update #6.
+--			- Provisional ingredients updated from update #6.
 --
 
 

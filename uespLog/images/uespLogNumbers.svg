@@ -24,15 +24,15 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="5.6"
-     inkscape:cx="535.48406"
-     inkscape:cy="652.54338"
+     inkscape:zoom="1.979899"
+     inkscape:cx="190.82744"
+     inkscape:cy="506.8397"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1920"
      inkscape:window-height="1061"
-     inkscape:window-x="1916"
+     inkscape:window-x="-4"
      inkscape:window-y="-4"
      inkscape:window-maximized="1" />
   <metadata
@@ -429,7 +429,7 @@
     <rect
        inkscape:export-ydpi="91.970001"
        inkscape:export-xdpi="91.970001"
-       inkscape:export-filename="C:\Users\Dave\Documents\Elder Scrolls Online\live\Addons\uespLog\images\newtrade1.png"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtradeTest.png"
        y="462.10797"
        x="80.217323"
        height="31.31473"
@@ -439,7 +439,7 @@
     <text
        inkscape:export-ydpi="91.970001"
        inkscape:export-xdpi="91.970001"
-       inkscape:export-filename="C:\Users\Dave\Documents\Elder Scrolls Online\live\Addons\uespLog\images\newtrade1.png"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtradeTest.png"
        xml:space="preserve"
        style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Andalus;-inkscape-font-specification:Andalus"
        x="87.917656"
@@ -642,5 +642,300 @@
        inkscape:export-filename="C:\Users\Dave\Documents\Elder Scrolls Online\live\Addons\uespLog\images\known.png"
        inkscape:export-xdpi="91.970001"
        inkscape:export-ydpi="91.970001" />
+    <rect
+       style="color:#000000;fill:#000000;stroke:none;stroke-width:4;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect3052"
+       width="31.31473"
+       height="31.31473"
+       x="84.605995"
+       y="529.96509"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade10.png"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-ydpi="91.970001" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text3054"
+       y="556.44379"
+       x="87.917656"
+       style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Andalus;-inkscape-font-specification:Andalus"
+       xml:space="preserve"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade10.png"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-ydpi="91.970001"><tspan
+         y="556.44379"
+         x="87.917656"
+         id="tspan3056"
+         sodipodi:role="line">M</tspan></text>
+    <rect
+       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ff0000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect3174"
+       width="655.58899"
+       height="148.9975"
+       x="-677.30725"
+       y="559.40771" />
+    <rect
+       y="530.40259"
+       x="134.31966"
+       height="31.31473"
+       width="31.31473"
+       id="rect3058"
+       style="color:#000000;fill:#000000;stroke:none;stroke-width:4;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade11.png"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-ydpi="91.970001" />
+    <text
+       xml:space="preserve"
+       style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Andalus;-inkscape-font-specification:Andalus"
+       x="143.47604"
+       y="556.44379"
+       id="text3060"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade11.png"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-ydpi="91.970001"><tspan
+         sodipodi:role="line"
+         id="tspan3062"
+         x="143.47604"
+         y="556.44379">F</tspan></text>
+    <rect
+       style="color:#000000;fill:#000000;stroke:none;stroke-width:4;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect3064"
+       width="31.31473"
+       height="31.31473"
+       x="200.82959"
+       y="530.27954"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade12.png"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-ydpi="91.970001" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text3066"
+       y="556.44379"
+       x="207.62074"
+       style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Andalus;-inkscape-font-specification:Andalus"
+       xml:space="preserve"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade12.png"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-ydpi="91.970001"><tspan
+         y="556.44379"
+         x="207.62074"
+         id="tspan3068"
+         sodipodi:role="line">V</tspan></text>
+    <rect
+       y="530.01294"
+       x="266.63226"
+       height="31.31473"
+       width="31.31473"
+       id="rect3070"
+       style="color:#000000;fill:#000000;stroke:none;stroke-width:4;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade20.png"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-ydpi="91.970001" />
+    <text
+       xml:space="preserve"
+       style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Andalus;-inkscape-font-specification:Andalus"
+       x="273.78574"
+       y="556.44379"
+       id="text3072"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade20.png"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-ydpi="91.970001"><tspan
+         sodipodi:role="line"
+         id="tspan3074"
+         x="273.78574"
+         y="556.44379">A</tspan></text>
+    <rect
+       style="color:#000000;fill:#000000;stroke:none;stroke-width:4;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect3076"
+       width="31.31473"
+       height="31.31473"
+       x="330.68652"
+       y="530.12915"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade21.png"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-ydpi="91.970001" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text3078"
+       y="556.44379"
+       x="338.94058"
+       style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Andalus;-inkscape-font-specification:Andalus"
+       xml:space="preserve"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade21.png"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-ydpi="91.970001"><tspan
+         y="556.44379"
+         x="338.94058"
+         id="tspan3080"
+         sodipodi:role="line">T</tspan></text>
+    <rect
+       y="530.27954"
+       x="393.02594"
+       height="31.31473"
+       width="31.31473"
+       id="rect3082"
+       style="color:#000000;fill:#000000;stroke:none;stroke-width:4;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade22.png"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-ydpi="91.970001" />
+    <text
+       xml:space="preserve"
+       style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Andalus;-inkscape-font-specification:Andalus"
+       x="399.04465"
+       y="556.44379"
+       id="text3084"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade22.png"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-ydpi="91.970001"><tspan
+         sodipodi:role="line"
+         id="tspan3086"
+         x="399.04465"
+         y="556.44379">N</tspan></text>
+    <rect
+       inkscape:export-ydpi="91.970001"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade10.png"
+       y="614.99402"
+       x="80.590187"
+       height="31.31473"
+       width="31.31473"
+       id="rect3138"
+       style="color:#000000;fill:none;stroke:none;stroke-width:4;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+    <text
+       inkscape:export-ydpi="91.970001"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade10.png"
+       xml:space="preserve"
+       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Univers LT Std 47 Cn Lt;-inkscape-font-specification:Univers LT Std 47 Cn Lt Bold"
+       x="87.917656"
+       y="637.63129"
+       id="text3140"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3142"
+         x="87.917656"
+         y="637.63129">M</tspan></text>
+    <rect
+       inkscape:export-ydpi="91.970001"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade11.png"
+       style="color:#000000;fill:none;stroke:none;stroke-width:4;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect3144"
+       width="31.31473"
+       height="31.31473"
+       x="132.76862"
+       y="614.89368" />
+    <text
+       inkscape:export-ydpi="91.970001"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade11.png"
+       sodipodi:linespacing="125%"
+       id="text3146"
+       y="637.63129"
+       x="143.47604"
+       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Univers LT Std 47 Cn Lt;-inkscape-font-specification:Univers LT Std 47 Cn Lt Bold"
+       xml:space="preserve"><tspan
+         y="637.63129"
+         x="143.47604"
+         id="tspan3148"
+         sodipodi:role="line">F</tspan></text>
+    <rect
+       inkscape:export-ydpi="91.970001"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade12.png"
+       y="614.98273"
+       x="197.5233"
+       height="31.31473"
+       width="31.31473"
+       id="rect3150"
+       style="color:#000000;fill:none;stroke:none;stroke-width:4;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+    <text
+       inkscape:export-ydpi="91.970001"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade12.png"
+       xml:space="preserve"
+       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Univers LT Std 47 Cn Lt;-inkscape-font-specification:Univers LT Std 47 Cn Lt Bold"
+       x="207.62074"
+       y="637.63129"
+       id="text3152"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3154"
+         x="207.62074"
+         y="637.63129">V</tspan></text>
+    <rect
+       inkscape:export-ydpi="91.970001"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade20.png"
+       style="color:#000000;fill:none;stroke:none;stroke-width:4;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect3156"
+       width="31.31473"
+       height="31.31473"
+       x="264.23828"
+       y="614.96271" />
+    <text
+       inkscape:export-ydpi="91.970001"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade20.png"
+       sodipodi:linespacing="125%"
+       id="text3158"
+       y="637.63129"
+       x="273.78574"
+       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Univers LT Std 47 Cn Lt;-inkscape-font-specification:Univers LT Std 47 Cn Lt Bold"
+       xml:space="preserve"><tspan
+         y="637.63129"
+         x="273.78574"
+         id="tspan3160"
+         sodipodi:role="line">A</tspan></text>
+    <rect
+       inkscape:export-ydpi="91.970001"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade21.png"
+       y="615.09058"
+       x="328.27316"
+       height="31.31473"
+       width="31.31473"
+       id="rect3162"
+       style="color:#000000;fill:none;stroke:none;stroke-width:4;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+    <text
+       inkscape:export-ydpi="91.970001"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade21.png"
+       xml:space="preserve"
+       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Univers LT Std 47 Cn Lt;-inkscape-font-specification:Univers LT Std 47 Cn Lt Bold"
+       x="338.94058"
+       y="637.63129"
+       id="text3164"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3166"
+         x="338.94058"
+         y="637.63129">T</tspan></text>
+    <rect
+       inkscape:export-ydpi="91.970001"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade22.png"
+       style="color:#000000;fill:none;stroke:none;stroke-width:4;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect3168"
+       width="31.31473"
+       height="31.31473"
+       x="390.05719"
+       y="614.96619" />
+    <text
+       inkscape:export-ydpi="91.970001"
+       inkscape:export-xdpi="91.970001"
+       inkscape:export-filename="D:\src\uesp\EsoApps\uespLog\images\newtrade22.png"
+       sodipodi:linespacing="125%"
+       id="text3170"
+       y="637.63129"
+       x="399.04465"
+       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Univers LT Std 47 Cn Lt;-inkscape-font-specification:Univers LT Std 47 Cn Lt Bold"
+       xml:space="preserve"><tspan
+         y="637.63129"
+         x="399.04465"
+         id="tspan3172"
+         sodipodi:role="line">N</tspan></text>
   </g>
 </svg>

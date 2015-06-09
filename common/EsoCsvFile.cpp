@@ -200,4 +200,19 @@ namespace eso
 	}
 
 
+	CCsvFile CCsvFile::CreateNewRemoveEvenLines() const
+	{
+		CCsvFile NewFile(m_HasHeaderRow);
+
+		NewFile.m_Data.reserve(m_Data.size()/2 + 1);
+
+		for (size_t i = 0; i < m_Data.size(); i += 2)
+		{
+			NewFile.m_Data.push_back(m_Data[i]);
+		}
+
+		return NewFile;
+	}
+
+
 };

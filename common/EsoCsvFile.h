@@ -36,7 +36,13 @@ namespace eso
 
 		bool Save (const std::string Filename);
 
+		void SetHasHeaderRow (const bool Flag) { m_HasHeaderRow = Flag; }
+
 		void ReplaceStrings (const std::string Src, const std::string Dest);
+
+		CCsvFile CreateNewRemoveEvenLines() const;
+
+		void ReserveRows(const int Size) { m_Data.reserve(Size); }
 		
 	};
 

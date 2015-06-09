@@ -34,6 +34,7 @@ protected:
 	bool ParseData (eso::byte* pData, const fpos_t Size);
 
 	int CreateRecordsFromCSV   (const eso::CCsvFile& CsvFile, const bool UsePOSourceText);
+	int CreateRecordsFromTEXT  (const std::vector<std::string>& TextFile, const std::vector<std::string>& IdFile, const bool UsePOFormat, const bool UsePOSourceText);
 	int CreateRecordsFromPOCSV (const eso::CCsvFile& CsvFile, const bool UsePOSourceText);
 
 
@@ -43,10 +44,12 @@ public:
 	virtual void Destroy();
 
 	bool CreateFromCsv (const eso::CCsvFile& CsvFile, const bool UsePOFormat = false, const bool UsePOSourceText = false);
+	bool CreateFromText (const std::vector<std::string>& TextFile, const std::vector<std::string>& IdFile, const bool UsePOFormat = false, const bool UsePOSourceText = false);
 
 	bool DumpCsv (const std::string Filename, const bool UsePOFormat = false);
 	bool DumpText (const std::string Filename, const bool UsePOFormat = false);
 	bool DumpTextFile (eso::CFile& File, lang_record_t& Record);
+	bool DumpTextId (const std::string Filename);
 
 	bool Load (const std::string Filename);
 	bool Read (eso::CFile& File);

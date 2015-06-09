@@ -47,6 +47,18 @@
  * v0.23 -- 11 April 2015
  *		- Added the "-t" option to output LANG file in a plain text format.
  *
+ * v0.24 -- 9 June 2015
+ *		- Added the "-i" option to input an ID text.
+ *		- An ID file (.id.txt) is output when converting a LANG file.
+ *		- Convert a text file along with an ID file to a LANG file.
+ *				Using a PO TEXT file (blank line between lines):
+ *						./EsoExtractData.exe -i file.id.txt -p -t -x file.lang.txt
+ *			    Using a TEXT File:
+ *						./EsoExtractData.exe -i file.id.txt -t -x file.lang.txt
+ *				Using a PO TEXT file to new LANG file:
+ *						./EsoExtractData.exe -i file.id.txt -p -t -x file.lang.txt -o newfile.lang
+ *
+ *
  */
 
 
@@ -60,6 +72,9 @@
 #include <vector>
 #include <algorithm>
 #include <stdarg.h>
+#include <fstream>
+#include <iostream>
+#include <sstream>
 #include "EsoMnfFile.h"
 #include "EsoZosftFile.h"
 #include "CmdParamHandler.h"
@@ -96,6 +111,9 @@ const TCHAR* INPUT_PATHS[] = {
 		_T("D:\\The Elder Scrolls Online Beta\\depot\\"),
 		_T("D:\\The Elder Scrolls Online Beta\vo_en\\")
 };
+
+
+typedef std::vector<std::string> CSimpleTextFile;
 
 
 struct esosubfile_t
@@ -284,6 +302,25 @@ std::string CreateOutputPath(const TCHAR* pFilename, const TCHAR* pBaseOutputPat
 
 	PrintError ("OutputPath() = %s", OutputPath.c_str());
 	return OutputPath;
+}
+
+
+bool LoadSimpleTextFile (const std::string Filename, CSimpleTextFile& TextFile)
+{
+	std::ifstream inFile(Filename);
+	std::string Line;
+
+	TextFile.clear();
+
+	if (!inFile) return PrintError("Error: Failed to open '%s' for input!", Filename.c_str());
+
+	while (std::getline(inFile, Line)) 
+	{
+		TextFile.push_back(Line);
+	}
+
+	inFile.close();
+	return true;
 }
 
 
@@ -1163,29 +1200,30 @@ bool DoConvertExistingRiffFiles (const std::string RootPath)
 
 cmdparamdef_t g_Cmds[] = 
 {
-	// VarName        Opt  LongOpt           Description													Req   Option Value  Mult   Default
-	{ "mnffile",       "", "",				"Input MNF filename to load.",									false, false, true,  false, "" },
-	{ "outputpath",    "", "",				"Path to save extracted data files to.",						false, false, true,  false, "" },
-	{ "mnfft",        "m", "mnfft",			"Dump the MNF filetable to the specified text file.",			false, true,  true,  false, "" },
-	{ "zosft",        "z", "zosft",			"Dump the ZOS filetable to the specified text file.",			false, true,  true,  false, "" },
-	{ "startindex",   "s", "startindex",	"Start exporting sub-files at the given file index.",			false, true,  true,  false, "-1" },
-	{ "endindex",     "e", "endindex",	    "Stop exporting sub-files at the given file index.",			false, true,  true,  false, "-1" },
-	{ "archiveindex", "a", "archive",		"Only export MNF file with the given index.",					false, true,  true,  false, "-1" },
-	{ "beginarchive", "b", "beginarchive",	"start with the given MNF file index.",							false, true,  true,  false, "-1" },
-	{ "fileindex",    "f", "fileindex",		"Only export MNF the subfile with the given file index.",		false, true,  true,  false, "-1" },
-	{ "convertdds",   "c", "convertdds",    "(Doesn't Work Yet) Attempt to convert DDS files to PNG.",		false, true,  false, false, "0" },
-	{ "skipsubfiles", "k", "skipsubfiles",	"Don't export subfiles from the MNF data.",						false, true,  false, false, "0" },
-	{ "langfile",     "l", "lang",	        "Convert the given .lang file to a CSV.",						false, false, true,  false, "" },
-	{ "createlang",   "x", "createlang",    "Convert the given language CSV file to a .LANG.",				false, false, true,  false, "" },
-	{ "outputfile",   "o", "outputfile",    "Specify the output file for -l and -x.",						false, false, true,  false, "" },
-	{ "pocsv",        "p", "pocsv",         "Import/Export the CSV/Text file in a PO compatible format.",   false, true,  false, false, "0" },
-	{ "posourcetext",  "", "posourcetext",  "Use the source text when converting a PO-CSV file to a LANG.", false, true,  false, false, "0" },
-	{ "langtext",     "t", "langtext",      "Output the LANG file in plain text format.",		   	        false, true,  false, false, "0" },
+	// VarName        Opt  LongOpt           Description													 Req   Option Value  Mult   Default
+	{ "mnffile",       "", "",				"Input MNF filename to load.",									 false, false, true,  false, "" },
+	{ "outputpath",    "", "",				"Path to save extracted data files to.",						 false, false, true,  false, "" },
+	{ "mnfft",        "m", "mnfft",			"Dump the MNF filetable to the specified text file.",			 false, true,  true,  false, "" },
+	{ "zosft",        "z", "zosft",			"Dump the ZOS filetable to the specified text file.",			 false, true,  true,  false, "" },
+	{ "startindex",   "s", "startindex",	"Start exporting sub-files at the given file index.",			 false, true,  true,  false, "-1" },
+	{ "endindex",     "e", "endindex",	    "Stop exporting sub-files at the given file index.",			 false, true,  true,  false, "-1" },
+	{ "archiveindex", "a", "archive",		"Only export MNF file with the given index.",					 false, true,  true,  false, "-1" },
+	{ "beginarchive", "b", "beginarchive",	"start with the given MNF file index.",							 false, true,  true,  false, "-1" },
+	{ "fileindex",    "f", "fileindex",		"Only export MNF the subfile with the given file index.",		 false, true,  true,  false, "-1" },
+	{ "convertdds",   "c", "convertdds",    "(Doesn't Work Yet) Attempt to convert DDS files to PNG.",		 false, true,  false, false, "0" },
+	{ "skipsubfiles", "k", "skipsubfiles",	"Don't export subfiles from the MNF data.",						 false, true,  false, false, "0" },
+	{ "langfile",     "l", "lang",	        "Convert the given .lang file to a CSV.",						 false, true,  true,  false, "" },
+	{ "createlang",   "x", "createlang",    "Convert the given language CSV file to a .LANG.",				 false, true,  true,  false, "" },
+	{ "outputfile",   "o", "outputfile",    "Specify the output file for -l and -x.",						 false, true,  true,  false, "" },
+	{ "pocsv",        "p", "pocsv",         "Import/Export the CSV/Text file in a PO compatible format.",    false, true,  false, false, "0" },
+	{ "posourcetext",  "", "posourcetext",  "Use the source text when converting a PO-CSV file to a LANG.",  false, true,  false, false, "0" },
+	{ "langtext",     "t", "langtext",      "Output the LANG file in plain text format.",		   	         false, true,  false, false, "0" },
+	{ "idfile",       "i", "idfile",        "The ID file to use when converting  a TXT file to LANG.",       false, true,  true,  false, "" },
 	{ "",   "", "", "", false, false, false, false, "" }
 };
 
 const char g_AppDescription[] = "\
-ExportMnf v0.23 is a simple command line application to load and export files\n\
+ExportMnf v0.24 is a simple command line application to load and export files\n\
 from ESO's MNF and DAT files. Created by Daveh (dave@uesp.net).\n\
 \n\
 WARNING: This app is in early development and is fragile. User discretion is\n\
@@ -1202,7 +1240,6 @@ int _tmain(int argc, _TCHAR* argv[])
 	mnf_exportoptions_t ExportOptions;
 
 	OpenLog("exportmnf.log");
-
 	/*
 	CCsvFile CsvFile(true);
 
@@ -1259,11 +1296,13 @@ int _tmain(int argc, _TCHAR* argv[])
 	ExportOptions.LangFilename = CmdParamHandler.GetParamValue("langfile");
 	ExportOptions.CreateLangFilename = CmdParamHandler.GetParamValue("createlang");
 	ExportOptions.OutputFilename = CmdParamHandler.GetParamValue("outputfile");
+	ExportOptions.ImportIdFilename = CmdParamHandler.GetParamValue("idfile");
 	
 		/* Handle a .LANG file conversion to CSV */
 	if (!ExportOptions.LangFilename.empty())
 	{
 		CEsoLangFile LangFile;
+		std::string IdOutputFilename = ExportOptions.LangFilename + (ExportOptions.UseLangText ? ".id.txt" : ".id.csv");
 		std::string OutputFilename = ExportOptions.LangFilename + (ExportOptions.UseLangText ? ".txt" : ".csv");
 		if (!ExportOptions.OutputFilename.empty()) OutputFilename = ExportOptions.OutputFilename;
 
@@ -1279,6 +1318,11 @@ int _tmain(int argc, _TCHAR* argv[])
 				PrintError("Saved the LANG file to '%s'!", OutputFilename.c_str());
 			else
 				PrintError("Failed to save the LANG file '%s'!", OutputFilename.c_str());
+
+			if (LangFile.DumpTextId(IdOutputFilename))
+				PrintError("Saved the ID text file to '%s'!", IdOutputFilename.c_str());
+			else
+				PrintError("Failed to save the ID text file '%s'!", IdOutputFilename.c_str());
 		}
 		else
 		{
@@ -1290,20 +1334,67 @@ int _tmain(int argc, _TCHAR* argv[])
 	if (!ExportOptions.CreateLangFilename.empty())
 	{
 		CEsoLangFile LangFile;
-		CCsvFile     CsvFile(true);
+		CCsvFile     CsvFile(!ExportOptions.UseLangText);
+		CSimpleTextFile IdFile;
+		CSimpleTextFile TextFile;
+		std::string  InputType = (ExportOptions.UseLangText ? "TXT" : "CSV");
 		std::string  OutputLangFilename = RemoveFileExtension(ExportOptions.CreateLangFilename);
+		
 		if (!StringEndsWith(OutputLangFilename, ".lang")) OutputLangFilename += ".lang";
 		if (!ExportOptions.OutputFilename.empty()) OutputLangFilename = ExportOptions.OutputFilename;
 
-		PrintError("Converting CSV file '%s' to LANG '%s'...", ExportOptions.CreateLangFilename.c_str(), OutputLangFilename.c_str());
+		PrintError("Converting %s file '%s' to LANG '%s'...", InputType.c_str(), ExportOptions.CreateLangFilename.c_str(), OutputLangFilename.c_str());
 
-		if (CsvFile.Load(ExportOptions.CreateLangFilename))
+		if (ExportOptions.UseLangText)
 		{
-			PrintError("Loaded CSV file '%s'...", ExportOptions.CreateLangFilename.c_str());
-
-			if (LangFile.CreateFromCsv(CsvFile, ExportOptions.UsePOCSVFormat, ExportOptions.UsePOSourceText))
+			if (ExportOptions.ImportIdFilename.empty())
 			{
-				PrintError("Created the LANG file from the CSV data...");
+				PrintError("Error: An ID file (-i <filename>) is required when converting  a TXT file to LANG!");
+				return -1;
+			}
+
+			if (!LoadSimpleTextFile(ExportOptions.ImportIdFilename, IdFile))
+			{
+				PrintError("Error: Failed to load the ID file '%s'!", ExportOptions.ImportIdFilename.c_str());
+				return -2;
+			}
+
+			PrintError("Loaded ID file '%s' with %u rows...", ExportOptions.ImportIdFilename.c_str(), IdFile.size());
+
+			if (!LoadSimpleTextFile(ExportOptions.CreateLangFilename, TextFile))
+			{
+				PrintError("Error: Failed to load the TXT file '%s'!", ExportOptions.CreateLangFilename.c_str());
+				return -3;
+			}
+			
+			PrintError("Loaded TXT file '%s' with %u rows...", ExportOptions.CreateLangFilename.c_str(), TextFile.size());
+
+			if (!LangFile.CreateFromText(TextFile, IdFile, ExportOptions.UsePOCSVFormat, ExportOptions.UsePOSourceText))
+			{
+				PrintError("Failed to create the LANG file from %s data!", InputType.c_str());
+				return -4;
+			}
+
+			PrintError("Created the LANG file from the input TEXT data...");
+
+			if (LangFile.Save(OutputLangFilename))
+				PrintError("Saved the LANG file to '%s'!", OutputLangFilename.c_str());
+			else
+				PrintError("Failed to save the LANG file to '%s'!", OutputLangFilename.c_str());
+		}
+		else {
+
+			if (CsvFile.Load(ExportOptions.CreateLangFilename))
+			{
+				PrintError("Loaded %s file '%s' with %d rows...", InputType.c_str(), ExportOptions.CreateLangFilename.c_str(), CsvFile.GetNumRows());
+		
+				if (!LangFile.CreateFromCsv(CsvFile, ExportOptions.UsePOCSVFormat, ExportOptions.UsePOSourceText))
+				{
+					PrintError("Failed to create the LANG file from %s data!", InputType.c_str());
+					return -5;
+				}
+
+				PrintError("Created the LANG file from the input CSV data...");
 
 				if (LangFile.Save(OutputLangFilename))
 					PrintError("Saved the LANG file to '%s'!", OutputLangFilename.c_str());
@@ -1312,12 +1403,9 @@ int _tmain(int argc, _TCHAR* argv[])
 			}
 			else
 			{
-				PrintError("Failed to create the LANG file from CSV data!");
+				PrintError("Failed to load the CSV file '%s'!", ExportOptions.CreateLangFilename.c_str());
+				return -6;
 			}
-		}
-		else
-		{
-			PrintError("Failed to load the CSV file '%s'!", ExportOptions.CreateLangFilename.c_str());
 		}
 	}
 

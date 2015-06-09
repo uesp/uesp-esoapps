@@ -66,23 +66,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>D:\src\uesp\ESO\common\devil\include;D:\src\uesp\ESO\common;$(IncludePath)</IncludePath>
+    <IncludePath>D:\src\uesp\EsoApps\common\devil\include;D:\src\uesp\EsoApps\common;$(IncludePath)</IncludePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <LibraryPath>$(LibraryPath)</LibraryPath>
-    <IncludePath>D:\src\uesp\ESO\common\devil\include;D:\src\uesp\ESO\common;$(IncludePath)</IncludePath>
+    <IncludePath>D:\src\uesp\EsoApps\common\devil\include;D:\src\uesp\EsoApps\common;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - Game.mnf|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <LibraryPath>$(LibraryPath)</LibraryPath>
-    <IncludePath>D:\src\uesp\ESO\common\devil\include;D:\src\uesp\ESO\common;$(IncludePath)</IncludePath>
+    <IncludePath>D:\src\uesp\EsoApps\common\devil\include;D:\src\uesp\EsoApps\common;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - Eso.mnf|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <LibraryPath>$(LibraryPath)</LibraryPath>
-    <IncludePath>D:\src\uesp\ESO\common\devil\include;D:\src\uesp\ESO\common;$(IncludePath)</IncludePath>
+    <IncludePath>D:\src\uesp\EsoApps\common\devil\include;D:\src\uesp\EsoApps\common;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -269,8 +269,7 @@
     <Library Include="..\..\common\devil\lib\DevIL.lib" />
     <Library Include="..\..\common\devil\lib\ILU.lib" />
     <Library Include="..\..\common\devil\lib\ILUT.lib" />
-    <Library Include="SnappyLib.lib" />
-    <Library Include="zdll.lib" />
+    <Library Include="..\..\common\zlib\zdll.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

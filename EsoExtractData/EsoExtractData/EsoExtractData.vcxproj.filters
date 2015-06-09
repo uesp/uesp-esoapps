@@ -101,8 +101,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="zdll.lib" />
-    <Library Include="SnappyLib.lib" />
+    <Library Include="..\..\common\zlib\zdll.lib" />
     <Library Include="..\..\common\devil\lib\ILU.lib" />
     <Library Include="..\..\common\devil\lib\ILUT.lib" />
     <Library Include="..\..\common\devil\lib\DevIL.lib" />

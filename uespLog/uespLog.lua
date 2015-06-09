@@ -200,6 +200,7 @@
 --			- Removed the autoloot function since ingredients don't have levels after update #6.
 --			- Provisional ingredients updated from update #6.
 --			- Item style text/icon only displayed for weapons and armors.
+--			- Craft/trait/style info is now shown in the guild trader windows.
 --
 
 
@@ -1381,6 +1382,8 @@ function uespLog.ShowItemInfoRowControl (rowControl)
 			itemLink = GetBuybackItemLink(slotIndex, LINK_STYLE_DEFAULT)	
 		elseif (storeMode == SI_STORE_MODE_BUY) then
 			itemLink = GetStoreItemLink(slotIndex, LINK_STYLE_DEFAULT)	
+		elseif (bagId == nil) then
+			itemLink = GetTradingHouseSearchResultItemLink(slotIndex)
 		else
 			itemLink = GetItemLink(bagId, slotIndex, LINK_STYLE_DEFAULT)
 		end

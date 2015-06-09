@@ -1384,7 +1384,7 @@ function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
 	styleIconControl:SetHidden(true)		
 	styleIconControl:SetDimensions(32, 32)
 	styleIconControl:ClearAnchors()
-	styleIconControl:SetAnchor(CENTER, rowControl, CENTER, 190)
+	styleIconControl:SetAnchor(CENTER, rowControl, CENTER, 195)
 	
 	if (itemStyleIcon ~= nil and (itemType == 1 or itemType == 2) and uespLog.IsCraftStyleDisplay() and uespLog.IsCraftDisplay()) then
 		styleIconControl:SetHidden(false)		

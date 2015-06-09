@@ -294,10 +294,7 @@ function uespLog.AddCraftDetailsToToolTipRow (row)
 	if (not uespLog.IsCraftDisplay()) then
 		return false
 	end
-	
-	--GetItemInfo(mouseOverControl.bagId, mouseOverControl.itemIndex)};
-	--uespLog.DebugMsg("Row = "..tostring(row.itemIndex))
-	
+
 	if (row.dataEntry == nil and row.bagId == nil) then
 		return false 
 	elseif (row.dataEntry ~= nil and (row.dataEntry.data == nil or uespLog.tradeRowClicked == row)) then
@@ -336,17 +333,21 @@ function uespLog.AddCraftDetailsToToolTipRow (row)
 
 	local itemLink = nil
 	
-	if (slotIndex) then
+	if (slotIndex and bagId) then
 		itemLink = GetItemLink(bagId, slotIndex)
-	else
+	elseif (slotIndex) then
+		itemLink = GetTradingHouseSearchResultItemLink(slotIndex)
+	elseif (bagId) then
 		itemLink = GetLootItemLink(bagId)
+	else
+		return false
 	end
 	
 	return uespLog.AddCraftDetailsToToolTip(ItemTooltip, itemLink, bagId, slotIndex)
 end
 
 
-function uespLog.AddCraftDetailsToToolTip (ThisToolTip, itemLink, bagId, slotIndex)	
+function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotIndex)	
 	
 	if (itemLink == nil) then
 		return false
@@ -388,7 +389,8 @@ function uespLog.AddCraftDetailsToToolTip (ThisToolTip, itemLink, bagId, slotInd
 		return false
 	end
 	
-	local isResearchable = uespLog.CheckIsItemResearchable(bagId, slotIndex)
+	local isResearchable = uespLog.CheckIsItemLinkResearchable(itemLink)
+	--local isResearchable = uespLog.CheckIsItemResearchable(bagId, slotIndex)
 	
 	if (isResearchable < 0) then
 		return false

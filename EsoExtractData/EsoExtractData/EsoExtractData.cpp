@@ -49,14 +49,16 @@
  *
  * v0.24 -- 9 June 2015
  *		- Added the "-i" option to input an ID text.
- *		- An ID file (.id.txt) is output when converting a LANG file.
+ *		- An ID file (.id.txt) is output when converting a LANG file. For example:
+ *					EsoExtractData.exe -l file.lang 
+ *		 outputs the file "file.lang.id.txt".
  *		- Convert a text file along with an ID file to a LANG file.
  *				Using a PO TEXT file (blank line between lines):
- *						./EsoExtractData.exe -i file.id.txt -p -t -x file.lang.txt
+ *						EsoExtractData.exe -i file.id.txt -p -t -x file.lang.txt
  *			    Using a TEXT File:
- *						./EsoExtractData.exe -i file.id.txt -t -x file.lang.txt
+ *						EsoExtractData.exe -i file.id.txt -t -x file.lang.txt
  *				Using a PO TEXT file to new LANG file:
- *						./EsoExtractData.exe -i file.id.txt -p -t -x file.lang.txt -o newfile.lang
+ *						EsoExtractData.exe -i file.id.txt -p -t -x file.lang.txt -o newfile.lang
  *
  *
  */
@@ -1304,7 +1306,12 @@ int _tmain(int argc, _TCHAR* argv[])
 		CEsoLangFile LangFile;
 		std::string IdOutputFilename = ExportOptions.LangFilename + (ExportOptions.UseLangText ? ".id.txt" : ".id.csv");
 		std::string OutputFilename = ExportOptions.LangFilename + (ExportOptions.UseLangText ? ".txt" : ".csv");
-		if (!ExportOptions.OutputFilename.empty()) OutputFilename = ExportOptions.OutputFilename;
+
+		if (!ExportOptions.OutputFilename.empty()) 
+		{
+			OutputFilename = ExportOptions.OutputFilename;
+			IdOutputFilename = ExportOptions.OutputFilename + ".id.txt";
+		}
 
 		PrintError("Converting LANG file '%s' to %s '%s'...", ExportOptions.LangFilename.c_str(), ExportOptions.UseLangText ? "TXT" : "CSV", OutputFilename.c_str());
 

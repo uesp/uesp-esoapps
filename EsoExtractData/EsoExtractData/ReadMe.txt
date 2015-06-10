@@ -1,7 +1,7 @@
 
-	EsoExtractData v0.23 (formally EsoExportMnf)
+	EsoExtractData v0.24 (formally EsoExportMnf)
 	by Dave Humphrey (dave@uesp.net)
-	11 April 2015
+	9 June 2015
 -------------------------------
 EsoextractData is a simple Windows command line application that loads and exports
 data found in ESO's (Elder Scrolls Online) MNF and DAT files.
@@ -100,10 +100,13 @@ There are several more advanced command line options which may be useful:
 		that can be used to convert directly to PO (Pootle) files. The CSV
 		file will have 3 columns (location, source, target) with the location
 		data having the format "ID-UNKNOWN-INDEX" to uniquely identify the
-		text.
+		text. Also outputs the file "en.lang.id.txt" which contains a list
+		of all the text IDs in a single column text file which is needed if
+		you wish to convert a text file back into a LANG file.
 
 	esoextractdata -l en.lang -o test.csv
-		Manually specify the output file for CSV/LANG conversions.
+		Manually specify the output file for CSV/LANG conversions. Also outputs
+		the ID file "test.csv.id.txt"
 
 	esoextractdata -x en.csv
 		Convert the given CSV file into a LANG (en.lang). The CSV file should
@@ -118,6 +121,9 @@ There are several more advanced command line options which may be useful:
 
     esoextractdata -x en.csv -p
 	    Convert a PO compatible CSV file into a LANG file.
+		
+	esoextractdata -x en.csv -p -o newfile.lang
+	    Convert a PO compatible CSV file into a LANG file of the given name.
 
 	esoextractdata -l en.lang -t
 	    Convert the LANG file to a plain text file (one text per line).
@@ -125,6 +131,18 @@ There are several more advanced command line options which may be useful:
 	esoextractdata -l en.lang -t -p
 	    Convert the LANG file to a plain text file that is compatible with
 		Pootle (txt2po) with an extra blank line between texts.
+		
+	esoextractdata -x file.lang.txt -i file.id.txt -t 
+		Converts the given text and ID files into a LANG file file.lang. Assumes 
+		the two	input text files match and have the same length.
+		
+	esoextractdata -x file.lang.txt -i file.id.txt -t -o newfile.lang
+		Same as the previous command but saves the result to newfile.lang.
+		
+	esoextractdata -x file.lang.txt -i file.id.txt -t -p
+		Converts the given text and ID files into a LANG file. The input text file
+		should have a blank line following each text and should have twice the
+		number of lines as the ID file.
  
 
 

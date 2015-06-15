@@ -203,6 +203,7 @@
 --			- Craft/trait/style info is now shown in the guild trader windows.
 --			- Added the "/uespmineitems idcheck" command. Simply loops through all IDs and checks
 --			  if it is a valid item or not and outputs a list of valid item ID ranges to the log.
+--			- Added basic icons for Yokudan and Akaviri styles.
 --
 
 

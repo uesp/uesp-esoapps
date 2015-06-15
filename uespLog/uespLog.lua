@@ -5056,7 +5056,7 @@ function uespLog.MineItemsQualityMap(level)
 end
 
 
-function uespLog.MineItemsIdCheck()
+function uespLog.MineItemsIdCheck(note)
 	local itemId
 	local validCount = 0
 	local totalCount = 0
@@ -5067,6 +5067,9 @@ function uespLog.MineItemsIdCheck()
 	uespLog.MsgColor(uespLog.mineColor, "UESP::Starting ID check of items...")
 	
 	logData.event = "mineItems::idCheck::start"
+	logData.note = note or ""
+	logData.apiVersion = GetAPIVersion()
+	logData.gameVersion = _VERSION
 	uespLog.AppendDataToLog("all", logData, extraData)
 	
 	--for itemId = 1, uespLog.MINEITEM_AUTO_MAXITEMID do
@@ -5162,7 +5165,7 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		uespLog.MineItemsQualityMap(50)
 		return
 	elseif (cmds[1] == "idcheck") then
-		uespLog.MineItemsIdCheck()
+		uespLog.MineItemsIdCheck(cmds[2])
 		return
 	elseif (cmds[1] == "autostart") then
 		uespLog.mineItemAutoReload = true
@@ -5191,6 +5194,10 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems status")
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems start [startId]")
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems stop")
+		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems autostart [startId]")
+		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems qualitymap")
+		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems subtype [subType]")
+		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems idcheck [note]")
 		return
 	end
 	

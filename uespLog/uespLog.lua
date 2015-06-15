@@ -5066,7 +5066,7 @@ function uespLog.MineItemsIdCheck(note)
 
 	uespLog.MsgColor(uespLog.mineColor, "UESP::Starting ID check of items...")
 	
-	logData.event = "mineItems::idCheck::start"
+	logData.event = "mineItem::idCheck::start"
 	logData.note = note or ""
 	logData.apiVersion = GetAPIVersion()
 	logData.gameVersion = _VERSION
@@ -5095,7 +5095,7 @@ function uespLog.MineItemsIdCheck(note)
 	end
 	
 	logData = { }
-	logData.event = "mineItems::idCheck::start"
+	logData.event = "mineItem::idCheck::end"
 	logData.validCount = validCount
 	logData.totalCount = totalCount
 	uespLog.AppendDataToLog("all", logData)
@@ -5107,7 +5107,7 @@ end
 function uespLog.MineItemsLogValidIdRange(startId, endId)
 	local logData = { }
 	
-	logData.event = "mineItems::idCheck"
+	logData.event = "mineItem::idCheck"
 	logData.startId = startId
 	logData.endId = endId
 	

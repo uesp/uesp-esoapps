@@ -201,6 +201,8 @@
 --			- Provisional ingredients updated from update #6.
 --			- Item style text/icon only displayed for weapons and armors.
 --			- Craft/trait/style info is now shown in the guild trader windows.
+--			- Added the "/uespmineitems idcheck" command. Simply loops through all IDs and checks
+--			  if it is a valid item or not and outputs a list of valid item ID ranges to the log.
 --
 
 
@@ -5054,6 +5056,62 @@ function uespLog.MineItemsQualityMap(level)
 end
 
 
+function uespLog.MineItemsIdCheck()
+	local itemId
+	local validCount = 0
+	local totalCount = 0
+	local logData = { }
+	local extraData = uespLog.GetTimeData()
+	local rangeIdStart = -1
+
+	uespLog.MsgColor(uespLog.mineColor, "UESP::Starting ID check of items...")
+	
+	logData.event = "mineItems::idCheck::start"
+	uespLog.AppendDataToLog("all", logData, extraData)
+	
+	--for itemId = 1, uespLog.MINEITEM_AUTO_MAXITEMID do
+	for itemId = 1, 1000 do
+		local itemLink = uespLog.MakeItemLink(itemId, 1, 1)
+		totalCount = totalCount + 1
+			
+		if (uespLog.IsValidItemLink(itemLink)) then
+			 validCount = validCount + 1
+			 
+			if (rangeIdStart < 0) then
+				rangeIdStart = itemId
+			end
+		elseif (rangeIdStart > 0) then
+			uespLog.MineItemsLogValidIdRange(rangeIdStart, itemId-1)
+			rangeIdStart = -1
+		end
+	end
+	
+	if (rangeIdStart > 0) then
+		uespLog.MineItemsLogValidIdRange(rangeIdStart, itemId-1)
+		rangeIdStart = -1
+	end
+	
+	logData = { }
+	logData.event = "mineItems::idCheck::start"
+	logData.validCount = validCount
+	logData.totalCount = totalCount
+	uespLog.AppendDataToLog("all", logData)
+	
+	uespLog.MsgColor(uespLog.mineColor, "UESP::Found "..tostring(validCount).." valid items!")
+end
+
+
+function uespLog.MineItemsLogValidIdRange(startId, endId)
+	local logData = { }
+	
+	logData.event = "mineItems::idCheck"
+	logData.startId = startId
+	logData.endId = endId
+	
+	uespLog.AppendDataToLog("all", logData, extraData)
+end
+
+
 SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 	local cmds = { }
 	
@@ -5102,6 +5160,9 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 	elseif (cmds[1] == "qualitymap") then
 		uespLog.MineItemsQualityMap(1)
 		uespLog.MineItemsQualityMap(50)
+		return
+	elseif (cmds[1] == "idcheck") then
+		uespLog.MineItemsIdCheck()
 		return
 	elseif (cmds[1] == "autostart") then
 		uespLog.mineItemAutoReload = true

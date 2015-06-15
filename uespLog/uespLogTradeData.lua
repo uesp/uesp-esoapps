@@ -44,7 +44,8 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[ITEMSTYLE_ENEMY_DAEDRIC] 		= "uespLog\\images\\styledaedric.dds",		-- Daedra Heart, Daedric, 46151, ITEMSTYLE_ENEMY_DAEDRIC=20, /esoui/art/icons/crafting_walking_dead_mort_heart.dds
 	[ITEMSTYLE_AREA_ANCIENT_ELF] 	= "uespLog\\images\\styleancientelf.dds",	-- Palladium, Ancient Elf, 46152, ITEMSTYLE_AREA_ANCIENT_ELF=15, /esoui/art/icons/crafting_ore_palladuim.dds
 	[ITEMSTYLE_AREA_DWEMER] 	    = "uespLog\\images\\styledwemer.dds",		-- Dwemer Frame, Dwemer, 57587, ITEMSTYLE_AREA_DWEMER=14, /esoui/art/icons/crafting_dwemer_shiny_tube.dds
-	--[ITEMSTYLE_AREA_YOKUDAN] = "", --Yokudan
+	[ITEMSTYLE_AREA_YOKUDAN] 		= "uespLog/images/yicon.dds",
+	[33]					 		= "uespLog/images/aicon.dds", 				-- Akaviri
 }
 
 
@@ -64,7 +65,8 @@ uespLog.STYLE_ICON_DATA = {
 	[ITEMSTYLE_ENEMY_DAEDRIC] 		= "/esoui/art/icons/crafting_walking_dead_mort_heart.dds",
 	[ITEMSTYLE_AREA_ANCIENT_ELF] 	= "/esoui/art/icons/crafting_ore_palladuim.dds",
 	[ITEMSTYLE_AREA_DWEMER] 	    = "/esoui/art/icons/crafting_dwemer_shiny_tube.dds",
-	--[ITEMSTYLE_AREA_YOKUDAN] = "", --Yokudan
+	[ITEMSTYLE_AREA_YOKUDAN] 		= "uespLog/images/yicon.dds",
+	[33]					 		= "uespLog/images/aicon.dds", -- Akaviri
 }
 
 

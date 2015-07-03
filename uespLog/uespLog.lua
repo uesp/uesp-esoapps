@@ -386,6 +386,9 @@ uespLog.ignoredNPCs = {
 	["Winged Twilight"] = 1,
 	["Twilight Matriarch"] = 1,
 	["Volatile Familiar"] = 1,
+	["Thorn Gecko"] = 1,  	--Craglorn
+	["Sandroach"] = 1,  	--Craglorn
+	["Camel"] = 1,  	--Craglorn
 }
 
 uespLog.lastTargetData = {
@@ -466,6 +469,8 @@ uespLog.MINEITEM_LEVELS = {
 	{ 50, 50, 295, 299, "dropped" },
 	{ 50, 50, 308, 312, "crafted" },
 	{ 50, 50, 313, 317, "dropped" },
+	{  1, 50, 319, 319, "novalue" },
+	{ 50, 50, 323, 338, "novalue" },
 }
 
 uespLog.mineItemBadCount = 0
@@ -5073,8 +5078,8 @@ function uespLog.MineItemsIdCheck(note)
 	logData.gameVersion = _VERSION
 	uespLog.AppendDataToLog("all", logData, extraData)
 	
-	--for itemId = 1, uespLog.MINEITEM_AUTO_MAXITEMID do
-	for itemId = 1, 1000 do
+	for itemId = 1, uespLog.MINEITEM_AUTO_MAXITEMID do
+	--for itemId = 1, 1000 do
 		local itemLink = uespLog.MakeItemLink(itemId, 1, 1)
 		totalCount = totalCount + 1
 			

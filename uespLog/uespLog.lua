@@ -5397,6 +5397,7 @@ SLASH_COMMANDS["/uesptest"] = function (cmd)
 	--uespLog.ShowTime(1399133861)   -- 1399133861 = 12:20 3 May 2014, noon in-game
 	--uespLog.DebugMsg("Showing Test Time (midnight)....")
 	--uespLog.ShowTime(1399753920)   -- 1399753920 = 16:35 10 May 2014, should be midnight in game with a wanning crescent moon (0.875)
+	-- Moon Phase ~ Full Moon, TimeStamp = 1435838770, LocalTime = 124897, 2 July 2015 08:11
 	
 	uespLog.DebugMsg("Showing Test Time (12:03)....")
 	uespLog.ShowTime(1399133820)

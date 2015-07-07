@@ -204,6 +204,8 @@
 --			- Added the "/uespmineitems idcheck" command. Simply loops through all IDs and checks
 --			  if it is a valid item or not and outputs a list of valid item ID ranges to the log.
 --			- Added basic icons for Yokudan and Akaviri styles.
+--			- Updated the experience messages. Veteran players will no longer receive the double
+--			  experience debug message.
 --
 
 
@@ -2158,7 +2160,7 @@ function uespLog.GetItemStyleStr(itemStyle)
 	return "Unknown ("..tostring(itemStyle)..")"
 end
 
-uespLog.XPREASONS = {
+uespLog.old_XPREASONS = {
 	[-1] = "none",
 	[0] = "kill",
 	[1] = "quest",
@@ -2187,7 +2189,49 @@ uespLog.XPREASONS = {
 	[24] = "boss kill",
 }
 
-uespLog.VETERANXPREASONS = {
+uespLog.XPREASONS = {
+	[-1] = "none",
+	[PROGRESS_REASON_ACHIEVEMENT] = "achievement",
+	[PROGRESS_REASON_ACTION] = "action",
+	[PROGRESS_REASON_ALLIANCE_POINTS] = "alliance points",
+	[PROGRESS_REASON_AVA] = "AVA",
+	[PROGRESS_REASON_BATTLEGROUND] = "battleground",
+	[PROGRESS_REASON_BOOK_COLLECTION_COMPLETE] = "book collection complete",
+	[PROGRESS_REASON_BOSS_KILL] = "boss kill",
+	[PROGRESS_REASON_COLLECT_BOOK] = "collect book",
+	[PROGRESS_REASON_COMMAND] = "command",
+	[PROGRESS_REASON_COMPLETE_POI] = "complete POI",
+	[PROGRESS_REASON_DARK_ANCHOR_CLOSED] = "dark anchor closed",
+	[PROGRESS_REASON_DARK_FISSURE_CLOSED] = "dark fissure closed",
+	[PROGRESS_REASON_DISCOVER_POI] = "discover POI",
+	[PROGRESS_REASON_DUNGEON_CHALLENGE] = "unknown challenge",
+	[PROGRESS_REASON_EVENT] = "event",
+	[PROGRESS_REASON_FINESSE] = "finesse",
+	[PROGRESS_REASON_GRANT_REPUTATION] = "grant reputation",
+	[PROGRESS_REASON_GUILD_REP] = "guild rep",
+	[PROGRESS_REASON_JUSTICE_SKILL_EVENT] = "justice skill event",
+	[PROGRESS_REASON_KEEP_REWARD] = "keep reward",
+	[PROGRESS_REASON_KILL] = "kill",
+	[PROGRESS_REASON_LOCK_PICK] = "lockpick",
+	[PROGRESS_REASON_MEDAL] = "medal",
+	--[PROGRESS_REASON_NONE] = "none",
+	[PROGRESS_REASON_OTHER] = "other",
+	[PROGRESS_REASON_OVERLAND_BOSS_KILL] = "boss kill",
+	[PROGRESS_REASON_PVP_EMPEROR] = "PVP emperor",
+	[PROGRESS_REASON_QUEST] = "quest",
+	[PROGRESS_REASON_REWARD] = "reward",
+	[PROGRESS_REASON_SCRIPTED_EVENT] = "scripted event",
+	[PROGRESS_REASON_SKILL_BOOK] = "skill book",
+	[PROGRESS_REASON_TRADESKILL] = "tradeskill",
+	[PROGRESS_REASON_TRADESKILL_ACHIEVEMENT] = "tradeskill achievement",
+	[PROGRESS_REASON_TRADESKILL_CONSUME] = "tradeskill consume",
+	[PROGRESS_REASON_TRADESKILL_HARVEST] = "harvest",
+	[PROGRESS_REASON_TRADESKILL_QUEST] = "tradeskill quest",
+	[PROGRESS_REASON_TRADESKILL_RECIPE] = "recipe",
+	[PROGRESS_REASON_TRADESKILL_TRAIT] = "tradeskill trait",
+}
+
+uespLog.old_VETERANXPREASONS = {
 	[-1] = "none",
 	[0] = "complete poi",
 	[1] = "alliance points",
@@ -2204,6 +2248,8 @@ uespLog.VETERANXPREASONS = {
 	[12] = "quest high",
 	[13] = "boss kill",
 }
+
+uespLog.VETERANXPREASONS = uespLog.XPREASONS
 
 
 function uespLog.GetXPReasonStr(reason)
@@ -2243,7 +2289,9 @@ function uespLog.OnExperienceUpdate (eventCode, unitTag, currentExp, maxExp, rea
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugLogMsgColor(uespLog.xpColor, "Gained "..tostring(logData.xpGained).." xp for "..uespLog.GetXPReasonStr(reason))
+	if (unitTag == "player" and GetUnitVeteranRank(unitTag) <= 0) then
+		uespLog.DebugLogMsgColor(uespLog.xpColor, "Gained "..tostring(logData.xpGained).." xp for "..uespLog.GetXPReasonStr(reason))
+	end
 end
 
 

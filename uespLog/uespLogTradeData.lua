@@ -19,6 +19,9 @@ uespLog.TRADE_ORNATE_COLOR = { 1, 1, 0.25 }
 uespLog.TRADE_INTRICATE_COLOR = { 0, 1, 1 }
 uespLog.TRADE_STYLE_COLOR = { 1, 0.75, 0.25 }
 
+uespLog.ORNATE_TRAIT_INDEX = 20
+uespLog.INTRICATE_TRAIT_INDEX = 21
+
 uespLog.TRADE_UNKNOWN_TEXTURE = "uespLog\\images\\unknown.dds"
 uespLog.TRADE_KNOWN_TEXTURE = "uespLog\\images\\known.dds"
 uespLog.TRADE_ORNATE_TEXTURE = "/esoui/art/tradinghouse/tradinghouse_sell_tabicon_disabled.dds"
@@ -437,14 +440,14 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 	itemText = ""
 	iconColor = uespLog.TRADE_KNOWN_COLOR
 	
-	if (isResearchable == 9) then
+	if (isResearchable == uespLog.ORNATE_TRAIT_INDEX) then
 		--iconControl:SetHidden(false)		
 		--iconControl:SetTexture(uespLog.TRADE_ORNATE_TEXTURE)
 		--iconControl:SetColor(unpack(uespLog.TRADE_UNKNOWN_COLOR))
 		--iconControl:SetColor(unpack(uespLog.TRADE_ORNATE_COLOR))
 		itemText = "Ornate"
 		iconColor = uespLog.TRADE_ORNATE_COLOR
-	elseif (isResearchable == 10) then
+	elseif (isResearchable == uespLog.INTRICATE_TRAIT_INDEX) then
 		--iconControl:SetHidden(false)		
 		--iconControl:SetTexture(uespLog.TRADE_INTRICATE_TEXTURE)
 		--iconControl:SetColor(unpack(uespLog.TRADE_INTRICATE_COLOR))
@@ -599,12 +602,12 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 
 	if (uespLog.IsCraftTraitDisplay() and uespLog.IsCraftDisplay()) then
 	
-		if (isResearchable == 9) then
+		if (isResearchable == uespLog.ORNATE_TRAIT_INDEX) then
 			iconControl:SetHidden(false)		
 			iconControl:SetTexture(uespLog.TRADE_ORNATE_TEXTURE)
 			iconControl:SetColor(unpack(uespLog.TRADE_UNKNOWN_COLOR))
 			iconControl:SetColor(unpack(uespLog.TRADE_ORNATE_COLOR))
-		elseif (isResearchable == 10) then
+		elseif (isResearchable == uespLog.INTRICATE_TRAIT_INDEX) then
 			iconControl:SetHidden(false)		
 			iconControl:SetTexture(uespLog.TRADE_INTRICATE_TEXTURE)
 			iconControl:SetColor(unpack(uespLog.TRADE_INTRICATE_COLOR))
@@ -634,9 +637,9 @@ function uespLog.CheckIsItemLinkResearchable(itemLink)
 	local traitIndex = traitType
 
 	if (traitIndex == ITEM_TRAIT_TYPE_ARMOR_ORNATE or traitIndex == ITEM_TRAIT_TYPE_WEAPON_ORNATE or traitIndex == ITEM_TRAIT_TYPE_JEWELRY_ORNATE) then
-		return 9
+		return uespLog.ORNATE_TRAIT_INDEX
 	elseif (traitIndex == ITEM_TRAIT_TYPE_ARMOR_INTRICATE or traitIndex == ITEM_TRAIT_TYPE_WEAPON_INTRICATE or traitIndex == ITEM_TRAIT_TYPE_JEWELRY_INTRICATE) then
-		return 10
+		return uespLog.INTRICATE_TRAIT_INDEX
 	end
 	
 	if (traitIndex <= 0) then
@@ -650,12 +653,16 @@ function uespLog.CheckIsItemLinkResearchable(itemLink)
 	end
 
 	--this used to be "if(itemType == ITEMTYPE_ARMOR)", but shields are not armor even though they are armor
-	if (traitIndex > 10) then
+	if (traitIndex == 25) then
+		traitIndex = 9
+	elseif (traitIndex == 26) then
+		traitIndex = 9
+	elseif (traitIndex > 10) then
 		traitIndex = traitIndex - 10;
 	end
 
-	if (not (traitIndex >= 1 and traitIndex <= 8)) then
-		--uespLog.DebugMsg("        -4:"..tostring(traitIndex))
+	if (not (traitIndex >= 1 and traitIndex <= 9)) then
+		uespLog.DebugMsg("        -4:"..tostring(traitIndex))
 		return -4
 	end
 	
@@ -680,12 +687,16 @@ function uespLog.CheckIsItemResearchable(bagId, slotIndex)
 	local traitIndex = traitType
 
 	if (traitIndex == ITEM_TRAIT_TYPE_ARMOR_ORNATE or traitIndex == ITEM_TRAIT_TYPE_WEAPON_ORNATE or traitIndex == ITEM_TRAIT_TYPE_JEWELRY_ORNATE) then
-		return 9
+		return uespLog.ORNATE_TRAIT_INDEX
 	elseif (traitIndex == ITEM_TRAIT_TYPE_ARMOR_INTRICATE or traitIndex == ITEM_TRAIT_TYPE_WEAPON_INTRICATE or traitIndex == ITEM_TRAIT_TYPE_JEWELRY_INTRICATE) then
-		return 10
+		return uespLog.INTRICATE_TRAIT_INDEX
 	end
 	
-	if (traitIndex <= 0) then
+	if (traitIndex == 25) then
+		traitIndex = 9
+	elseif (traitIndex == 26) then
+		traitIndex = 9
+	elseif (traitIndex <= 0) then
 		return -1
 	end
 
@@ -700,7 +711,8 @@ function uespLog.CheckIsItemResearchable(bagId, slotIndex)
 		traitIndex = traitIndex - 10;
 	end
 
-	if (not (traitIndex >= 1 and traitIndex <= 8)) then
+	if (not (traitIndex >= 1 and traitIndex <= 9)) then
+		uespLog.DebugMsg("        -4b: "..tostring(traitIndex))
 		return -4
 	end
 
@@ -1443,12 +1455,12 @@ function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
 
 	if (isResearchable >= 0 and uespLog.IsCraftTraitDisplay() and uespLog.IsCraftDisplay()) then
 	
-		if (isResearchable == 9) then
+		if (isResearchable == uespLog.ORNATE_TRAIT_INDEX) then
 			iconControl:SetHidden(false)		
 			iconControl:SetTexture(uespLog.TRADE_ORNATE_TEXTURE)
 			iconControl:SetColor(unpack(uespLog.TRADE_UNKNOWN_COLOR))
 			iconControl:SetColor(unpack(uespLog.TRADE_ORNATE_COLOR))
-		elseif (isResearchable == 10) then
+		elseif (isResearchable == uespLog.INTRICATE_TRAIT_INDEX) then
 			iconControl:SetHidden(false)		
 			iconControl:SetTexture(uespLog.TRADE_INTRICATE_TEXTURE)
 			iconControl:SetColor(unpack(uespLog.TRADE_INTRICATE_COLOR))

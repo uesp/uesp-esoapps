@@ -240,13 +240,13 @@ end
 
 
 function uespLog.OnStableInteractStart()
-	uespLog.DebugExtraMsg("OnStableInteractStart")
+	--uespLog.DebugExtraMsg("OnStableInteractStart")
 	uespLog.isStableInteract = true
 end
 
 
 function uespLog.OnStableInteractEnd()
-	uespLog.DebugExtraMsg("OnStableInteractEnd")
+	--uespLog.DebugExtraMsg("OnStableInteractEnd")
 	uespLog.isStableInteract = false
 end
 
@@ -331,7 +331,7 @@ function uespLog.AddCraftDetailsToToolTipRow (row)
 	if (uespLog.isStableInteract) then
 		return false
 	end
-
+		
 	if (row.dataEntry == nil and row.bagId == nil) then
 		return false 
 	elseif (row.dataEntry ~= nil and (row.dataEntry.data == nil or uespLog.tradeRowClicked == row)) then
@@ -367,19 +367,23 @@ function uespLog.AddCraftDetailsToToolTipRow (row)
 		bagId = row.bagId
 		slotIndex = row.itemIndex
 	end
-
+	
 	local itemLink = nil
 	
 	if (slotIndex and bagId) then
 		itemLink = GetItemLink(bagId, slotIndex)
 	elseif (slotIndex) then
-		itemLink = GetTradingHouseSearchResultItemLink(slotIndex)
+		if (GetNumTradingHouseListings() > 0) then
+			itemLink = GetTradingHouseSearchResultItemLink(slotIndex)
+		else
+			return false
+		end
 	elseif (bagId) then
 		itemLink = GetLootItemLink(bagId)
 	else
 		return false
 	end
-	
+			
 	return uespLog.AddCraftDetailsToToolTip(ItemTooltip, itemLink, bagId, slotIndex)
 end
 
@@ -393,7 +397,7 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 	if (uespLog.isStableInteract) then
 		return false
 	end
-		
+			
 	local itemId = uespLog.GetItemLinkID(itemLink)
 	local tradeType = uespLog.GetItemTradeType(itemId)
 	local iconTexture, iconColor = uespLog.GetTradeIconTexture(itemId, itemLink)
@@ -402,14 +406,14 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 	local addedBlankLine = false
 	local itemType = GetItemLinkItemType(itemLink)
 	local itemText = ""
-			
+				
 	if (itemStyleIcon ~= nil and (itemType == 1 or itemType == 2) and uespLog.IsCraftStyleDisplay()) then
 		color1, color2, color3 = unpack(uespLog.TRADE_STYLE_COLOR)
 		ThisToolTip:AddLine("", "ZoFontWinH5", color1, color2, color3, BOTTOM, MODIFY_TEXT_TYPE_NONE)
-		ThisToolTip:AddLine("Item Style: "..itemStyleText, "ZoFontWinH4", color1, color2, color3, BOTTOM, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_CENTER)
+		ThisToolTip:AddLine("Item Style: "..tostring(itemStyleText), "ZoFontWinH4", color1, color2, color3, BOTTOM, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_CENTER)
 		addedBlankLine = true
 	end
-		
+	
 	if (iconTexture ~= nil and tradeType ~= nil) then
 	
 		if (uespLog.IsCraftIngredientDisplay()) then
@@ -426,13 +430,8 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 		
 		return false
 	end
-		
-	if (slotIndex == nil) then
-		return false
-	end
-	
+
 	local isResearchable = uespLog.CheckIsItemLinkResearchable(itemLink)
-	--local isResearchable = uespLog.CheckIsItemResearchable(bagId, slotIndex)
 	
 	if (isResearchable < 0) then
 		return false
@@ -514,7 +513,6 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 	end
 	
 	if (uespLog.isStableInteract) then
-		uespLog.DebugExtraMsg("AddCraftInfoToInventorySlot() -- Ignoring due to horse interact mode")
 		return
 	end
 	
@@ -1426,6 +1424,11 @@ end
 
 
 function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
+
+	if (GetNumTradingHouseListings() > 0) then
+		return
+	end
+	
 	local iconControl = uespLog.GetIconControl(rowControl)
 	local styleIconControl = uespLog.GetStyleIconControl(rowControl)
 	local slotIndex = result.slotIndex

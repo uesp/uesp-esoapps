@@ -207,6 +207,8 @@
 --			- Updated the experience messages. Veteran players will no longer receive the double
 --			  experience debug message.
 --			- Fixed game crash bug when trying to buy a horse.
+--			- Gold stolen from safeboxes will now be displayed.
+--			- Shortened the log message displayed in the chat window.
 --
 
 
@@ -721,7 +723,7 @@ function uespLog.DebugLogMsg(text)
 		if (not uespLog.IsLogData()) then 
 			text = "UESP::Ignored " .. text
 		else
-			text = "UESP::Logged " .. text
+			text = "UESP::" .. text
 		end
 		
 		d(text)
@@ -737,7 +739,7 @@ function uespLog.DebugLogMsgColor(Color, text)
 		if (not uespLog.IsLogData()) then 
 			text = "UESP::Ignored " .. text
 		else
-			text = "UESP::Logged " .. text
+			text = "UESP::" .. text
 		end
 		
 		if (uespLog.IsColor()) then
@@ -1141,6 +1143,10 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_MAIL_TAKE_ATTACHED_ITEM_SUCCESS, uespLog.OnMailMessageTakeAttachedItem)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_MAIL_READABLE, uespLog.OnMailMessageReadable)
 	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_JUSTICE_GOLD_PICKPOCKETED, uespLog.OnGoldPickpocketed)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_JUSTICE_GOLD_REMOVED, uespLog.OnGoldRemoved)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_JUSTICE_ITEM_PICKPOCKETED, uespLog.OnItemPickpocketed)
+		
 	uespLog.lastPlayerHP = GetUnitPower("player", POWERTYPE_HEALTH)
 	uespLog.lastPlayerMG = GetUnitPower("player", POWERTYPE_MAGICKA)
 	uespLog.lastPlayerST = GetUnitPower("player", POWERTYPE_STAMINA)
@@ -2421,6 +2427,14 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 
 		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData())
 		uespLog.DebugLogMsgColor(uespLog.itemColor, "quest reward "..tostring(uespLog.lastMoneyChange).." gold")
+		
+		-- 62 = Stolen
+	elseif (reason == 62) then
+		logData.event = "Stolen"
+		logData.qnt = uespLog.lastMoneyChange
+
+		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData())
+		uespLog.DebugLogMsgColor(uespLog.itemColor, "You stole "..tostring(uespLog.lastMoneyChange).." gold")
 	else
 		uespLog.DebugExtraMsg("UESP::Money Change, New="..tostring(newMoney)..",  Old="..tostring(oldMoney)..",  Diff="..tostring(uespLog.lastMoneyChange)..",  Reason="..tostring(reason))
 	end	
@@ -2432,6 +2446,7 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 	local logData = { }
 	local posData = uespLog.GetLastTargetData()
 	local msgType = "item"
+	local rcvType = "looted"
 	--local itemText, itemColor, itemData, niceName, niceLink = uespLog.ParseLink(itemLink)
 	local icon, sellPrice, meetsUsageRequirement, equipType, itemStyle = GetItemLinkInfo(itemLink)
 	local itemText, itemColor, itemId, itemLevel, itemData, niceName, niceLink = uespLog.ParseLinkID(itemLink)
@@ -2448,10 +2463,15 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 		msgType = "quest item"
 	end
 	
+	if (isPickPocket) then
+		rcvType = "pickpocketed"
+	end
+	
 	logData.event = "LootGained"
 	logData.itemLink = itemLink
 	logData.qnt = quantity
 	logData.lootType = lootType
+	logData.rvcType = rcvType
 	
 	if (posData.x == nil or posData.x == "") then
 		posData = uespLog.GetPlayerPositionData()
@@ -2465,13 +2485,13 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 			uespLog.DebugMsgColor(uespLog.itemColor, "UESP::Skipped looting "..niceLink.." (x"..tostring(quantity)..") (prov level "..tostring(extraLogData.tradeType)..")")
 		else
 			--uespLog.DebugLogMsgColor(uespLog.itemColor, "You looted "..msgType.." "..niceLink.." (x"..tostring(quantity)..") (level "..tostring(itemLevel)..", "..itemStyleStr..")")
-			uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You looted "..msgType.." "..niceLink.." (x"..tostring(quantity)..")")
+			uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You "..rcvType.." "..msgType.." "..niceLink.." (x"..tostring(quantity)..")")
 		end
 		
-		local money = GetLootMoney()
-		uespLog.DebugExtraMsg("UESP::LootMoney = "..tostring(money))
+		local money, stolenMoney = GetLootMoney()
+		uespLog.DebugExtraMsg("UESP::LootMoney = "..tostring(money)..", stolen = "..tostring(stolenMoney))
 	else
-		uespLog.DebugMsgColor(uespLog.itemColor, "UESP::Someone looted "..msgType.." "..niceLink.." (x"..tostring(quantity)..")")
+		uespLog.DebugMsgColor(uespLog.itemColor, "UESP::Someone "..rcvType.." "..msgType.." "..niceLink.." (x"..tostring(quantity)..")")
 	end
 	
 end
@@ -5902,7 +5922,25 @@ function uespLog.DumpItems()
 end
 
 
+function uespLog.OnGoldPickpocketed(eventCode, goldAmount)
+	uespLog.DebugExtraMsg("Pickpocketed "..tostring(goldAmount).." gold")
+end
 
+
+function uespLog.OnGoldRemoved(eventCode, goldAmount)
+	uespLog.DebugExtraMsg("Justice: Removed "..tostring(goldAmount).." gold")
+end
+
+
+function uespLog.OnItemPickpocketed (eventCode, itemName, itemCount)
+
+	if (itemCount == 1) then
+		uespLog.DebugExtraMsg("Pickpocketed "..tostring(itemName))
+	else
+		uespLog.DebugExtraMsg("Pickpocketed "..tostring(itemName).." (x"..tostring(itemCount)..")")
+	end
+	
+end
 
 
 

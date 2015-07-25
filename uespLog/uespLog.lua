@@ -206,6 +206,7 @@
 --			- Added basic icons for Yokudan and Akaviri styles.
 --			- Updated the experience messages. Veteran players will no longer receive the double
 --			  experience debug message.
+--			- Fixed game crash bug when trying to buy a horse.
 --
 
 

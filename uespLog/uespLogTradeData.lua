@@ -7,6 +7,7 @@ uespLog.styleIconControls = { }
 uespLog.tradeRowClicked = nil
 uespLog.equippedRowClicked = nil
 uespLog.lastPopupLink = nil
+uespLog.isStableInteract = false
 
 uespLog.TRADE_NORMAL_COLOR = { 1, 1, 1 }
 uespLog.TRADE_FINE_COLOR = { 0.18, 0.78, 0.02 }
@@ -193,6 +194,9 @@ end
 
 
 function uespLog.SetupInventoryHooks()
+	EVENT_MANAGER:RegisterForEvent("uespLog", EVENT_STABLE_INTERACT_START, uespLog.OnStableInteractStart)
+    EVENT_MANAGER:RegisterForEvent("uespLog", EVENT_STABLE_INTERACT_END, uespLog.OnStableInteractEnd)
+	
 	uespLog.SetupInventoryListHooks(PLAYER_INVENTORY.inventories[1].listView, {GetItemLink, "bagId", "slotIndex"})
 	uespLog.SetupInventoryListHooks(PLAYER_INVENTORY.inventories[3].listView, {GetItemLink, "bagId", "slotIndex"})
 	uespLog.SetupInventoryListHooks(PLAYER_INVENTORY.inventories[4].listView, {GetItemLink, "bagId", "slotIndex"})
@@ -232,10 +236,32 @@ function uespLog.SetupInventoryHooks()
 end
 
 
+function uespLog.OnStableInteractStart()
+	uespLog.DebugExtraMsg("OnStableInteractStart")
+	uespLog.isStableInteract = true
+end
+
+
+function uespLog.OnStableInteractEnd()
+	uespLog.DebugExtraMsg("OnStableInteractEnd")
+	uespLog.isStableInteract = false
+end
+
+
 function uespLog.UpdateInventoryContextMenuHook(rowControl) 
-	local controlName = rowControl:GetName()
+	local controlName = ""
 	local parentName = ""
 	local parentName2 = ""
+	
+	if (rowControl == nil) then
+		return
+	end
+	
+	controlName = rowControl:GetName()
+	
+	if (controlName == nil) then
+		return
+	end
 	
 	if (rowControl:GetParent() ~= nil) then
 		parentName = rowControl:GetParent():GetName()
@@ -244,6 +270,8 @@ function uespLog.UpdateInventoryContextMenuHook(rowControl)
 			parentName2 = rowControl:GetParent():GetParent():GetName()
 		end
 	end
+	
+	--uespLog.DebugExtraMsg("parentName::"..parentName..",  parentName2::"..parentName2)
 
 	if (parentName2 == "ZO_SmithingTopLevelResearchPanelResearchLineListList") then
 		-- Skip this
@@ -293,7 +321,11 @@ end
 
 function uespLog.AddCraftDetailsToToolTipRow (row)	
 
-	if (not uespLog.IsCraftDisplay()) then
+	if (not uespLog.IsCraftDisplay()) or row == nil then
+		return false
+	end
+	
+	if (uespLog.isStableInteract) then
 		return false
 	end
 
@@ -351,7 +383,11 @@ end
 
 function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotIndex)	
 	
-	if (itemLink == nil) then
+	if (itemLink == nil or ThisToolTip == nil) then
+		return false
+	end
+	
+	if (uespLog.isStableInteract) then
 		return false
 	end
 	
@@ -468,6 +504,15 @@ end
 function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 	--local bagId list.dataEntry.data.bagId
 	--local slotIndex = list.dataEntry.data.slotIndex
+	
+	if (rowControl == nil or hookData == nil or list == nil) then
+		return
+	end
+	
+	if (uespLog.isStableInteract) then
+		uespLog.DebugExtraMsg("AddCraftInfoToInventorySlot() -- Ignoring due to horse interact mode")
+		return
+	end
 	
 	local GetItemLinkFunc = hookData[1]	
     local slot = rowControl.dataEntry.data

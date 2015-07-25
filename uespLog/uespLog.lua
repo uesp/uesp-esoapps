@@ -207,6 +207,7 @@
 --			- Updated the experience messages. Veteran players will no longer receive the double
 --			  experience debug message.
 --			- Fixed game crash bug when trying to buy a horse.
+--			- Fixed a game crash bug when using a quartermaster in Cyrodiil.
 --			- Gold stolen from safeboxes will now be displayed.
 --			- Shortened the log message displayed in the chat window.
 --			- Fixed the trait known/unknown display for nirnhoned items.

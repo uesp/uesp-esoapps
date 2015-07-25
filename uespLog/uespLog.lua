@@ -209,6 +209,7 @@
 --			- Fixed game crash bug when trying to buy a horse.
 --			- Gold stolen from safeboxes will now be displayed.
 --			- Shortened the log message displayed in the chat window.
+--			- Fixed the trait known/unknown display for nirnhoned items.
 --
 
 

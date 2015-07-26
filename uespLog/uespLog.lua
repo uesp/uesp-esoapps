@@ -209,7 +209,7 @@
 --			- Fixed game crash bug when trying to buy a horse.
 --			- Fixed a game crash bug when using a quartermaster in Cyrodiil.
 --			- Gold stolen from safeboxes will now be displayed.
---			- Shortened the log message displayed in the chat window.
+--			- Shortened/tweaked the log message displayed in the chat window.
 --			- Fixed the trait known/unknown display for nirnhoned items.
 --
 
@@ -1907,7 +1907,7 @@ function uespLog.OnBeginLockPick (eventCode)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugLogMsg("lock of quality "..tostring(logData.quality))
+	uespLog.DebugLogMsg("Lock of quality "..tostring(logData.quality))
 end
 
 
@@ -1921,7 +1921,7 @@ function uespLog.OnShowBook (eventCode, bookTitle, body, medium, showTitle)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugLogMsg("book "..bookTitle)
+	uespLog.DebugLogMsg("Book "..bookTitle)
 end
 
 
@@ -1934,7 +1934,7 @@ function uespLog.OnLoreBookAlreadyKnown (eventCode, bookTitle)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugLogMsg("lore book "..bookTitle.." (already known)")
+	uespLog.DebugLogMsg("Lore book "..bookTitle.." (already known)")
 end
 
 
@@ -1953,7 +1953,7 @@ function uespLog.OnLoreBookLearned (eventCode, categoryIndex, collectionIndex, b
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 		 
-	uespLog.DebugLogMsg("lore book "..bookTitle.." (guild "..tostring(guildIndex)..")")
+	uespLog.DebugLogMsg("Lore book "..bookTitle.." (guild "..tostring(guildIndex)..")")
 end
 
 
@@ -1969,7 +1969,7 @@ function uespLog.OnSkillRankUpdate (eventCode, skillType, skillIndex, rank)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 		 
-	uespLog.DebugLogMsg("skill rank update for "..name)
+	uespLog.DebugLogMsg("Skill rank update for "..name)
 end
 
 
@@ -1996,7 +1996,7 @@ function uespLog.OnBuyReceipt (eventCode, itemLink, entryType, entryQuantity, mo
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugLogMsgColor(uespLog.itemColor, "buy receipt for "..niceLink.."")
+	uespLog.DebugLogMsgColor(uespLog.itemColor, "Bought "..niceLink.."")
 end
 
 
@@ -2011,7 +2011,7 @@ function uespLog.OnSellReceipt (eventCode, itemLink, itemQuantity, money)
 
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugLogMsgColor(uespLog.itemColor, "sell receipt for "..niceLink.."")
+	uespLog.DebugLogMsgColor(uespLog.itemColor, "Sold "..niceLink.."")
 end
 
 
@@ -2024,7 +2024,7 @@ function uespLog.OnQuestAdded (eventCode, journalIndex, questName, objectiveName
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugLogMsg("quest added "..questName.."::"..objectiveName)
+	uespLog.DebugLogMsg("Quest added "..questName.."::"..objectiveName)
 end
 
 
@@ -2039,7 +2039,7 @@ function uespLog.OnQuestRemoved (eventCode, isCompleted, questIndex, questName, 
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 
-	uespLog.DebugLogMsg("quest removed "..questName)
+	uespLog.DebugLogMsg("Quest removed "..questName)
 end
 
 
@@ -2053,7 +2053,7 @@ function uespLog.OnQuestObjectiveCompleted (eventCode, zoneIndex, poiIndex, xpGa
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	
-	uespLog.DebugLogMsg("objective completed")
+	uespLog.DebugLogMsg("Objective completed")
 end
 
 
@@ -2075,7 +2075,7 @@ function uespLog.OnQuestCounterChanged (eventCode, journalIndex, questName, cond
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
  
-	uespLog.DebugLogMsg("change in quest "..questName.."::"..conditionText)
+	uespLog.DebugLogMsg("Change in quest "..questName.."::"..conditionText)
 end
 
 
@@ -2088,7 +2088,7 @@ function uespLog.OnQuestCompleteExperience (eventCode, questName, xpGained)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugLogMsg(questName.." complete.")
+	uespLog.DebugLogMsg("Finished "..questName)
 end
 
 
@@ -2359,7 +2359,7 @@ function uespLog.OnSkillPointsChanged (eventCode, pointsBefore, pointsNow, isSky
 		
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugLogMsg("skill points changed (".. tostring(logData.points) ..")")
+	uespLog.DebugLogMsg("Skill points changed (".. tostring(logData.points) ..")")
 end
 
 
@@ -2376,7 +2376,7 @@ function uespLog.OnQuestOptionalStepAdvanced (eventCode, text)
 
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugLogMsg("quest optional step advanced ("..text..")")
+	uespLog.DebugLogMsg("Quest optional step advanced ("..text..")")
 end
 
 
@@ -2391,7 +2391,7 @@ function uespLog.OnQuestAdvanced (eventCode, journalIndex, questName, isPushed, 
 
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugLogMsg("quest advanced "..questName)
+	uespLog.DebugLogMsg("Quest advanced "..questName)
 end
 
 
@@ -2399,7 +2399,7 @@ function uespLog.OnRecipeLearned (eventCode, recipeListIndex, recipeIndex)
 	uespLog.DumpRecipe(recipeListIndex, recipeIndex,  uespLog.GetTimeData())
 	
 	local known, recipeName = GetRecipeInfo(recipeListIndex, recipeIndex)
-	uespLog.DebugLogMsg("new recipe " .. recipeName)
+	uespLog.DebugLogMsg("New recipe " .. recipeName)
 end
 
 
@@ -2428,7 +2428,7 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 		logData.qnt = uespLog.lastMoneyChange
 
 		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData())
-		uespLog.DebugLogMsgColor(uespLog.itemColor, "quest reward "..tostring(uespLog.lastMoneyChange).." gold")
+		uespLog.DebugLogMsgColor(uespLog.itemColor, "Quest reward "..tostring(uespLog.lastMoneyChange).." gold")
 		
 		-- 62 = Stolen
 	elseif (reason == 62) then
@@ -2513,7 +2513,7 @@ function uespLog.OnCraftCompleted (eventCode, craftSkill)
 	
 	uespLog.AddTotalInspiration(inspiration)
 	
-	uespLog.DebugLogMsg("craft completed with "..tostring(inspiration).." xp ("..tostring(uespLog.GetTotalInspiration()).." since last reset)")
+	uespLog.DebugLogMsg("Craft completed with "..tostring(inspiration).." xp ("..tostring(uespLog.GetTotalInspiration()).." since last reset)")
 	
     for i = 1, numItemsGained do
 		local itemName, icon, stack, sellPrice, meetsUsageRequirement, equipType, itemType, itemStyle, quality, itemSoundCategory, itemInstanceId = GetLastCraftingResultItemInfo(i)
@@ -2536,7 +2536,7 @@ function uespLog.OnCraftCompleted (eventCode, craftSkill)
 		
 		local itemText, itemColor, itemData, niceName, niceLink = uespLog.ParseLink(itemLink)
 	
-		uespLog.DebugLogMsgColor(uespLog.itemColor, "crafted item ".. tostring(niceLink) .." (x"..tostring(stack)..")")
+		uespLog.DebugLogMsgColor(uespLog.itemColor, "Crafted item ".. tostring(niceLink) .." (x"..tostring(stack)..")")
 	end
 	
 	if (numItemsGained == 0) then
@@ -2553,7 +2553,7 @@ function uespLog.OnInventoryItemUsed (eventCode, itemSoundCategory)
 		logData.event = "OpenFootLocker"
 		logData.sound = itemSoundCategory
 		uespLog.AppendDataToLog("all", logData)
-		uespLog.DebugLogMsg("footlocker opened")
+		uespLog.DebugLogMsg("Footlocker opened")
 		return
 	end
 	
@@ -2650,7 +2650,7 @@ function uespLog.OnTargetChange (eventCode)
 		
 		uespLog.AppendDataToLog("all", logData, uespLog.GetLastTargetData(), uespLog.GetTimeData())
 		
-		uespLog.DebugLogMsg("npc "..name)
+		uespLog.DebugLogMsg("Npc "..name)
 	elseif (unitType ~= 0) then
 		uespLog.lastTargetData.level = ""
 		uespLog.lastTargetData.race = ""
@@ -2731,7 +2731,7 @@ function uespLog.OnFoundSkyshard ()
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetCurrentTargetData(), uespLog.GetTimeData())
 	
-	uespLog.DebugLogMsg("skyshard data...")
+	uespLog.DebugLogMsg("Found skyshard")
 end
 
 
@@ -2743,7 +2743,7 @@ function uespLog.OnFoundTreasure (name)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetCurrentTargetData(), uespLog.GetTimeData())
 	
-	uespLog.DebugLogMsg("treasure found ("..tostring(name)..")")
+	uespLog.DebugLogMsg("Found "..tostring(name))
 end
 
 
@@ -2754,7 +2754,7 @@ function uespLog.OnFoundFish ()
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetCurrentTargetData(), uespLog.GetTimeData())
 	
-	uespLog.DebugLogMsg("fishing hole data...")
+	uespLog.DebugLogMsg("Found fishing hole")
 end
 
 
@@ -5378,6 +5378,20 @@ uespLog.GetCraftingName = function (craftingType)
 	if (craftingType == CRAFTING_TYPE_WOODWORKING) then return "Woodworking" end
 	
 	return "Unknown"
+end
+
+
+uespLog.GetShortCraftingName = function (craftingType)
+
+	if (craftingType == CRAFTING_TYPE_ALCHEMY) then return "AL" end
+	if (craftingType == CRAFTING_TYPE_BLACKSMITHING) then return "BS" end
+	if (craftingType == CRAFTING_TYPE_CLOTHIER) then return "CL" end
+	if (craftingType == CRAFTING_TYPE_ENCHANTING) then return "EN" end
+	if (craftingType == CRAFTING_TYPE_INVALID) then return "IN" end
+	if (craftingType == CRAFTING_TYPE_PROVISIONING) then return "PV" end
+	if (craftingType == CRAFTING_TYPE_WOODWORKING) then return "WW" end
+	
+	return "??"
 end
 
 

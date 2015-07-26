@@ -1,5 +1,5 @@
 --[[descriptionData = {
-	type = "description",
+	type = "uespdescription",
 	title = "My Title",	--(optional)
 	text = "My description text to display.",
 	width = "full",	--or "half" (optional)
@@ -9,11 +9,10 @@
 
 local widgetVersion = 5
 local LAM = LibStub("LibAddonMenu-2.0")
-if not LAM:RegisterWidget("description", widgetVersion) then return end
+LAM:RegisterWidget("uespdescription", widgetVersion)
 
 local wm = WINDOW_MANAGER
 local tinsert = table.insert
-
 
 local function UpdateValue(control)
 	if control.title then
@@ -28,8 +27,7 @@ local function UpdateValue(control)
 	end
 end
 
-
-function LAMCreateControl.description(parent, descriptionData, controlName)
+function LAMCreateControl.uespdescription(parent, descriptionData, controlName)
 	local control = wm:CreateControl(controlName or descriptionData.reference, parent.scroll or parent, CT_CONTROL)
 	control:SetResizeToFitDescendents(true)
 	local isHalfWidth = descriptionData.width == "half"

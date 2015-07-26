@@ -1891,7 +1891,7 @@ function uespLog.OnChatterBegin (eventCode, optionCount)
 		uespLog.AppendDataToLog("all", logData)
 	end
 	
-	uespLog.DebugLogMsg("chatter begin...")
+	uespLog.DebugExtraMsg("UESP::Chatter begin...")
 	
 		-- Manually call the original function to update the chat window
 	INTERACTION:InitializeInteractWindow(ChatterGreeting)

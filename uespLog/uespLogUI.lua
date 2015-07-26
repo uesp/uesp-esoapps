@@ -28,6 +28,7 @@ uespLog.optionControlsData = { }
 
 
 function uespLog.InitSettingsMenu()
+	LAM2:RegisterWidget("uespdescription", 5)
 	uespLog.InitOptionControlsData()
 
 	LAM2:RegisterAddonPanel(uespLog.SETTINGS_MENU_NAME, uespLog.settingsPanelData)
@@ -140,26 +141,32 @@ function uespLog.InitOptionControlsData()
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 		getFunc = function() return uespLog.GetSettingsCraftInfoText() end,
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
+		title = "",
+		text = "",
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
@@ -170,20 +177,20 @@ function uespLog.InitOptionControlsData()
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 		getFunc = function() return uespLog.GetSettingsStatisticText() end,
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
@@ -194,20 +201,20 @@ function uespLog.InitOptionControlsData()
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 		getFunc = function() return uespLog.GetSettingsTimeText() end,
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
@@ -218,116 +225,116 @@ function uespLog.InitOptionControlsData()
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 		getFunc = function() return uespLog.GetCharInfoText() end,
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
 		
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
 
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
 
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "description",
+		type = "uespdescription",
 		title = "",
 		text = "",
 	})
@@ -425,7 +432,7 @@ end
 
 
 function uespLog.GetSettingsResearchInfoCraftText(craftingType)
-	local TradeskillName = uespLog.GetCraftingName(craftingType)
+	local TradeskillName = uespLog.GetShortCraftingName(craftingType)
 	local numLines = GetNumSmithingResearchLines(craftingType)
 	local maxSimultaneousResearch = GetMaxSimultaneousSmithingResearch(craftingType)
 	local researchCount = 0
@@ -459,7 +466,7 @@ function uespLog.GetSettingsResearchInfoCraftText(craftingType)
 					timeFmt = string.format("%02d:%02d:%02d", hours, minutes, seconds)
 				end
 				
-				OutputText = OutputText .. "     " .. tostring(TradeskillName) .. " " .. tostring(name) .. " (" .. tostring(traitName) .. ") has " .. tostring(timeFmt) .. " left.\n"
+				OutputText = OutputText .. "     " .. tostring(TradeskillName) .. " " .. tostring(name) .. "::" .. tostring(traitName) .. ": " .. tostring(timeFmt) .. " left.\n"
 				researchCount = researchCount + 1
 			end
 		end

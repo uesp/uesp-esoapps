@@ -28,3 +28,4 @@ uespLog.lua
 uespLogTradeData.lua
 uespLogUI.lua
 uespLog.xml
+uespdescription.lua

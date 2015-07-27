@@ -661,7 +661,7 @@ function uespLog.CheckIsItemLinkResearchable(itemLink)
 	end
 
 	if (not (traitIndex >= 1 and traitIndex <= 9)) then
-		uespLog.DebugMsg("        -4:"..tostring(traitIndex))
+		--uespLog.DebugMsg("        -4:"..tostring(traitIndex))
 		return -4
 	end
 	
@@ -711,7 +711,7 @@ function uespLog.CheckIsItemResearchable(bagId, slotIndex)
 	end
 
 	if (not (traitIndex >= 1 and traitIndex <= 9)) then
-		uespLog.DebugMsg("        -4b: "..tostring(traitIndex))
+		--uespLog.DebugExtraMsg("        -4b: "..tostring(traitIndex))
 		return -4
 	end
 

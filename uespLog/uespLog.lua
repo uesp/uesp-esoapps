@@ -190,7 +190,7 @@
 --		- v0.23 - 3 June 2015
 --			- Fixed bug with Justice System / bounty error (no longer errors out when a guard acosts you).
 --
---		- v0.24 - 5 June 2015
+--		- v0.24 - 27 July 2015
 --			- Fixed item mining due to new item link format (1 more unknown data field).
 --			- Added a basic settings menu using LibAddonMenu-2.0. Settings can
 --			  be accessed through the game's Settings--Addon menu or via "/uespset".
@@ -218,7 +218,7 @@
 uespLog = { }
 
 uespLog.version = "0.24"
-uespLog.releaseDate = "5 June 2015"
+uespLog.releaseDate = "27 July 2015"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -3364,7 +3364,7 @@ end
 
 SLASH_COMMANDS["/uespdump"] = function(cmd)
 	local cmds = { }
-	local helpString = "Use one of: recipes, achievements, inventory, globals"
+	local helpString = "Use one of: recipes, skills, achievements, inventory, globals"
 
 	for i in string.gmatch(cmd, "%S+") do
 		cmds[#cmds + 1] = i
@@ -3374,6 +3374,8 @@ SLASH_COMMANDS["/uespdump"] = function(cmd)
 		uespLog.Msg(helpString)
 	elseif (cmds[1] == "recipes") then
 		uespLog.DumpRecipes()
+	elseif (cmds[1] == "skills") then
+		uespLog.DumpSkills(cmds[2], cmds[3])
 	elseif (cmds[1] == "achievements") then
 		uespLog.DumpAchievements()
 	elseif (cmds[1] == "inventory") then
@@ -3403,6 +3405,184 @@ SLASH_COMMANDS["/uespdump"] = function(cmd)
 		uespLog.Msg(helpString)
 	end
 	
+end
+
+
+function uespLog.DumpSkills(opt1,  opt2)
+
+	if (opt1 == nil) then
+		return uespLog.DumpSkillsBasic()
+	else
+		return uespLog.DumpSkillsStart(100000)
+	end
+	
+	return false
+end
+
+
+function uespLog.DumpSkillsStart(endIdOpt)
+	local abilityId
+	local endId = endIdOpt or 100
+	local validAbilityCount = 0
+	local logData = { }
+	
+	logData.event = "test"
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+
+	for abilityId = 1, endIdOpt do
+		if (DoesAbilityExist(abilityId)) then
+			validAbilityCount = validAbilityCount + 1
+			uespLog.DumpSkill(abilityId)
+		end
+	end
+
+	uespLog.DebugMsg("    Logged "..tostring(validAbilityCount).." abilities...")
+	
+	logData = { }
+	logData.event = "test"
+	logData.abilityCount = validAbilityCount
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+end
+
+
+function uespLog.DumpSkill(abilityId)
+	local name = GetAbilityName(abilityId)
+	local isPassive = IsAbilityPassive(abilityId)
+	local channeled, castTime, channelTime = GetAbilityCastInfo(abilityId)
+	local targetDesc = GetAbilityTargetDescription(abilityId)
+	local minRange, maxRange = GetAbilityRange(abilityId)
+	local radius = GetAbilityRadius(abilityId)
+	local angleDistance = GetAbilityAngleDistance(abilityId)
+	local duration = GetAbilityDuration(abilityId)
+	local cost, mechanic = GetAbilityCost(abilityId)
+	local descHeader = GetAbilityDescriptionHeader(abilityId)
+	local description = GetAbilityDescription(abilityId)
+	--GetAbilityEffectDescription(integer effectSlotId) Returns: string description
+	local upgradeLines = uespLog.FormatSkillUpgradeLines(GetAbilityUpgradeLines(abilityId))
+	local effectLines = uespLog.FormatSkillEffectLines(GetAbilityNewEffectLines(abilityId))
+	local logData = { }
+	
+	logData.event = "test"
+	logData.id = abilityId
+	logData.name = name
+	logData.passive = isPassive
+	logData.channel = channeled
+	logData.castTime = castTime
+	logData.channelTime = channelTime
+	logData.target = targetDesc
+	logData.minRange = minRange
+	logData.maxRange = maxRange
+	logData.radius = radius
+	logData.angleDistance = angleDistance
+	logData.duration = duration
+	logData.cost = cost
+	logData.mechanic = mechanic
+	logData.desc = tostring(descHeader) .. tostring(description)
+	logData.upgradeLines = upgradeLines
+	logData.effectLines = effectLines	
+	
+	uespLog.AppendDataToLog("all", logData)
+end
+
+
+function uespLog.FormatSkillUpgradeLines(...)
+	local output = ""
+	
+    local numUpgradeReturns = select("#", ...)
+	
+    if (numUpgradeReturns > 0) then
+	
+        for i = 1, numUpgradeReturns, 3 do
+            local label, oldValue, newValue = select(i, ...)
+            if (i > 1) then output = output .. ", " end
+			output = output .. tostring(label) .."::"..tostring(oldValue).."::"..tostring(newValue)
+        end
+		
+    end
+	
+	return output
+end
+
+
+function uespLog.FormatSkillEffectLines(...)
+	local output = ""
+	
+    local numEffectLines = select("#", ...)
+	
+    if (numEffectLines > 0) then
+	
+        for i = 1, numEffectLines do
+            local newEffect = select(i, ...)
+            if (i > 1) then output = output .. ", " end
+			output = output .. tostring(newEffect)
+        end
+		
+    end
+	
+	return output
+end
+
+
+function uespLog.DumpSkillsBasic()
+	--GetNumAbilities() Returns: integer num
+	--GetAbilityInfoByIndex(integer abilityIndex)Returns: string name, string texture, integer rank, integer actionSlotType, boolean passive, boolean showInSpellbook
+	--GetNumAbilitiesLearnedForLevel(integer level, boolean progression) Returns: integer abilitiesLearned
+	--GetLearnedAbilityInfoForLevel(integer level, integer learnedIndex, boolean progression) Returns: string name, string texture, integer abilityIndex, integer progressionIndex
+	--PlayerHasAttributeUpgrades() Returns: boolean hasLevelUpgrades
+	--ChooseAbilityProgressionMorph(integer progressionIndex, integer morph)
+	
+	--GetAbilityProgressionInfo(integer progressionIndex) Returns: string name, integer morph, integer rank
+	--GetAbilityProgressionXPInfo(integer progressionIndex) Returns: integer lastRankXp, integer nextRankXP, integer currentXP, boolean atMorph
+	--GetAbilityProgressionAbilityInfo(integer progressionIndex, integer morph, integer rank) Returns: string name, string texture, integer abilityIndex
+	--GetAbilityProgressionRankFromAbilityId(integer abilityId) Returns: integer:nilable rank
+	--GetAbilityProgressionXPInfoFromAbilityId(integer abilityId) Returns: boolean hasProgression, integer progressionIndex, integer lastRankXp, integer nextRankXP, integer currentXP, boolean atMorph
+	--GetAttributeDerivedStatPerPointValue(integer attribute, integer stat) Returns: number amountPerPoint
+	
+	--GetAbilityIdByIndex(integer abilityIndex) Returns: integer abilityId
+	
+	--DoesAbilityExist(integer abilityId) Returns: boolean exists
+	--GetAbilityProgressionRankFromAbilityId(integer abilityId) Returns: integer:nilable rank
+	--GetAbilityProgressionXPInfoFromAbilityId(integer abilityId) Returns: boolean hasProgression, integer progressionIndex, integer lastRankXp, integer nextRankXP, integer currentXP, boolean atMorph
+	
+	local numAbilities = GetNumAbilities()
+	local abilityIndex 
+	local abilityId
+	local validAbilityCount = 0
+	local firstAbility = -1
+	local lastAbility = -1
+	
+	uespLog.DebugMsg("    "..tostring(numAbilities).." Character Abilities")
+	
+	--for abilityIndex = 1, numAbilities do
+		--local name, texture, rank, slotType, passive, showInSpellBook = GetAbilityInfoByIndex(abilityIndex)
+		--uespLog.DebugMsg("       "..tostring(abilityIndex)..": "..tostring(name).." "..tostring(passive).." "..tostring(slotType).." "..tostring(showInSpellBook))
+	--end
+	
+	for abilityId = 1, 99000 do
+		if (DoesAbilityExist(abilityId)) then
+			lastAbility = abilityId
+			validAbilityCount = validAbilityCount + 1
+			if (firstAbility < 0) then firstAbility = abilityId end
+			
+			local t1 = uespLog.CountVarReturns(GetAbilityUpgradeLines(abilityId))
+			local t2 = uespLog.CountVarReturns(GetAbilityNewEffectLines(abilityId))
+			
+			if (t1 > 0 or t2 > 0) then
+				uespLog.DebugMsg("     "..tostring(abilityId).." upgrades "..tostring(t1).."  effects "..tostring(t2))
+			end
+		end
+	end
+	
+	uespLog.DebugMsg("     Found "..tostring(validAbilityCount).." abilities overall.")
+	uespLog.DebugMsg("     First at "..tostring(firstAbility).." , last at "..tostring(lastAbility))
+	
+	return true
+end
+
+
+function uespLog.CountVarReturns(...)
+    local numReturns = select("#", ...)
+	return numReturns
 end
 
 

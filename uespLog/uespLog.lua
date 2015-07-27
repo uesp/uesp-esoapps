@@ -3727,6 +3727,7 @@ end
 SLASH_COMMANDS["/uesphelp"] = function(cmd)
 	uespLog.Msg("UESP::uespLog Addon v".. tostring(uespLog.version) .. " released ".. uespLog.releaseDate)
 	uespLog.Msg("UESP::This add-on logs a variety of data to the saved variables folder.")
+	uespLog.Msg("    /uespset      Access the add-on's settings menu")
 	uespLog.Msg("    /uesplog      Turns the logging of data on and off")
 	uespLog.Msg("    /uespcount    Displays statistics on the current log")
 	uespLog.Msg("    /uespreset    Clears all or part of the logged data")

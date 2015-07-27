@@ -3413,23 +3413,27 @@ function uespLog.DumpSkills(opt1,  opt2)
 	if (opt1 == nil) then
 		return uespLog.DumpSkillsBasic()
 	else
-		return uespLog.DumpSkillsStart(100000)
+		return uespLog.DumpSkillsStart(opt1)
 	end
 	
 	return false
 end
 
 
-function uespLog.DumpSkillsStart(endIdOpt)
+function uespLog.DumpSkillsStart(note)
 	local abilityId
-	local endId = endIdOpt or 100
+	local endId =  80000
 	local validAbilityCount = 0
 	local logData = { }
 	
-	logData.event = "test"
+	logData.event = "skillDump::start"
+	logData.apiVersion = GetAPIVersion()
+	logData.note = note
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
+	uespLog.DebugLogMsg("Logging all skills...")
 
-	for abilityId = 1, endIdOpt do
+	for abilityId = 1, endId do
 		if (DoesAbilityExist(abilityId)) then
 			validAbilityCount = validAbilityCount + 1
 			uespLog.DumpSkill(abilityId)
@@ -3439,7 +3443,7 @@ function uespLog.DumpSkillsStart(endIdOpt)
 	uespLog.DebugMsg("    Logged "..tostring(validAbilityCount).." abilities...")
 	
 	logData = { }
-	logData.event = "test"
+	logData.event = "skillDump::end"
 	logData.abilityCount = validAbilityCount
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 end
@@ -3457,12 +3461,11 @@ function uespLog.DumpSkill(abilityId)
 	local cost, mechanic = GetAbilityCost(abilityId)
 	local descHeader = GetAbilityDescriptionHeader(abilityId)
 	local description = GetAbilityDescription(abilityId)
-	--GetAbilityEffectDescription(integer effectSlotId) Returns: string description
 	local upgradeLines = uespLog.FormatSkillUpgradeLines(GetAbilityUpgradeLines(abilityId))
 	local effectLines = uespLog.FormatSkillEffectLines(GetAbilityNewEffectLines(abilityId))
 	local logData = { }
 	
-	logData.event = "test"
+	logData.event = "skill"
 	logData.id = abilityId
 	logData.name = name
 	logData.passive = isPassive
@@ -3478,8 +3481,9 @@ function uespLog.DumpSkill(abilityId)
 	logData.cost = cost
 	logData.mechanic = mechanic
 	logData.desc = tostring(descHeader) .. tostring(description)
-	logData.upgradeLines = upgradeLines
-	logData.effectLines = effectLines	
+	
+	if (upgradeLines and upgradeLines ~= "") then logData.upgradeLines = upgradeLines end
+	if (effectLines and effectLines ~= "") then logData.effectLines = effectLines end
 	
 	uespLog.AppendDataToLog("all", logData)
 end
@@ -3525,7 +3529,7 @@ end
 
 function uespLog.DumpSkillsBasic()
 	--GetNumAbilities() Returns: integer num
-	--GetAbilityInfoByIndex(integer abilityIndex)Returns: string name, string texture, integer rank, integer actionSlotType, boolean passive, boolean showInSpellbook
+	--GetAbilityInfoByIndex(integer abilityIndex) Returns: string name, string texture, integer rank, integer actionSlotType, boolean passive, boolean showInSpellbook
 	--GetNumAbilitiesLearnedForLevel(integer level, boolean progression) Returns: integer abilitiesLearned
 	--GetLearnedAbilityInfoForLevel(integer level, integer learnedIndex, boolean progression) Returns: string name, string texture, integer abilityIndex, integer progressionIndex
 	--PlayerHasAttributeUpgrades() Returns: boolean hasLevelUpgrades
@@ -3568,7 +3572,7 @@ function uespLog.DumpSkillsBasic()
 			local t2 = uespLog.CountVarReturns(GetAbilityNewEffectLines(abilityId))
 			
 			if (t1 > 0 or t2 > 0) then
-				uespLog.DebugMsg("     "..tostring(abilityId).." upgrades "..tostring(t1).."  effects "..tostring(t2))
+				--uespLog.DebugMsg("     "..tostring(abilityId).." upgrades "..tostring(t1).."  effects "..tostring(t2))
 			end
 		end
 	end

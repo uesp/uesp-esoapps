@@ -212,6 +212,10 @@
 --			- Shortened/tweaked the log message displayed in the chat window.
 --			- Fixed the trait known/unknown display for nirnhoned items.
 --
+--		- v0.25 -
+--			- Add "/uespdump skills".
+--			- Fix bug with negative xp values sometimes displayed.
+--
 
 
 --	GLOBAL DEFINITIONS

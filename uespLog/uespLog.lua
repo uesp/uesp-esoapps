@@ -1132,8 +1132,10 @@ function uespLog.Initialize( self, addOnName )
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_BEGIN_LOCKPICK, uespLog.OnBeginLockPick)
 	
-	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_EXPERIENCE_UPDATE, uespLog.OnExperienceUpdate)
-	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_VETERAN_POINTS_UPDATE, uespLog.OnVeteranPointsUpdate)
+	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_EXPERIENCE_UPDATE, uespLog.OnExperienceUpdate)
+	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_VETERAN_POINTS_UPDATE, uespLog.OnVeteranPointsUpdate)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_EXPERIENCE_GAIN, uespLog.OnExperienceGain)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_VETERAN_POINTS_GAIN, uespLog.OnVeteranPointsGain)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ALLIANCE_POINT_UPDATE, uespLog.OnAlliancePointsUpdate)
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_POWER_UPDATE, uespLog.OnPowerUpdate)
@@ -2279,10 +2281,36 @@ function uespLog.GetVeteranXPReasonStr(reason)
 end
 
 
+function uespLog.OnExperienceGain (eventCode, reason, level, previousExperience, currentExperience)
+	local logData = { }
+	
+	logData.event = "ExperienceUpdate"
+	logData.unit = "player"
+	logData.xpGained = currentExperience - previousExperience
+	logData.level = level
+	logData.reason = reason
+	
+	uespLog.currentXp = currentExperience
+	
+	if (logData.xpGained == 0) then
+		return
+	elseif (reason == -1) then
+		uespLog.DebugExtraMsg("UESP::Gained "..tostring(logData.xpGained).." xp for unknown reason")
+		return
+	end
+	
+	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
+	 
+	if (GetUnitVeteranRank("player") <= 0) then
+		uespLog.DebugLogMsgColor(uespLog.xpColor, "Gained "..tostring(logData.xpGained).." xp for "..uespLog.GetXPReasonStr(reason))
+	end
+end
+
+
 function uespLog.OnExperienceUpdate (eventCode, unitTag, currentExp, maxExp, reason)
 	local logData = { }
 	
-	 --if ( unitTag ~= 'player' ) th6en return end
+	 --if ( unitTag ~= 'player' ) then return end
 	
 	logData.event = "ExperienceUpdate"
 	logData.unit = unitTag
@@ -2292,7 +2320,10 @@ function uespLog.OnExperienceUpdate (eventCode, unitTag, currentExp, maxExp, rea
 	
 	uespLog.currentXp = currentExp
 	
-	if (logData.xpGained == 0 or reason == -1) then
+	if (logData.xpGained == 0) then
+		return
+	elseif (reason == -1) then
+		uespLog.DebugExtraMsg("UESP::Gained "..tostring(logData.xpGained).." xp for unknown reason")
 		return
 	end
 	
@@ -2301,6 +2332,29 @@ function uespLog.OnExperienceUpdate (eventCode, unitTag, currentExp, maxExp, rea
 	if (unitTag == "player" and GetUnitVeteranRank(unitTag) <= 0) then
 		uespLog.DebugLogMsgColor(uespLog.xpColor, "Gained "..tostring(logData.xpGained).." xp for "..uespLog.GetXPReasonStr(reason))
 	end
+end
+
+
+function uespLog.OnVeteranPointsGain (eventCode, reason, rank, previousExperience, currentExperience)
+	local logData = { }
+	
+	logData.event = "VeteranXPUpdate"
+	logData.unit = "player"
+	logData.xpGained = currentExperience - previousExperience
+	logData.rank = rank
+	logData.reason = reason
+	
+	uespLog.currentVeteranXp = currentExperience
+	
+	if (logData.xpGained == 0) then
+		return
+	elseif (reason == -1) then
+		uespLog.DebugExtraMsg("UESP::Gained "..tostring(logData.xpGained).." veteran points for unknown reason")
+		return
+	end
+	
+	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
+	uespLog.DebugLogMsgColor(uespLog.xpColor, "Gained "..tostring(logData.xpGained).." veteran points for "..uespLog.GetVeteranXPReasonStr(reason))
 end
 
 
@@ -2317,12 +2371,14 @@ function uespLog.OnVeteranPointsUpdate (eventCode, unitTag, currentExp, maxExp, 
 	
 	uespLog.currentVeteranXp = currentExp
 	
-	if (logData.xpGained == 0 or reason == -1) then
+	if (logData.xpGained == 0) then
+		return
+	elseif (reason == -1) then
+		uespLog.DebugExtraMsg("UESP::Gained "..tostring(logData.xpGained).." veteran points for unknown reason")
 		return
 	end
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
-	 
 	uespLog.DebugLogMsgColor(uespLog.xpColor, "Gained "..tostring(logData.xpGained).." veteran points for "..uespLog.GetVeteranXPReasonStr(reason))
 end
 
@@ -3426,7 +3482,7 @@ function uespLog.DumpSkillsStart(note)
 	local validAbilityCount = 0
 	local logData = { }
 	
-	logData.event = "skillDump::start"
+	logData.event = "skillDump::Start"
 	logData.apiVersion = GetAPIVersion()
 	logData.note = note
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
@@ -3443,7 +3499,7 @@ function uespLog.DumpSkillsStart(note)
 	uespLog.DebugMsg("    Logged "..tostring(validAbilityCount).." abilities...")
 	
 	logData = { }
-	logData.event = "skillDump::end"
+	logData.event = "skillDump::End"
 	logData.abilityCount = validAbilityCount
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 end

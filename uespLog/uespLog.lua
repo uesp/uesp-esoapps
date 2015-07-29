@@ -216,6 +216,8 @@
 --			- Add "/uespdump skills".
 --			- Fix bug with negative xp values sometimes displayed.
 --			- Added the "/uespenl" command to show the character's enlightenment pool.
+--			- Added viewing of PVP events toggled by the "/uesppvp on/off" command (default is off).
+--			  This is currently in testing and may be a bit spammy if you are in an active campaign.
 --
 
 
@@ -435,6 +437,7 @@ uespLog.itemColor = "ff9900"
 uespLog.statColor = "44ffff"
 uespLog.mineColor = "99ff99"
 uespLog.mineColorWarning = "ff9999"
+uespLog.pvpColor = "ff33ff"
 
 uespLog.currentTargetData = {
 	name = "",
@@ -449,6 +452,18 @@ uespLog.currentConversationData = {
     x = "",
     y = "",
     zone = "",
+}
+
+uespLog.ALLIANCE_SHORT_NAMES = {
+	[1] = "AD",
+	[2] = "EP",
+	[3] = "DC",
+}
+
+uespLog.ALLIANCE_NAMES = {
+	[1] = "Aldmeri Dominion",
+	[2] = "Ebonheart Pack",
+	[3] = "Daggerfall Covenant",
 }
 
 uespLog.MINEITEM_LEVELS = {
@@ -532,6 +547,7 @@ uespLog.DEFAULT_SETTINGS =
 		["mineItemsEnabled"] = false,
 		["mineItemOnlySubType"] = -1,
 		["isAutoMiningItems"] = false,
+		["pvpUpdate"] = false,
 	}
 }
 
@@ -659,6 +675,16 @@ function uespLog.IsColor()
 end
 
 
+function uespLog.IsPvpUpdate()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	return uespLog.savedVars.settings.data.pvpUpdate
+end
+
+
 function uespLog.SetDebug(flag)
 	if (uespLog.savedVars.settings == nil) then
 		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
@@ -666,6 +692,16 @@ function uespLog.SetDebug(flag)
 	
 	uespLog.savedVars.settings.data.debug = flag
 end	
+
+
+function uespLog.SetPvpUpdate(flag)
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	uespLog.savedVars.settings.data.pvpUpdate = flag
+end	
+
 
 
 function uespLog.SetColor(flag)
@@ -1090,6 +1126,7 @@ function uespLog.Initialize( self, addOnName )
 	uespLog.mineItemsEnabled = uespLog.savedVars.settings.data.mineItemsEnabled or uespLog.mineItemsEnabled
 	uespLog.isAutoMiningItems = uespLog.savedVars.settings.data.isAutoMiningItems or uespLog.isAutoMiningItems
 	uespLog.mineItemOnlySubType = uespLog.savedVars.settings.data.mineItemOnlySubType or uespLog.mineItemOnlySubType
+	uespLog.pvpUpdate = uespLog.savedVars.settings.data.pvpUpdate or uespLog.pvpUpdate
 	uespLog.mineItemLastReloadTimeMS = GetGameTimeMilliseconds()
 	
 	zo_callLater(uespLog.InitAutoMining, 5000)
@@ -1155,6 +1192,40 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_JUSTICE_GOLD_PICKPOCKETED, uespLog.OnGoldPickpocketed)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_JUSTICE_GOLD_REMOVED, uespLog.OnGoldRemoved)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_JUSTICE_ITEM_PICKPOCKETED, uespLog.OnItemPickpocketed)
+	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ARTIFACT_CONTROL_STATE, uespLog.OnArtifactControlState)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CAPTURE_AREA_STATUS, uespLog.OnCaptureAreaStatus)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CORONATE_EMPEROR_NOTIFICATION, uespLog.OnCoronateEmpererNotification)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_OBJECTIVE_CONTROL_STATE, uespLog.OnObjectiveControlState)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_KEEP_ALLIANCE_OWNER_CHANGED, uespLog.OnKeepAllianceOwnerChanged)
+	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_KEEP_RESOURCE_UPDATE, uespLog.OnKeepResourceUpdate)   -- Happens very frequently
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_KEEP_UNDER_ATTACK_CHANGED, uespLog.OnKeepUnderAttack)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_KEEP_GATE_STATE_CHANGED, uespLog.OnKeepGateStateChanged)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_GUILD_KEEP_CLAIM_UPDATED, uespLog.OnGuildKeepClaimUpdated)	
+		
+	-- EVENT_ARTIFACT_CONTROL_STATE(integer eventCode, string artifactName, integer keepId, string playerName, integer playerAlliance, integer controlEvent, integer controlState, integer campaignId)
+	--EVENT_CAPTURE_AREA_STATUS (integer eventCode, integer keepId, integer objectiveId, integer battlegroundContext, integer capturePoolValue, integer capturePoolMax, integer capturingPlayers, integer contestingPlayers, integer 	owningAlliance)
+	--EVENT_CORONATE_EMPEROR_NOTIFICATION (integer eventCode, integer campaignId, string emperorName, integer emperorAlliance)
+	--EVENT_DEPOSE_EMPEROR_NOTIFICATION (integer eventCode, integer campaignId, string emperorName, integer emperorAlliance, bool abdication)
+	--EVENT_FORWARD_CAMPS_UPDATED (integer eventCode)
+	--EVENT_FORWARD_CAMP_RESPAWN_TIMER_BEGINS (integer durationMS)
+	--EVENT_OBJECTIVE_CONTROL_STATE (integer eventCode, integer objectiveKeepId, integer objectiveObjectiveId, integer battlegroundContext, string objectiveName, integer objectiveType, integer objectiveControlEvent, integer objectiveControlState, integer objectiveParam1, integer objectiveParam2)
+	--EVENT_ZONE_SCORING_CHANGED (integer eventCode)
+	--EVENT_KEEPS_INITIALIZED (integer eventCode)
+	--EVENT_KEEP_ALLIANCE_OWNER_CHANGED (integer eventCode, integer keepId, integer battlegroundContext, integer owningAlliance)
+	--EVENT_KEEP_END_INTERACTION (integer eventCode)
+	--EVENT_KEEP_GATE_STATE_CHANGED (integer eventCode, integer keepId, bool open)
+	--EVENT_KEEP_GUILD_CLAIM_UPDATE (integer eventCode, integer keepId, integer battlegroundContext)
+	--EVENT_KEEP_INITIALIZED (integer eventCode, integer keepId, integer battlegroundContext)
+	--EVENT_KEEP_OWNERSHIP_CHANGED_NOTIFICATION (integer eventCode, integer campaignId, integer keepId, integer oldOwner, integer newOwner)
+	--EVENT_KEEP_RESOURCE_UPDATE (integer eventCode, integer keepId)
+	--EVENT_KEEP_START_INTERACTION (integer eventCode)
+	--EVENT_KEEP_UNDER_ATTACK_CHANGED (integer eventCode, integer keepId, integer battlegroundContext, bool underAttack)
+	--EVENT_END_KEEP_GUILD_CLAIM_INTERACTION (integer eventCode)
+	--EVENT_END_KEEP_GUILD_RELEASE_INTERACTION (integer eventCode)
+	--EVENT_START_KEEP_GUILD_CLAIM_INTERACTION (integer eventCode)
+	--EVENT_START_KEEP_GUILD_RELEASE_INTERACTION (integer eventCode)
+	--EVENT_GUILD_KEEP_CLAIM_UPDATED (integer eventCode, integer guildId)
 		
 	uespLog.lastPlayerHP = GetUnitPower("player", POWERTYPE_HEALTH)
 	uespLog.lastPlayerMG = GetUnitPower("player", POWERTYPE_MAGICKA)
@@ -2922,9 +2993,18 @@ end
 
 
 uespLog.menuUpdated = false
+uespLog.PvpCheckCounter = 0
+uespLog.PvpCheckCounterMax = 1000	-- Check roughly every 10 secs
 
 
 function uespLog.OnUpdate ()
+
+	uespLog.PvpCheckCounter = uespLog.PvpCheckCounter + 1
+	
+	if (uespLog.PvpCheckCounter >= uespLog.PvpCheckCounterMax) then
+		uespLog.CheckForNewLocalBattles()
+		uespLog.PvpCheckCounter = 0
+	end
 
     if IsGameCameraUIModeActive() then
         return
@@ -6213,11 +6293,303 @@ function uespLog.OnItemPickpocketed (eventCode, itemName, itemCount)
 end
 
 
+function uespLog.GetAllianceShortName (allianceIndex)
+	if (uespLog.ALLIANCE_SHORT_NAMES[allianceIndex] == nil) then return "??" end
+	return uespLog.ALLIANCE_SHORT_NAMES[allianceIndex]
+end
 
 
+uespLog.SHORT_ALLIANCE_COLORED_NAMES = { }
+
+uespLog.ALLIANCE_COLORS = 
+{
+    [ALLIANCE_ALDMERI_DOMINION] = ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ALLIANCE, ALLIANCE_ALDMERI_DOMINION)),
+    [ALLIANCE_EBONHEART_PACT] = ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ALLIANCE, ALLIANCE_EBONHEART_PACT)),
+    [ALLIANCE_DAGGERFALL_COVENANT] = ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ALLIANCE, ALLIANCE_DAGGERFALL_COVENANT)),
+}
 
 
+function GetColoredAllianceShortName(alliance)
+    local coloredName = SHORT_ALLIANCE_COLORED_NAMES[alliance]
+	
+    if (coloredName == nil) then
+        local color = ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ALLIANCE, alliance))
+        SHORT_ALLIANCE_COLORED_NAMES[alliance] = color:Colorize(GetAllianceShortName(alliance))
+        return SHORT_ALLIANCE_COLORED_NAMES[alliance]
+    end
+	
+    return coloredName
+end
 
 
+function uespLog.GetAllianceColoredName (alliance, name)
+    local color = uespLog.ALLIANCE_COLORS[alliance]
+	
+    if (color == nil) then return name end
+    return color:Colorize(name)
+end
 
 
+function uespLog.OnArtifactControlState (eventCode, artifactName, keepId, playerName, playerAlliance, controlEvent, controlState, campaignId)
+	local msg = ""
+	
+	if (not uespLog.IsPvpUpdate()) then return end
+	
+	msg = msg .. tostring(artifactName) .. " changed state by " .. tostring(playerName) .. "[" .. uespLog.GetAllianceShortName(playerAlliance) .. "]."
+	uespLog.MsgColor(uespLog.pvpColor, msg)
+end
+
+
+function uespLog.OnCaptureAreaStatus (eventCode, keepId, objectiveId, battlegroundContext, capturePoolValue, capturePoolMax, capturingPlayers, contestingPlayers, owningAlliance)
+	local msg = ""
+	
+	if (not uespLog.IsPvpUpdate()) then return end
+	
+	--local objName, ovbjType, objState, param1, param2 = GetAvAObjectiveInfo(keepId, objectiveId, battlegroundContext)
+	local name = GetKeepName(keepId)
+	local alliance = GetKeepAlliance(keepId, battlegroundContext)
+		
+	msg = tostring(name) .. " capture at "..tostring(capturePoolValue).. "% by "..uespLog.GetAllianceShortName(owningAlliance) .. "."
+	uespLog.MsgColor(uespLog.pvpColor, msg)
+end
+
+
+function uespLog.OnCoronateEmpererNotification  (eventCode, campaignId, emperorName, emperorAlliance)
+	local msg = ""
+	
+	if (not uespLog.IsPvpUpdate()) then return end
+	if (GetCurrentCampaignId() ~= campaignId) then return end
+	
+	msg = tostring(emperorName) .. "["..tostring(uespLog.GetAllianceShortName(emperorAlliance)).."] was crowned Emperor!"
+	uespLog.MsgColor(uespLog.pvpColor, msg)
+end
+
+
+function uespLog.OnObjectiveControlState (eventCode, objectiveKeepId, objectiveObjectiveId, battlegroundContext, objectiveName, objectiveType, objectiveControlEvent, objectiveControlState, objectiveParam1, objectiveParam2)
+	local msg = ""
+	if (not uespLog.IsPvpUpdate()) then return end
+	
+	local name = GetKeepName(objectiveKeepId)
+	local alliance = GetKeepAlliance(objectiveKeepId, battlegroundContext)
+	--local objName, objType, objState, param1, param2 = GetAvAObjectiveInfo(keepId, objectiveId, battlegroundContext)
+	local colorName = uespLog.GetAllianceColoredName(alliance, objectiveName.."["..uespLog.GetAllianceShortName(alliance).."]")
+	local eventDesc = GetAvAObjectiveEventDescription(objectiveKeepId, objectiveObjectiveId, colorName.."|c"..uespLog.pvpColor, objectiveType, objectiveControlEvent, objectiveParam1, objectiveParam2)
+	
+	if (eventDesc ~= nil and eventDesc ~= "") then
+		msg = tostring(eventDesc)
+		uespLog.MsgColor(uespLog.pvpColor, msg)
+	end
+	
+end
+
+
+function uespLog.OnKeepAllianceOwnerChanged (eventCode, keepId, battlegroundContext, owningAlliance)
+	local msg = ""
+	if (not uespLog.IsPvpUpdate()) then return end
+	
+	local name = GetKeepName(keepId)
+	local alliance = GetKeepAlliance(keepId, battlegroundContext)
+	local alliance
+	
+	msg = tostring(name).."|c"..uespLog.pvpColor.." changed ownership to "..GetColoredAllianceName(owningAlliance).."."
+	uespLog.MsgColor(uespLog.pvpColor, msg)
+end
+
+
+function uespLog.OnKeepResourceUpdate (eventCode, keepId)
+	local msg = ""
+	if (not uespLog.IsPvpUpdate()) then return end
+	
+	msg = "Resource update for keep "..tostring(keepId) .. "."
+	uespLog.MsgColor(uespLog.pvpColor, msg)
+end
+
+
+function uespLog.OnKeepUnderAttack (eventCode, keepId, battlegroundContext, underAttack)
+	local msg = ""
+	if (not uespLog.IsPvpUpdate()) then return end
+	
+	local name = GetKeepName(keepId)
+	local alliance = GetKeepAlliance(keepId, battlegroundContext)
+	local colorName = uespLog.GetAllianceColoredName(alliance, name.."["..uespLog.GetAllianceShortName(alliance).."]")
+	
+	if (underAttack) then
+		msg = colorName.."|c"..uespLog.pvpColor.." is under attack!"
+	else
+		msg = colorName.."|c"..uespLog.pvpColor.." is no longer under attack."
+	end
+	
+	uespLog.MsgColor(uespLog.pvpColor, msg)
+end
+
+
+function uespLog.OnKeepGateStateChanged (eventCode, keepId, open)
+	local msg = ""
+	if (not uespLog.IsPvpUpdate()) then return end
+	
+	local name = GetKeepName(keepId)
+	local alliance = GetKeepAlliance(keepId, battlegroundContext)
+	local colorName = uespLog.GetAllianceColoredName(alliance, name.."["..uespLog.GetAllianceShortName(alliance).."]")
+	
+	if (underAttack) then
+		msg = colorName.."|c"..uespLog.pvpColor.." is now open!"
+	else
+		msg = colorName.."|c"..uespLog.pvpColor.." is now closed!"
+	end
+	
+	uespLog.MsgColor(uespLog.pvpColor, msg)
+end
+
+
+function uespLog.OnGuildKeepClaimUpdated (eventCode, keepId, battlegroundContext)
+	local msg = ""
+	if (not uespLog.IsPvpUpdate()) then return end
+	
+	local name = GetKeepName(keepId)
+	local alliance = GetKeepAlliance(keepId, battlegroundContext)
+	local colorName = uespLog.GetAllianceColoredName(alliance, name.."["..uespLog.GetAllianceShortName(alliance).."]")
+	
+	msg = colorName.."|c"..uespLog.pvpColor.." ownership was changed."
+	uespLog.MsgColor(uespLog.pvpColor, msg)
+end
+
+
+SLASH_COMMANDS["/uesppvp"] = function (cmd)
+	cmd = string.lower(cmd)
+
+	if (cmd == "on") then
+		uespLog.SetPvpUpdate(true)
+		uespLog.Msg("PVP update is now ON!")
+	elseif (cmd == "off") then
+		uespLog.SetPvpUpdate(false)
+		uespLog.Msg("PVP update is now OFF!")
+	else
+		uespLog.Msg("PVP update is currently "..uespLog.BoolToOnOff(uespLog.IsPvpUpdate()))
+		uespLog.Msg("    Use /uesppvp on/off to change setting")
+	end
+	
+end
+
+
+uespLog.KnownLocalBattles = { }
+uespLog.KNOWN_LOCAL_BATTLES_DELETETIMEMS = 300000
+
+
+uespLog.PINTYPE_BATTLE_NAMES = {
+	[83] = "Large Keep Attack",
+	[84] = "Small Keep Attack",
+	[96] = "Small EP vs AD battle",
+	[97] = "Medium EP vs AD battle",
+	[98] = "Large EP vs AD battle",
+	[99] = "Small AD vs DC battle",
+	[100] = "Medium AD vs DC battle",
+	[101] = "Large AD vs DC battle",
+	[102] = "Small DC vs EP battle",
+	[103] = "Medium DC vs EP battle",
+	[104] = "Large DC vs EP battle",
+}
+
+
+function uespLog.FindClosestKeep(nx, ny)
+	local numAvaObj = GetNumAvAObjectives()
+	local bestIndex = -1
+	local bestDistance = 100000
+	
+	for i = 1, numAvaObj do
+		local keepId, objId, bgContext = GetAvAObjectiveKeysByIndex(i)
+		local pinType, currentX, currentY, contUpdate = GetAvAObjectivePinInfo(keepId, objId, bgContext)
+		
+		local diffX = nx - currentX
+		local diffY = ny - currentY
+		local distance = math.sqrt(diffX * diffX + diffY * diffY)
+		
+		if (distance < bestDistance) then
+			bestDistance = distance
+			bestIndex = i
+		end
+	end
+	
+	local keepId, objId, bgContext = GetAvAObjectiveKeysByIndex(bestIndex)
+	local pinType, currentX, currentY, contUpdate = GetAvAObjectivePinInfo(keepId, objId, bgContext)
+	local diffX = currentX - nx
+	local diffY = currentY - ny
+	local angle = math.atan2(diffY, diffX) * 57.29578
+	local direction = "?"
+	
+	if (angle >= -22.5 and angle < 22.5) then
+		direction = "E"
+	elseif (angle >= 22.5 and angle < 67.5) then
+		direction = "NE"
+	elseif (angle >= 67.5 and angle < 112.5) then
+		direction = "N"
+	elseif (angle >= 112.5 and angle < 157.5) then
+		direction = "NW"
+	elseif (angle >= 157.5 or angle < -157.5) then
+		direction = "W"
+	elseif (angle >= -157.5 and angle < -112.5) then
+		direction = "SW"
+	elseif (angle >= -112.5 and angle < -67.5) then
+		direction = "S"
+	elseif (angle >= -67.5 and angle < -22.5) then
+		direction = "SE"
+	end
+		
+	return keepId, objId, bgContext, direction
+end
+
+
+function uespLog.CheckForNewLocalBattles()
+	local numObjectives = GetNumAvAObjectives()
+	if (not uespLog.IsPvpUpdate()) then return end
+	
+	--uespLog.DebugMsg("Checking for new local PVP battles...")
+	uespLog.DeleteOldKnownLocalBattles()
+	
+	local killNum = GetNumKillLocations()
+	
+	for i = 1, killNum do
+		local pinType, currentX, currentY = GetKillLocationPinInfo(i)
+		
+		if (pinType ~= nil) then
+			if ((pinType >= 83 and pinType <= 83) or (pinType >= 96 and pinType <= 104)) then
+				local uniqueId = math.floor(math.floor((currentX or 0) * 1000)*1000 + math.floor((currentY or 0)*1000))
+			
+				if (uespLog.KnownLocalBattles[uniqueId] == nil) then            
+					uespLog.KnownLocalBattles[uniqueId] = GetGameTimeMilliseconds()
+				
+					local coorStr = string.format("(%0.3f, %0.3f)", currentX, currentY)
+					local pinName = uespLog.PINTYPE_BATTLE_NAMES[pinType] or "battle"
+					local keepId, objId, bgContext, direction = uespLog.FindClosestKeep(currentX, currentY)
+					local name = GetKeepName(keepId)
+					local alliance = GetKeepAlliance(keepId, bgContext)
+					local colorName = uespLog.GetAllianceColoredName(alliance, name.."["..uespLog.GetAllianceShortName(alliance).."]")
+					local msg = "" .. pinName .. " "..direction.." of "..colorName.."|c"..uespLog.pvpColor.." "..coorStr
+					--local msg = "Found " .. pinName .. ", "..coorStr.." in current map"
+					
+					uespLog.MsgColor(uespLog.pvpColor, msg)
+				end
+			end
+		end
+	end
+			
+end
+
+
+function uespLog.DeleteOldKnownLocalBattles()
+	local idsToDelete = { }
+	local CurrentTime = GetGameTimeMilliseconds()
+	
+	for id, knownBattleTime in pairs(uespLog.KnownLocalBattles) do
+	
+		if (knownBattleTime == nil) then
+			idsToDelete[#idsToDelete + 1] = id
+		elseif (CurrentTime - knownBattleTime >= uespLog.KNOWN_LOCAL_BATTLES_DELETETIMEMS) then
+			idsToDelete[#idsToDelete + 1] = id
+		end
+	end
+	
+	for i = 1, #idsToDelete do
+		uespLog.KnownLocalBattles[idsToDelete[i]] = nil
+	end
+	
+end

@@ -218,6 +218,7 @@
 --			- Added the "/uespenl" command to show the character's enlightenment pool.
 --			- Added viewing of PVP events toggled by the "/uesppvp on/off" command (default is off).
 --			  This is currently in testing and may be a bit spammy if you are in an active campaign.
+--			-- "/uesppvp showfights" will show all known fights in the current campaign.
 --
 
 
@@ -6462,6 +6463,8 @@ SLASH_COMMANDS["/uesppvp"] = function (cmd)
 	elseif (cmd == "off") then
 		uespLog.SetPvpUpdate(false)
 		uespLog.Msg("PVP update is now OFF!")
+	elseif (cmd == "showfights") then
+		uespLog.ShowPvpFights()
 	else
 		uespLog.Msg("PVP update is currently "..uespLog.BoolToOnOff(uespLog.IsPvpUpdate()))
 		uespLog.Msg("    Use /uesppvp on/off to change setting")
@@ -6538,11 +6541,11 @@ end
 
 
 function uespLog.CheckForNewLocalBattles()
-	local numObjectives = GetNumAvAObjectives()
+
 	if (not uespLog.IsPvpUpdate()) then return end
-	
-	--uespLog.DebugMsg("Checking for new local PVP battles...")
 	uespLog.DeleteOldKnownLocalBattles()
+	
+	uespLog.FindPvpFights(false)
 	
 	local killNum = GetNumKillLocations()
 	
@@ -6555,6 +6558,40 @@ function uespLog.CheckForNewLocalBattles()
 			
 				if (uespLog.KnownLocalBattles[uniqueId] == nil) then            
 					uespLog.KnownLocalBattles[uniqueId] = GetGameTimeMilliseconds()
+				
+					local coorStr = string.format("(%0.3f, %0.3f)", currentX, currentY)
+					local pinName = uespLog.PINTYPE_BATTLE_NAMES[pinType] or "battle"
+					local keepId, objId, bgContext, direction = uespLog.FindClosestKeep(currentX, currentY)
+					local name = GetKeepName(keepId)
+					local alliance = GetKeepAlliance(keepId, bgContext)
+					local colorName = uespLog.GetAllianceColoredName(alliance, name.."["..uespLog.GetAllianceShortName(alliance).."]")
+					local msg = "" .. pinName .. " "..direction.." of "..colorName.."|c"..uespLog.pvpColor.." "..coorStr
+					--local msg = "Found " .. pinName .. ", "..coorStr.." in current map"
+					
+					uespLog.MsgColor(uespLog.pvpColor, msg)
+				end
+			end
+		end
+	end
+			
+end
+
+
+function uespLog.FindPvpFights(showAll)
+	local killNum = GetNumKillLocations()
+	
+	for i = 1, killNum do
+		local pinType, currentX, currentY = GetKillLocationPinInfo(i)
+		
+		if (pinType ~= nil) then
+			if ((pinType >= 83 and pinType <= 83) or (pinType >= 96 and pinType <= 104)) then
+				local uniqueId = math.floor(math.floor((currentX or 0) * 1000)*1000 + math.floor((currentY or 0)*1000))
+			
+				if (showAll or uespLog.KnownLocalBattles[uniqueId] == nil) then            
+				
+					if (not showAll) then
+						uespLog.KnownLocalBattles[uniqueId] = GetGameTimeMilliseconds()
+					end
 				
 					local coorStr = string.format("(%0.3f, %0.3f)", currentX, currentY)
 					local pinName = uespLog.PINTYPE_BATTLE_NAMES[pinType] or "battle"
@@ -6591,4 +6628,15 @@ function uespLog.DeleteOldKnownLocalBattles()
 		uespLog.KnownLocalBattles[idsToDelete[i]] = nil
 	end
 	
+end
+
+
+function uespLog.ShowPvpFights()
+	local killNum = GetNumKillLocations()
+	
+	if (killNum == 0) then
+		uespLog.MsgColor(uespLog.pvpColor, "No PVP fights found!")
+	else
+		uespLog.FindPvpFights(true)
+	end
 end

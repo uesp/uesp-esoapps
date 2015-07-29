@@ -89,8 +89,14 @@ function uespLog.InitOptionControlsData()
 		setFunc = function(flag) return uespLog.SetMailDeleteNotify(flag) end,
 	})
 	
-	-- 		["mailDeleteNotify"] = false,
-
+	uespLog.optionControlsData:insert({
+		type = "checkbox",
+		name = "PVP Update",
+		tooltip = "Show PVP/campaign updates in the chat window\n     /uesppvp on/off",
+		getFunc = function() return uespLog.IsPvpUpdate() end,
+		setFunc = function(flag) return uespLog.SetPvpUpdate(flag) end,
+	})
+	
 	uespLog.optionControlsData:insert({
 		type = "header",
 		name = "Crafting",

@@ -6348,9 +6348,11 @@ function uespLog.OnCaptureAreaStatus (eventCode, keepId, objectiveId, battlegrou
 	--local objName, ovbjType, objState, param1, param2 = GetAvAObjectiveInfo(keepId, objectiveId, battlegroundContext)
 	local name = GetKeepName(keepId)
 	local alliance = GetKeepAlliance(keepId, battlegroundContext)
-		
-	msg = tostring(name) .. " capture at "..tostring(capturePoolValue).. "% by "..uespLog.GetAllianceShortName(owningAlliance) .. "."
-	uespLog.MsgColor(uespLog.pvpColor, msg)
+	
+	if (capturePoolValue ~= 100) then		
+		msg = tostring(name) .. " capture at "..tostring(capturePoolValue).. "% by "..uespLog.GetAllianceShortName(owningAlliance) .. "."
+		uespLog.MsgColor(uespLog.pvpColor, msg)
+	end
 end
 
 

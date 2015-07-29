@@ -703,7 +703,6 @@ function uespLog.SetPvpUpdate(flag)
 end	
 
 
-
 function uespLog.SetColor(flag)
 	if (uespLog.savedVars.settings == nil) then
 		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS

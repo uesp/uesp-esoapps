@@ -215,6 +215,7 @@
 --		- v0.25 -
 --			- Add "/uespdump skills".
 --			- Fix bug with negative xp values sometimes displayed.
+--			- Added the "/uespenl" command to show the character's enlightenment pool.
 --
 
 
@@ -3216,6 +3217,14 @@ SLASH_COMMANDS["/uesptime"] = function (cmd)
 end
 
 SLASH_COMMANDS["/ut"] = SLASH_COMMANDS["/uesptime"]
+
+
+SLASH_COMMANDS["/uespenl"] = function (cmd)
+	local enl = GetEnlightenedPool()
+	local mult = GetEnlightenedMultiplier()
+
+	uespLog.MsgColor(uespLog.xpColor, "UESP::You have "..tostring(enl).." enlightenment at a x"..tostring(mult).." bonus.")
+end
 
 
 function uespLog.DisplayPowerStat (statType, statName)

@@ -2077,7 +2077,7 @@ function uespLog.OnBuyReceipt (eventCode, itemLink, entryType, entryQuantity, mo
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugLogMsgColor(uespLog.itemColor, "Bought "..niceLink.."")
+	uespLog.DebugLogMsgColor(uespLog.itemColor, "Bought "..niceLink.." for "..tostring(money).."gp")
 end
 
 
@@ -2092,7 +2092,7 @@ function uespLog.OnSellReceipt (eventCode, itemLink, itemQuantity, money)
 
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugLogMsgColor(uespLog.itemColor, "Sold "..niceLink.."")
+	uespLog.DebugLogMsgColor(uespLog.itemColor, "Sold "..niceLink.." for "..tostring(money).."gp")
 end
 
 
@@ -6584,6 +6584,7 @@ end
 
 function uespLog.FindPvpFights(showAll)
 	local killNum = GetNumKillLocations()
+	local outputNum = 0
 	
 	for i = 1, killNum do
 		local pinType, currentX, currentY = GetKillLocationPinInfo(i)
@@ -6608,9 +6609,14 @@ function uespLog.FindPvpFights(showAll)
 					--local msg = "Found " .. pinName .. ", "..coorStr.." in current map"
 					
 					uespLog.MsgColor(uespLog.pvpColor, msg)
+					outputNum = outputNum + 1
 				end
 			end
 		end
+	end
+	
+	if (showAll and outputNum == 0) then
+		uespLog.MsgColor(uespLog.pvpColor, "No PVP fights found!")
 	end
 			
 end
@@ -6642,6 +6648,7 @@ function uespLog.ShowPvpFights()
 	if (killNum == 0) then
 		uespLog.MsgColor(uespLog.pvpColor, "No PVP fights found!")
 	else
+		--uespLog.MsgColor(uespLog.pvpColor, tostring(killNum).." PVP fights found!")
 		uespLog.FindPvpFights(true)
 	end
 end

@@ -397,7 +397,7 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 	if (uespLog.isStableInteract) then
 		return false
 	end
-			
+	
 	local itemId = uespLog.GetItemLinkID(itemLink)
 	local tradeType = uespLog.GetItemTradeType(itemId)
 	local iconTexture, iconColor = uespLog.GetTradeIconTexture(itemId, itemLink)
@@ -406,7 +406,7 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 	local addedBlankLine = false
 	local itemType = GetItemLinkItemType(itemLink)
 	local itemText = ""
-				
+	
 	if (itemStyleIcon ~= nil and (itemType == 1 or itemType == 2) and uespLog.IsCraftStyleDisplay()) then
 		color1, color2, color3 = unpack(uespLog.TRADE_STYLE_COLOR)
 		ThisToolTip:AddLine("", "ZoFontWinH5", color1, color2, color3, BOTTOM, MODIFY_TEXT_TYPE_NONE)

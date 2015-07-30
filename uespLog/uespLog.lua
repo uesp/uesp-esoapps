@@ -221,6 +221,7 @@
 --			- "/uesppvp showfights" will show all known fights in the current campaign.
 --			- Fixed bug that results in a very large saved variable file.
 --			- Fixed more crash bugs related to the guild store.
+--			- Tweaked startup message.
 --
 
 
@@ -1293,7 +1294,7 @@ end
 function uespLog.outputInitMessage ()
 	local flagStr = uespLog.BoolToOnOff(uespLog.IsDebug())
 	if (uespLog.IsDebugExtra()) then flagStr = "EXTRA" end
-	uespLog.Msg("UESP::Add-on initialized...debug output is currently "..tostring(flagStr)..".")
+	uespLog.Msg("uespLog v"..uespLog.version.." add-on initialized...debug output is currently "..tostring(flagStr)..".")
 end
 
 

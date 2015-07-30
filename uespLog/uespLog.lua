@@ -212,21 +212,22 @@
 --			- Shortened/tweaked the log message displayed in the chat window.
 --			- Fixed the trait known/unknown display for nirnhoned items.
 --
---		- v0.25 -
+--		- v0.25 - 30 July 3015
 --			- Add "/uespdump skills".
 --			- Fix bug with negative xp values sometimes displayed.
 --			- Added the "/uespenl" command to show the character's enlightenment pool.
 --			- Added viewing of PVP events toggled by the "/uesppvp on/off" command (default is off).
 --			  This is currently in testing and may be a bit spammy if you are in an active campaign.
---			-- "/uesppvp showfights" will show all known fights in the current campaign.
+--			- "/uesppvp showfights" will show all known fights in the current campaign.
+--			- Fixed bug that results in a very large saved variable file.
 --
 
 
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "0.24"
-uespLog.releaseDate = "27 July 2015"
+uespLog.version = "0.25"
+uespLog.releaseDate = "30 July 2015"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

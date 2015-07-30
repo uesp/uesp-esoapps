@@ -220,6 +220,7 @@
 --			  This is currently in testing and may be a bit spammy if you are in an active campaign.
 --			- "/uesppvp showfights" will show all known fights in the current campaign.
 --			- Fixed bug that results in a very large saved variable file.
+--			- Fixed more crash bugs related to the guild store.
 --
 
 

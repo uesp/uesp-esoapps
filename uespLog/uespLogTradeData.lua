@@ -306,11 +306,15 @@ end
 
 function uespLog.AddDetailsToInfoToolTip (row)	
 	--uespLog.DebugMsg("InfoRow = "..tostring(row.dataEntry))
-	return uespLog.AddCraftDetailsToToolTip (row)	
+	return uespLog.AddCraftDetailsToToolTip(row)	
 end
 
 
 function uespLog.AddCraftDetailsToPopupToolTip() 
+
+	if (PopupTooltip == nil) then
+		return false
+	end
 
 	if (uespLog.lastPopupLink == PopupTooltip.lastLink) then
 		return false
@@ -369,16 +373,19 @@ function uespLog.AddCraftDetailsToToolTipRow (row)
 	end
 	
 	local itemLink = nil
+	local tradingHouseMode = TRADING_HOUSE:GetCurrentMode()
 	
 	if (slotIndex and bagId) then
 		itemLink = GetItemLink(bagId, slotIndex)
 	elseif (slotIndex) then
-		if (GetNumTradingHouseListings() > 0) then
+		if (tradingHouseMode == ZO_TRADING_HOUSE_MODE_BROWSE and slotIndex > 0) then
 			itemLink = GetTradingHouseSearchResultItemLink(slotIndex)
+		elseif (tradingHouseMode == ZO_TRADING_HOUSE_MODE_LISTINGS and GetNumTradingHouseListings() >= slotIndex and slotIndex > 0) then
+			itemLink = GetTradingHouseListingItemLink(slotIndex)
 		else
 			return false
 		end
-	elseif (bagId) then
+	elseif (bagId and GetNumLootItems() >= bagId) then
 		itemLink = GetLootItemLink(bagId)
 	else
 		return false
@@ -390,7 +397,7 @@ end
 
 function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotIndex)	
 	
-	if (itemLink == nil or ThisToolTip == nil) then
+	if (itemLink == nil or itemLink == "" or ThisToolTip == nil) then
 		return false
 	end
 	
@@ -424,8 +431,7 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 			if (not addedBlankLine) then
 				ThisToolTip:AddLine("", "ZoFontWinH5", color1, color2, color3, BOTTOM, 0)
 			end
-			
-			ThisToolTip:AddLine(itemText, "ZoFontWinH5", color1, color2, color3, BOTTOM, 0)
+						ThisToolTip:AddLine(itemText, "ZoFontWinH5", color1, color2, color3, BOTTOM, 0)
 		end
 		
 		return false
@@ -1425,7 +1431,7 @@ end
 
 function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
 
-	if (GetNumTradingHouseListings() > 0) then
+	if (TRADING_HOUSE:GetCurrentMode() ~= ZO_TRADING_HOUSE_MODE_BROWSE) then
 		return
 	end
 	
@@ -1433,11 +1439,6 @@ function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
 	local styleIconControl = uespLog.GetStyleIconControl(rowControl)
 	local slotIndex = result.slotIndex
 	local itemLink = GetTradingHouseSearchResultItemLink(result.slotIndex)
-	local itemId = uespLog.GetItemLinkID(itemLink)	
-	local tradeType = uespLog.GetItemTradeType(itemId)
-	local iconTexture, iconColor = uespLog.GetTradeIconTexture(itemId, itemLink)
-	local itemStyleIcon, itemStyleText = uespLog.GetItemStyleIcon(itemLink)
-	local itemType = GetItemLinkItemType(itemLink)
 	
 	iconControl:SetHidden(true)		
 	iconControl:SetDimensions(32, 32)
@@ -1448,6 +1449,16 @@ function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
 	styleIconControl:SetDimensions(32, 32)
 	styleIconControl:ClearAnchors()
 	styleIconControl:SetAnchor(CENTER, rowControl, CENTER, 195)
+	
+	if (itemLink == nil or itemLink == "") then
+		return
+	end
+	
+	local itemId = uespLog.GetItemLinkID(itemLink)	
+	local tradeType = uespLog.GetItemTradeType(itemId)
+	local iconTexture, iconColor = uespLog.GetTradeIconTexture(itemId, itemLink)
+	local itemStyleIcon, itemStyleText = uespLog.GetItemStyleIcon(itemLink)
+	local itemType = GetItemLinkItemType(itemLink)
 	
 	if (itemStyleIcon ~= nil and (itemType == 1 or itemType == 2) and uespLog.IsCraftStyleDisplay() and uespLog.IsCraftDisplay()) then
 		styleIconControl:SetHidden(false)		

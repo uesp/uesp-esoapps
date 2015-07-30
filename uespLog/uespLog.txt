@@ -3,8 +3,6 @@
 ## Version: 0.24
 ## Author: Daveh@uesp
 ## Description: Logs game data for the uesp.net and a few other useful crafting related functions.
-## Version: 1.31
-## APIVersion: 100011
 ## SavedVariables: MasterRecipeList
 ## OptionalDependsOn: LibStub LibAddonMenu-2.0
 ## SavedVariables: uespLogSavedVars

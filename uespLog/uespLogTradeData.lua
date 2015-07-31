@@ -447,28 +447,15 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 	iconColor = uespLog.TRADE_KNOWN_COLOR
 	
 	if (isResearchable == uespLog.ORNATE_TRAIT_INDEX) then
-		--iconControl:SetHidden(false)		
-		--iconControl:SetTexture(uespLog.TRADE_ORNATE_TEXTURE)
-		--iconControl:SetColor(unpack(uespLog.TRADE_UNKNOWN_COLOR))
-		--iconControl:SetColor(unpack(uespLog.TRADE_ORNATE_COLOR))
 		itemText = "Ornate"
 		iconColor = uespLog.TRADE_ORNATE_COLOR
 	elseif (isResearchable == uespLog.INTRICATE_TRAIT_INDEX) then
-		--iconControl:SetHidden(false)		
-		--iconControl:SetTexture(uespLog.TRADE_INTRICATE_TEXTURE)
-		--iconControl:SetColor(unpack(uespLog.TRADE_INTRICATE_COLOR))
 		itemText = "Intricate"
 		iconColor = uespLog.TRADE_INTRICATE_COLOR
 	elseif (isResearchable > 0) then
-		--iconControl:SetHidden(false)
-		--iconControl:SetTexture(uespLog.TRADE_UNKNOWN_TEXTURE)
-		--iconControl:SetColor(unpack(uespLog.TRADE_UNKNOWN_COLOR))
 		itemText = "Trait Unknown"
 		iconColor = uespLog.TRADE_UNKNOWN_COLOR
 	else
-		--iconControl:SetHidden(false)
-		--iconControl:SetTexture(uespLog.TRADE_KNOWN_TEXTURE)
-		--iconControl:SetColor(unpack(uespLog.TRADE_KNOWN_COLOR))
 		itemText = "Trait Known"
 		iconColor = uespLog.TRADE_KNOWN_COLOR
 	end	

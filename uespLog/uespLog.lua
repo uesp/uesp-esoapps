@@ -223,13 +223,16 @@
 --			- Fixed more crash bugs related to the guild store.
 --			- Tweaked startup message.
 --
+--		- v0.26 - 31 July 2015
+--			- Fixed another crash bug when the guild store is first opened.
+--
 
 
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "0.25"
-uespLog.releaseDate = "30 July 2015"
+uespLog.version = "0.26"
+uespLog.releaseDate = "31 July 2015"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

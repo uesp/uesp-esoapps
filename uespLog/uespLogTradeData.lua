@@ -335,7 +335,7 @@ function uespLog.AddCraftDetailsToToolTipRow (row)
 	if (uespLog.isStableInteract) then
 		return false
 	end
-		
+	
 	if (row.dataEntry == nil and row.bagId == nil) then
 		return false 
 	elseif (row.dataEntry ~= nil and (row.dataEntry.data == nil or uespLog.tradeRowClicked == row)) then
@@ -378,7 +378,7 @@ function uespLog.AddCraftDetailsToToolTipRow (row)
 	if (slotIndex and bagId) then
 		itemLink = GetItemLink(bagId, slotIndex)
 	elseif (slotIndex) then
-		if (tradingHouseMode == ZO_TRADING_HOUSE_MODE_BROWSE and slotIndex > 0) then
+		if (tradingHouseMode == ZO_TRADING_HOUSE_MODE_BROWSE and TRADING_HOUSE.m_numItemsOnPage ~= nil and TRADING_HOUSE.m_numItemsOnPage >= slotIndex and slotIndex > 0) then
 			itemLink = GetTradingHouseSearchResultItemLink(slotIndex)
 		elseif (tradingHouseMode == ZO_TRADING_HOUSE_MODE_LISTINGS and GetNumTradingHouseListings() >= slotIndex and slotIndex > 0) then
 			itemLink = GetTradingHouseListingItemLink(slotIndex)

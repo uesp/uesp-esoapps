@@ -226,6 +226,7 @@
 --		- v0.26 - 31 July 2015
 --			- Fixed another crash bug when the guild store is first opened.
 --			- Style of rings and necklaces will no longer be shown.
+--			- Item tooltips for stacks of items in the guild store include a "price per item" line.
 --
 
 

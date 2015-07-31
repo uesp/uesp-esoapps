@@ -18,6 +18,7 @@ uespLog.TRADE_UNKNOWN_COLOR = { 1, 0.2, 0.2 }
 uespLog.TRADE_ORNATE_COLOR = { 1, 1, 0.25 }
 uespLog.TRADE_INTRICATE_COLOR = { 0, 1, 1 }
 uespLog.TRADE_STYLE_COLOR = { 1, 0.75, 0.25 }
+uespLog.TRADE_PRICE_COLOR = { 1.0, 1.0, 0.5 }
 
 uespLog.ORNATE_TRAIT_INDEX = 20
 uespLog.INTRICATE_TRAIT_INDEX = 21
@@ -374,12 +375,14 @@ function uespLog.AddCraftDetailsToToolTipRow (row)
 	
 	local itemLink = nil
 	local tradingHouseMode = TRADING_HOUSE:GetCurrentMode()
+	local isTradingHouseListing = false
 	
 	if (slotIndex and bagId) then
 		itemLink = GetItemLink(bagId, slotIndex)
 	elseif (slotIndex) then
 		if (tradingHouseMode == ZO_TRADING_HOUSE_MODE_BROWSE and TRADING_HOUSE.m_numItemsOnPage ~= nil and TRADING_HOUSE.m_numItemsOnPage >= slotIndex and slotIndex > 0) then
 			itemLink = GetTradingHouseSearchResultItemLink(slotIndex)
+			isTradingHouseListing = true
 		elseif (tradingHouseMode == ZO_TRADING_HOUSE_MODE_LISTINGS and GetNumTradingHouseListings() >= slotIndex and slotIndex > 0) then
 			itemLink = GetTradingHouseListingItemLink(slotIndex)
 		else
@@ -391,7 +394,21 @@ function uespLog.AddCraftDetailsToToolTipRow (row)
 		return false
 	end
 			
-	return uespLog.AddCraftDetailsToToolTip(ItemTooltip, itemLink, bagId, slotIndex)
+	uespLog.AddCraftDetailsToToolTip(ItemTooltip, itemLink, bagId, slotIndex)
+	
+	if (isTradingHouseListing) then
+		local icon, itemName, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType = GetTradingHouseSearchResultItemInfo(slotIndex)
+		
+		if (stackCount > 1) then
+			local pricePerItem = purchasePrice / stackCount
+			local priceMsg = string.format("Price per Item = %0.2f", pricePerItem)
+			local color1, color2, color3 = unpack(uespLog.TRADE_PRICE_COLOR)
+			ItemTooltip:AddLine("", "ZoFontWinH5", color1, color2, color3, BOTTOM, MODIFY_TEXT_TYPE_NONE)
+			ItemTooltip:AddLine(priceMsg, "ZoFontGame", color1, color2, color3, BOTTOM, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_CENTER)
+		end
+	end
+	
+	return true
 end
 
 

@@ -424,7 +424,6 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 	if (iconTexture ~= nil and tradeType ~= nil) then
 	
 		if (uespLog.IsCraftIngredientDisplay()) then
-			--ZO_Tooltip_AddDivider(ThisToolTip)		
 			itemText = uespLog.GetItemTradeTypeText(tradeType)
 			color1, color2, color3 = unpack(iconColor)
 		

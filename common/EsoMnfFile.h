@@ -40,6 +40,7 @@ namespace eso {
 		std::string ImportIdFilename;
 		std::string DiffLangFilename1;
 		std::string DiffLangFilename2;
+		std::string IdFilename2;
 		int MnfStartIndex;
 		int MnfEndIndex;
 		int ArchiveIndex;

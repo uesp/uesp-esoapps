@@ -22,6 +22,7 @@ namespace eso {
 		bool IsRequired;
 		bool IsOption;
 		int  NumValues;
+		int  NumOptValues;
 		bool PermitMultiples;
 
 		std::string DefaultValue;

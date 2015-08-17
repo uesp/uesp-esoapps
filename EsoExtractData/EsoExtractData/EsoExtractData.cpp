@@ -51,7 +51,7 @@
  *		- Added the "-i" option to input an ID text.
  *		- An ID file (.id.txt) is output when converting a LANG file. For example:
  *					EsoExtractData.exe -l file.lang 
- *		 outputs the file "file.lang.id.txt".
+ *		  outputs the file "file.lang.id.txt".
  *		- Convert a text file along with an ID file to a LANG file.
  *				Using a PO TEXT file (blank line between lines):
  *						EsoExtractData.exe -i file.id.txt -p -t -x file.lang.txt

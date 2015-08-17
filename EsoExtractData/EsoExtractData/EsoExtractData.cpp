@@ -66,10 +66,10 @@
  *				EsoExtractData.exe -d file1.lang file2.csv
  *				EsoExtractData.exe -d file1.csv file2.lang
  *				EsoExtractData.exe -d file1.csv file2.csv
- *				EsoExtractData.exe -d file1.txt file2.lang -i file1.id.txt
+ *				EsoExtractData.exe -d file1.txt file2.lang -i1 file1.id.txt
  *		- Added the "-i2" option for specifying the second ID file when comparing files:
  *				EsoExtractData.exe -d file1.lang file2.txt -i2 file2.id.txt
- *				EsoExtractData.exe -d file1.txt file2.txt -i file1.id.txt -i2 file2.id.txt
+ *				EsoExtractData.exe -d file1.txt file2.txt -i1 file1.id.txt -i2 file2.id.txt
  */
 
 
@@ -1297,18 +1297,24 @@ bool OutputLangEntryToFile (CFile& File, uint64_t ID64, std::string Text, const 
 
 
 
-bool DiffLangFiles (std::string Filename1, std::string Filename2, std::string IdFilename1, std::string IdFilename2, 
+bool DiffLangFiles (std::string OrigLangFilename, std::string OrigLangIdFilename,
+					std::string Filename1, std::string Filename2, std::string IdFilename1, std::string IdFilename2, 
 					std::string OutputFilename, const bool UseLangText, const bool UsePOCSVFormat)
 {
+	CEsoLangFile     LangFileOrig;
 	CEsoLangFile     LangFile1;
 	CEsoLangFile     LangFile2;
 	CEsoLangFile     OutputLangFile;
+	CCsvFile         CsvFileOrig(!UseLangText);
 	CCsvFile         CsvFile1(!UseLangText);
 	CCsvFile         CsvFile2(!UseLangText);
+	CSimpleTextFile  TextFileOrig;
 	CSimpleTextFile  TextFile1;
 	CSimpleTextFile  TextFile2;
+	CSimpleTextFile  IdFileOrig;
 	CSimpleTextFile  IdFile1;
 	CSimpleTextFile  IdFile2;
+	CLangIdMap	     IdMapOrig;
 	CLangIdMap	     IdMap1;
 	CLangIdMap    	 IdMap2;
 	std::string		 AddedFilename(OutputFilename);
@@ -1320,8 +1326,38 @@ bool DiffLangFiles (std::string Filename1, std::string Filename2, std::string Id
 	CFile			 RemovedFile;
 
 	PrintError("Performing LANG file difference on:");
+	std::transform(OrigLangFilename.begin(), OrigLangFilename.end(), OrigLangFilename.begin(), ::tolower);
 	std::transform(Filename1.begin(), Filename1.end(), Filename1.begin(), ::tolower);
 	std::transform(Filename2.begin(), Filename2.end(), Filename2.begin(), ::tolower);
+
+	if (!OrigLangFilename.empty())
+	{
+		PrintError("\tOriginal Lang: %s", OrigLangFilename.c_str());
+
+		if (StringEndsWith(OrigLangFilename, ".lang"))
+		{
+			if (!LangFileOrig.Load(OrigLangFilename)) return false;
+			if (!CreateIdMap(IdMapOrig, LangFileOrig, UseLangText)) return false;
+		}
+		else if (StringEndsWith(OrigLangFilename, ".csv"))
+		{
+			if (!CsvFileOrig.Load(OrigLangFilename)) return false;
+			if (!CreateIdMap(IdMapOrig, CsvFileOrig, UsePOCSVFormat)) return false;
+		}
+		else if (StringEndsWith(OrigLangFilename, ".txt"))
+		{
+			if (OrigLangIdFilename.empty()) return PrintError("Error: Missing ID file to go with TXT file '%s'!", OrigLangIdFilename.c_str());
+			PrintError("\tCreating original LANG file from text file '%s' and ID file '%s'...", OrigLangFilename.c_str(), OrigLangIdFilename.c_str());
+			if (!LoadSimpleTextFile(OrigLangFilename, TextFileOrig)) return false;
+			if (!LoadSimpleTextFile(OrigLangIdFilename, IdFileOrig)) return false;
+			if (!LangFile1.CreateFromText(TextFileOrig, IdFileOrig, UsePOCSVFormat, false)) return false;
+			if (!CreateIdMap(IdMapOrig, LangFileOrig, UsePOCSVFormat)) return false;
+		}
+		else
+		{
+			return PrintError("Error: Unknown file format for '%s' (expected LANG, TXT, or CSV)!", OrigLangFilename.c_str());
+		}
+	}
 
 	PrintError("\tOld: %s", Filename1.c_str());
 
@@ -1346,7 +1382,7 @@ bool DiffLangFiles (std::string Filename1, std::string Filename2, std::string Id
 	}
 	else
 	{
-		return PrintError("Error: Unknown file format for '%s' (expected LANG or CSV)!", Filename1.c_str());
+		return PrintError("Error: Unknown file format for '%s' (expected LANG, TXT, or CSV)!", Filename1.c_str());
 	}
 
 	PrintError("\tNew: %s", Filename2.c_str());
@@ -1372,7 +1408,7 @@ bool DiffLangFiles (std::string Filename1, std::string Filename2, std::string Id
 	}
 	else
 	{
-		return PrintError("Error: Unknown file format for '%s' (expected LANG or CSV)!", Filename2.c_str());
+		return PrintError("Error: Unknown file format for '%s' (expected LANG, TXT, or CSV)!", Filename2.c_str());
 	}
 
 	PrintError("\tFound %d strings in file #1.", IdMap1.size());
@@ -1405,6 +1441,10 @@ bool DiffLangFiles (std::string Filename1, std::string Filename2, std::string Id
 				++DiffCount;
 				OutputLangEntryToFile(ChangedFile, id, IdMap2[id], UsePOCSVFormat);
 				OutputLangFile.AddEntry(id, IdMap2[id]);
+			}
+			else if (IdMapOrig.find(id) != IdMapOrig.end())
+			{
+				OutputLangFile.AddEntry(id, IdMapOrig[id]);
 			}
 			else
 			{
@@ -1478,8 +1518,10 @@ cmdparamdef_t g_Cmds[] =
 	{ "posourcetext",  "", "posourcetext",  "Use the source text when converting a PO-CSV file to a LANG.",		false, true,  0, 0, false, "0" },
 	{ "langtext",     "t", "langtext",      "Output the LANG file in plain text format.",		   	            false, true,  0, 0, false, "0" },
 	{ "idfile",       "i", "idfile",        "The ID file to use when converting a TXT file to LANG.",           false, true,  1, 0, false, "" },
+	{ "idfile1",      "i1","idfile1",       "The ID file to use for the first TXT file when comparing files.",  false, true,  1, 0, false, "" },
 	{ "idfile2",      "i2","idfile2",       "The ID file to use for the second TXT file when comparing files.", false, true,  1, 0, false, "" },
 	{ "difflang",     "d", "difflang",      "Compare two LANG/CSV/TXT files for differences.",                  false, true,  2, 0, false, "" },
+	{ "origlang",     "g", "origlang",      "Use this LANG/CSV/TXT file for source texts when comparing files.",false, true,  1, 0, false, "" },
 	{ "",   "", "", "", false, false, false, false, "" }
 };
 
@@ -1560,7 +1602,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	ExportOptions.ImportIdFilename = CmdParamHandler.GetParamValue("idfile");
 	ExportOptions.DiffLangFilename1 = CmdParamHandler.GetParamValue("difflang", 0);
 	ExportOptions.DiffLangFilename2 = CmdParamHandler.GetParamValue("difflang", 1);
+	ExportOptions.IdFilename1 = CmdParamHandler.GetParamValue("idfile1", 0);
 	ExportOptions.IdFilename2 = CmdParamHandler.GetParamValue("idfile2", 0);
+	ExportOptions.OrigLangFilename = CmdParamHandler.GetParamValue("origlang");
 
 		/* Handle a LANG file comparison */
 	if (!ExportOptions.DiffLangFilename1.empty() && !ExportOptions.DiffLangFilename2.empty())
@@ -1568,7 +1612,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		std::string OutputFilename = ExportOptions.DiffLangFilename2;
 		if (!ExportOptions.OutputFilename.empty()) OutputFilename = ExportOptions.OutputFilename;
 
-		if (!DiffLangFiles(ExportOptions.DiffLangFilename1, ExportOptions.DiffLangFilename2, ExportOptions.ImportIdFilename, ExportOptions.IdFilename2, OutputFilename, ExportOptions.UseLangText, ExportOptions.UsePOCSVFormat))
+		if (!DiffLangFiles(ExportOptions.OrigLangFilename, ExportOptions.ImportIdFilename, ExportOptions.DiffLangFilename1, ExportOptions.DiffLangFilename2, ExportOptions.IdFilename1, ExportOptions.IdFilename2, OutputFilename, ExportOptions.UseLangText, ExportOptions.UsePOCSVFormat))
 		{
 			return -100;
 		}

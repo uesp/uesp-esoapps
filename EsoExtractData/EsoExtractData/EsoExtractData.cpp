@@ -1293,6 +1293,7 @@ bool DiffLangFiles (std::string Filename1, std::string Filename2, std::string Id
 {
 	CEsoLangFile     LangFile1;
 	CEsoLangFile     LangFile2;
+	CEsoLangFile     OutputLangFile;
 	CCsvFile         CsvFile1(!UseLangText);
 	CCsvFile         CsvFile2(!UseLangText);
 	CSimpleTextFile  TextFile1;
@@ -1304,6 +1305,7 @@ bool DiffLangFiles (std::string Filename1, std::string Filename2, std::string Id
 	std::string		 AddedFilename(OutputFilename);
 	std::string		 ChangedFilename(OutputFilename);
 	std::string		 RemovedFilename(OutputFilename);
+	std::string		 OutputLangFilename(OutputFilename);
 	CFile			 AddedFile;
 	CFile			 ChangedFile;
 	CFile			 RemovedFile;
@@ -1393,6 +1395,11 @@ bool DiffLangFiles (std::string Filename1, std::string Filename2, std::string Id
 			{
 				++DiffCount;
 				OutputLangEntryToFile(ChangedFile, id, IdMap2[id], UsePOCSVFormat);
+				OutputLangFile.AddEntry(id, IdMap2[id]);
+			}
+			else
+			{
+				OutputLangFile.AddEntry(id, IdMap1[id]);
 			}
 		}
 		else
@@ -1410,12 +1417,32 @@ bool DiffLangFiles (std::string Filename1, std::string Filename2, std::string Id
 		{
 			++AddCount;
 			OutputLangEntryToFile(AddedFile, id, IdMap2[id], UsePOCSVFormat);
+			OutputLangFile.AddEntry(id, IdMap2[id]);
 		}
 	}
 
 	PrintError("\tAdditions = %d", AddCount);
 	PrintError("\tChanges   = %d", DiffCount);
 	PrintError("\tRemovals  = %d", RemoveCount);
+
+	OutputLangFile.SortRecords();
+
+	if (UseLangText)
+	{
+		OutputLangFilename = OutputFilename + ".txt";
+		if (!OutputLangFile.DumpText(OutputLangFilename, UsePOCSVFormat)) return PrintError("Error: Failed to save new TXT file '%s'!", OutputLangFilename.c_str());
+		PrintError("Saved new TXT file '%s'!", OutputLangFilename.c_str());
+
+		OutputLangFilename = OutputFilename + ".id.txt";
+		if (!OutputLangFile.DumpTextId(OutputLangFilename)) return PrintError("Error: Failed to save new ID file '%s'!", OutputLangFilename.c_str());
+		PrintError("Saved new ID file '%s'!", OutputLangFilename.c_str());
+	}
+	else
+	{
+		OutputLangFilename = OutputFilename + ".lang";
+		if (!OutputLangFile.Save(OutputLangFilename)) return PrintError("Error: Failed to save new LANG file '%s'!", OutputLangFilename.c_str());
+		PrintError("Saved new LANG file '%s'!", OutputLangFilename.c_str());
+	}
 
 	return true;
 }

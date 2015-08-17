@@ -24,6 +24,39 @@ void CEsoLangFile::Destroy()
 }
 
 
+bool CEsoLangFile::AddEntry (uint64_t Id64, const std::string Text)
+{
+	dword Id = Id64 & 0xffffffff;
+	dword Unknown = (Id64 >> 32) & 0x3ff;
+	dword Index = (Id64 >> 42) & 0xfffff;
+
+	return AddEntry(Id, Unknown, Index, 0, Text);
+}
+
+
+bool CEsoLangFile::AddEntry (dword Id, dword Unknown, dword Index, dword Offset, const std::string Text)
+{
+	lang_record_t NewRecord;
+
+	NewRecord.Id = Id;
+	NewRecord.Unknown = Unknown;
+	NewRecord.Index = Index;
+	NewRecord.Offset = Offset;
+	NewRecord.Text = Text;
+
+	m_Records.push_back(NewRecord);
+	++m_RecordCount;
+
+	return true;
+}
+
+
+void CEsoLangFile::SortRecords (void)
+{
+	std::sort(m_Records.begin(), m_Records.end());
+}
+
+
 int CEsoLangFile::CreateRecordsFromCSV (const eso::CCsvFile& CsvFile, const bool UsePOSourceText)
 {
 	int RecordCount = 0;

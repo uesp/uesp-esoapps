@@ -51,6 +51,9 @@ public:
 	bool DumpTextFile (eso::CFile& File, lang_record_t& Record);
 	bool DumpTextId (const std::string Filename);
 
+	eso::dword GetNumRecords () const { return m_RecordCount; }
+	lang_record_t& GetRecord(eso::dword i) { return m_Records[i]; }
+
 	bool Load (const std::string Filename);
 	bool Read (eso::CFile& File);
 

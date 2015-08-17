@@ -9,12 +9,12 @@
 
 namespace eso
 {
+	typedef std::string csvcell_t;
+	typedef std::vector<csvcell_t> csvrow_t;
+
 	class CCsvFile 
 	{
 	protected:
-		typedef std::string csvcell_t;
-		typedef std::vector<csvcell_t> csvrow_t;
-
 		std::vector<csvrow_t> m_Data;
 		bool m_HasHeaderRow;
 

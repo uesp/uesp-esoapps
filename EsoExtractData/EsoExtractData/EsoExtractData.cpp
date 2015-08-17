@@ -1200,6 +1200,126 @@ bool DoConvertExistingRiffFiles (const std::string RootPath)
 }
 
 
+typedef std::unordered_map<uint64_t, std::string> CLangIdMap;
+
+
+bool CreateIdMap (CLangIdMap& IdMap, CEsoLangFile& LangFile)
+{
+
+	for (size_t i = 0; i < LangFile.GetNumRecords(); ++i)
+	{
+		lang_record_t& Record = LangFile.GetRecord(i);
+		uint64_t id = ((uint64_t) Record.Id) + (((uint64_t)Record.Unknown) << 32) + (((uint64_t)Record.Index) << 42);
+		IdMap[id] = Record.Text;
+	}
+
+	return true;
+}
+
+
+bool CreateIdMap (CLangIdMap& IdMap, CCsvFile& CsvFile)
+{
+
+	for (int i = 1; i < CsvFile.GetNumRows(); ++i)
+	{
+		const eso::csvrow_t& Row = CsvFile.GetData()[i];
+		if (Row.size() < 5) continue;
+		const eso::csvcell_t& Id = Row[0];
+		const eso::csvcell_t& Unknown = Row[1];
+		const eso::csvcell_t& Index = Row[2];
+		const eso::csvcell_t& Value = Row[4];
+
+		uint64_t id = ((uint64_t) strtoul(Id.c_str(), nullptr, 10)) + (((uint64_t) strtoul(Unknown.c_str(), nullptr, 10)) << 32) + (((uint64_t) strtoul(Index.c_str(), nullptr, 10)) << 42);
+		IdMap[id] = Value;
+	}
+
+	return true;
+}
+
+
+
+bool DiffLangFiles (std::string Filename1, std::string Filename2, const bool UseLangText)
+{
+	CEsoLangFile    LangFile1;
+	CEsoLangFile    LangFile2;
+	CCsvFile        CsvFile1(!UseLangText);
+	CCsvFile        CsvFile2(!UseLangText);
+	CLangIdMap	    IdMap1;
+	CLangIdMap    	IdMap2;
+
+	PrintError("Performing LANG file difference on:\n\tOld: %s\n\tNew: %s", Filename1.c_str(), Filename2.c_str());
+	std::transform(Filename1.begin(), Filename1.end(), Filename1.begin(), ::tolower);
+	std::transform(Filename2.begin(), Filename2.end(), Filename2.begin(), ::tolower);
+
+	if (StringEndsWith(Filename1, ".lang"))
+	{
+		if (!LangFile1.Load(Filename1)) return false;
+		CreateIdMap(IdMap1, LangFile1);
+	}
+	else if (StringEndsWith(Filename1, ".csv"))
+	{
+		if (!CsvFile1.Load(Filename1)) return false;
+		CreateIdMap(IdMap1, CsvFile1);
+	}
+	else
+	{
+		return PrintError("Error: Unknown file format for '%s' (expected LANG or CSV)!", Filename1.c_str());
+	}
+
+	if (StringEndsWith(Filename2, ".lang"))
+	{
+		if (!LangFile2.Load(Filename2)) return false;
+		CreateIdMap(IdMap2, LangFile2);
+	}
+	else if (StringEndsWith(Filename2, ".csv"))
+	{
+		if (!CsvFile2.Load(Filename2)) return false;
+		CreateIdMap(IdMap2, CsvFile2);
+	}
+	else
+	{
+		return PrintError("Error: Unknown file format for '%s' (expected LANG or CSV)!", Filename2.c_str());
+	}
+
+	PrintError("\tFound %d strings in file #1.", IdMap1.size());
+	PrintError("\tFound %d strings in file #2.", IdMap2.size());
+
+	size_t AddCount = 0;
+	size_t DiffCount = 0;
+	size_t RemoveCount = 0;
+
+	for (auto i = IdMap1.begin(); i != IdMap1.end(); ++i)
+	{
+		uint64_t id = (i->first);
+
+		if (IdMap2.find(id) != IdMap2.end())
+		{
+			if (IdMap2[id] != IdMap1[id]) ++DiffCount;
+		}
+		else
+		{
+			++RemoveCount;
+		}
+	}
+
+	for (auto i = IdMap2.begin(); i != IdMap2.end(); ++i)
+	{
+		uint64_t id = (i->first);
+
+		if (IdMap1.find(id) == IdMap1.end())
+		{
+			++AddCount;
+		}
+	}
+
+	PrintError("\tAdditions = %d", AddCount);
+	PrintError("\tChanges   = %d", DiffCount);
+	PrintError("\tRemovals  = %d", RemoveCount);
+
+	return true;
+}
+
+
 cmdparamdef_t g_Cmds[] = 
 {
 	// VarName        Opt  LongOpt           Description													 Req   Option Value  Mult   Default
@@ -1306,7 +1426,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		/* Handle a LANG file comparison */
 	if (!ExportOptions.DiffLangFilename1.empty() && !ExportOptions.DiffLangFilename2.empty())
 	{
-		PrintError("Performing LANG file difference on '%s' and '%s':", ExportOptions.DiffLangFilename1.c_str(), ExportOptions.DiffLangFilename2.c_str());
+		DiffLangFiles(ExportOptions.DiffLangFilename1, ExportOptions.DiffLangFilename2, ExportOptions.UseLangText);
 	}
 	
 	

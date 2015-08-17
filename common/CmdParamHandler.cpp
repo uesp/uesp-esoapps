@@ -46,13 +46,19 @@ namespace eso {
 			if (i->second.pCmdDef->IsOption)
 			{
 				if (i->second.pCmdDef->PermitMultiples)
-					PrintLog("\tOption %s (x%d) = '%s'", i->first.c_str(), i->second.Count, i->second.Value.c_str());
+					PrintLog("\tOption %s (x%d) = ", i->first.c_str(), i->second.Count);
 				else
-					PrintLog("\tOption %s = '%s'", i->first.c_str(), i->second.Value.c_str());
+					PrintLog("\tOption %s = ", i->first.c_str());
+
 			}
 			else
 			{
-				PrintLog("\t%s = '%s'", i->first.c_str(), i->second.Value.c_str());
+				PrintLog("\t%s = ", i->first.c_str());
+			}
+
+			for (size_t j = 0; j < i->second.Values.size(); ++j)
+			{
+				PrintLog("'%s' ", i->second.Values[j].c_str());
 			}
 
 			++Count;
@@ -124,8 +130,32 @@ namespace eso {
 			if (!IsParamName(Param)) return "";
 			return m_CmdMapName[Param]->DefaultValue;
 		}
+		else if (m_CmdParamValues[Param].Values.size() == 0)
+		{
+			if (!IsParamName(Param)) return "";
+			return m_CmdMapName[Param]->DefaultValue;
+		}
 
-		return m_CmdParamValues[Param].Value;
+		return m_CmdParamValues[Param].Values[0];
+	}
+
+
+	std::string CCmdParamHandler::GetParamValue (std::string Param, const size_t Index)
+	{
+		std::transform(Param.begin(), Param.end(), Param.begin(), ::tolower);
+
+		if (!HasParamValue(Param)) 
+		{
+			if (!IsParamName(Param)) return "";
+			return m_CmdMapName[Param]->DefaultValue;
+		}
+		else if (m_CmdParamValues[Param].Values.size() <= Index)
+		{
+			if (!IsParamName(Param)) return "";
+			return m_CmdMapName[Param]->DefaultValue;
+		}
+
+		return m_CmdParamValues[Param].Values[Index];
 	}
 
 
@@ -217,7 +247,7 @@ namespace eso {
 					}
 					else 
 					{
-						SetCommandParamValue(pCmdDef->Name, argv[i+1]);
+						SetCommandParamValue(pCmdDef->Name, argv[i+1], j);
 						++i;
 					}
 				}
@@ -316,13 +346,38 @@ namespace eso {
 
 		if (HasParamValue(Name))
 		{
-			m_CmdParamValues[Name].Value = Value;
+			m_CmdParamValues[Name].Values[0] = Value;
 			m_CmdParamValues[Name].Count++;
 		}
 		else
 		{
 			ParamValue.pCmdDef = m_CmdMapName[Name];
-			ParamValue.Value = Value;
+			ParamValue.Values[0] = Value;
+			ParamValue.Count = 1;
+			m_CmdParamValues[Name] = ParamValue;
+		}
+
+		return true;
+	}
+
+
+	bool CCmdParamHandler::SetCommandParamValue(const std::string Name, const std::string Value, const size_t Index)
+	{
+		cmdparamvalue_t ParamValue;
+
+		if (!IsParamName(Name)) return false;
+
+		if (HasParamValue(Name))
+		{
+			m_CmdParamValues[Name].Values.resize(Index+1);
+			m_CmdParamValues[Name].Values[Index] = Value;
+			m_CmdParamValues[Name].Count++;
+		}
+		else
+		{
+			ParamValue.pCmdDef = m_CmdMapName[Name];
+			ParamValue.Values.resize(Index+1);
+			ParamValue.Values[Index] = Value;
 			ParamValue.Count = 1;
 			m_CmdParamValues[Name] = ParamValue;
 		}

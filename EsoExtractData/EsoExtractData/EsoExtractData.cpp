@@ -1300,6 +1300,15 @@ int _tmain(int argc, _TCHAR* argv[])
 	ExportOptions.CreateLangFilename = CmdParamHandler.GetParamValue("createlang");
 	ExportOptions.OutputFilename = CmdParamHandler.GetParamValue("outputfile");
 	ExportOptions.ImportIdFilename = CmdParamHandler.GetParamValue("idfile");
+	ExportOptions.DiffLangFilename1 = CmdParamHandler.GetParamValue("difflang", 0);
+	ExportOptions.DiffLangFilename2 = CmdParamHandler.GetParamValue("difflang", 1);
+
+		/* Handle a LANG file comparison */
+	if (!ExportOptions.DiffLangFilename1.empty() && !ExportOptions.DiffLangFilename2.empty())
+	{
+		PrintError("Performing LANG file difference on '%s' and '%s':", ExportOptions.DiffLangFilename1.c_str(), ExportOptions.DiffLangFilename2.c_str());
+	}
+	
 	
 		/* Handle a .LANG file conversion to CSV */
 	if (!ExportOptions.LangFilename.empty())

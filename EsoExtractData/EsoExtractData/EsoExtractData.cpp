@@ -60,7 +60,16 @@
  *				Using a PO TEXT file to new LANG file:
  *						EsoExtractData.exe -i file.id.txt -p -t -x file.lang.txt -o newfile.lang
  *
- *
+ * v0.25 -- 17 August 2015
+ *		- Added the "-d" option for comparing LANG/CSV/TXT files:
+ *				EsoExtractData.exe -d file1.lang file2.lang
+ *				EsoExtractData.exe -d file1.lang file2.csv
+ *				EsoExtractData.exe -d file1.csv file2.lang
+ *				EsoExtractData.exe -d file1.csv file2.csv
+ *				EsoExtractData.exe -d file1.txt file2.lang -i file1.id.txt
+ *		- Added the "-i2" option for specifying the second ID file when comparing files:
+ *				EsoExtractData.exe -d file1.lang file2.txt -i2 file2.id.txt
+ *				EsoExtractData.exe -d file1.txt file2.txt -i file1.id.txt -i2 file2.id.txt
  */
 
 
@@ -1475,7 +1484,7 @@ cmdparamdef_t g_Cmds[] =
 };
 
 const char g_AppDescription[] = "\
-ExportMnf v0.24 is a simple command line application to load and export files\n\
+ExportMnf v0.25 is a simple command line application to load and export files\n\
 from ESO's MNF and DAT files. Created by Daveh (dave@uesp.net).\n\
 \n\
 WARNING: This app is in early development and is fragile. User discretion is\n\

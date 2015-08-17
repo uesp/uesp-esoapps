@@ -1271,7 +1271,6 @@ bool CreateIdMap (CLangIdMap& IdMap, CCsvFile& CsvFile, const bool UsePOCSVForma
 }
 
 
-
 bool OutputLangEntryToFile (CFile& File, uint64_t ID64, std::string Text, const bool UsePOCSVFormat)
 {
 	unsigned int ID;
@@ -1289,12 +1288,17 @@ bool OutputLangEntryToFile (CFile& File, uint64_t ID64, std::string Text, const 
 
 
 
-bool DiffLangFiles (std::string Filename1, std::string Filename2, std::string OutputFilename, const bool UseLangText, const bool UsePOCSVFormat)
+bool DiffLangFiles (std::string Filename1, std::string Filename2, std::string IdFilename1, std::string IdFilename2, 
+					std::string OutputFilename, const bool UseLangText, const bool UsePOCSVFormat)
 {
 	CEsoLangFile     LangFile1;
 	CEsoLangFile     LangFile2;
 	CCsvFile         CsvFile1(!UseLangText);
 	CCsvFile         CsvFile2(!UseLangText);
+	CSimpleTextFile  TextFile1;
+	CSimpleTextFile  TextFile2;
+	CSimpleTextFile  IdFile1;
+	CSimpleTextFile  IdFile2;
 	CLangIdMap	     IdMap1;
 	CLangIdMap    	 IdMap2;
 	std::string		 AddedFilename(OutputFilename);
@@ -1313,12 +1317,21 @@ bool DiffLangFiles (std::string Filename1, std::string Filename2, std::string Ou
 	if (StringEndsWith(Filename1, ".lang"))
 	{
 		if (!LangFile1.Load(Filename1)) return false;
-		CreateIdMap(IdMap1, LangFile1, UseLangText);
+		if (!CreateIdMap(IdMap1, LangFile1, UseLangText)) return false;
 	}
 	else if (StringEndsWith(Filename1, ".csv"))
 	{
 		if (!CsvFile1.Load(Filename1)) return false;
-		CreateIdMap(IdMap1, CsvFile1, UsePOCSVFormat);
+		if (!CreateIdMap(IdMap1, CsvFile1, UsePOCSVFormat)) return false;
+	}
+	else if (StringEndsWith(Filename1, ".txt"))
+	{
+		if (IdFilename1.empty()) return PrintError("Error: Missing ID file to go with TXT file '%s'!", Filename1.c_str());
+		PrintError("\tCreating old LANG file from text file '%s' and ID file '%s'...", Filename1.c_str(), IdFilename1.c_str());
+		if (!LoadSimpleTextFile(Filename1, TextFile1)) return false;
+		if (!LoadSimpleTextFile(IdFilename1, IdFile1)) return false;
+		if (!LangFile1.CreateFromText(TextFile1, IdFile1, UsePOCSVFormat, false)) return false;
+		if (!CreateIdMap(IdMap1, LangFile1, UsePOCSVFormat)) return false;
 	}
 	else
 	{
@@ -1330,12 +1343,21 @@ bool DiffLangFiles (std::string Filename1, std::string Filename2, std::string Ou
 	if (StringEndsWith(Filename2, ".lang"))
 	{
 		if (!LangFile2.Load(Filename2)) return false;
-		CreateIdMap(IdMap2, LangFile2, UseLangText);
+		if (!CreateIdMap(IdMap2, LangFile2, UseLangText)) return false;
 	}
 	else if (StringEndsWith(Filename2, ".csv"))
 	{
 		if (!CsvFile2.Load(Filename2)) return false;
-		CreateIdMap(IdMap2, CsvFile2, UsePOCSVFormat);
+		if (!CreateIdMap(IdMap2, CsvFile2, UsePOCSVFormat)) return false;
+	}
+	else if (StringEndsWith(Filename2, ".txt"))
+	{
+		if (IdFilename2.empty()) return PrintError("Error: Missing ID file to go with TXT file '%s'!", Filename2.c_str());
+		PrintError("\tCreating new LANG file from text file '%s' and ID file '%s'...", Filename2.c_str(), IdFilename2.c_str());
+		if (!LoadSimpleTextFile(Filename2, TextFile2)) return false;
+		if (!LoadSimpleTextFile(IdFilename2, IdFile2)) return false;
+		if (!LangFile2.CreateFromText(TextFile2, IdFile2, UsePOCSVFormat, false)) return false;
+		if (!CreateIdMap(IdMap2, LangFile2, UsePOCSVFormat)) return false;
 	}
 	else
 	{
@@ -1401,26 +1423,27 @@ bool DiffLangFiles (std::string Filename1, std::string Filename2, std::string Ou
 
 cmdparamdef_t g_Cmds[] = 
 {
-	// VarName        Opt  LongOpt           Description													 Req   Option Value  Mult   Default
-	{ "mnffile",       "", "",				"Input MNF filename to load.",									 false, false, 1,  false, "" },
-	{ "outputpath",    "", "",				"Path to save extracted data files to.",						 false, false, 1,  false, "" },
-	{ "mnfft",        "m", "mnfft",			"Dump the MNF filetable to the specified text file.",			 false, true,  1,  false, "" },
-	{ "zosft",        "z", "zosft",			"Dump the ZOS filetable to the specified text file.",			 false, true,  1,  false, "" },
-	{ "startindex",   "s", "startindex",	"Start exporting sub-files at the given file index.",			 false, true,  1,  false, "-1" },
-	{ "endindex",     "e", "endindex",	    "Stop exporting sub-files at the given file index.",			 false, true,  1,  false, "-1" },
-	{ "archiveindex", "a", "archive",		"Only export MNF file with the given index.",					 false, true,  1,  false, "-1" },
-	{ "beginarchive", "b", "beginarchive",	"start with the given MNF file index.",							 false, true,  1,  false, "-1" },
-	{ "fileindex",    "f", "fileindex",		"Only export MNF the subfile with the given file index.",		 false, true,  1,  false, "-1" },
-	{ "convertdds",   "c", "convertdds",    "(Doesn't Work Yet) Attempt to convert DDS files to PNG.",		 false, true,  0, false, "0" },
-	{ "skipsubfiles", "k", "skipsubfiles",	"Don't export subfiles from the MNF data.",						 false, true,  0, false, "0" },
-	{ "langfile",     "l", "lang",	        "Convert the given .lang file to a CSV.",						 false, true,  1,  false, "" },
-	{ "createlang",   "x", "createlang",    "Convert the given language CSV file to a .LANG.",				 false, true,  1,  false, "" },
-	{ "outputfile",   "o", "outputfile",    "Specify the output file for -l and -x.",						 false, true,  1,  false, "" },
-	{ "pocsv",        "p", "pocsv",         "Import/Export the CSV/Text file in a PO compatible format.",    false, true,  0, false, "0" },
-	{ "posourcetext",  "", "posourcetext",  "Use the source text when converting a PO-CSV file to a LANG.",  false, true,  0, false, "0" },
-	{ "langtext",     "t", "langtext",      "Output the LANG file in plain text format.",		   	         false, true,  0, false, "0" },
-	{ "idfile",       "i", "idfile",        "The ID file to use when converting  a TXT file to LANG.",       false, true,  1,  false, "" },
-	{ "difflang",     "d", "difflang",      "Compare two LANG/CSV/TXT files for differences.",               false, true,  2,  false, "" },
+	// VarName        Opt  LongOpt           Description													 Req   Option Value   Mult   Default
+	{ "mnffile",       "", "",				"Input MNF filename to load.",										false, false, 1, 0, false, "" },
+	{ "outputpath",    "", "",				"Path to save extracted data files to.",							false, false, 1, 0, false, "" },
+	{ "mnfft",        "m", "mnfft",			"Dump the MNF filetable to the specified text file.",				false, true,  1, 0, false, "" },
+	{ "zosft",        "z", "zosft",			"Dump the ZOS filetable to the specified text file.",				false, true,  1, 0, false, "" },
+	{ "startindex",   "s", "startindex",	"Start exporting sub-files at the given file index.",				false, true,  1, 0, false, "-1" },
+	{ "endindex",     "e", "endindex",	    "Stop exporting sub-files at the given file index.",				false, true,  1, 0, false, "-1" },
+	{ "archiveindex", "a", "archive",		"Only export MNF file with the given index.",						false, true,  1, 0, false, "-1" },
+	{ "beginarchive", "b", "beginarchive",	"start with the given MNF file index.",								false, true,  1, 0, false, "-1" },
+	{ "fileindex",    "f", "fileindex",		"Only export MNF the subfile with the given file index.",			false, true,  1, 0, false, "-1" },
+	{ "convertdds",   "c", "convertdds",    "(Doesn't Work Yet) Attempt to convert DDS files to PNG.",			false, true,  0, 0, false, "0" },
+	{ "skipsubfiles", "k", "skipsubfiles",	"Don't export subfiles from the MNF data.",							false, true,  0, 0, false, "0" },
+	{ "langfile",     "l", "lang",	        "Convert the given .lang file to a CSV.",							false, true,  1, 0, false, "" },
+	{ "createlang",   "x", "createlang",    "Convert the given language CSV file to a .LANG.",					false, true,  1, 0, false, "" },
+	{ "outputfile",   "o", "outputfile",    "Specify the output file for -l and -x.",							false, true,  1, 0, false, "" },
+	{ "pocsv",        "p", "pocsv",         "Import/Export the CSV/Text file in a PO compatible format.",		false, true,  0, 0, false, "0" },
+	{ "posourcetext",  "", "posourcetext",  "Use the source text when converting a PO-CSV file to a LANG.",		false, true,  0, 0, false, "0" },
+	{ "langtext",     "t", "langtext",      "Output the LANG file in plain text format.",		   	            false, true,  0, 0, false, "0" },
+	{ "idfile",       "i", "idfile",        "The ID file to use when converting a TXT file to LANG.",           false, true,  1, 0, false, "" },
+	{ "idfile2",      "i2","idfile2",       "The ID file to use for the second TXT file when comparing files.", false, true,  1, 0, false, "" },
+	{ "difflang",     "d", "difflang",      "Compare two LANG/CSV/TXT files for differences.",                  false, true,  2, 0, false, "" },
 	{ "",   "", "", "", false, false, false, false, "" }
 };
 
@@ -1501,6 +1524,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	ExportOptions.ImportIdFilename = CmdParamHandler.GetParamValue("idfile");
 	ExportOptions.DiffLangFilename1 = CmdParamHandler.GetParamValue("difflang", 0);
 	ExportOptions.DiffLangFilename2 = CmdParamHandler.GetParamValue("difflang", 1);
+	ExportOptions.IdFilename2 = CmdParamHandler.GetParamValue("idfile2", 0);
 
 		/* Handle a LANG file comparison */
 	if (!ExportOptions.DiffLangFilename1.empty() && !ExportOptions.DiffLangFilename2.empty())
@@ -1508,7 +1532,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		std::string OutputFilename = ExportOptions.DiffLangFilename2;
 		if (!ExportOptions.OutputFilename.empty()) OutputFilename = ExportOptions.OutputFilename;
 
-		if (!DiffLangFiles(ExportOptions.DiffLangFilename1, ExportOptions.DiffLangFilename2, OutputFilename, ExportOptions.UseLangText, ExportOptions.UsePOCSVFormat))
+		if (!DiffLangFiles(ExportOptions.DiffLangFilename1, ExportOptions.DiffLangFilename2, ExportOptions.ImportIdFilename, ExportOptions.IdFilename2, OutputFilename, ExportOptions.UseLangText, ExportOptions.UsePOCSVFormat))
 		{
 			return -100;
 		}

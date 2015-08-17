@@ -251,6 +251,23 @@ namespace eso {
 						++i;
 					}
 				}
+
+				for (int j = 0; j < pCmdDef->NumOptValues; ++j)
+				{
+					if (i+1 >= argc)
+					{
+						break;
+					}
+					else if (IsParamFormat(argv[i+1]))
+					{
+						break;
+					}
+					else 
+					{
+						SetCommandParamValue(pCmdDef->Name, argv[i+1], pCmdDef->NumValues + j);
+						++i;
+					}
+				}
 			}
 			else if (IsParamFormat(Param))
 			{

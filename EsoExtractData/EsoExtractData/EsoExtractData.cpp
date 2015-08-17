@@ -1203,7 +1203,7 @@ bool DoConvertExistingRiffFiles (const std::string RootPath)
 typedef std::unordered_map<uint64_t, std::string> CLangIdMap;
 
 
-bool CreateIdMap (CLangIdMap& IdMap, CEsoLangFile& LangFile)
+bool CreateIdMap (CLangIdMap& IdMap, CEsoLangFile& LangFile, const bool UseLangText)
 {
 
 	for (size_t i = 0; i < LangFile.GetNumRecords(); ++i)
@@ -1217,20 +1217,54 @@ bool CreateIdMap (CLangIdMap& IdMap, CEsoLangFile& LangFile)
 }
 
 
-bool CreateIdMap (CLangIdMap& IdMap, CCsvFile& CsvFile)
+bool CreateIdMap (CLangIdMap& IdMap, CCsvFile& CsvFile, const bool UsePOCSVFormat)
 {
+	
+	if (CsvFile.GetNumRows() > 0)
+	{
+		const eso::csvrow_t& FirstRow = CsvFile.GetData()[0];
+
+		if (UsePOCSVFormat && FirstRow.size() > 3) 
+		{
+			PrintError("Warning: Expected CSV file to have 3 columns but it looks to only %d!", FirstRow.size());
+		}
+		else if (!UsePOCSVFormat && FirstRow.size() < 5) 
+		{
+			PrintError("Warning: Expected CSV file to have 5 columns but it looks to have only %d!", FirstRow.size());
+		}
+	}
 
 	for (int i = 1; i < CsvFile.GetNumRows(); ++i)
 	{
+		const eso::csvcell_t* pValue;
 		const eso::csvrow_t& Row = CsvFile.GetData()[i];
-		if (Row.size() < 5) continue;
-		const eso::csvcell_t& Id = Row[0];
-		const eso::csvcell_t& Unknown = Row[1];
-		const eso::csvcell_t& Index = Row[2];
-		const eso::csvcell_t& Value = Row[4];
+		uint64_t id = 0;
 
-		uint64_t id = ((uint64_t) strtoul(Id.c_str(), nullptr, 10)) + (((uint64_t) strtoul(Unknown.c_str(), nullptr, 10)) << 32) + (((uint64_t) strtoul(Index.c_str(), nullptr, 10)) << 42);
-		IdMap[id] = Value;
+		if (UsePOCSVFormat) 
+		{
+			if (Row.size() < 2) continue;
+			const eso::csvcell_t& Id = Row[0];
+			pValue = &Row[1];
+
+			auto j1 = Id.find('-');
+			if (j1 == std::string::npos) continue;
+			auto j2 = Id.find('-', j1 + 1);
+			if (j2 == std::string::npos) continue;
+			const char* pText = Id.c_str();
+
+			id = ((uint64_t) strtoul(pText, nullptr, 10)) + (((uint64_t) strtoul(pText + j1 + 1, nullptr, 10)) << 32) + (((uint64_t) strtoul(pText + j2 + 1, nullptr, 10)) << 42);
+		}
+		else
+		{
+			if (Row.size() < 5) continue;
+			const eso::csvcell_t& Id = Row[0];
+			const eso::csvcell_t& Unknown = Row[1];
+			const eso::csvcell_t& Index = Row[2];
+			pValue = &Row[4];
+			id = ((uint64_t) strtoul(Id.c_str(), nullptr, 10)) + (((uint64_t) strtoul(Unknown.c_str(), nullptr, 10)) << 32) + (((uint64_t) strtoul(Index.c_str(), nullptr, 10)) << 42);
+		}
+		
+		IdMap[id] = *pValue;
 	}
 
 	return true;
@@ -1238,43 +1272,70 @@ bool CreateIdMap (CLangIdMap& IdMap, CCsvFile& CsvFile)
 
 
 
-bool DiffLangFiles (std::string Filename1, std::string Filename2, const bool UseLangText)
+bool OutputLangEntryToFile (CFile& File, uint64_t ID64, std::string Text, const bool UsePOCSVFormat)
 {
-	CEsoLangFile    LangFile1;
-	CEsoLangFile    LangFile2;
-	CCsvFile        CsvFile1(!UseLangText);
-	CCsvFile        CsvFile2(!UseLangText);
-	CLangIdMap	    IdMap1;
-	CLangIdMap    	IdMap2;
+	unsigned int ID;
+	unsigned int Unknown;
+	unsigned int Index;
 
-	PrintError("Performing LANG file difference on:\n\tOld: %s\n\tNew: %s", Filename1.c_str(), Filename2.c_str());
+	ID = ID64 & 0xffffffff;
+	Unknown = (ID64 >> 32) & 0x3ff;
+	Index = (ID64 >> 42) & 0xfffff;
+
+	if (UsePOCSVFormat)	return File.Printf("\"%d-%d-%d\",\"%s\"\n", ID, Unknown, Index, Text.c_str());
+
+	return File.Printf("\"%d\",\"%d\",\"%d\",\"0\",\"%s\"\n", ID, Unknown, Index, Text.c_str());
+}
+
+
+
+bool DiffLangFiles (std::string Filename1, std::string Filename2, std::string OutputFilename, const bool UseLangText, const bool UsePOCSVFormat)
+{
+	CEsoLangFile     LangFile1;
+	CEsoLangFile     LangFile2;
+	CCsvFile         CsvFile1(!UseLangText);
+	CCsvFile         CsvFile2(!UseLangText);
+	CLangIdMap	     IdMap1;
+	CLangIdMap    	 IdMap2;
+	std::string		 AddedFilename(OutputFilename);
+	std::string		 ChangedFilename(OutputFilename);
+	std::string		 RemovedFilename(OutputFilename);
+	CFile			 AddedFile;
+	CFile			 ChangedFile;
+	CFile			 RemovedFile;
+
+	PrintError("Performing LANG file difference on:");
 	std::transform(Filename1.begin(), Filename1.end(), Filename1.begin(), ::tolower);
 	std::transform(Filename2.begin(), Filename2.end(), Filename2.begin(), ::tolower);
+
+	PrintError("\tOld: %s", Filename1.c_str());
 
 	if (StringEndsWith(Filename1, ".lang"))
 	{
 		if (!LangFile1.Load(Filename1)) return false;
-		CreateIdMap(IdMap1, LangFile1);
+		CreateIdMap(IdMap1, LangFile1, UseLangText);
 	}
 	else if (StringEndsWith(Filename1, ".csv"))
 	{
 		if (!CsvFile1.Load(Filename1)) return false;
-		CreateIdMap(IdMap1, CsvFile1);
+		CreateIdMap(IdMap1, CsvFile1, UsePOCSVFormat);
 	}
 	else
 	{
 		return PrintError("Error: Unknown file format for '%s' (expected LANG or CSV)!", Filename1.c_str());
 	}
 
+	PrintError("\tNew: %s", Filename2.c_str());
+
 	if (StringEndsWith(Filename2, ".lang"))
 	{
 		if (!LangFile2.Load(Filename2)) return false;
-		CreateIdMap(IdMap2, LangFile2);
+		CreateIdMap(IdMap2, LangFile2, UseLangText);
 	}
 	else if (StringEndsWith(Filename2, ".csv"))
 	{
 		if (!CsvFile2.Load(Filename2)) return false;
-		CreateIdMap(IdMap2, CsvFile2);
+		CreateIdMap(IdMap2, CsvFile2, UsePOCSVFormat);
 	}
 	else
 	{
@@ -1284,6 +1345,18 @@ bool DiffLangFiles (std::string Filename1, std::string Filename2, const bool Use
 	PrintError("\tFound %d strings in file #1.", IdMap1.size());
 	PrintError("\tFound %d strings in file #2.", IdMap2.size());
 
+	AddedFilename += ".added.csv";
+	RemovedFilename += ".removed.csv";
+	ChangedFilename += ".changed.csv";
+
+	if (!AddedFile.Open(AddedFilename, "wb")) return PrintError("Error: Failed to open file '%s' for output!", AddedFilename.c_str());
+	if (!RemovedFile.Open(RemovedFilename, "wb")) return PrintError("Error: Failed to open file '%s' for output!", RemovedFilename.c_str());
+	if (!ChangedFile.Open(ChangedFilename, "wb")) return PrintError("Error: Failed to open file '%s' for output!", ChangedFilename.c_str());
+
+	PrintError("Saving added text to '%s'...", AddedFilename.c_str());
+	PrintError("Saving changed text to '%s'...", ChangedFilename.c_str());
+	PrintError("Saving removed text to '%s'...", RemovedFilename.c_str());
+	
 	size_t AddCount = 0;
 	size_t DiffCount = 0;
 	size_t RemoveCount = 0;
@@ -1294,11 +1367,16 @@ bool DiffLangFiles (std::string Filename1, std::string Filename2, const bool Use
 
 		if (IdMap2.find(id) != IdMap2.end())
 		{
-			if (IdMap2[id] != IdMap1[id]) ++DiffCount;
+			if (IdMap2[id] != IdMap1[id])
+			{
+				++DiffCount;
+				OutputLangEntryToFile(ChangedFile, id, IdMap2[id], UsePOCSVFormat);
+			}
 		}
 		else
 		{
 			++RemoveCount;
+			OutputLangEntryToFile(RemovedFile, id, IdMap1[id], UsePOCSVFormat);
 		}
 	}
 
@@ -1309,6 +1387,7 @@ bool DiffLangFiles (std::string Filename1, std::string Filename2, const bool Use
 		if (IdMap1.find(id) == IdMap1.end())
 		{
 			++AddCount;
+			OutputLangEntryToFile(AddedFile, id, IdMap2[id], UsePOCSVFormat);
 		}
 	}
 
@@ -1426,9 +1505,16 @@ int _tmain(int argc, _TCHAR* argv[])
 		/* Handle a LANG file comparison */
 	if (!ExportOptions.DiffLangFilename1.empty() && !ExportOptions.DiffLangFilename2.empty())
 	{
-		DiffLangFiles(ExportOptions.DiffLangFilename1, ExportOptions.DiffLangFilename2, ExportOptions.UseLangText);
+		std::string OutputFilename = ExportOptions.DiffLangFilename2;
+		if (!ExportOptions.OutputFilename.empty()) OutputFilename = ExportOptions.OutputFilename;
+
+		if (!DiffLangFiles(ExportOptions.DiffLangFilename1, ExportOptions.DiffLangFilename2, OutputFilename, ExportOptions.UseLangText, ExportOptions.UsePOCSVFormat))
+		{
+			return -100;
+		}
+
+		return 0;
 	}
-	
 	
 		/* Handle a .LANG file conversion to CSV */
 	if (!ExportOptions.LangFilename.empty())

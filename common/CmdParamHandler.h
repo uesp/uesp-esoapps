@@ -8,9 +8,6 @@
 namespace eso {
 
 
-	
-
-	
 	struct cmdparamdef_t
 	{
 		std::string Name;
@@ -20,7 +17,7 @@ namespace eso {
 
 		bool IsRequired;
 		bool IsOption;
-		bool HasValue;
+		int  NumValues;
 		bool PermitMultiples;
 
 		std::string DefaultValue;

@@ -201,7 +201,9 @@ namespace eso {
 
 			if (pCmdDef != nullptr)
 			{
-				if (pCmdDef->HasValue)
+				SetCommandParamValue(pCmdDef->Name, "");
+
+				for (int j = 0; j < pCmdDef->NumValues; ++j)
 				{
 					if (i+1 >= argc)
 					{
@@ -218,10 +220,6 @@ namespace eso {
 						SetCommandParamValue(pCmdDef->Name, argv[i+1]);
 						++i;
 					}
-				}
-				else
-				{
-					SetCommandParamValue(pCmdDef->Name, "");
 				}
 			}
 			else if (IsParamFormat(Param))
@@ -271,10 +269,14 @@ namespace eso {
 
 			if (!m_AllCmds[i]->ShortCmd.empty()) 
 			{
-				if (m_AllCmds[i]->HasValue)
+				if (m_AllCmds[i]->NumValues == 1)
 					printf("   -%s [%s]",  m_AllCmds[i]->ShortCmd.c_str(), UpperName.c_str());
-				else
+				else if (m_AllCmds[i]->NumValues == 2)
+					printf("   -%s [%s1] [%s2]",  m_AllCmds[i]->ShortCmd.c_str(), UpperName.c_str(), UpperName.c_str());
+				else if (m_AllCmds[i]->NumValues <= 0)
 					printf("   -%s",  m_AllCmds[i]->ShortCmd.c_str());
+				else
+					printf("   -%s [%s]...",  m_AllCmds[i]->ShortCmd.c_str(), UpperName.c_str());
 			}
 
 			if (!m_AllCmds[i]->LongCmd.empty()) 
@@ -284,10 +286,16 @@ namespace eso {
 				else 
 					printf("   ");
 
-				if (m_AllCmds[i]->HasValue)
+				if (m_AllCmds[i]->NumValues == 1)
 					printf("--%s [%s]", m_AllCmds[i]->LongCmd.c_str(), UpperName.c_str());
-				else
+				else if (m_AllCmds[i]->NumValues == 2)
+					printf("--%s [%s1] [%s2]", m_AllCmds[i]->LongCmd.c_str(), UpperName.c_str(), UpperName.c_str());
+				else if (m_AllCmds[i]->NumValues <= 0)
 					printf("--%s", m_AllCmds[i]->LongCmd.c_str());
+				else
+					printf("--%s [%s]...", m_AllCmds[i]->LongCmd.c_str(), UpperName.c_str());
+					
+					
 			}
 
 			if (m_AllCmds[i]->IsRequired) printf("    (Required) ");

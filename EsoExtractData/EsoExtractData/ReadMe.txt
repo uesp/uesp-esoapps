@@ -147,9 +147,9 @@ There are several more advanced command line options which may be useful:
 	esoextractdata -d file1.lang file2.lang
 	esoextractdata -d file1.lang file2.csv
 	esoextractdata -d file1.csv file2.lang
-	esoextractdata -d file1.txt file2.lang -i file1.id.txt
+	esoextractdata -d file1.txt file2.lang -i1 file1.id.txt
 	esoextractdata -d file1.lang file2.txt -i2 file2.id.txt
-	esoextractdata -d file1.txt file2.txt -i file1.id.txt -i2 file2.id.txt
+	esoextractdata -d file1.txt file2.txt -i1 file1.id.txt -i2 file2.id.txt
 	...
 		Compares two LANG/TXT/CSV files for changes, additions and removals. Will save 4
 		files (either file2... or the output file specified with -o):

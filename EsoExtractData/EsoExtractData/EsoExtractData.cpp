@@ -1281,7 +1281,7 @@ bool OutputLangEntryToFile (CFile& File, uint64_t ID64, std::string Text, const 
 	Unknown = (ID64 >> 32) & 0x3ff;
 	Index = (ID64 >> 42) & 0xfffff;
 
-	if (UsePOCSVFormat)	return File.Printf("\"%d-%d-%d\",\"%s\"\n", ID, Unknown, Index, Text.c_str());
+	if (UsePOCSVFormat)	return File.Printf("\"%d-%d-%d\",\"%s\",\"\"\n", ID, Unknown, Index, Text.c_str());
 
 	return File.Printf("\"%d\",\"%d\",\"%d\",\"0\",\"%s\"\n", ID, Unknown, Index, Text.c_str());
 }

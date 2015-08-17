@@ -3,6 +3,10 @@
 
 
 #include "EsoCommon.h"
+#include <vector>
+
+
+typedef std::vector<std::string> cmdvalues_t;
 
 
 namespace eso {
@@ -27,8 +31,13 @@ namespace eso {
 	struct cmdparamvalue_t
 	{
 		cmdparamdef_t* pCmdDef;
-		std::string    Value;
+		cmdvalues_t    Values;
 		size_t		   Count;
+
+		cmdparamvalue_t()
+		{
+			Values.push_back("");
+		}
 	};
 
 
@@ -77,6 +86,7 @@ namespace eso {
 				
 		size_t GetParamCount (std::string Param);
 		std::string GetParamValue (std::string Param);
+		std::string GetParamValue (std::string Param, const size_t Index);
 		int GetParamValueAsInt (std::string Param);
 		bool HasParamValue (std::string Param);
 
@@ -85,6 +95,7 @@ namespace eso {
 		void PrintHelp (void);
 
 		bool SetCommandParamValue(const std::string Name, const std::string Value);
+		bool SetCommandParamValue(const std::string Name, const std::string Value, const size_t Index);
 
 	};
 

@@ -70,6 +70,7 @@
  *		- Added the "-i2" option for specifying the second ID file when comparing files:
  *				EsoExtractData.exe -d file1.lang file2.txt -i2 file2.id.txt
  *				EsoExtractData.exe -d file1.txt file2.txt -i1 file1.id.txt -i2 file2.id.txt
+ *		- Added the "-g" option for specifying a source text for unchanged entries.
  */
 
 

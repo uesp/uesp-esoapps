@@ -1245,8 +1245,8 @@ bool CreateIdMap (CLangIdMap& IdMap, CCsvFile& CsvFile, const bool UsePOCSVForma
 
 	for (int i = 1; i < CsvFile.GetNumRows(); ++i)
 	{
-		const eso::csvcell_t* pValue;
-		const eso::csvrow_t& Row = CsvFile.GetData()[i];
+		eso::csvcell_t* pValue;
+		eso::csvrow_t& Row = (eso::csvrow_t &) CsvFile.GetData()[i];
 		uint64_t id = 0;
 
 		if (UsePOCSVFormat) 
@@ -1273,26 +1273,64 @@ bool CreateIdMap (CLangIdMap& IdMap, CCsvFile& CsvFile, const bool UsePOCSVForma
 			id = ((uint64_t) strtoul(Id.c_str(), nullptr, 10)) + (((uint64_t) strtoul(Unknown.c_str(), nullptr, 10)) << 32) + (((uint64_t) strtoul(Index.c_str(), nullptr, 10)) << 42);
 		}
 		
-		IdMap[id] = *pValue;
+		IdMap[id] = ReplaceStrings(ReplaceStrings(ReplaceStrings(*pValue, "\\n", "\x0a"), "\\r", "\x0d"), "\"\"", "\"");
 	}
 
 	return true;
 }
 
 
-bool OutputLangEntryToFile (CFile& File, uint64_t ID64, std::string Text, const bool UsePOCSVFormat)
+bool OutputLangTextToFile (CFile& File, std::string Text)
+{
+	const char* pText = Text.c_str();
+	bool Result = true;
+
+	while (*pText)
+	{
+		if (*pText == '"')
+			Result &= File.Printf("\"\"");
+		else if (*pText == '\r')
+			Result &= File.Printf("\\r");
+		else if (*pText == '\n')
+			Result &= File.Printf("\\n");
+		else
+			Result &= File.WriteChar(*pText);
+	
+		++pText;
+	}
+
+	return Result;
+}
+
+
+bool OutputLangEntryToFile (CFile& File, uint64_t ID64, std::string Text, const bool UsePOCSVFormat, std::string Text1 = "")
 {
 	unsigned int ID;
 	unsigned int Unknown;
 	unsigned int Index;
+	bool Result = true;
 
 	ID = ID64 & 0xffffffff;
 	Unknown = (ID64 >> 32) & 0x3ff;
 	Index = (ID64 >> 42) & 0xfffff;
 
-	if (UsePOCSVFormat)	return File.Printf("\"%d-%d-%d\",\"%s\",\"\"\n", ID, Unknown, Index, Text.c_str());
+	if (UsePOCSVFormat)	{
+		Result = File.Printf("\"%d-%d-%d\",\"%", ID, Unknown, Index);
+		Result &= OutputLangTextToFile(File, Text);
+		Result = File.Printf("\",\"");
+		Result &= OutputLangTextToFile(File, Text1);
+		Result = File.Printf("\"\n");
+	}
+	else
+	{
+		Result = File.Printf("\"%d\",\"%d\",\"%d\",\"0\",\"", ID, Unknown, Index);
+		Result &= OutputLangTextToFile(File, Text);
+		Result = File.Printf("\",\"");
+		Result &= OutputLangTextToFile(File, Text1);
+		Result = File.Printf("\"\n");
+	}
 
-	return File.Printf("\"%d\",\"%d\",\"%d\",\"0\",\"%s\"\n", ID, Unknown, Index, Text.c_str());
+	return Result;
 }
 
 
@@ -1341,8 +1379,7 @@ bool DiffLangFiles (std::string OrigLangFilename, std::string OrigLangIdFilename
 		}
 		else if (StringEndsWith(OrigLangFilename, ".csv"))
 		{
-			if (!CsvFileOrig.Load(OrigLangFilename)) return false;
-			if (!CreateIdMap(IdMapOrig, CsvFileOrig, UsePOCSVFormat)) return false;
+			if (!CsvFileOrig.Load(OrigLangFilename)) return false;			if (!CreateIdMap(IdMapOrig, CsvFileOrig, UsePOCSVFormat)) return false;
 		}
 		else if (StringEndsWith(OrigLangFilename, ".txt"))
 		{
@@ -1350,7 +1387,7 @@ bool DiffLangFiles (std::string OrigLangFilename, std::string OrigLangIdFilename
 			PrintError("\tCreating original LANG file from text file '%s' and ID file '%s'...", OrigLangFilename.c_str(), OrigLangIdFilename.c_str());
 			if (!LoadSimpleTextFile(OrigLangFilename, TextFileOrig)) return false;
 			if (!LoadSimpleTextFile(OrigLangIdFilename, IdFileOrig)) return false;
-			if (!LangFile1.CreateFromText(TextFileOrig, IdFileOrig, UsePOCSVFormat, false)) return false;
+			if (!LangFileOrig.CreateFromText(TextFileOrig, IdFileOrig, UsePOCSVFormat, false)) return false;
 			if (!CreateIdMap(IdMapOrig, LangFileOrig, UsePOCSVFormat)) return false;
 		}
 		else
@@ -1429,6 +1466,7 @@ bool DiffLangFiles (std::string OrigLangFilename, std::string OrigLangIdFilename
 	size_t AddCount = 0;
 	size_t DiffCount = 0;
 	size_t RemoveCount = 0;
+	size_t KeptCount = 0;
 
 	for (auto i = IdMap1.begin(); i != IdMap1.end(); ++i)
 	{
@@ -1439,12 +1477,13 @@ bool DiffLangFiles (std::string OrigLangFilename, std::string OrigLangIdFilename
 			if (IdMap2[id] != IdMap1[id])
 			{
 				++DiffCount;
-				OutputLangEntryToFile(ChangedFile, id, IdMap2[id], UsePOCSVFormat);
+				OutputLangEntryToFile(ChangedFile, id, IdMap2[id], UsePOCSVFormat, IdMap1[id]);
 				OutputLangFile.AddEntry(id, IdMap2[id]);
 			}
 			else if (IdMapOrig.find(id) != IdMapOrig.end())
 			{
 				OutputLangFile.AddEntry(id, IdMapOrig[id]);
+				++KeptCount;
 			}
 			else
 			{
@@ -1473,6 +1512,7 @@ bool DiffLangFiles (std::string OrigLangFilename, std::string OrigLangIdFilename
 	PrintError("\tAdditions = %d", AddCount);
 	PrintError("\tChanges   = %d", DiffCount);
 	PrintError("\tRemovals  = %d", RemoveCount);
+	PrintError("\tKept      = %d", KeptCount);
 
 	OutputLangFile.SortRecords();
 

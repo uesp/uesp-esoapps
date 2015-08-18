@@ -67,7 +67,7 @@ public:
 
 	bool DumpCsv (const std::string Filename, const bool UsePOFormat = false);
 	bool DumpText (const std::string Filename, const bool UsePOFormat = false);
-	bool DumpTextFile (eso::CFile& File, lang_record_t& Record);
+	static bool DumpTextFile (eso::CFile& File, lang_record_t& Record);
 	bool DumpTextId (const std::string Filename);
 
 	eso::dword GetNumRecords () const { return m_RecordCount; }

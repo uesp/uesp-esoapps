@@ -270,7 +270,22 @@ bool CEsoLangFile::DumpText (const std::string Filename, const bool UsePOFormat)
 	for (size_t i = 0; i < m_Records.size(); ++i)
 	{
 		lang_record_t& Record = m_Records[i];
-		File.Printf("%s\n", Record.Text.c_str());
+		const char* pText = Record.Text.c_str();
+
+		while (*pText)
+		{
+			if (*pText == '\r')
+				File.Printf("\\r");
+			else if (*pText == '\n')
+				File.Printf("\\n");
+			else
+				File.WriteChar(*pText);
+	
+			++pText;
+		}
+
+		//File.Printf("%s\n", Record.Text.c_str());
+		File.Printf("\n");
 		if (UsePOFormat) File.Printf("\n");
 	}
 
@@ -302,6 +317,10 @@ bool CEsoLangFile::DumpTextFile (CFile& File, lang_record_t& Record)
 	{
 		if (*pText == '"')
 			File.Printf("\"\"");
+		else if (*pText == '\r')
+			File.Printf("\\r");
+		else if (*pText == '\n')
+			File.Printf("\\n");
 		else
 			File.WriteChar(*pText);
 	
@@ -355,8 +374,9 @@ bool CEsoLangFile::ParseData (eso::byte* pData, const fpos_t Size)
 
 		if (TextOffset < Size)
 		{
-			std::string Temp = ParseBufferString(pData, TextOffset, (size_t)Size);
-			Record.Text = ReplaceStrings(ReplaceStrings(Temp, "\x0d", "\\r"), "\x0a", "\\n");
+			//std::string Temp = ParseBufferString(pData, TextOffset, (size_t)Size);
+			//Record.Text = ReplaceStrings(ReplaceStrings(Temp, "\x0d", "\\r"), "\x0a", "\\n");
+			Record.Text = ParseBufferString(pData, TextOffset, (size_t)Size);
 		}
 		else
 			PrintLog("Warning: Read passed end of file (offset 0x%08X) in text record #%d", TextOffset, i);

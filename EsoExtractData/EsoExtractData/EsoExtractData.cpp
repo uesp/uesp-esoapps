@@ -60,7 +60,7 @@
  *				Using a PO TEXT file to new LANG file:
  *						EsoExtractData.exe -i file.id.txt -p -t -x file.lang.txt -o newfile.lang
  *
- * v0.25 -- 17 August 2015
+ * v0.25 -- 18 August 2015
  *		- Added the "-d" option for comparing LANG/CSV/TXT files:
  *				EsoExtractData.exe -d file1.lang file2.lang
  *				EsoExtractData.exe -d file1.lang file2.csv

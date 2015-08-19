@@ -75,6 +75,11 @@
  * v0.26 -- 19 August 2015
  *		- When using -d the changed CSV file contains the original translation text supplied
  *		  with -g if it exists in the last column.
+ *		- If the ID file used with -i and -i1 is the same you can omit one or the other parameter on
+ *		  the command line. For example, the following commands would be identical:
+ *				EsoExtractData -g tr.txt -i id.txt -d old.txt new.txt -i1 id.txt -i2 new.id.txt
+ *				EsoExtractData -g tr.txt -i id.txt -d old.txt new.txt            -i2 new.id.txt
+ *				EsoExtractData -g tr.txt           -d old.txt new.txt -i1 id.txt -i2 new.id.txt
  *
  */
 
@@ -1661,6 +1666,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	{
 		std::string OutputFilename = ExportOptions.DiffLangFilename2;
 		if (!ExportOptions.OutputFilename.empty()) OutputFilename = ExportOptions.OutputFilename;
+
+		if (ExportOptions.ImportIdFilename.empty()) ExportOptions.ImportIdFilename = ExportOptions.IdFilename1;
+		if (ExportOptions.IdFilename1.empty()) ExportOptions.IdFilename1 = ExportOptions.ImportIdFilename;
 
 		if (!DiffLangFiles(ExportOptions.OrigLangFilename, ExportOptions.ImportIdFilename, ExportOptions.DiffLangFilename1, ExportOptions.DiffLangFilename2, ExportOptions.IdFilename1, ExportOptions.IdFilename2, OutputFilename, ExportOptions.UseLangText, ExportOptions.UsePOCSVFormat))
 		{

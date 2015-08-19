@@ -1,7 +1,7 @@
 
-	EsoExtractData v0.25 (formally EsoExportMnf)
+	EsoExtractData v0.26 (formally EsoExportMnf)
 	by Dave Humphrey (dave@uesp.net)
-	18 August 2015
+	19 August 2015
 -------------------------------
 EsoextractData is a simple Windows command line application that loads and exports
 data found in ESO's (Elder Scrolls Online) MNF and DAT files.
@@ -157,8 +157,15 @@ There are several more advanced command line options which may be useful:
 		files (either file2... or the output file specified with -o):
 		    file2.added.csv    - Rows in file2 but not in file1
 			file2.removed.csv  - Rows in file1 but not in file2
-			file2.changed.csv  - Rows that have different texts between both files
+			file2.changed.csv  - Rows that have different texts between both files. Columns are:
+										[id columns]..., [new], [old], [translated]
 			file2.lang         - A new LANG/TXT file that has all texts removed/changed/added in file2.
+
+		If the ID files used for -i and -i1 are the same then one of the parameters can be omitted.
+		For example, the following commands would be identical:
+ 				EsoExtractData -g tr.txt -i id.txt -d old.txt new.txt -i1 id.txt -i2 new.id.txt
+ 				EsoExtractData -g tr.txt -i id.txt -d old.txt new.txt            -i2 new.id.txt
+ 				EsoExtractData -g tr.txt           -d old.txt new.txt -i1 id.txt -i2 new.id.txt
 
 	esoextractdata -g orig.lang -d file1.lang file2.lang
 	esoextractdata -g orig.csv -d file1.lang file2.lang

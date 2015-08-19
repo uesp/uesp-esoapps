@@ -74,7 +74,7 @@
  *
  * v0.26 -- 19 August 2015
  *		- When using -d the changed CSV file contains the original translation text supplied
- *		  with -g if it exists in the last column.
+ *		  with -g if it exists in the last column ([id columns], [new], [old], [translated]).
  *		- If the ID file used with -i and -i1 is the same you can omit one or the other parameter on
  *		  the command line. For example, the following commands would be identical:
  *				EsoExtractData -g tr.txt -i id.txt -d old.txt new.txt -i1 id.txt -i2 new.id.txt

@@ -71,6 +71,11 @@
  *				EsoExtractData.exe -d file1.lang file2.txt -i2 file2.id.txt
  *				EsoExtractData.exe -d file1.txt file2.txt -i1 file1.id.txt -i2 file2.id.txt
  *		- Added the "-g" option for specifying a source text for unchanged entries.
+ *
+ * v0.26 -- 19 August 2015
+ *		- When using -d the changed CSV file contains the original translation text supplied
+ *		  with -g if it exists in the last column.
+ *
  */
 
 
@@ -1304,7 +1309,7 @@ bool OutputLangTextToFile (CFile& File, std::string Text)
 }
 
 
-bool OutputLangEntryToFile (CFile& File, uint64_t ID64, std::string Text, const bool UsePOCSVFormat, std::string Text1 = "")
+bool OutputLangEntryToFile (CFile& File, uint64_t ID64, std::string Text, const bool UsePOCSVFormat, std::string Text1 = "", std::string OrigText = "")
 {
 	unsigned int ID;
 	unsigned int Unknown;
@@ -1320,6 +1325,8 @@ bool OutputLangEntryToFile (CFile& File, uint64_t ID64, std::string Text, const 
 		Result &= OutputLangTextToFile(File, Text);
 		Result = File.Printf("\",\"");
 		Result &= OutputLangTextToFile(File, Text1);
+		Result = File.Printf("\",\"");
+		Result &= OutputLangTextToFile(File, OrigText);
 		Result = File.Printf("\"\n");
 	}
 	else
@@ -1328,6 +1335,8 @@ bool OutputLangEntryToFile (CFile& File, uint64_t ID64, std::string Text, const 
 		Result &= OutputLangTextToFile(File, Text);
 		Result = File.Printf("\",\"");
 		Result &= OutputLangTextToFile(File, Text1);
+		Result = File.Printf("\",\"");
+		Result &= OutputLangTextToFile(File, OrigText);
 		Result = File.Printf("\"\n");
 	}
 
@@ -1478,7 +1487,7 @@ bool DiffLangFiles (std::string OrigLangFilename, std::string OrigLangIdFilename
 			if (IdMap2[id] != IdMap1[id])
 			{
 				++DiffCount;
-				OutputLangEntryToFile(ChangedFile, id, IdMap2[id], UsePOCSVFormat, IdMap1[id]);
+				OutputLangEntryToFile(ChangedFile, id, IdMap2[id], UsePOCSVFormat, IdMap1[id], IdMapOrig[id]);
 				OutputLangFile.AddEntry(id, IdMap2[id]);
 			}
 			else if (IdMapOrig.find(id) != IdMapOrig.end())
@@ -1567,7 +1576,7 @@ cmdparamdef_t g_Cmds[] =
 };
 
 const char g_AppDescription[] = "\
-ExportMnf v0.25 is a simple command line application to load and export files\n\
+ExportMnf v0.26 is a simple command line application to load and export files\n\
 from ESO's MNF and DAT files. Created by Daveh (dave@uesp.net).\n\
 \n\
 WARNING: This app is in early development and is fragile. User discretion is\n\

@@ -228,12 +228,16 @@
 --			- Style of rings and necklaces will no longer be shown.
 --			- Item tooltips for stacks of items in the guild store include a "price per item" line.
 --
+--		- v0.27 -
+--			- Tweaked /uesptime output, added day of month and adjusted moon phase calculation.
+--			- Online game time can be seen at: http://content3.uesp.net/esoclock/esoclock.php
+--
 
 
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "0.26"
+uespLog.version = "0.27"
 uespLog.releaseDate = "31 July 2015"
 uespLog.DATA_VERSION = 3
 
@@ -3214,9 +3218,9 @@ function uespLog.getGameTimeStr(inputTimestamp, includeDetails)
 	
 		--"2E 582 Hearth's Fire, Morndas 08:12:11" 
 	if (includeDetails) then
-		TimeStr = "2E "..tostring(year).." "..monthStr.."("..tostring(month).."), "..weekDayStr.."("..tostring(weekDay).."), "..hourStr..":"..minuteStr..":"..secondStr
+		TimeStr = "2E "..tostring(year).." "..monthStr.."("..tostring(month)..") "..tostring(day)..", "..weekDayStr.."("..tostring(weekDay).."), "..hourStr..":"..minuteStr..":"..secondStr
 	else
-		TimeStr = "2E "..tostring(year).." "..monthStr..", "..weekDayStr..", "..hourStr..":"..minuteStr..":"..secondStr
+		TimeStr = "2E "..tostring(year).." "..monthStr.." "..tostring(day)..", "..weekDayStr..", "..hourStr..":"..minuteStr..":"..secondStr
 	end
 		
 	return TimeStr
@@ -3230,11 +3234,11 @@ function uespLog.ShowTime (inputTimestamp)
 	local timeStampFmt = GetDateStringFromTimestamp(timeStamp)
 	local version = _VERSION
 	local apiVersion = GetAPIVersion()
-	local gameTimeStr = uespLog.getGameTimeStr(timeStamp, true)
-	local moonPhaseStr = uespLog.getMoonPhaseStr(timeStamp, true)
+	local gameTimeStr = uespLog.getGameTimeStr(timeStamp, uespLog.IsDebugExtra())
+	local moonPhaseStr = uespLog.getMoonPhaseStr(timeStamp, uespLog.IsDebugExtra())
 		
-	uespLog.MsgColor(uespLog.timeColor, "UESP::Game Time = " .. gameTimeStr .. " (est)")
-	uespLog.MsgColor(uespLog.timeColor, "UESP::Moon Phase = " .. moonPhaseStr .. " (est)")
+	uespLog.MsgColor(uespLog.timeColor, "UESP::Game Time = " .. gameTimeStr .. "")
+	uespLog.MsgColor(uespLog.timeColor, "UESP::Moon Phase = " .. moonPhaseStr .. "")
 	uespLog.MsgColor(uespLog.timeColor, "UESP::localGameTime = " .. tostring(localGameTime/1000) .. " sec")
 	uespLog.MsgColor(uespLog.timeColor, "UESP::timeStamp = " .. tostring(timeStamp))
 	uespLog.MsgColor(uespLog.timeColor, "UESP::timeStamp Date = " .. timeStampFmt)

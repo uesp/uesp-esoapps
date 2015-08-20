@@ -336,8 +336,8 @@ uespLog.DEFAULT_REALSECONDSPERGAMEHOUR = uespLog.DEFAULT_REALSECONDSPERGAMEDAY /
 uespLog.DEFAULT_REALSECONDSPERGAMEMINUTE = uespLog.DEFAULT_REALSECONDSPERGAMEHOUR / 60
 uespLog.DEFAULT_REALSECONDSPERGAMESECOND = uespLog.DEFAULT_REALSECONDSPERGAMEMINUTE / 60
 
-uespLog.DEFAULT_MOONPHASESTARTTIME = 1396083600 - 207360
-uespLog.DEFAULT_MOONPHASETIME = 96 * 3600
+uespLog.DEFAULT_MOONPHASESTARTTIME = 1396083600 - 207360 - 180000
+uespLog.DEFAULT_MOONPHASETIME = 100 * 3600
 
 uespLog.TES_MONTHS = {
 	"Morning Star",
@@ -3188,7 +3188,8 @@ function uespLog.getMoonPhaseStr(inputTimeStamp, includeDetails)
 	if (includeDetails) then
 		result = string.format("%s (%0.2f)", phaseStr, moonPhase)
 	else
-		result = phaseStr
+		relMoonPhase = 100 - math.abs((moonPhase % 1)- 0.5)*200
+		result = string.format("%s (%0.0f%% full)", phaseStr, relMoonPhase)
 	end
 	
 	return result	
@@ -5807,17 +5808,6 @@ end
 
 
 SLASH_COMMANDS["/uesptest"] = function (cmd)
-	local logString = ""
-	
-	for i = 1, 500 do
-		logString = logString .. "test{123}  "
-	end
-	
-	logString = logString .. "timeStamp{".. Id64ToString(GetTimeStamp()) .. "}  "
-	logString = logString .. "gameTime{".. tostring(GetGameTimeMilliseconds()) .. "}  "
-	
-	--uespLog.AppendStringToLog("all", logString)
-	
 	--uespLog.DebugMsg("Showing Test Time (noon)....")
 	--uespLog.ShowTime(1398882554)	-- 1398882554 = 14:30 April 30th 2014 which should be exactly noon in game time 
 	--uespLog.DebugMsg("Showing Test Time (sunset)....")
@@ -5829,46 +5819,17 @@ SLASH_COMMANDS["/uesptest"] = function (cmd)
 	--uespLog.DebugMsg("Showing Test Time (midnight)....")
 	--uespLog.ShowTime(1399753920)   -- 1399753920 = 16:35 10 May 2014, should be midnight in game with a wanning crescent moon (0.875)
 	-- Moon Phase ~ Full Moon, TimeStamp = 1435838770, LocalTime = 124897, 2 July 2015 08:11
+	-- Moon Phase ~ Full Moon, TimeStamp = 1438352285 (14:20 31 July 2015)
+	-- Moon Phase ~ Slightly Waxing Gibbous past First Quarter (0.3-0.35), TimeStamp = 1440087745 (12:26 20 Aug 2015)
+
+	uespLog.DebugMsg("Showing Test Time (Full Moon, 0.5)....")
+	uespLog.ShowTime(1435838770)
 	
-	uespLog.DebugMsg("Showing Test Time (12:03)....")
-	uespLog.ShowTime(1399133820)
+	uespLog.DebugMsg("Showing Test Time (Full Moon, 0.5)....")
+	uespLog.ShowTime(1438352285)
 	
-	uespLog.DebugMsg("Showing Test Time (12:32)....")
-	uespLog.ShowTime(1401041076)
-	
-	uespLog.DebugMsg("Showing Test Time (12:12)....")
-	uespLog.ShowTime(1401061920)
-	
-	
-	local test1 = { }
-	local test2 = { }
-	
-	for i = 1, 10 do
-		test1[i] = i+100
-	end
-	
-	for i = 1, 10 do
-		table.insert(test2, i+100)
-	end
-	
-	test1[1] = nil
-	test2[1] = nil
-	
-	uespLog.Msg("test1 = "..tostring(table.getn(test1, 1)))
-	uespLog.Msg("test2 = "..tostring(table.getn(test2, 1)))
-	
-	for i = 1, 10 do
-		uespLog.Msg("test = "..tostring(test1[i])..", "..tostring(test2[i]))
-	end
-	
-	
-	--uespLog.getGameTimeStr()
-	
-	--local itemLink = "|HFFFFFF:item:45810:1:1:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|hJode|h"
-	--d("|HFFFFFF:item:45810:1:1:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|hJode|h test item")
-	--ZO_PopupTooltip_SetLink(itemLink)
-	
-	--PopupTooltip:SetHandler("OnMouseUp", uespLog.OnTooltipMouseUp)
+	uespLog.DebugMsg("Showing Test Time (Waxing Gibbous Moon, 0.33)....")
+	uespLog.ShowTime(1440087745)	
 end
 
 

@@ -228,7 +228,7 @@
 --			- Style of rings and necklaces will no longer be shown.
 --			- Item tooltips for stacks of items in the guild store include a "price per item" line.
 --
---		- v0.30 -
+--		- v0.30 - 31 Aug 2015
 --			- Tweaked /uesptime output, added day of month and adjusted moon phase calculation.
 --			- Online game time can be seen at: http://content3.uesp.net/esoclock/esoclock.php
 --			- Update API version to 1000012.

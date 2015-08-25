@@ -2,7 +2,8 @@
 syntax: glob
 
 # Local files
-uespLog/localdeploy
+uespLog/localdeploy*
+uespLog/ptsdeploy*
 */uespLog_backupData.txt
 
 # Old or test code projects

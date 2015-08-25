@@ -1165,6 +1165,7 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_INVENTORY_ITEM_USED, uespLog.OnInventoryItemUsed)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_BUY_RECEIPT, uespLog.OnBuyReceipt)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SELL_RECEIPT, uespLog.OnSellReceipt)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TELVAR_STONE_UPDATE, uespLog.OnTelvarStoneUpdate)	
 
     EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LORE_BOOK_ALREADY_KNOWN, uespLog.OnLoreBookAlreadyKnown)
     EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LORE_BOOK_LEARNED, uespLog.OnLoreBookLearned)
@@ -2545,6 +2546,32 @@ function uespLog.OnRecipeLearned (eventCode, recipeListIndex, recipeIndex)
 	
 	local known, recipeName = GetRecipeInfo(recipeListIndex, recipeIndex)
 	uespLog.DebugLogMsg("New recipe " .. recipeName)
+end
+
+
+function uespLog.OnTelvarStoneUpdate (eventCode, newStones, oldStones, reason)
+	local msg = "gained"
+	local logData = { }
+	local posData = uespLog.GetLastTargetData()
+	
+	if (posData.x == nil or posData.x == "") then
+		posData = uespLog.GetPlayerPositionData()
+	end
+	
+	logData.event = "TelvarUpdate"
+	logData.qnt = newStones - oldStones
+	logData.reason = reason
+			
+	uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData())
+	
+	if (logData.qnt == 0) then
+		return
+	elseif (logData.qnt < 0) then
+		logData.qnt = -1*logData.qnt
+		msg = "lost"
+	end
+	
+	uespLog.DebugLogMsgColor(uespLog.itemColor, "You "..msg.." "..tostring(logData.qnt).." telvar stones ("..tostring(newStones).." total)")
 end
 
 

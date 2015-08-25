@@ -233,6 +233,7 @@
 --			- Online game time can be seen at: http://content3.uesp.net/esoclock/esoclock.php
 --			- Update API version to 1000012.
 --			- Telvar stones gained/lost will be shown if debug output is on.
+--			- Added style icons for the new Glass/Xivkyn styles.
 --
 
 

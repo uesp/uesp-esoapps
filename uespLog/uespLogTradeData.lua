@@ -51,6 +51,8 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[ITEMSTYLE_AREA_DWEMER] 	    = "uespLog\\images\\styledwemer.dds",		-- Dwemer Frame, Dwemer, 57587, ITEMSTYLE_AREA_DWEMER=14, /esoui/art/icons/crafting_dwemer_shiny_tube.dds
 	[ITEMSTYLE_AREA_YOKUDAN] 		= "uespLog/images/yicon.dds",
 	[33]					 		= "uespLog/images/aicon.dds", 				-- Akaviri
+	[28]					 		= "uespLog/images/malachite.dds", 			-- Glass
+	[29]					 		= "uespLog/images/charcoal.dds", 			-- Xivkyn
 }
 
 

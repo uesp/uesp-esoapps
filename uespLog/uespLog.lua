@@ -3000,9 +3000,9 @@ function uespLog.OnMailMessageTakeAttachedItem (eventCode, mailId)
 		uespLog.AppendDataToLog("all", logData, timeData)
 		
 		if (tradeType > 0) then
-			uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You received hireling mail item "..tostring(lastItem.itemLink).." (x"..tostring(lastItem.stack)..")")
+			uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You received hireling mail item "..tostring(logData.itemLink).." (x"..tostring(lastItem.stack)..")")
 		else
-			uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You received mail item "..tostring(lastItem.itemLink).." (x"..tostring(lastItem.stack)..")")
+			uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You received mail item "..tostring(logData.itemLink).." (x"..tostring(lastItem.stack)..")")
 		end
 	end
 	

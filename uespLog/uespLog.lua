@@ -237,6 +237,7 @@
 --			- Added the "/uespd [cmd]" (or "/ud [cmd]") command which is a short form for "/script d([cmd])".
 --			- "/upf" is now a short form for "/uesppvp showfights".
 --			- "/ue" is now a short form for "/uespenl".
+--			- All colored text is closed by a "|r" to make sure it doesn't 'leak',
 --
 
 
@@ -770,7 +771,7 @@ end
 
 function uespLog.MsgColor(Color, text)
 	if (uespLog.IsColor()) then
-		d("|c" .. Color .. text)
+		d("|c" .. Color .. text .. "|r")
 	else
 		d(text)
 	end
@@ -804,7 +805,7 @@ function uespLog.DebugLogMsgColor(Color, text)
 		end
 		
 		if (uespLog.IsColor()) then
-			d("|c" .. Color .. text)
+			d("|c" .. Color .. text.."|r")
 		else
 			d(text)
 		end
@@ -834,7 +835,7 @@ function uespLog.DebugMsgColor(Color, text)
 		end
 		
 		if (uespLog.IsColor()) then
-			d("|c" .. Color .. text)
+			d("|c" .. Color .. text .. "|r")
 		else
 			d(text)
 		end
@@ -6341,7 +6342,7 @@ function uespLog.GetAllianceColoredName (alliance, name)
     local color = uespLog.ALLIANCE_COLORS[alliance]
 	
     if (color == nil) then return name end
-    return color:Colorize(name)
+    return color:Colorize(name) .. "|r"
 end
 
 
@@ -6431,9 +6432,9 @@ function uespLog.OnKeepUnderAttack (eventCode, keepId, battlegroundContext, unde
 	local colorName = uespLog.GetAllianceColoredName(alliance, name.."["..uespLog.GetAllianceShortName(alliance).."]")
 	
 	if (underAttack) then
-		msg = colorName.."|c"..uespLog.pvpColor.." is under attack!"
+		msg = colorName.."|c"..uespLog.pvpColor.." is under attack!".."|r"
 	else
-		msg = colorName.."|c"..uespLog.pvpColor.." is no longer under attack."
+		msg = colorName.."|c"..uespLog.pvpColor.." is no longer under attack.".."|r"
 	end
 	
 	uespLog.MsgColor(uespLog.pvpColor, msg)
@@ -6449,9 +6450,9 @@ function uespLog.OnKeepGateStateChanged (eventCode, keepId, open)
 	local colorName = uespLog.GetAllianceColoredName(alliance, name.."["..uespLog.GetAllianceShortName(alliance).."]")
 	
 	if (underAttack) then
-		msg = colorName.."|c"..uespLog.pvpColor.." is now open!"
+		msg = colorName.."|c"..uespLog.pvpColor.." is now open!".."|r"
 	else
-		msg = colorName.."|c"..uespLog.pvpColor.." is now closed!"
+		msg = colorName.."|c"..uespLog.pvpColor.." is now closed!".."|r"
 	end
 	
 	uespLog.MsgColor(uespLog.pvpColor, msg)
@@ -6466,7 +6467,7 @@ function uespLog.OnGuildKeepClaimUpdated (eventCode, keepId, battlegroundContext
 	local alliance = GetKeepAlliance(keepId, battlegroundContext)
 	local colorName = uespLog.GetAllianceColoredName(alliance, name.."["..uespLog.GetAllianceShortName(alliance).."]")
 	
-	msg = colorName.."|c"..uespLog.pvpColor.." ownership was changed."
+	msg = colorName.."|c"..uespLog.pvpColor.." ownership was changed.".."|r"
 	uespLog.MsgColor(uespLog.pvpColor, msg)
 end
 
@@ -6582,7 +6583,7 @@ function uespLog.CheckForNewLocalBattles()
 					local name = GetKeepName(keepId)
 					local alliance = GetKeepAlliance(keepId, bgContext)
 					local colorName = uespLog.GetAllianceColoredName(alliance, name.."["..uespLog.GetAllianceShortName(alliance).."]")
-					local msg = "" .. pinName .. " "..direction.." of "..colorName.."|c"..uespLog.pvpColor.." "..coorStr
+					local msg = "" .. pinName .. " "..direction.." of "..colorName.."|c"..uespLog.pvpColor.." "..coorStr.."|r"
 					--local msg = "Found " .. pinName .. ", "..coorStr.." in current map"
 					
 					uespLog.MsgColor(uespLog.pvpColor, msg)
@@ -6617,7 +6618,7 @@ function uespLog.FindPvpFights(showAll)
 					local name = GetKeepName(keepId)
 					local alliance = GetKeepAlliance(keepId, bgContext)
 					local colorName = uespLog.GetAllianceColoredName(alliance, name.."["..uespLog.GetAllianceShortName(alliance).."]")
-					local msg = "" .. pinName .. " "..direction.." of "..colorName.."|c"..uespLog.pvpColor.." "..coorStr
+					local msg = "" .. pinName .. " "..direction.." of "..colorName.."|c"..uespLog.pvpColor.." "..coorStr.."|r"
 					--local msg = "Found " .. pinName .. ", "..coorStr.." in current map"
 					
 					uespLog.MsgColor(uespLog.pvpColor, msg)

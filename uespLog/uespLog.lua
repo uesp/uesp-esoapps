@@ -234,6 +234,9 @@
 --			- Update API version to 1000012.
 --			- Telvar stones gained/lost will be shown if debug output is on.
 --			- Added style icons for the new Glass/Xivkyn styles.
+--			- Added the "/uespd [cmd]" (or "/ud [cmd]") command which is a short form for "/script d([cmd])".
+--			- "/upf" is now a short form for "/uesppvp showfights".
+--			- "/ue" is now a short form for "/uespenl".
 --
 
 
@@ -3339,7 +3342,13 @@ SLASH_COMMANDS["/uesptime"] = function (cmd)
 	
 end
 
-SLASH_COMMANDS["/ut"] = SLASH_COMMANDS["/uesptime"]
+
+SLASH_COMMANDS["/uespd"] = function(cmd)
+	SLASH_COMMANDS["/script"]("d(".. tostring(cmd) .. ")")
+end
+
+
+SLASH_COMMANDS["/ud"] = SLASH_COMMANDS["/uespd"]
 
 
 SLASH_COMMANDS["/uespenl"] = function (cmd)
@@ -3348,6 +3357,9 @@ SLASH_COMMANDS["/uespenl"] = function (cmd)
 
 	uespLog.MsgColor(uespLog.xpColor, "UESP::You have "..tostring(enl).." enlightenment at a x"..tostring(mult).." bonus.")
 end
+
+
+SLASH_COMMANDS["/ue"] = SLASH_COMMANDS["/uespenl"]
 
 
 function uespLog.DisplayPowerStat (statType, statName)
@@ -6652,3 +6664,7 @@ function uespLog.ShowPvpFights()
 		uespLog.FindPvpFights(true)
 	end
 end
+
+
+SLASH_COMMANDS["/upf"] = uespLog.ShowPvpFights
+

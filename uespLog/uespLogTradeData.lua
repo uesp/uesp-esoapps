@@ -459,31 +459,45 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 		
 		return false
 	end
-
-	local isResearchable = uespLog.CheckIsItemLinkResearchable(itemLink)
-	
-	if (isResearchable < 0) then
-		return false
-	end
 	
 	itemText = ""
 	iconColor = uespLog.TRADE_KNOWN_COLOR
 	
-	if (isResearchable == uespLog.ORNATE_TRAIT_INDEX) then
-		itemText = "Ornate"
-		iconColor = uespLog.TRADE_ORNATE_COLOR
-	elseif (isResearchable == uespLog.INTRICATE_TRAIT_INDEX) then
-		itemText = "Intricate"
-		iconColor = uespLog.TRADE_INTRICATE_COLOR
-	elseif (isResearchable > 0) then
-		itemText = "Trait Unknown"
-		iconColor = uespLog.TRADE_UNKNOWN_COLOR
-	else
-		itemText = "Trait Known"
-		iconColor = uespLog.TRADE_KNOWN_COLOR
-	end	
+		-- Motifs
+	if (itemType == 8) then
+		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
+			
+			if (IsItemLinkBookKnown(itemLink)) then
+				itemText = "Motif Known"
+				iconColor = uespLog.TRADE_KNOWN_COLOR
+			else
+				itemText = "Motif Unknown"
+				iconColor = uespLog.TRADE_UNKNOWN_COLOR
+			end
+		end
+	end
+
+	local isResearchable = uespLog.CheckIsItemLinkResearchable(itemLink)
 	
-	if (uespLog.IsCraftTraitDisplay()) then
+	if (isResearchable >= 0 and uespLog.IsCraftTraitDisplay()) then
+	
+		if (isResearchable == uespLog.ORNATE_TRAIT_INDEX) then
+			itemText = "Ornate"
+			iconColor = uespLog.TRADE_ORNATE_COLOR
+		elseif (isResearchable == uespLog.INTRICATE_TRAIT_INDEX) then
+			itemText = "Intricate"
+			iconColor = uespLog.TRADE_INTRICATE_COLOR
+		elseif (isResearchable > 0) then
+			itemText = "Trait Unknown"
+			iconColor = uespLog.TRADE_UNKNOWN_COLOR
+		else
+			itemText = "Trait Known"
+			iconColor = uespLog.TRADE_KNOWN_COLOR
+		end
+		
+	end
+	
+	if (itemText ~= "") then
 		color1, color2, color3 = unpack(iconColor)	
 		
 		if (not addedBlankLine) then
@@ -551,7 +565,7 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 	local itemStyleIcon, itemStyleText = uespLog.GetItemStyleIcon(itemLink)
 	local itemType = GetItemLinkItemType(itemLink)
 	local equipType = GetItemLinkEquipType(itemLink)
-	local iconOffset = 0
+	local iconOffset = 25
 	
 	if (list == LOOT_WINDOW.list) then
 		iconOffset = 50
@@ -592,6 +606,23 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 	if (recipeName ~= nil) then
 		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
 			if (uespLog.IsRecipeKnown(recipeName)) then
+				iconControl:SetHidden(false)		
+				iconControl:SetTexture(uespLog.TRADE_KNOWN_TEXTURE)
+				iconControl:SetColor(unpack(uespLog.TRADE_KNOWN_COLOR))
+			else
+				iconControl:SetHidden(false)		
+				iconControl:SetTexture(uespLog.TRADE_UNKNOWN_TEXTURE)
+				iconControl:SetColor(unpack(uespLog.TRADE_UNKNOWN_COLOR))
+			end
+		end
+		
+		return
+	end
+	
+		-- Motifs
+	if (itemType == 8) then
+		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
+			if (IsItemLinkBookKnown(itemLink)) then
 				iconControl:SetHidden(false)		
 				iconControl:SetTexture(uespLog.TRADE_KNOWN_TEXTURE)
 				iconControl:SetColor(unpack(uespLog.TRADE_KNOWN_COLOR))
@@ -1458,12 +1489,12 @@ function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
 	iconControl:SetHidden(true)		
 	iconControl:SetDimensions(32, 32)
 	iconControl:ClearAnchors()
-	iconControl:SetAnchor(CENTER, rowControl, CENTER, 170)
+	iconControl:SetAnchor(CENTER, rowControl, CENTER, 195)
 		
 	styleIconControl:SetHidden(true)		
 	styleIconControl:SetDimensions(32, 32)
 	styleIconControl:ClearAnchors()
-	styleIconControl:SetAnchor(CENTER, rowControl, CENTER, 195)
+	styleIconControl:SetAnchor(CENTER, rowControl, CENTER, 225)
 	
 	if (itemLink == nil or itemLink == "") then
 		return
@@ -1505,6 +1536,23 @@ function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
 			iconControl:SetColor(unpack(uespLog.TRADE_KNOWN_COLOR))
 		end
 		
+	end
+	
+		-- Motifs
+	if (itemType == 8) then
+		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
+			if (IsItemLinkBookKnown(itemLink)) then
+				iconControl:SetHidden(false)		
+				iconControl:SetTexture(uespLog.TRADE_KNOWN_TEXTURE)
+				iconControl:SetColor(unpack(uespLog.TRADE_KNOWN_COLOR))
+			else
+				iconControl:SetHidden(false)		
+				iconControl:SetTexture(uespLog.TRADE_UNKNOWN_TEXTURE)
+				iconControl:SetColor(unpack(uespLog.TRADE_UNKNOWN_COLOR))
+			end
+		end
+		
+		return
 	end
 	
 	if (iconTexture ~= nil) then

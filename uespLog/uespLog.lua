@@ -238,6 +238,7 @@
 --			- "/upf" is now a short form for "/uesppvp showfights".
 --			- "/ue" is now a short form for "/uespenl".
 --			- All colored text is closed by a "|r" to make sure it doesn't 'leak',
+--			- Added known/unknown display to motif tooltips and rows.
 --
 
 
@@ -5873,6 +5874,7 @@ SLASH_COMMANDS["/uesptest"] = function (cmd)
 	
 	uespLog.DebugMsg("Showing Test Time (Waxing Gibbous Moon, 0.33)....")
 	uespLog.ShowTime(1440087745)	
+
 end
 
 

@@ -239,6 +239,7 @@
 --			- "/ue" is now a short form for "/uespenl".
 --			- All colored text is closed by a "|r" to make sure it doesn't 'leak',
 --			- Added known/unknown display to motif tooltips and rows.
+-- 			- Tweak position of style/known icons in lists.
 --
 
 

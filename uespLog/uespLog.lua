@@ -3617,17 +3617,60 @@ end
 
 function uespLog.DumpSkills(opt1, opt2)
 
-	if (opt1 == nil) then
+	if (opt1 == nil or opt1 == "") then
 		return uespLog.DumpSkillsBasic()
+	elseif (opt1 == "progression") then
+		uespLog.DumpSkillsProgression(opt2)
+		return true
+	elseif (opt1 == "learned") then
+		uespLog.DumpLearnedAbilities(opt2)
+		return true
 	else
 		uespLog.DumpSkillsStart(opt1)
 		uespLog.DumpSkillsProgression(opt1)
+		uespLog.DumpLearnedAbilities(opt1)
 		return true
 	end
 	
 	return false
 end
 
+
+function uespLog.DumpLearnedAbilities(note)
+	local logData = { }
+	local count = 0
+	local level = 0
+	uespLog.DebugLogMsg("Logging learned abilities...")
+	
+	logData.event = "skillDump::StartLearned"
+	logData.apiVersion = GetAPIVersion()
+	logData.note = note
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
+	for level = 0, 70 do
+		local learnedIndex
+		local numLearned = GetNumAbilitiesLearnedForLevel(level, false)
+		
+		for learnedIndex = 1, numLearned do
+			logData = { }
+			
+			logData.event = "skillLearned"
+			logData.progress = 0
+			logData.level = level
+			logData.name, logData.texture, logData.abilityIndex, logData.progressionIndex = GetLearnedAbilityInfoForLevel(level, learnedIndex, false)
+			uespLog.AppendDataToLog("all", logData)
+			
+			count = count + 1
+		end
+	end
+
+	uespLog.DebugMsg(".     Found "..tostring(count).." learned abilities!")
+	
+	logData = { }
+	logData.event = "skillDump::EndLearned"
+	logData.count = count
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+end
 
 
 function uespLog.DumpSkillsProgression(note)
@@ -3643,7 +3686,6 @@ function uespLog.DumpSkillsProgression(note)
 		local name, morph, rank = GetAbilityProgressionInfo(progressionIndex)
 		
 		if (name == "" or morph < 0 or rank < 0) then
-			uespLog.DebugLogMsg("     Found "..tostring(progressionIndex-1).." skill progressions!")
 			break
 		end
 				
@@ -3668,11 +3710,12 @@ function uespLog.DumpSkillsProgression(note)
 		uespLog.AppendDataToLog("all", logData)
 	end
 	
+	uespLog.DebugMsg(".     Found "..tostring(progressionIndex-1).." skill progressions!")
+	
 	logData = { }
 	logData.event = "skillDump::EndProgression"
 	logData.progressionCount = progressionIndex
-	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
-	
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())	
 end
 
 

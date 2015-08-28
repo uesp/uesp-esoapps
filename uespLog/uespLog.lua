@@ -3615,15 +3615,64 @@ SLASH_COMMANDS["/uespdump"] = function(cmd)
 end
 
 
-function uespLog.DumpSkills(opt1,  opt2)
+function uespLog.DumpSkills(opt1, opt2)
 
 	if (opt1 == nil) then
 		return uespLog.DumpSkillsBasic()
 	else
-		return uespLog.DumpSkillsStart(opt1)
+		uespLog.DumpSkillsStart(opt1)
+		uespLog.DumpSkillsProgression(opt1)
+		return true
 	end
 	
 	return false
+end
+
+
+
+function uespLog.DumpSkillsProgression(note)
+	local logData = { }
+	uespLog.DebugLogMsg("Logging skill progressions...")
+	
+	logData.event = "skillDump::StartProgression"
+	logData.apiVersion = GetAPIVersion()
+	logData.note = note
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+
+	for progressionIndex = 1, 1000 do
+		local name, morph, rank = GetAbilityProgressionInfo(progressionIndex)
+		
+		if (name == "" or morph < 0 or rank < 0) then
+			uespLog.DebugLogMsg("     Found "..tostring(progressionIndex-1).." skill progressions!")
+			break
+		end
+				
+		logData = { }
+		logData.event = "skillProgression"
+		logData.name = name
+		
+		logData.name1, logData.texture1, logData.abilityIndex1 = GetAbilityProgressionAbilityInfo(progressionIndex, 1, 1)
+		logData.name2, logData.texture2, logData.abilityIndex2 = GetAbilityProgressionAbilityInfo(progressionIndex, 2, 1)
+		
+		logData.skillType, logData.skillIndex, logData.abilityIndex = GetSkillAbilityIndicesFromProgressionIndex(progressionIndex)
+		
+		logData.id1 = GetAbilityProgressionAbilityId(progressionIndex, 1, 1)
+		logData.id2 = GetAbilityProgressionAbilityId(progressionIndex, 1, 2)
+		logData.id3 = GetAbilityProgressionAbilityId(progressionIndex, 1, 3)
+		logData.id4 = GetAbilityProgressionAbilityId(progressionIndex, 1, 4)
+		logData.id5 = GetAbilityProgressionAbilityId(progressionIndex, 2, 1)
+		logData.id6 = GetAbilityProgressionAbilityId(progressionIndex, 2, 2)
+		logData.id7 = GetAbilityProgressionAbilityId(progressionIndex, 2, 3)
+		logData.id8 = GetAbilityProgressionAbilityId(progressionIndex, 2, 4)
+		
+		uespLog.AppendDataToLog("all", logData)
+	end
+	
+	logData = { }
+	logData.event = "skillDump::EndProgression"
+	logData.progressionCount = progressionIndex
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
 end
 
 
@@ -3638,7 +3687,7 @@ function uespLog.DumpSkillsStart(note)
 	logData.note = note
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
-	uespLog.DebugLogMsg("Logging all skills...")
+	uespLog.DebugLogMsg("Logging all skills with note '"..tostring(note).."'...")
 
 	for abilityId = 1, endId do
 		if (DoesAbilityExist(abilityId)) then
@@ -3653,6 +3702,7 @@ function uespLog.DumpSkillsStart(note)
 	logData.event = "skillDump::End"
 	logData.abilityCount = validAbilityCount
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	return true
 end
 
 
@@ -3762,6 +3812,7 @@ function uespLog.DumpSkillsBasic()
 	local firstAbility = -1
 	local lastAbility = -1
 	
+	uespLog.DebugMsg("Dumping Basic Skill Info...")
 	uespLog.DebugMsg("    "..tostring(numAbilities).." Character Abilities")
 	
 	--for abilityIndex = 1, numAbilities do

@@ -5794,7 +5794,7 @@ SLASH_COMMANDS["/uespreset"] = function (cmd)
 		uespLog.SetTotalInspiration(0)
 		uespLog.Msg("UESP::Reset crafting inspiration total")
 	else
-		uespLog.Msg("UESP::Parameter expected...use one of: all, ;log, globals, achievements, inspiration")
+		uespLog.Msg("UESP::Parameter expected...use one of: all, log, globals, achievements, inspiration")
 	end
 
 end

@@ -3641,7 +3641,7 @@ function uespLog.DumpSkills(opt1, opt2)
 		uespLog.DumpLearnedAbilities(opt2)
 		return true
 	else
-		uespLog.Msg("Unknown parameter! Expected format:")
+		uespLog.Msg("Expected format:")
 		uespLog.Msg(".     /uespdump skills [basic/progression/learned/types/all] [note]")
 	end
 	
@@ -3733,6 +3733,8 @@ function uespLog.DumpSkillTypes(note)
 				logData.abilityId1 = GetSkillAbilityId(skillType, skillIndex, abilityIndex, false)
 				logData.abilityId2 = GetSkillAbilityId(skillType, skillIndex, abilityIndex, true)
 				logData.level, logData.maxLevel = GetSkillAbilityUpgradeInfo(skillType, skillIndex, abilityIndex)
+				if (logData.level == nil) then logData.level = 1 end
+				if (logData.maxLevel == nil) then logData.maxLevel = 1 end
 				uespLog.AppendDataToLog("all", logData)
 			end
 		end

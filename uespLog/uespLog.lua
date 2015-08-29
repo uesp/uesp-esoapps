@@ -3625,10 +3625,14 @@ function uespLog.DumpSkills(opt1, opt2)
 	elseif (opt1 == "learned") then
 		uespLog.DumpLearnedAbilities(opt2)
 		return true
+	elseif (opt1 == "types") then
+		uespLog.DumpSkillTypes(opt2)
+		return true
 	else
 		uespLog.DumpSkillsStart(opt1)
 		uespLog.DumpSkillsProgression(opt1)
 		uespLog.DumpLearnedAbilities(opt1)
+		uespLog.DumpSkillTypes(opt1)
 		return true
 	end
 	
@@ -3636,10 +3640,104 @@ function uespLog.DumpSkills(opt1, opt2)
 end
 
 
+function uespLog.GetSkillTypeName(skillType)
+	return GetString(SI_SKILLTYPE1 + skillType - 1)
+end
+
+
+function uespLog.DumpSkillTypes(note)
+	local logData = { }
+	local count = 0
+	local numSkillTypes = GetNumSkillTypes()
+	local skillType
+	local skillIndex
+	local abilityIndex
+	local count = 0
+	
+	uespLog.DebugLogMsg("Logging abilities by skill types for current character...")
+	
+	logData.event = "skillDump::StartType"
+	logData.apiVersion = GetAPIVersion()
+	logData.note = note
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
+	for skillType = 1, numSkillTypes do
+		local numSkillLines = GetNumSkillLines(skillType)
+		local skillTypeName = uespLog.GetSkillTypeName(skillType)
+		
+		logData = { }
+		logData.event = "skillType"
+		logData.class = GetUnitClass("player")
+		logData.classId = GetUnitClassId("player")
+		logData.skillType = skillType
+		logData.skillName = skillTypeName
+		logData.numSkillLines = numSkillLines
+		logData.xpString = "0"
+		
+		for i = 1, 70 do
+			local startXP, nextRankStartXP = GetSkillLineRankXPExtents(skillType, skillIndex, i)
+			
+			if (startXP == nil or nextRankStartXP == nil) then 
+				break
+			end
+			
+			logData.xpString = logData.xpString .. "," .. tostring(nextRankStartXP)
+		end
+		
+		uespLog.AppendDataToLog("all", logData)
+		
+		for skillIndex = 1, numSkillLines do
+			local numSkillAbilities = GetNumSkillAbilities(skillType, skillIndex)
+			
+			logData = { }
+			logData.event = "skillLine"
+			logData.skillType = skillType
+			
+			if (skillType == 1) then
+				logData.class = GetUnitClass("player")
+			end
+			
+			logData.skillIndex = skillIndex
+			logData.numAbilities = numSkillAbilities
+			logData.name = GetSkillLineInfo(skillType, skillIndex)
+			
+			for abilityIndex = 1, numSkillAbilities do
+				local progressionIndex, earnedRank, currentLevel
+				count = count + 1
+				
+				logData = { }
+				logData.event = "skillAbility"
+				logData.skillType = skillType
+				
+				if (skillType == 1) then
+					logData.class = GetUnitClass("player")
+				end
+				
+				logData.skillIndex = skillIndex
+				logData.abilityIndex = abilityIndex
+				logData.name, logData.texture, earnedRank, logData.passive, logData.ultimate, logData.purchase, progressionIndex = GetSkillAbilityInfo(skillType, skillIndex, abilityIndex)
+				logData.abilityId1 = GetSkillAbilityId(skillType, skillIndex, abilityIndex, false)
+				logData.abilityId2 = GetSkillAbilityId(skillType, skillIndex, abilityIndex, true)
+				currentLevel, logData.maxLevel = GetSkillAbilityUpgradeInfo(skillType, skillIndex, abilityIndex)
+				uespLog.AppendDataToLog("all", logData)
+			end
+		end
+	end
+	
+	uespLog.DebugMsg(".     Found "..tostring(count).." abilities by type!")
+	
+	logData = { }
+	logData.event = "skillDump::EndType"
+	logData.count = count
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+end
+
+
 function uespLog.DumpLearnedAbilities(note)
 	local logData = { }
 	local count = 0
 	local level = 0
+	
 	uespLog.DebugLogMsg("Logging learned abilities...")
 	
 	logData.event = "skillDump::StartLearned"
@@ -3675,6 +3773,8 @@ end
 
 function uespLog.DumpSkillsProgression(note)
 	local logData = { }
+	local progressionIndex = 0
+	local count = 0
 	uespLog.DebugLogMsg("Logging skill progressions...")
 	
 	logData.event = "skillDump::StartProgression"
@@ -3692,6 +3792,7 @@ function uespLog.DumpSkillsProgression(note)
 		logData = { }
 		logData.event = "skillProgression"
 		logData.name = name
+		logData.index = progressionIndex
 		
 		logData.name1, logData.texture1, logData.abilityIndex1 = GetAbilityProgressionAbilityInfo(progressionIndex, 1, 1)
 		logData.name2, logData.texture2, logData.abilityIndex2 = GetAbilityProgressionAbilityInfo(progressionIndex, 2, 1)
@@ -3708,13 +3809,14 @@ function uespLog.DumpSkillsProgression(note)
 		logData.id8 = GetAbilityProgressionAbilityId(progressionIndex, 2, 4)
 		
 		uespLog.AppendDataToLog("all", logData)
+		count = count + 1
 	end
 	
-	uespLog.DebugMsg(".     Found "..tostring(progressionIndex-1).." skill progressions!")
+	uespLog.DebugMsg(".     Found "..tostring(count).." skill progressions!")
 	
 	logData = { }
 	logData.event = "skillDump::EndProgression"
-	logData.progressionCount = progressionIndex
+	logData.count = count
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())	
 end
 

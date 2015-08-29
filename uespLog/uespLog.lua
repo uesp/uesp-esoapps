@@ -240,6 +240,10 @@
 --			- All colored text is closed by a "|r" to make sure it doesn't 'leak',
 --			- Added known/unknown display to motif tooltips and rows.
 -- 			- Tweak position of style/known icons in lists.
+--			- Changed the skill dump command and output. Now outputs a lot more information to the log.
+--			  Now has the format:
+--				/uespdump skills 
+--				/uespdump skills [basic/progression/learned/types/all] [note]
 --
 
 
@@ -3617,7 +3621,9 @@ end
 
 function uespLog.DumpSkills(opt1, opt2)
 
-	if (opt1 == nil or opt1 == "") then
+	if (opt2 == nil) then opt2 = "" end
+
+	if (opt1 == nil or opt1 == "" or opt1 == "basic") then
 		return uespLog.DumpSkillsBasic()
 	elseif (opt1 == "progression") then
 		uespLog.DumpSkillsProgression(opt2)
@@ -3628,12 +3634,15 @@ function uespLog.DumpSkills(opt1, opt2)
 	elseif (opt1 == "types") then
 		uespLog.DumpSkillTypes(opt2)
 		return true
-	else
-		uespLog.DumpSkillsStart(opt1)
-		uespLog.DumpSkillsProgression(opt1)
-		uespLog.DumpLearnedAbilities(opt1)
-		uespLog.DumpSkillTypes(opt1)
+	elseif (opt1 == "all") then
+		uespLog.DumpSkillsStart(opt2)
+		uespLog.DumpSkillsProgression(opt2)
+		uespLog.DumpLearnedAbilities(opt2)
+		uespLog.DumpSkillTypes(opt2)
 		return true
+	else
+		uespLog.Msg("Unknown parameter! Expected format:")
+		uespLog.Msg(".     /uespdump skills [basic/progression/learned/types/all] [note]")
 	end
 	
 	return false
@@ -3794,19 +3803,25 @@ function uespLog.DumpSkillsProgression(note)
 		logData.name = name
 		logData.index = progressionIndex
 		
+		logData.name0, logData.texture0, logData.abilityIndex0 = GetAbilityProgressionAbilityInfo(progressionIndex, 0, 1)
 		logData.name1, logData.texture1, logData.abilityIndex1 = GetAbilityProgressionAbilityInfo(progressionIndex, 1, 1)
 		logData.name2, logData.texture2, logData.abilityIndex2 = GetAbilityProgressionAbilityInfo(progressionIndex, 2, 1)
 		
+			-- NOTE: This function doesn't seem to return the correct values
 		logData.skillType, logData.skillIndex, logData.abilityIndex = GetSkillAbilityIndicesFromProgressionIndex(progressionIndex)
 		
-		logData.id1 = GetAbilityProgressionAbilityId(progressionIndex, 1, 1)
-		logData.id2 = GetAbilityProgressionAbilityId(progressionIndex, 1, 2)
-		logData.id3 = GetAbilityProgressionAbilityId(progressionIndex, 1, 3)
-		logData.id4 = GetAbilityProgressionAbilityId(progressionIndex, 1, 4)
-		logData.id5 = GetAbilityProgressionAbilityId(progressionIndex, 2, 1)
-		logData.id6 = GetAbilityProgressionAbilityId(progressionIndex, 2, 2)
-		logData.id7 = GetAbilityProgressionAbilityId(progressionIndex, 2, 3)
-		logData.id8 = GetAbilityProgressionAbilityId(progressionIndex, 2, 4)
+		logData.id01  = GetAbilityProgressionAbilityId(progressionIndex, 0, 1)
+		logData.id02  = GetAbilityProgressionAbilityId(progressionIndex, 0, 2)
+		logData.id03  = GetAbilityProgressionAbilityId(progressionIndex, 0, 3)
+		logData.id04  = GetAbilityProgressionAbilityId(progressionIndex, 0, 4)
+		logData.id11  = GetAbilityProgressionAbilityId(progressionIndex, 1, 1)
+		logData.id12  = GetAbilityProgressionAbilityId(progressionIndex, 1, 2)
+		logData.id13  = GetAbilityProgressionAbilityId(progressionIndex, 1, 3)
+		logData.id14  = GetAbilityProgressionAbilityId(progressionIndex, 1, 4)
+		logData.id21  = GetAbilityProgressionAbilityId(progressionIndex, 2, 1)
+		logData.id22 = GetAbilityProgressionAbilityId(progressionIndex, 2, 2)
+		logData.id23 = GetAbilityProgressionAbilityId(progressionIndex, 2, 3)
+		logData.id24 = GetAbilityProgressionAbilityId(progressionIndex, 2, 4)
 		
 		uespLog.AppendDataToLog("all", logData)
 		count = count + 1
@@ -3852,6 +3867,10 @@ end
 
 
 function uespLog.DumpSkill(abilityId)
+-- GetAbilityInfoByIndex(integer abilityIndex) Returns: string name, string texture, integer rank, integer actionSlotType, boolean passive, boolean showInSpellbook
+-- GetAbilityIdByIndex(integer abilityIndex) Returns: integer abilityId
+-- GetChampionAbilityDescription(integer abilityId, integer numPendingPoints) Returns: string description
+-- GetChampionAbilityId(integer disciplineIndex, integer skillIndex) Returns: integer abilityId
 	local name = GetAbilityName(abilityId)
 	local isPassive = IsAbilityPassive(abilityId)
 	local channeled, castTime, channelTime = GetAbilityCastInfo(abilityId)

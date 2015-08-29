@@ -3677,6 +3677,7 @@ function uespLog.DumpSkillTypes(note)
 		logData = { }
 		logData.event = "skillType"
 		logData.class = GetUnitClass("player")
+		logData.race = GetUnitRace("player")
 		logData.classId = GetUnitClassId("player")
 		logData.skillType = skillType
 		logData.skillName = skillTypeName
@@ -3704,6 +3705,8 @@ function uespLog.DumpSkillTypes(note)
 			
 			if (skillType == 1) then
 				logData.class = GetUnitClass("player")
+			elseif (skillType == 7) then
+				logData.race = GetUnitRace("player")
 			end
 			
 			logData.skillIndex = skillIndex
@@ -3711,7 +3714,7 @@ function uespLog.DumpSkillTypes(note)
 			logData.name = GetSkillLineInfo(skillType, skillIndex)
 			
 			for abilityIndex = 1, numSkillAbilities do
-				local progressionIndex, earnedRank, currentLevel
+				local progressionIndex
 				count = count + 1
 				
 				logData = { }
@@ -3720,14 +3723,16 @@ function uespLog.DumpSkillTypes(note)
 				
 				if (skillType == 1) then
 					logData.class = GetUnitClass("player")
+				elseif (skillType == 7) then
+					logData.race = GetUnitRace("player")
 				end
 				
 				logData.skillIndex = skillIndex
 				logData.abilityIndex = abilityIndex
-				logData.name, logData.texture, earnedRank, logData.passive, logData.ultimate, logData.purchase, progressionIndex = GetSkillAbilityInfo(skillType, skillIndex, abilityIndex)
+				logData.name, logData.texture, logData.rank, logData.passive, logData.ultimate, logData.purchase, progressionIndex = GetSkillAbilityInfo(skillType, skillIndex, abilityIndex)
 				logData.abilityId1 = GetSkillAbilityId(skillType, skillIndex, abilityIndex, false)
 				logData.abilityId2 = GetSkillAbilityId(skillType, skillIndex, abilityIndex, true)
-				currentLevel, logData.maxLevel = GetSkillAbilityUpgradeInfo(skillType, skillIndex, abilityIndex)
+				logData.level, logData.maxLevel = GetSkillAbilityUpgradeInfo(skillType, skillIndex, abilityIndex)
 				uespLog.AppendDataToLog("all", logData)
 			end
 		end
@@ -6090,7 +6095,7 @@ SLASH_COMMANDS["/uesptest"] = function (cmd)
 	
 	uespLog.DebugMsg("Showing Test Time (Waxing Gibbous Moon, 0.33)....")
 	uespLog.ShowTime(1440087745)	
-
+	
 end
 
 

@@ -3682,17 +3682,6 @@ function uespLog.DumpSkillTypes(note)
 		logData.skillType = skillType
 		logData.skillName = skillTypeName
 		logData.numSkillLines = numSkillLines
-		logData.xpString = "0"
-		
-		for i = 1, 70 do
-			local startXP, nextRankStartXP = GetSkillLineRankXPExtents(skillType, skillIndex, i)
-			
-			if (startXP == nil or nextRankStartXP == nil) then 
-				break
-			end
-			
-			logData.xpString = logData.xpString .. "," .. tostring(nextRankStartXP)
-		end
 		
 		uespLog.AppendDataToLog("all", logData)
 		
@@ -3709,9 +3698,22 @@ function uespLog.DumpSkillTypes(note)
 				logData.race = GetUnitRace("player")
 			end
 			
+			logData.xpString = "0"
+		
+			for i = 1, 70 do
+				local startXP, nextRankStartXP = GetSkillLineRankXPExtents(skillType, skillIndex, i)
+				
+				if (startXP == nil or nextRankStartXP == nil) then 
+					break
+				end
+				
+				logData.xpString = logData.xpString .. "," .. tostring(nextRankStartXP)
+			end
+			
 			logData.skillIndex = skillIndex
 			logData.numAbilities = numSkillAbilities
 			logData.name = GetSkillLineInfo(skillType, skillIndex)
+			uespLog.AppendDataToLog("all", logData)
 			
 			for abilityIndex = 1, numSkillAbilities do
 				local progressionIndex
@@ -3772,6 +3774,7 @@ function uespLog.DumpLearnedAbilities(note)
 			logData.progress = 0
 			logData.level = level
 			logData.name, logData.texture, logData.abilityIndex, logData.progressionIndex = GetLearnedAbilityInfoForLevel(level, learnedIndex, false)
+			logData.id = GetAbilityIdByIndex(logData.abilityIndex)
 			uespLog.AppendDataToLog("all", logData)
 			
 			count = count + 1
@@ -3810,6 +3813,7 @@ function uespLog.DumpSkillsProgression(note)
 		logData.name = name
 		logData.index = progressionIndex
 		
+			-- NOTE: The abilityIndex# returned by this function doesn't appear to be correct
 		logData.name0, logData.texture0, logData.abilityIndex0 = GetAbilityProgressionAbilityInfo(progressionIndex, 0, 1)
 		logData.name1, logData.texture1, logData.abilityIndex1 = GetAbilityProgressionAbilityInfo(progressionIndex, 1, 1)
 		logData.name2, logData.texture2, logData.abilityIndex2 = GetAbilityProgressionAbilityInfo(progressionIndex, 2, 1)

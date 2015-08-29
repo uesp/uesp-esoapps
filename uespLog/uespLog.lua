@@ -3636,9 +3636,9 @@ function uespLog.DumpSkills(opt1, opt2)
 		return true
 	elseif (opt1 == "all") then
 		uespLog.DumpSkillsStart(opt2)
+		uespLog.DumpSkillTypes(opt2)
 		uespLog.DumpSkillsProgression(opt2)
 		uespLog.DumpLearnedAbilities(opt2)
-		uespLog.DumpSkillTypes(opt2)
 		return true
 	else
 		uespLog.Msg("Unknown parameter! Expected format:")

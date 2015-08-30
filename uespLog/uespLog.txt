@@ -2,7 +2,7 @@
 ## APIVersion: 100012
 ## Version: 0.30
 ## Author: Daveh@uesp
-## Description: Logs game data for the uesp.net and a few other useful crafting related functions.
+## Description: Logs game data for uesp.net and a few other useful crafting related functions.
 ## OptionalDependsOn: LibStub LibAddonMenu-2.0
 ## SavedVariables: uespLogSavedVars
 

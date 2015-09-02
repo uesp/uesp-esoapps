@@ -247,6 +247,8 @@
 --
 --		- v0.31 -
 --			- Ability icons are logged in skill dumps with the new GetAbilityIcon(abilityId) function.
+--			- Added new item sub-types for V15/V16 equipment for item mining.
+--			- Added some creatures to ignore from the Imperial City.
 --
 
 
@@ -431,7 +433,9 @@ uespLog.ignoredNPCs = {
 	["Volatile Familiar"] = 1,
 	["Thorn Gecko"] = 1,  	--Craglorn
 	["Sandroach"] = 1,  	--Craglorn
-	["Camel"] = 1,  	--Craglorn
+	["Camel"] = 1,  		--Craglorn
+	["Daedrat"] = 1,		--Imperial City
+	["Fiendroth"] = 1,		--Imperial City
 }
 
 uespLog.lastTargetData = {
@@ -523,10 +527,15 @@ uespLog.MINEITEM_LEVELS = {
 	{ 50, 50, 277, 281, "dropped" },
 	{ 50, 50, 290, 294, "crafted" },
 	{ 50, 50, 295, 299, "dropped" },
+	{ 50, 50, 301, 301, "dropped" },
+	{ 50, 50, 304, 307, "dropped" },
 	{ 50, 50, 308, 312, "crafted" },
 	{ 50, 50, 313, 317, "dropped" },
 	{  1, 50, 319, 319, "novalue" },
 	{ 50, 50, 323, 338, "novalue" },
+	{ 50, 50, 366, 370, "crafted" },
+	{ 50, 50, 358, 364, "dropped" },
+	{ 50, 50, 366, 370, "crafted" },
 }
 
 uespLog.mineItemBadCount = 0

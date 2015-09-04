@@ -533,7 +533,6 @@ uespLog.MINEITEM_LEVELS = {
 	{ 50, 50, 313, 317, "dropped" },
 	{  1, 50, 319, 319, "novalue" },
 	{ 50, 50, 323, 338, "novalue" },
-	{ 50, 50, 366, 370, "crafted" },
 	{ 50, 50, 358, 364, "dropped" },
 	{ 50, 50, 366, 370, "crafted" },
 }

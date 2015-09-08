@@ -501,7 +501,7 @@ uespLog.ALLIANCE_NAMES = {
 
 uespLog.MINEITEM_LEVELS = {
 	{  1, 50,   1,   6, "dropped" },
-	{  1, 50 ,   7,   9, "dropped" },
+	{  1, 50 ,  7,   9, "dropped" },
 	{  1,  1,  30,  34, "crafted" },
 	{  4,  4,  25,  29, "crafted" },
 	{  6, 50,  20,  24, "crafted" },

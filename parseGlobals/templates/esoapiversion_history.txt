@@ -1,3 +1,4 @@
-<li><a href="current/"><b>Current</b></a> -- The latest API version.</li>
+<li><a href='/'><b>v</b></a> -- Created on </li>
 <li><a href='100010/'><b>v100010</b></a> -- Created on 2015-06-06 16:38:37</li>
 <li><a href='100011/'><b>v100011</b></a> -- Created on 2015-06-06 16:40:56</li>
+<li><a href='100012/'><b>v100012</b></a> -- Created on 2015-09-08 11:09:09</li>

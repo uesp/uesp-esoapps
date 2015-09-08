@@ -38,7 +38,13 @@ class CLuaTokenIterator:
     def Start(self, tokens, index):
         self.startIndex = index
         self.index = index
-        self.lastToken = tokens[index]
+        
+              # Handle Lua files with no tokens
+        if (index >= len(tokens)):
+             self.lastToken = None
+        else:
+             self.lastToken = tokens[index]
+        
         self.tokens = tokens
         self.isError = False
         self.errorMsg = ""

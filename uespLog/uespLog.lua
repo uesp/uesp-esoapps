@@ -249,6 +249,8 @@
 --			- Ability icons are logged in skill dumps with the new GetAbilityIcon(abilityId) function.
 --			- Added new item sub-types for V15/V16 equipment for item mining.
 --			- Added some creatures to ignore from the Imperial City.
+--			- "/uespdump globals" now works with private functions with numbers in their name.
+--			- Trait display fixed for Nirnhoned items currently being researched.
 --
 
 
@@ -4721,7 +4723,7 @@ function uespLog.DumpObjectInnerLoop(dumpObject, nextIndex, parentName, level, m
 	
 	if (not status) then
 		tableIndex = uespLog.DumpObjectPrivate(tableIndex, value, parentName, level)
-		uespLog.DebugExtraMsg("UESP::Error on dump object iteration...")
+		uespLog.DebugExtraMsg("UESP::Error on dump object iteration...("..tostring(tableIndex)..")")
 	elseif (skipObject) then
 		uespLog.DebugExtraMsg("UESP::Skipping dump for object "..tostring(tableIndex))
 	elseif (tableIndex == "__index" and uespLog.EndsWith(parentName, "__index")) then
@@ -4891,7 +4893,7 @@ end
 
 
 function uespLog.DumpObjectPrivate (objectName, objectValue, parentName, varLevel)
-	local errIndex = string.match(objectName, "attempt to access a private function '(%a*)' from")
+	local errIndex = string.match(objectName, "attempt to access a private function '(%w*)' from")
 	local logData = {} 
 	
 	logData.event = "Global"
@@ -4904,6 +4906,8 @@ function uespLog.DumpObjectPrivate (objectName, objectValue, parentName, varLeve
 		
 	if (uespLog.printDumpObject) then
 		uespLog.DebugMsg("UESP:"..tostring(level)..":Private "..logData.name)
+	else
+		--uespLog.DebugExtraMsg(".     "..tostring(level)..":Private "..logData.name)
 	end
 	
 	uespLog.countGlobal = uespLog.countGlobal + 1
@@ -6048,7 +6052,6 @@ uespLog.ShowResearchInfo = function (craftingType)
 		
 		for traitIndex = 1, numTraits do
 			local duration, timeRemainingSecs = GetSmithingResearchLineTraitTimes(craftingType, researchLineIndex, traitIndex)
-			local name, icon, numTraits, timeRequiredForNextResearchSecs = GetSmithingResearchLineInfo(craftingType, researchLineIndex)
 			local traitType, traitDescription, known = GetSmithingResearchLineTraitInfo(craftingType, researchLineIndex, traitIndex)
 			local traitName = uespLog.GetItemTraitName(traitType)
 			

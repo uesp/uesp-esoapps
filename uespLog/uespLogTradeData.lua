@@ -700,9 +700,9 @@ function uespLog.CheckIsItemLinkResearchable(itemLink)
 	end
 
 	--this used to be "if(itemType == ITEMTYPE_ARMOR)", but shields are not armor even though they are armor
-	if (traitIndex == 25) then
+	if (traitIndex == 25) then -- Nirnhoned
 		traitIndex = 9
-	elseif (traitIndex == 26) then
+	elseif (traitIndex == 26) then -- Nirnhoned
 		traitIndex = 9
 	elseif (traitIndex > 10) then
 		traitIndex = traitIndex - 10;
@@ -891,6 +891,7 @@ uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT = {
 function uespLog.CheckIsItemLinkResearchableInSkill(itemLink, itemType, equipType, craftType, traitIndex)
 	local researchLineIndex = -1
 	local numLines = GetNumSmithingResearchLines(craftType)
+	local realTraitType = GetItemLinkTraitInfo(itemLink)
 		
 	if (uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT[craftType] == nil) then
 		return -20
@@ -926,14 +927,50 @@ function uespLog.CheckIsItemLinkResearchableInSkill(itemLink, itemType, equipTyp
 	end
 
 	local name, icon, numTraits, timeRequiredForNextResearchSecs = GetSmithingResearchLineInfo(craftType, researchLineIndex)
-    local traitType, traitDescription, known = GetSmithingResearchLineTraitInfo(craftType, researchLineIndex, traitIndex)
+    local traitType, traitDescription, known = GetSmithingResearchLineTraitInfo(craftType, researchLineIndex, realTraitType)
 	--uespLog.DebugMsg("UESP::"..itemLink..":"..tostring(traitType)..", "..tostring(traitDescription)..","..tostring(known)..", "..tostring(researchLineIndex)..", "..tostring(name))
 		
 	if (traitType ~= nil and traitType ~= 0 and known) then
 		return 0
 	end
+	
+	if (uespLog.IsResearchingItemLink(itemLink)) then
+		return 0
+	end
 
 	return 1
+end
+
+
+function uespLog.IsResearchingItemLink(itemLink)
+    local craftingType = uespLog.GetItemLinkCraftSkillType(itemLink)
+	local itemTraitType = GetItemLinkTraitInfo(itemLink)
+	
+	if (craftingType <= 0) then
+		return false
+	end
+
+	local numLines = GetNumSmithingResearchLines(craftingType)
+	local maxSimultaneousResearch = GetMaxSimultaneousSmithingResearch(craftingType)
+	
+	if (numLines == 0 or maxSimultaneousResearch == 0) then
+		return false
+	end
+	
+	for researchLineIndex = 1, numLines do
+		local name, icon, numTraits, timeRequiredForNextResearchSecs = GetSmithingResearchLineInfo(craftingType, researchLineIndex)
+		
+		for traitIndex = 1, numTraits do
+			local duration, timeRemainingSecs = GetSmithingResearchLineTraitTimes(craftingType, researchLineIndex, traitIndex)
+			local traitType, traitDescription, known = GetSmithingResearchLineTraitInfo(craftingType, researchLineIndex, traitIndex)
+			
+			if (duration ~= nil and traitType == itemTraitType) then
+				return true
+			end
+		end
+	end
+	
+	return false
 end
 
 

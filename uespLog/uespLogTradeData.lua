@@ -480,6 +480,7 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 	local isResearchable = uespLog.CheckIsItemLinkResearchable(itemLink)
 	
 	if (isResearchable >= 0 and uespLog.IsCraftTraitDisplay()) then
+		local isResearching = uespLog.IsResearchingItemLink(itemLink)
 	
 		if (isResearchable == uespLog.ORNATE_TRAIT_INDEX) then
 			itemText = "Ornate"
@@ -490,6 +491,9 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 		elseif (isResearchable > 0) then
 			itemText = "Trait Unknown"
 			iconColor = uespLog.TRADE_UNKNOWN_COLOR
+		elseif (isResearching) then
+			itemText = "Trait Researching"
+			iconColor = uespLog.TRADE_KNOWN_COLOR
 		else
 			itemText = "Trait Known"
 			iconColor = uespLog.TRADE_KNOWN_COLOR
@@ -773,7 +777,6 @@ function uespLog.CheckIsItemResearchable(bagId, slotIndex)
 end
 
 
-
 function uespLog.GetItemLinkCraftSkillType (itemLink)
 	local itemType = GetItemLinkItemType(itemLink)
 	
@@ -889,45 +892,16 @@ uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT = {
 
 
 function uespLog.CheckIsItemLinkResearchableInSkill(itemLink, itemType, equipType, craftType, traitIndex)
-	local researchLineIndex = -1
 	local numLines = GetNumSmithingResearchLines(craftType)
 	local realTraitType = GetItemLinkTraitInfo(itemLink)
-		
-	if (uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT[craftType] == nil) then
-		return -20
-	end
+	local researchLineIndex = uespLog.GetItemLinkResearchLineIndex(itemLink)
 	
-	if (uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT[craftType][itemType] == nil) then
-		return -21
-	end
-	
-	if (itemType == ITEMTYPE_WEAPON) then
-		local weaponType = GetItemLinkWeaponType(itemLink) 
-		
-		if (uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT[craftType][itemType][weaponType] == nil) then
-			return -22
-		end
-		
-		researchLineIndex = uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT[craftType][itemType][weaponType] 
-		
-	elseif (itemType == ITEMTYPE_ARMOR) then
-		local equipType = GetItemLinkEquipType(itemLink) 
-		local armorType = GetItemLinkArmorType(itemLink)
-		
-		if (uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT[craftType][itemType][armorType] == nil) then
-			return -23
-		end
-		
-		if (uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT[craftType][itemType][armorType][equipType] == nil) then
-			--uespLog.DebugMsg("       -24:"..tostring(armorType).."::"..tostring(equipType))
-			return -24
-		end
-		
-		researchLineIndex = uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT[craftType][itemType][armorType][equipType] 
+	if (researchLineIndex <= 0) then
+		return -1
 	end
 
 	local name, icon, numTraits, timeRequiredForNextResearchSecs = GetSmithingResearchLineInfo(craftType, researchLineIndex)
-    local traitType, traitDescription, known = GetSmithingResearchLineTraitInfo(craftType, researchLineIndex, realTraitType)
+    local traitType, traitDescription, known = GetSmithingResearchLineTraitInfo(craftType, researchLineIndex, traitIndex)
 	--uespLog.DebugMsg("UESP::"..itemLink..":"..tostring(traitType)..", "..tostring(traitDescription)..","..tostring(known)..", "..tostring(researchLineIndex)..", "..tostring(name))
 		
 	if (traitType ~= nil and traitType ~= 0 and known) then
@@ -942,11 +916,58 @@ function uespLog.CheckIsItemLinkResearchableInSkill(itemLink, itemType, equipTyp
 end
 
 
+function uespLog.GetItemLinkResearchLineIndex(itemLink)
+	local researchLineIndex = -1
+	local craftType = uespLog.GetItemLinkCraftSkillType(itemLink)
+	local itemType = GetItemLinkItemType(itemLink)
+
+	if (uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT[craftType] == nil) then
+		return -1
+	end
+	
+	if (uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT[craftType][itemType] == nil) then
+		return -2
+	end
+	
+	if (itemType == ITEMTYPE_WEAPON) then
+		local weaponType = GetItemLinkWeaponType(itemLink) 
+		
+		if (uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT[craftType][itemType][weaponType] == nil) then
+			return -3
+		end
+		
+		researchLineIndex = uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT[craftType][itemType][weaponType] 
+		
+	elseif (itemType == ITEMTYPE_ARMOR) then
+		local equipType = GetItemLinkEquipType(itemLink) 
+		local armorType = GetItemLinkArmorType(itemLink)
+		
+		if (uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT[craftType][itemType][armorType] == nil) then
+			return -4
+		end
+		
+		if (uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT[craftType][itemType][armorType][equipType] == nil) then
+			return -5
+		end
+		
+		researchLineIndex = uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT[craftType][itemType][armorType][equipType] 
+	end
+	
+	return researchLineIndex
+end
+
+
 function uespLog.IsResearchingItemLink(itemLink)
     local craftingType = uespLog.GetItemLinkCraftSkillType(itemLink)
 	local itemTraitType = GetItemLinkTraitInfo(itemLink)
+	local researchLineIndex = uespLog.GetItemLinkResearchLineIndex(itemLink)
+	local itemTraitIndex = itemTraitType
 	
-	if (craftingType <= 0) then
+	if (itemTraitIndex == 25 or itemTraitIndex == 26) then
+		itemTraitIndex = 9
+	end
+	
+	if (craftingType <= 0 or researchLineIndex <= 0) then
 		return false
 	end
 
@@ -957,16 +978,14 @@ function uespLog.IsResearchingItemLink(itemLink)
 		return false
 	end
 	
-	for researchLineIndex = 1, numLines do
-		local name, icon, numTraits, timeRequiredForNextResearchSecs = GetSmithingResearchLineInfo(craftingType, researchLineIndex)
+	local name, icon, numTraits, timeRequiredForNextResearchSecs = GetSmithingResearchLineInfo(craftingType, researchLineIndex)
 		
-		for traitIndex = 1, numTraits do
-			local duration, timeRemainingSecs = GetSmithingResearchLineTraitTimes(craftingType, researchLineIndex, traitIndex)
-			local traitType, traitDescription, known = GetSmithingResearchLineTraitInfo(craftingType, researchLineIndex, traitIndex)
+	for traitIndex = 1, numTraits do
+		local duration, timeRemainingSecs = GetSmithingResearchLineTraitTimes(craftingType, researchLineIndex, traitIndex)
+		local traitType, traitDescription, known = GetSmithingResearchLineTraitInfo(craftingType, researchLineIndex, traitIndex)
 			
-			if (duration ~= nil and traitType == itemTraitType) then
-				return true
-			end
+		if (duration ~= nil and traitType == itemTraitType) then
+			return true
 		end
 	end
 	
@@ -1550,7 +1569,6 @@ function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
 	end
 	
 	local isResearchable = uespLog.CheckIsItemLinkResearchable(itemLink)
-	--uespLog.DebugMsg("     "..tostring(itemLink).." = "..tostring(isResearchable))
 
 	if (isResearchable >= 0 and uespLog.IsCraftTraitDisplay() and uespLog.IsCraftDisplay()) then
 	

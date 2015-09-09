@@ -252,7 +252,17 @@
 --			- "/uespdump globals" now works with private functions with numbers in their name.
 --			- Trait display fixed for Nirnhoned items currently being researched.
 --			- Tweaked looting messages and included Safeboxes in logged data.
+--			- Added the /uesptreasuretimer (or /utt) for keeping track of looted containers. Once a
+--			  container (chest, heavy sack, or safebox) is looted a timer will start and notify you
+--			  with a chat message in a given amount of time. Current defaults are 2 minutes (120 sec)
+--			  which works for chests in delves but may be too short for other containers in some zones.
+--					/utt 					: Shows the current status
+--					/utt [on/off]			: Turns the timer on/off (default is off)
+--					/utt [name]				: Shows the timer length for the given container name.
+--											: Valid names are: Chest, Heavy Sack, Safebox
+--					/utt [name] [duration]	: Set the duration in seconds for the given container.
 --
+
 
 
 --	GLOBAL DEFINITIONS
@@ -340,6 +350,9 @@ uespLog.lastConversationOption.Type = ""
 uespLog.lastConversationOption.Gold = ""
 uespLog.lastConversationOption.Index = ""
 uespLog.lastConversationOption.Important = ""
+
+uespLog.lastLootUpdateCount = -1
+uespLog.lastLootTargetName = ""
 
 uespLog.savedVars = {}
     
@@ -594,6 +607,12 @@ uespLog.DEFAULT_SETTINGS =
 		["mineItemOnlySubType"] = -1,
 		["isAutoMiningItems"] = false,
 		["pvpUpdate"] = false,
+		["enabledTreasureTimers"] = false,
+		["TREASURE_TIMER_DURATIONS"] = {
+			["chest"] = 120,
+			["heavy sack"] = 120,
+			["safebox"] = 120,
+		}
 	}
 }
 
@@ -602,6 +621,44 @@ function uespLog.BoolToOnOff(flag)
 	if (flag) then return "on" end
 	return "off"
 end
+
+
+function uespLog.GetTreasureTimers()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.TREASURE_TIMER_DURATIONS == nil) then
+		uespLog.savedVars.settings.data.TREASURE_TIMER_DURATIONS = uespLog.DEFAULT_SETTINGS.TREASURE_TIMER_DURATIONS
+	end
+	
+	return uespLog.savedVars.settings.data.TREASURE_TIMER_DURATIONS
+end
+
+
+function uespLog.IsTreasureTimerEnabled()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.enabledTreasureTimers == nil) then
+		uespLog.savedVars.settings.data.enabledTreasureTimers = uespLog.DEFAULT_SETTINGS.enabledTreasureTimers
+	end
+	
+	return uespLog.savedVars.settings.data.enabledTreasureTimers
+end
+
+
+function uespLog.SetTreasureTimerEnabled(flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	uespLog.savedVars.settings.data.enabledTreasureTimers = flag
+end	
 
 
 function uespLog.GetTotalInspiration()
@@ -1192,6 +1249,7 @@ function uespLog.Initialize( self, addOnName )
 		
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOOT_UPDATED, uespLog.OnLootUpdated)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOOT_RECEIVED, uespLog.OnLootGained)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOOT_CLOSED, uespLog.OnLootClosed)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_MONEY_UPDATE, uespLog.OnMoneyUpdate)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_INVENTORY_SINGLE_SLOT_UPDATE, uespLog.OnInventorySlotUpdate)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_INVENTORY_ITEM_USED, uespLog.OnInventoryItemUsed)
@@ -2648,6 +2706,49 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 end
 
 
+function uespLog.OnLootUpdated (eventCode, actionName, isOwned)
+	--uespLog.DebugMsg("OnLootUpdated::count = "..tostring(GetNumLootItems()))
+	--uespLog.DebugExtraMsg("OnLootUpdated::actionName = "..tostring(actionName))
+	--uespLog.DebugExtraMsg("OnLootUpdated::isOwned = "..tostring(isOwned))
+	
+	uespLog.lastLootUpdateCount = GetNumLootItems()
+	uespLog.lastLootTargetName = uespLog.lastTargetData.name
+end
+
+
+function uespLog.OnTreasureLooted (targetName)
+	safeName = string.lower(targetName)
+	local duration = uespLog.GetTreasureTimers()[safeName]
+
+	if (not uespLog.IsTreasureTimerEnabled() or duration == nil or duration <= 0) then
+		return
+	end
+		
+	zo_callLater(	function()
+						uespLog.MsgColor(uespLog.itemColor, "A "..tostring(targetName).." was looted "..tostring(duration).." sec ago.")
+					end, duration*1000)
+	
+	uespLog.DebugLogMsgColor(uespLog.itemColor, "Created "..tostring(duration).." sec timer for "..tostring(targetName).." just looted.")
+end
+
+
+function uespLog.OnLootClosed (eventCode)
+	--uespLog.DebugMsg("OnLootClosed::count = "..tostring(GetNumLootItems()))
+	
+	if (uespLog.lastLootUpdateCount == 0) then
+		uespLog.OnTreasureLooted(uespLog.lastLootTargetName)
+		--uespLog.DebugMsg("Finished looting "..tostring(uespLog.lastLootTargetName))
+	elseif (uespLog.lastLootUpdateCount > 0) then
+		--uespLog.DebugMsg("Did not finish looting "..tostring(uespLog.lastLootTargetName))
+	else
+		--uespLog.DebugMsg("Unknown "..tostring(uespLog.lastLootUpdateCount).."::"..tostring(uespLog.lastLootTargetName))
+	end
+	
+	uespLog.lastLootUpdateCount = -1
+	uespLog.lastLootTargetName = ""
+end
+
+
 function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSound, lootType, self, isPickPocket, extraLogData)
 	local logData = { }
 	local posData = uespLog.GetLastTargetData()
@@ -2657,6 +2758,11 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 	local icon, sellPrice, meetsUsageRequirement, equipType, itemStyle = GetItemLinkInfo(itemLink)
 	local itemText, itemColor, itemId, itemLevel, itemData, niceName, niceLink = uespLog.ParseLinkID(itemLink)
 	local itemStyleStr = uespLog.GetItemStyleStr(itemStyle)
+	
+	uespLog.lastLootUpdateCount = GetNumLootItems()
+	uespLog.lastLootTargetName = uespLog.lastTargetData.name
+	
+	--uespLog.DebugMsg("OnLootGained::count = "..tostring(GetNumLootItems()))
 	
 	if (uespLog.currentHarvestTarget ~= nil) then
 		posData.x = uespLog.currentHarvestTarget.x
@@ -2956,6 +3062,8 @@ function uespLog.OnFoundTreasure (name)
 	uespLog.AppendDataToLog("all", logData, uespLog.GetCurrentTargetData(), uespLog.GetTimeData())
 	
 	uespLog.DebugLogMsg("Found "..tostring(name))
+
+	uespLog.lastLootTargetName = name
 end
 
 
@@ -3326,6 +3434,77 @@ function uespLog.ShowTime (inputTimestamp)
 	uespLog.MsgColor(uespLog.timeColor, "UESP::_VERSION = " ..version..",  API = "..tostring(apiVersion))	
 	uespLog.DebugExtraMsg(uespLog.timeColor, "UESP::timeStampStr = " .. timeStampStr)
 end
+
+
+function uespLog.ShowTreasureTimerHelp()
+	uespLog.Msg("Expected one of the command formats:")
+	uespLog.Msg(".      /uesptreasuretimer [on/off]")
+	uespLog.Msg(".      /uesptreasuretimer [name] [duration]")
+		
+	if (uespLog.IsTreasureTimerEnabled()) then
+		uespLog.Msg("Treasure timer is currently enabled.")
+	else
+		uespLog.Msg("Treasure timer is currently disabled.")
+	end
+end
+
+
+function uespLog.SetTreasureTimerDuration(name, duration)
+
+	if (name == nil) then
+		return
+	end
+	
+	local safeName = string.lower(name)
+	local currentDuration = uespLog.GetTreasureTimers()[safeName]
+
+	if (currentDuration == nil) then
+		uespLog.Msg("There is no treasure timer for "..tostring(name))
+	elseif (duration == nil or duration == "") then
+		uespLog.Msg("Treasure timer for "..tostring(name).." is "..tostring(currentDuration).." sec.")
+		return
+	else
+		local newDuration = tonumber(duration)
+		uespLog.GetTreasureTimers()[safeName] = newDuration
+		uespLog.Msg("Set the treasure timer for "..tostring(name).." to "..tostring(newDuration).." sec.")
+	end
+	
+end
+
+
+SLASH_COMMANDS["/uesptreasuretimer"] = function (cmd)
+	cmdWords = {}
+	for word in cmd:gmatch("%S+") do table.insert(cmdWords, word) end
+	
+	if (#cmdWords < 1) then
+		uespLog.ShowTreasureTimerHelp()
+		return
+	end
+	
+	firstCmd = string.lower(cmdWords[1])
+	
+	if (firstCmd == "on") then
+		uespLog.SetTreasureTimerEnabled(true)
+		uespLog.Msg("Treasure timer is now enabled.")
+	elseif (firstCmd == "off") then
+		uespLog.SetTreasureTimerEnabled(false)
+		uespLog.Msg("Treasure timer is now disabled.")
+	elseif (firstCmd ~= "") then
+	
+		if (firstCmd == "heavy") then
+			cmdWords[1] = cmdWords[1].." "..cmdWords[2]
+			cmdWords[2] = cmdWords[3]
+		end
+		
+		uespLog.SetTreasureTimerDuration(cmdWords[1], cmdWords[2])
+	else
+		uespLog.ShowTreasureTimerHelp()
+	end
+	
+end
+
+
+SLASH_COMMANDS["/utt"] = SLASH_COMMANDS["/uesptreasuretimer"]
 
 
 SLASH_COMMANDS["/uesptime"] = function (cmd)

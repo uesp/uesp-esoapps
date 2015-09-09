@@ -1460,6 +1460,8 @@ end
 
 
 function uespLog.OnLootUpdated (eventCode, actionName, isOwned)
+	uespLog.DebugMsg("actionName = "..tostring(actionName))
+	uespLog.DebugMsg("isOwned = "..tostring(isOwned))
 end
 
 

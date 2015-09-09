@@ -1459,12 +1459,6 @@ function uespLog.CreateNiceLink(link)
 end
 
 
-function uespLog.OnLootUpdated (eventCode, actionName, isOwned)
-	--uespLog.DebugExtraMsg("actionName = "..tostring(actionName))
-	--uespLog.DebugExtraMsg("isOwned = "..tostring(isOwned))
-end
-
-
 -- The following is copy/pasted from ingame/tradinghouse/tradinghouse.lua due to use of local
 -- functions needed to hook into the trader listing for updates.
 local SEARCH_RESULTS_DATA_TYPE = 1

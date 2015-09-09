@@ -251,6 +251,7 @@
 --			- Added some creatures to ignore from the Imperial City.
 --			- "/uespdump globals" now works with private functions with numbers in their name.
 --			- Trait display fixed for Nirnhoned items currently being researched.
+--			- Tweaked looting messages and included Safeboxes in logged data.
 --
 
 
@@ -275,6 +276,8 @@ uespLog.ACTION_HARVEST = GetString(SI_GAMECAMERAACTIONTYPE3)
 uespLog.ACTION_MINE = GetString(SI_KEEPRESOURCEPROVIDERTYPE3)
 uespLog.ACTION_CUT = "Cut"
 uespLog.ACTION_COLLECT = "Collect"
+uespLog.ACTION_STEALFROM = GetString(SI_GAMECAMERAACTIONTYPE20)
+uespLog.ACTION_STEAL = GetString(SI_GAMECAMERAACTIONTYPE19)
 
 uespLog.currentHarvestTarget = nil
 uespLog.lastHarvestTarget = { }
@@ -454,6 +457,8 @@ uespLog.lastTargetData = {
 	maxHp = "",
 	maxMg = "",
 	maxSt = "",
+	action = "",
+	interactionType = "",
 }
 
 uespLog.lastOnTargetChange = ""
@@ -479,6 +484,8 @@ uespLog.currentTargetData = {
 	x = "",
 	y = "",
 	zone = "",
+	action = "",
+	interactionType = "",
 }
 
 uespLog.currentConversationData = {
@@ -2617,7 +2624,7 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 		logData.qnt = uespLog.lastMoneyChange
 			
 		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData())
-		uespLog.DebugLogMsgColor(uespLog.itemColor, "You looted "..tostring(uespLog.lastMoneyChange).." gold")
+		uespLog.DebugLogMsgColor(uespLog.itemColor, "You looted "..tostring(uespLog.lastMoneyChange).." gold from "..tostring(posData.lastTarget))
 		
 		-- 4 = quest reward
 	elseif (reason == 4) then
@@ -2625,7 +2632,7 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 		logData.qnt = uespLog.lastMoneyChange
 
 		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData())
-		uespLog.DebugLogMsgColor(uespLog.itemColor, "Quest reward "..tostring(uespLog.lastMoneyChange).." gold")
+		uespLog.DebugLogMsgColor(uespLog.itemColor, "Quest reward "..tostring(uespLog.lastMoneyChange).." gold from"..tostring(posData.lastTarget))
 		
 		-- 62 = Stolen
 	elseif (reason == 62) then
@@ -2633,7 +2640,7 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 		logData.qnt = uespLog.lastMoneyChange
 
 		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData())
-		uespLog.DebugLogMsgColor(uespLog.itemColor, "You stole "..tostring(uespLog.lastMoneyChange).." gold")
+		uespLog.DebugLogMsgColor(uespLog.itemColor, "You stole "..tostring(uespLog.lastMoneyChange).." gold from"..tostring(posData.lastTarget))
 	else
 		uespLog.DebugExtraMsg("UESP::Money Change, New="..tostring(newMoney)..",  Old="..tostring(oldMoney)..",  Diff="..tostring(uespLog.lastMoneyChange)..",  Reason="..tostring(reason))
 	end	
@@ -2664,7 +2671,11 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 	
 	if (isPickPocket) then
 		rcvType = "pickpocketed"
+	elseif (uespLog.lastTargetData.action == uespLog.ACTION_STEALFROM or uespLog.lastTargetData.action == uespLog.ACTION_STEAL) then
+		rcvType = "stole"
 	end
+
+	uespLog.DebugMsg("LastAction = "..tostring(uespLog.lastTargetData.action))
 	
 	logData.event = "LootGained"
 	logData.itemLink = itemLink
@@ -2681,10 +2692,16 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 		--You looted [Sword] (x1) (level 30, Breton)
 		
 		if (extraLogData ~= nil and extraLogData.skippedLoot) then
-			uespLog.DebugMsgColor(uespLog.itemColor, "UESP::Skipped looting "..niceLink.." (x"..tostring(quantity)..") (prov level "..tostring(extraLogData.tradeType)..")")
+			uespLog.DebugMsgColor(uespLog.itemColor, "UESP::Skipped looting "..niceLink.." (x"..tostring(quantity)..") (prov level "..tostring(extraLogData.tradeType)..") from"..tostring(posData.lastTarget))
 		else
 			--uespLog.DebugLogMsgColor(uespLog.itemColor, "You looted "..msgType.." "..niceLink.." (x"..tostring(quantity)..") (level "..tostring(itemLevel)..", "..itemStyleStr..")")
-			uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You "..rcvType.." "..msgType.." "..niceLink.." (x"..tostring(quantity)..")")
+			--uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You "..rcvType.." "..msgType.." "..niceLink.." (x"..tostring(quantity)..") from "..tostring(posData.lastTarget))
+			
+			if (quantity == 1) then
+				uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You "..rcvType.." "..niceLink.." from "..tostring(posData.lastTarget))
+			else
+				uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You "..rcvType.." "..niceLink.." (x"..tostring(quantity)..") from "..tostring(posData.lastTarget))
+			end
 		end
 		
 		local money, stolenMoney = GetLootMoney()
@@ -3110,6 +3127,8 @@ function uespLog.OnUpdate ()
 		uespLog.lastTargetData.zone = uespLog.currentTargetData.zone
 		uespLog.lastTargetData.gameTime = GetGameTimeMilliseconds()
 		uespLog.lastTargetData.timeStamp = GetTimeStamp()
+		uespLog.lastTargetData.action = uespLog.currentTargetData.action
+		uespLog.lastTargetData.interactionType = uespLog.currentTargetData.interactionType
     end
 	
 	if (interactionType == INTERACTION_NONE and action == uespLog.ACTION_COLLECT) then
@@ -3149,8 +3168,12 @@ function uespLog.OnUpdate ()
 	uespLog.currentTargetData.x = x
 	uespLog.currentTargetData.y = y
 	uespLog.currentTargetData.zone = zone
+	uespLog.currentTargetData.action = action
+	uespLog.currentTargetData.interactionType = interactionType
 	
 	--uespLog.DebugExtraMsg("CurrentTarget = "..tostring(name))
+	--uespLog.DebugExtraMsg("CurrentAction = "..tostring(action))
+	--uespLog.DebugExtraMsg("interactionType = "..tostring(interactionType))
 	
     if (interactionType == INTERACTION_NONE and action == uespLog.ACTION_USE) then
 
@@ -3162,6 +3185,12 @@ function uespLog.OnUpdate ()
 	
 		if (name == "Chest") then
 			uespLog.OnFoundTreasure("Chest")
+		end
+		
+	elseif (interactionType == INTERACTION_NONE and action == uespLog.ACTION_STEALFROM) then
+	
+		if (name == "Safebox") then
+			uespLog.OnFoundTreasure("Safebox")
 		end
 		
 	elseif (interactionType == INTERACTION_NONE and action == uespLog.ACTION_SEARCH) then

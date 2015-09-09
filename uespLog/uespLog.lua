@@ -2675,8 +2675,6 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 		rcvType = "stole"
 	end
 
-	uespLog.DebugMsg("LastAction = "..tostring(uespLog.lastTargetData.action))
-	
 	logData.event = "LootGained"
 	logData.itemLink = itemLink
 	logData.qnt = quantity

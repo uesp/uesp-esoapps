@@ -2632,7 +2632,7 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 		logData.qnt = uespLog.lastMoneyChange
 
 		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData())
-		uespLog.DebugLogMsgColor(uespLog.itemColor, "Quest reward "..tostring(uespLog.lastMoneyChange).." gold from"..tostring(posData.lastTarget))
+		uespLog.DebugLogMsgColor(uespLog.itemColor, "Quest reward "..tostring(uespLog.lastMoneyChange).." gold from "..tostring(posData.lastTarget))
 		
 		-- 62 = Stolen
 	elseif (reason == 62) then
@@ -2640,7 +2640,7 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 		logData.qnt = uespLog.lastMoneyChange
 
 		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData())
-		uespLog.DebugLogMsgColor(uespLog.itemColor, "You stole "..tostring(uespLog.lastMoneyChange).." gold from"..tostring(posData.lastTarget))
+		uespLog.DebugLogMsgColor(uespLog.itemColor, "You stole "..tostring(uespLog.lastMoneyChange).." gold from "..tostring(posData.lastTarget))
 	else
 		uespLog.DebugExtraMsg("UESP::Money Change, New="..tostring(newMoney)..",  Old="..tostring(oldMoney)..",  Diff="..tostring(uespLog.lastMoneyChange)..",  Reason="..tostring(reason))
 	end	

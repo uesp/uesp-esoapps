@@ -2668,6 +2668,7 @@ end
 function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 	local logData = { }
 	local posData = uespLog.GetLastTargetData()
+	local lootMsg = ""
 	
 	if (posData.x == nil or posData.x == "") then
 		posData = uespLog.GetPlayerPositionData()
@@ -2675,6 +2676,10 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 	
 	uespLog.lastMoneyChange = newMoney - oldMoney
 	uespLog.lastMoneyGameTime = GetGameTimeMilliseconds()
+	
+	if (posData.lastTarget ~= nil) then
+		lootMsg = " from "..tostring(posData.lastTarget)
+	end
 
 		-- 0 = loot
 	if (reason == 0) then
@@ -2682,7 +2687,7 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 		logData.qnt = uespLog.lastMoneyChange
 			
 		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData())
-		uespLog.DebugLogMsgColor(uespLog.itemColor, "You looted "..tostring(uespLog.lastMoneyChange).." gold from "..tostring(posData.lastTarget))
+		uespLog.DebugLogMsgColor(uespLog.itemColor, "You looted "..tostring(uespLog.lastMoneyChange).." gold"..lootMsg)
 		
 		-- 4 = quest reward
 	elseif (reason == 4) then
@@ -2690,7 +2695,7 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 		logData.qnt = uespLog.lastMoneyChange
 
 		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData())
-		uespLog.DebugLogMsgColor(uespLog.itemColor, "Quest reward "..tostring(uespLog.lastMoneyChange).." gold from "..tostring(posData.lastTarget))
+		uespLog.DebugLogMsgColor(uespLog.itemColor, "Quest reward "..tostring(uespLog.lastMoneyChange).." gold"..lootMsg)
 		
 		-- 62 = Stolen
 	elseif (reason == 62) then
@@ -2698,7 +2703,7 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 		logData.qnt = uespLog.lastMoneyChange
 
 		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData())
-		uespLog.DebugLogMsgColor(uespLog.itemColor, "You stole "..tostring(uespLog.lastMoneyChange).." gold from "..tostring(posData.lastTarget))
+		uespLog.DebugLogMsgColor(uespLog.itemColor, "You stole "..tostring(uespLog.lastMoneyChange).." gold"..lootMsg)
 	else
 		uespLog.DebugExtraMsg("UESP::Money Change, New="..tostring(newMoney)..",  Old="..tostring(oldMoney)..",  Diff="..tostring(uespLog.lastMoneyChange)..",  Reason="..tostring(reason))
 	end	
@@ -2758,6 +2763,7 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 	local icon, sellPrice, meetsUsageRequirement, equipType, itemStyle = GetItemLinkInfo(itemLink)
 	local itemText, itemColor, itemId, itemLevel, itemData, niceName, niceLink = uespLog.ParseLinkID(itemLink)
 	local itemStyleStr = uespLog.GetItemStyleStr(itemStyle)
+	local lootMsg = ""
 	
 	uespLog.lastLootUpdateCount = GetNumLootItems()
 	uespLog.lastLootTargetName = uespLog.lastTargetData.name
@@ -2790,6 +2796,10 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 	if (posData.x == nil or posData.x == "") then
 		posData = uespLog.GetPlayerPositionData()
 	end
+	
+	if (posData.lastTarget ~= nil) then
+		lootMsg = " from "..tostring(posData.lastTarget)
+	end
 
 	if (self) then
 		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData(), extraLogData)
@@ -2802,9 +2812,9 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 			--uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You "..rcvType.." "..msgType.." "..niceLink.." (x"..tostring(quantity)..") from "..tostring(posData.lastTarget))
 			
 			if (quantity == 1) then
-				uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You "..rcvType.." "..niceLink.." from "..tostring(posData.lastTarget))
+				uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You "..rcvType.." "..niceLink..lootMsg)
 			else
-				uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You "..rcvType.." "..niceLink.." (x"..tostring(quantity)..") from "..tostring(posData.lastTarget))
+				uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You "..rcvType.." "..niceLink.." (x"..tostring(quantity)..")"..lootMsg)
 			end
 		end
 		

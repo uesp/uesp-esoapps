@@ -2806,7 +2806,7 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 		--You looted [Sword] (x1) (level 30, Breton)
 		
 		if (extraLogData ~= nil and extraLogData.skippedLoot) then
-			uespLog.DebugMsgColor(uespLog.itemColor, "UESP::Skipped looting "..niceLink.." (x"..tostring(quantity)..") (prov level "..tostring(extraLogData.tradeType)..") from"..tostring(posData.lastTarget))
+			uespLog.DebugMsgColor(uespLog.itemColor, "UESP::Skipped looting "..niceLink.." (x"..tostring(quantity)..") (prov level "..tostring(extraLogData.tradeType)..")"..lootMsg)
 		else
 			--uespLog.DebugLogMsgColor(uespLog.itemColor, "You looted "..msgType.." "..niceLink.." (x"..tostring(quantity)..") (level "..tostring(itemLevel)..", "..itemStyleStr..")")
 			--uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You "..rcvType.." "..msgType.." "..niceLink.." (x"..tostring(quantity)..") from "..tostring(posData.lastTarget))

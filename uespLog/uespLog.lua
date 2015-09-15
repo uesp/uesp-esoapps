@@ -2882,8 +2882,19 @@ function uespLog.OnInventoryItemUsed (eventCode, itemSoundCategory)
 		logData.sound = itemSoundCategory
 		uespLog.AppendDataToLog("all", logData)
 		uespLog.DebugLogMsg("Footlocker opened")
+		
+		uespLog.lastTargetData.action = "opened"
+		local x, y, z, zone = uespLog.GetUnitPosition(unitTag)
+		
+		uespLog.lastTargetData.x = x
+		uespLog.lastTargetData.y = y
+		uespLog.lastTargetData.zone = zone
+		uespLog.lastTargetData.name = "footlocker"
+		
 		return
 	end
+	
+	
 	
 	uespLog.DebugExtraMsg("UESP::OnInventoryItemUsed sound="..tostring(itemSoundCategory))
 end

@@ -261,6 +261,8 @@
 --					/utt [name]				: Shows the timer length for the given container name.
 --											: Valid names are: Chest, Heavy Sack, Safebox
 --					/utt [name] [duration]	: Set the duration in seconds for the given container.
+--			- Added more options to "/uespdump skills" to make it easier to dump partial skill logs for
+--			  a certain class/race.
 --
 
 
@@ -3886,9 +3888,18 @@ function uespLog.DumpSkills(opt1, opt2)
 		uespLog.DumpSkillsProgression(opt2)
 		uespLog.DumpLearnedAbilities(opt2)
 		return true
+	elseif (opt1 == "class") then
+		uespLog.DumpSkillTypes(opt2, true)
+		uespLog.DumpSkillsProgression(opt2, true)
+		uespLog.DumpLearnedAbilities(opt2)
+		return true
+	elseif (opt1 == "race") then
+		uespLog.DumpSkillTypes(opt2, false, true)
+		uespLog.DumpLearnedAbilities(opt2)
+		return true
 	else
 		uespLog.Msg("Expected format:")
-		uespLog.Msg(".     /uespdump skills [basic/progression/abilities/character/learned/types/all] [note]")
+		uespLog.Msg(".     /uespdump skills [basic/progression/abilities/character/race/class/learned/types/all] [note]")
 	end
 	
 	return false
@@ -3900,7 +3911,7 @@ function uespLog.GetSkillTypeName(skillType)
 end
 
 
-function uespLog.DumpSkillTypes(note)
+function uespLog.DumpSkillTypes(note, classOnly, raceOnly)
 	local logData = { }
 	local count = 0
 	local numSkillTypes = GetNumSkillTypes()
@@ -3908,15 +3919,41 @@ function uespLog.DumpSkillTypes(note)
 	local skillIndex
 	local abilityIndex
 	local count = 0
+	local startSkill = 1
+	local endSkill = numSkillTypes
 	
+	classOnly = classOnly or false
+	raceOnly = raceOnly or false
 	uespLog.DebugLogMsg("Logging abilities by skill types for current character...")
+	
+	if (classOnly) then
+		startSkill = 1
+		
+		if (raceOnly) then
+			endSkill = 7
+			uespLog.DebugLogMsg(".     Logging only class and race abilities...")
+		else
+			endSkill = 1
+			uespLog.DebugLogMsg(".     Logging only class abilities...")
+		end
+	elseif (raceOnly) then
+		startSkill = 7
+		endSkill = 7
+		uespLog.DebugLogMsg(".     Logging only race abilities...")
+	end
 	
 	logData.event = "skillDump::StartType"
 	logData.apiVersion = GetAPIVersion()
 	logData.note = note
+	logData.classOnly = classOnly
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
-	for skillType = 1, numSkillTypes do
+	for skillType = startSkill, endSkill do
+	
+		if (skillType > 1 and classOnly and raceOnly) then
+			skillType = 7
+		end
+			
 		local numSkillLines = GetNumSkillLines(skillType)
 		local skillTypeName = uespLog.GetSkillTypeName(skillType)
 		
@@ -3988,6 +4025,13 @@ function uespLog.DumpSkillTypes(note)
 				uespLog.AppendDataToLog("all", logData)
 			end
 		end
+		
+		if (classOnly) then
+			if (raceOnly) then
+				numSkillTypes = 1
+				uespLog.DebugLogMsg(".     Logging only class abilities...")
+			end
+		end
 	end
 	
 	uespLog.DebugMsg(".     Found "..tostring(count).." abilities by type!")
@@ -4038,11 +4082,15 @@ function uespLog.DumpLearnedAbilities(note)
 end
 
 
-function uespLog.DumpSkillsProgression(note)
+function uespLog.DumpSkillsProgression(note, classOnly)
 	local logData = { }
 	local progressionIndex = 0
 	local count = 0
+	
 	uespLog.DebugLogMsg("Logging skill progressions...")
+	
+		-- Doesn't work as GetSkillAbilityIndicesFromProgressionIndex() doesn't seem to work correctly
+	classOnly = classOnly or false
 	
 	logData.event = "skillDump::StartProgression"
 	logData.apiVersion = GetAPIVersion()

@@ -3878,9 +3878,17 @@ function uespLog.DumpSkills(opt1, opt2)
 		uespLog.DumpSkillsProgression(opt2)
 		uespLog.DumpLearnedAbilities(opt2)
 		return true
+	elseif (opt1 == "abilities") then
+		uespLog.DumpSkillsStart(opt2)
+		return true
+	elseif (opt1 == "char" or opt1 == "character") then
+		uespLog.DumpSkillTypes(opt2)
+		uespLog.DumpSkillsProgression(opt2)
+		uespLog.DumpLearnedAbilities(opt2)
+		return true
 	else
 		uespLog.Msg("Expected format:")
-		uespLog.Msg(".     /uespdump skills [basic/progression/learned/types/all] [note]")
+		uespLog.Msg(".     /uespdump skills [basic/progression/abilities/character/learned/types/all] [note]")
 	end
 	
 	return false

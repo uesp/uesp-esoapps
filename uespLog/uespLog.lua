@@ -2894,8 +2894,6 @@ function uespLog.OnInventoryItemUsed (eventCode, itemSoundCategory)
 		return
 	end
 	
-	
-	
 	uespLog.DebugExtraMsg("UESP::OnInventoryItemUsed sound="..tostring(itemSoundCategory))
 end
 

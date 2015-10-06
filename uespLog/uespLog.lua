@@ -268,6 +268,7 @@
 --			  until finished. It cannot be stopped/interrupted once started.
 --			- Added the "/umi quick [on/off]" option for mining items. Only mines/logs the normal v16
 --			  version of each item.
+--			- Fixed item links with no name showing (for Orsinium PTS).
 --
 
 
@@ -1191,11 +1192,14 @@ function uespLog.ParseLinkID(link)
 		local niceLink = link
 		local allData = itemId..":"..data1 .. ":" .. data2 .. ":" .. data
 		
+		if (text == "") then
+			text = GetItemLinkName(link)
+		end
+		
 		if (text ~= nil) then
 			niceName = text:gsub("%^.*", "")
 			niceLink = "|H"..color..":"..itemType..":"..allData.."|h["..niceName.."]|h"
-		end
-		
+		end		
 		
 		return text, color, itemId, data2, allData, niceName, niceLink
     end

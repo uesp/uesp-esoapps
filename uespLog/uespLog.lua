@@ -263,6 +263,9 @@
 --					/utt [name] [duration]	: Set the duration in seconds for the given container.
 --			- Added more options to "/uespdump skills" to make it easier to dump partial skill logs for
 --			  a certain class/race.
+--			- The "/umi idcheck" was changed to do an iterative check instead of trying to do it all at
+--			  once which resulted in a game crash. Now when run it will check 5000 items every 2 secs
+--			  until finished. It cannot be stopped/interrupted.
 --
 
 
@@ -580,6 +583,14 @@ uespLog.mineItemAutoRestartOutputEnd = false
 uespLog.MINEITEM_AUTO_MAXITEMID = 100000
 uespLog.mineItemOnlySubType = -1
 uespLog.MINEITEM_QUALITYMAP_ITEMID = 47000
+uespLog.MINEITEM_IDCHECK_NUMITEMS = 5000
+uespLog.MINEITEM_IDCHECK_TIMEDELTA = 2000
+uespLog.CurrentIdCheckItemId = 1
+uespLog.IsIdCheckInProgress = false
+uespLog.IdCheckRangeIdStart = -1
+uespLog.IdCheckValidCount = 0
+uespLog.IdCheckTotalCount = 0
+
 
 uespLog.DEFAULT_DATA = 
 {
@@ -6052,11 +6063,13 @@ end
 
 function uespLog.MineItemsIdCheck(note)
 	local itemId
-	local validCount = 0
-	local totalCount = 0
 	local logData = { }
 	local extraData = uespLog.GetTimeData()
-	local rangeIdStart = -1
+	
+	if (uespLog.IsIdCheckInProgress) then
+		uespLog.MsgColor(uespLog.mineColor, "UESP::ID Check is already in progress...")
+		return false
+	end
 
 	uespLog.MsgColor(uespLog.mineColor, "UESP::Starting ID check of items...")
 	
@@ -6066,35 +6079,72 @@ function uespLog.MineItemsIdCheck(note)
 	logData.gameVersion = _VERSION
 	uespLog.AppendDataToLog("all", logData, extraData)
 	
-	for itemId = 1, uespLog.MINEITEM_AUTO_MAXITEMID do
-	--for itemId = 1, 1000 do
+	uespLog.IdCheckRangeIdStart = -1
+	uespLog.CurrentIdCheckItemId = 1
+	uespLog.IdCheckValidCount = 0
+	uespLog.IdCheckTotalCount = 0
+	uespLog.IsIdCheckInProgress = true
+	
+	zo_callLater(uespLog.MineItemsIdCheckDoNext, uespLog.MINEITEM_IDCHECK_TIMEDELTA)
+end
+
+
+function uespLog.MineItemsIdCheckDoNext()
+	local startId = uespLog.CurrentIdCheckItemId
+	local endId = uespLog.CurrentIdCheckItemId + uespLog.MINEITEM_IDCHECK_NUMITEMS - 1
+	local itemId
+	local validCount = 0
+	
+	if (endId > uespLog.MINEITEM_AUTO_MAXITEMID) then
+		endId = uespLog.MINEITEM_AUTO_MAXITEMID
+	end
+
+	for itemId = startId, endId do
 		local itemLink = uespLog.MakeItemLink(itemId, 1, 1)
-		totalCount = totalCount + 1
+		uespLog.IdCheckTotalCount = uespLog.IdCheckTotalCount + 1
 			
 		if (uespLog.IsValidItemLink(itemLink)) then
+			 uespLog.IdCheckValidCount = uespLog.IdCheckValidCount + 1
 			 validCount = validCount + 1
 			 
-			if (rangeIdStart < 0) then
-				rangeIdStart = itemId
+			if (uespLog.IdCheckRangeIdStart < 0) then
+				uespLog.IdCheckRangeIdStart = itemId
 			end
-		elseif (rangeIdStart > 0) then
-			uespLog.MineItemsLogValidIdRange(rangeIdStart, itemId-1)
-			rangeIdStart = -1
+		elseif (uespLog.IdCheckRangeIdStart > 0) then
+			uespLog.MineItemsLogValidIdRange(uespLog.IdCheckRangeIdStart, itemId-1)
+			uespLog.IdCheckRangeIdStart = -1
 		end
+		
+		uespLog.CurrentIdCheckItemId = itemId
 	end
 	
-	if (rangeIdStart > 0) then
-		uespLog.MineItemsLogValidIdRange(rangeIdStart, itemId-1)
-		rangeIdStart = -1
+	uespLog.MsgColor(uespLog.mineColor,".     Item ID Check: "..tostring(startId).."-"..tostring(endId).." ("..tostring(validCount).." valid)")
+	
+	if (uespLog.CurrentIdCheckItemId < uespLog.MINEITEM_AUTO_MAXITEMID) then
+		uespLog.CurrentIdCheckItemId = uespLog.CurrentIdCheckItemId + 1
+		zo_callLater(uespLog.MineItemsIdCheckDoNext, uespLog.MINEITEM_IDCHECK_TIMEDELTA)
+	else
+		uespLog.MineItemsIdCheckEnd()
+	end
+	
+end
+
+
+function uespLog.MineItemsIdCheckEnd()
+
+	if (uespLog.IdCheckRangeIdStart > 0) then
+		uespLog.MineItemsLogValidIdRange(uespLog.IdCheckRangeIdStart, uespLog.CurrentIdCheckItemId-1)
+		uespLog.IdCheckRangeIdStart = -1
 	end
 	
 	logData = { }
 	logData.event = "mineItem::idCheck::end"
-	logData.validCount = validCount
-	logData.totalCount = totalCount
+	logData.validCount = uespLog.IdCheckValidCount
+	logData.totalCount = uespLog.IdCheckTotalCount
 	uespLog.AppendDataToLog("all", logData)
 	
-	uespLog.MsgColor(uespLog.mineColor, "UESP::Found "..tostring(validCount).." valid items!")
+	uespLog.MsgColor(uespLog.mineColor, "UESP::Found "..tostring(uespLog.IdCheckValidCount).." valid items!")
+	uespLog.IsIdCheckInProgress = false
 end
 
 

@@ -5848,6 +5848,10 @@ function uespLog.MineItems (startId, endId)
 	uespLog.mineItemCount = 0
 	uespLog.MsgColor(uespLog.mineColor, "UESP::Mining items from IDs "..tostring(startId).." to "..tostring(endId))
 	
+	if (uespLog.mineItemOnlyLevel >= 0) then
+		uespLog.DebugMsgColor(uespLog.mineColor, ".     Only mining items with internal level of "..tostring(uespLog.mineItemOnlyLevel))
+	end
+	
 	if (uespLog.mineItemOnlySubType >= 0) then
 		uespLog.DebugMsgColor(uespLog.mineColor, ".     Only mining items with internal type of "..tostring(uespLog.mineItemOnlySubType))
 	end

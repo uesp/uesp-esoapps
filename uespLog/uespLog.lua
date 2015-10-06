@@ -5960,6 +5960,10 @@ function uespLog.MineItemsAutoStart ()
 	uespLog.savedVars.settings.data.isAutoMiningItems = uespLog.isAutoMiningItems
 	uespLog.MsgColor(uespLog.mineColor, "UESP::Started auto-mining items at ID "..tostring(uespLog.mineItemsAutoNextItemId))
 	
+	if (uespLog.mineItemOnlyLevel >= 0) then
+		uespLog.DebugMsgColor(uespLog.mineColor, ".     Only mining items with internal level of "..tostring(uespLog.mineItemOnlyLevel))
+	end
+	
 	if (uespLog.mineItemOnlySubType >= 0) then
 		uespLog.DebugMsgColor(uespLog.mineColor, ".     Only mining items with internal type of "..tostring(uespLog.mineItemOnlySubType))
 	end

@@ -269,6 +269,7 @@
 --			- Added the "/umi quick [on/off]" option for mining items. Only mines/logs the normal v16
 --			  version of each item.
 --			- Fixed item links with no name showing (for Orsinium PTS).
+--			- Added Orsinium mobs to ignore when logging.
 --
 
 
@@ -462,6 +463,8 @@ uespLog.ignoredNPCs = {
 	["Camel"] = 1,  		--Craglorn
 	["Daedrat"] = 1,		--Imperial City
 	["Fiendroth"] = 1,		--Imperial City
+	["Bear Cub"] = 1,		--Orsinium
+	["Pocket Mammoth"] = 1,	--Orsinium
 }
 
 uespLog.lastTargetData = {
@@ -1142,6 +1145,10 @@ function uespLog.ParseLink(link)
 		local niceName = link
 		local niceLink = link
 		
+		if (text == "") then
+			text = GetItemLinkName(link)
+		end
+		
 		if (text ~= nil) then
 			niceName = text:gsub("%^.*", "")
 			niceLink = "|H"..color..":"..data.."|h["..niceName.."]|h"
@@ -1165,6 +1172,10 @@ function uespLog.MakeNiceLink(link)
 		
 		local niceName = link
 		local niceLink = link
+		
+		if (text == "") then
+			text = GetItemLinkName(link)
+		end
 		
 		if (text ~= nil) then
 			niceName = text:gsub("%^.*", "")

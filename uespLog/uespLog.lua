@@ -245,7 +245,7 @@
 --				/uespdump skills 
 --				/uespdump skills [basic/progression/learned/types/all] [note]
 --
---		- v0.31 -
+--		- v0.40 - 2 November 2015
 --			- Ability icons are logged in skill dumps with the new GetAbilityIcon(abilityId) function.
 --			- Added new item sub-types for V15/V16 equipment for item mining.
 --			- Added some creatures to ignore from the Imperial City.
@@ -277,8 +277,8 @@
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "0.31"
-uespLog.releaseDate = "30 August 2015"
+uespLog.version = "0.40"
+uespLog.releaseDate = "2 November 2015"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

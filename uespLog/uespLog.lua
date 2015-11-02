@@ -263,6 +263,13 @@
 --					/utt [name] [duration]	: Set the duration in seconds for the given container.
 --			- Added more options to "/uespdump skills" to make it easier to dump partial skill logs for
 --			  a certain class/race.
+--			- The "/umi idcheck" was changed to do an iterative check instead of trying to do it all at
+--			  once which resulted in a game crash. Now when run it will check 5000 items every 2 secs
+--			  until finished. It cannot be stopped/interrupted once started.
+--			- Added the "/umi quick [on/off]" option for mining items. Only mines/logs the normal v16
+--			  version of each item.
+--			- Fixed item links with no name showing (for Orsinium PTS).
+--			- Added Orsinium mobs to ignore when logging.
 --
 
 
@@ -456,6 +463,8 @@ uespLog.ignoredNPCs = {
 	["Camel"] = 1,  		--Craglorn
 	["Daedrat"] = 1,		--Imperial City
 	["Fiendroth"] = 1,		--Imperial City
+	["Bear Cub"] = 1,		--Orsinium
+	["Pocket Mammoth"] = 1,	--Orsinium
 }
 
 uespLog.lastTargetData = {
@@ -561,14 +570,17 @@ uespLog.MINEITEM_LEVELS = {
 	{ 50, 50, 366, 370, "crafted" },
 }
 
+uespLog.MINEITEM_ONLYSUBTYPE = 366
+uespLog.MINEITEM_ONLYLEVEL = 50
+
 uespLog.mineItemBadCount = 0
 uespLog.mineItemCount = 0
 uespLog.mineUpdateItemCount = 0
 uespLog.mineNextItemId = 1
 uespLog.isAutoMiningItems = false
 uespLog.MINEITEMS_AUTODELAY = 1000 -- Delay in ms
-uespLog.MINEITEMS_AUTOLOOPCOUNT = 100
-uespLog.MINEITEMS_AUTOMAXLOOPCOUNT = 200
+uespLog.MINEITEMS_AUTOLOOPCOUNT = 400
+uespLog.MINEITEMS_AUTOMAXLOOPCOUNT = 400
 uespLog.mineItemsAutoNextItemId = 1
 uespLog.mineItemsEnabled = false
 uespLog.MINEITEMS_AUTOSTOP_LOGCOUNT = 50000
@@ -579,7 +591,16 @@ uespLog.mineItemAutoRestart = false
 uespLog.mineItemAutoRestartOutputEnd = false
 uespLog.MINEITEM_AUTO_MAXITEMID = 100000
 uespLog.mineItemOnlySubType = -1
+uespLog.mineItemOnlyLevel = -1
 uespLog.MINEITEM_QUALITYMAP_ITEMID = 47000
+uespLog.MINEITEM_IDCHECK_NUMITEMS = 5000
+uespLog.MINEITEM_IDCHECK_TIMEDELTA = 2000
+uespLog.CurrentIdCheckItemId = 1
+uespLog.IsIdCheckInProgress = false
+uespLog.IdCheckRangeIdStart = -1
+uespLog.IdCheckValidCount = 0
+uespLog.IdCheckTotalCount = 0
+
 
 uespLog.DEFAULT_DATA = 
 {
@@ -607,6 +628,7 @@ uespLog.DEFAULT_SETTINGS =
 		["mineItemAutoRestart"] = false,
 		["mineItemsEnabled"] = false,
 		["mineItemOnlySubType"] = -1,
+		["mineItemOnlyLevel"] = -1,
 		["isAutoMiningItems"] = false,
 		["pvpUpdate"] = false,
 		["enabledTreasureTimers"] = false,
@@ -1123,6 +1145,10 @@ function uespLog.ParseLink(link)
 		local niceName = link
 		local niceLink = link
 		
+		if (text == "") then
+			text = GetItemLinkName(link)
+		end
+		
 		if (text ~= nil) then
 			niceName = text:gsub("%^.*", "")
 			niceLink = "|H"..color..":"..data.."|h["..niceName.."]|h"
@@ -1146,6 +1172,10 @@ function uespLog.MakeNiceLink(link)
 		
 		local niceName = link
 		local niceLink = link
+		
+		if (text == "") then
+			text = GetItemLinkName(link)
+		end
 		
 		if (text ~= nil) then
 			niceName = text:gsub("%^.*", "")
@@ -1173,11 +1203,14 @@ function uespLog.ParseLinkID(link)
 		local niceLink = link
 		local allData = itemId..":"..data1 .. ":" .. data2 .. ":" .. data
 		
+		if (text == "") then
+			text = GetItemLinkName(link)
+		end
+		
 		if (text ~= nil) then
 			niceName = text:gsub("%^.*", "")
 			niceLink = "|H"..color..":"..itemType..":"..allData.."|h["..niceName.."]|h"
-		end
-		
+		end		
 		
 		return text, color, itemId, data2, allData, niceName, niceLink
     end
@@ -1230,6 +1263,7 @@ function uespLog.Initialize( self, addOnName )
 	uespLog.mineItemsEnabled = uespLog.savedVars.settings.data.mineItemsEnabled or uespLog.mineItemsEnabled
 	uespLog.isAutoMiningItems = uespLog.savedVars.settings.data.isAutoMiningItems or uespLog.isAutoMiningItems
 	uespLog.mineItemOnlySubType = uespLog.savedVars.settings.data.mineItemOnlySubType or uespLog.mineItemOnlySubType
+	uespLog.mineItemOnlyLevel = uespLog.savedVars.settings.data.mineItemOnlyLevel or uespLog.mineItemOnlyLevel
 	uespLog.pvpUpdate = uespLog.savedVars.settings.data.pvpUpdate or uespLog.pvpUpdate
 	uespLog.mineItemLastReloadTimeMS = GetGameTimeMilliseconds()
 	
@@ -5725,42 +5759,47 @@ function uespLog.MineItemIterateLevelsShort (itemId)
 		local qualityStart = value[3]
 		local qualityEnd = value[4]
 		local comment = value[5]
+		isFirst = true
 		
 		for level = levelStart, levelEnd do
-			for quality = qualityStart, qualityEnd do
+		
+			if (uespLog.mineItemOnlyLevel < 0 or level == uespLog.mineItemOnlyLevel) then
 			
-				if (uespLog.mineItemOnlySubType < 0 or quality == uespLog.mineItemOnlySubType) then
-					setCount = setCount + 1
-					uespLog.mineItemCount = uespLog.mineItemCount + 1
-					
-					itemLink = uespLog.MakeItemLinkEx( { itemId = itemId, level = level, quality = quality, style = 0 } )
-					
-					if (uespLog.IsValidItemLink(itemLink)) then
+				for quality = qualityStart, qualityEnd do
+				
+					if (uespLog.mineItemOnlySubType < 0 or quality == uespLog.mineItemOnlySubType) then
+						setCount = setCount + 1
+						uespLog.mineItemCount = uespLog.mineItemCount + 1
 						
-						if (isFirst) then
-							isFirst = false
-							extraData.comment = comment
-							fullItemLog = uespLog.CreateItemLinkLog(itemLink)
-							fullItemLog.event = "mineitem"
-							uespLog.AppendDataToLog("all", fullItemLog, extraData)
-							extraData.comment = nil
-							lastItemLog = fullItemLog
+						itemLink = uespLog.MakeItemLinkEx( { itemId = itemId, level = level, quality = quality, style = 0 } )
+						
+						if (uespLog.IsValidItemLink(itemLink)) then
+							
+							if (isFirst) then
+								isFirst = false
+								extraData.comment = comment
+								fullItemLog = uespLog.CreateItemLinkLog(itemLink)
+								fullItemLog.event = "mineitem"
+								uespLog.AppendDataToLog("all", fullItemLog, extraData)
+								extraData.comment = nil
+								lastItemLog = fullItemLog
+							else
+								newItemLog = uespLog.CreateItemLinkLog(itemLink)
+								diffItemLog = uespLog.CompareItemLogs(lastItemLog, newItemLog)
+								diffItemLog.event = "mi"
+								uespLog.AppendDataToLog("all", diffItemLog, extraData)
+								lastItemLog = newItemLog
+								--uespLog.LogItemLinkShort(itemLink, "mi", extraData)
+							end
+							
 						else
-							newItemLog = uespLog.CreateItemLinkLog(itemLink)
-							diffItemLog = uespLog.CompareItemLogs(lastItemLog, newItemLog)
-							diffItemLog.event = "mi"
-							uespLog.AppendDataToLog("all", diffItemLog, extraData)
-							lastItemLog = newItemLog
-							--uespLog.LogItemLinkShort(itemLink, "mi", extraData)
-						end
+							badItems = badItems + 1
+							uespLog.mineItemBadCount = uespLog.mineItemBadCount + 1
+						end				
 						
-					else
-						badItems = badItems + 1
-						uespLog.mineItemBadCount = uespLog.mineItemBadCount + 1
-					end				
-					
-					if (uespLog.mineItemCount % uespLog.mineUpdateItemCount == 0) then
-						uespLog.DebugMsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad...")
+						if (uespLog.mineItemCount % uespLog.mineUpdateItemCount == 0) then
+							uespLog.DebugMsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad...")
+						end
 					end
 				end
 			end
@@ -5823,6 +5862,10 @@ function uespLog.MineItems (startId, endId)
 	uespLog.mineItemBadCount = 0
 	uespLog.mineItemCount = 0
 	uespLog.MsgColor(uespLog.mineColor, "UESP::Mining items from IDs "..tostring(startId).." to "..tostring(endId))
+	
+	if (uespLog.mineItemOnlyLevel >= 0) then
+		uespLog.DebugMsgColor(uespLog.mineColor, ".     Only mining items with internal level of "..tostring(uespLog.mineItemOnlyLevel))
+	end
 	
 	if (uespLog.mineItemOnlySubType >= 0) then
 		uespLog.DebugMsgColor(uespLog.mineColor, ".     Only mining items with internal type of "..tostring(uespLog.mineItemOnlySubType))
@@ -5932,6 +5975,10 @@ function uespLog.MineItemsAutoStart ()
 	uespLog.savedVars.settings.data.isAutoMiningItems = uespLog.isAutoMiningItems
 	uespLog.MsgColor(uespLog.mineColor, "UESP::Started auto-mining items at ID "..tostring(uespLog.mineItemsAutoNextItemId))
 	
+	if (uespLog.mineItemOnlyLevel >= 0) then
+		uespLog.DebugMsgColor(uespLog.mineColor, ".     Only mining items with internal level of "..tostring(uespLog.mineItemOnlyLevel))
+	end
+	
 	if (uespLog.mineItemOnlySubType >= 0) then
 		uespLog.DebugMsgColor(uespLog.mineColor, ".     Only mining items with internal type of "..tostring(uespLog.mineItemOnlySubType))
 	end
@@ -5947,6 +5994,7 @@ function uespLog.MineItemsOutputStartLog ()
 	logData.itemId = uespLog.mineItemsAutoNextItemId
 	logData.event = "mineItem::Start"
 	logData.onlySubType = uespLog.mineItemOnlySubType
+	logData.onlyLevel = uespLog.mineItemOnlyLevel
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
 	uespLog.mineItemAutoRestartOutputEnd = false
@@ -6001,8 +6049,12 @@ function uespLog.MineItemsAutoStatus ()
 	
 	uespLog.MsgColor(uespLog.mineColor, "UESP::Next auto-mine itemId is "..tostring(uespLog.mineItemsAutoNextItemId))
 	
-	if (uespLog.mineItemOnlySubType >= 0) then
-		uespLog.MsgColor(uespLog.mineColor, "UESP::Only mining items with internal type of "..tostring(uespLog.mineItemOnlySubType))
+	if (uespLog.mineItemOnlyLevel >= 0 and uespLog.mineItemOnlySubType >= 0) then
+		uespLog.MsgColor(uespLog.mineColor, "UESP::Only mining items with internal level "..tostring(uespLog.mineItemOnlyLevel).." and type of "..tostring(uespLog.mineItemOnlySubType)..".")
+	elseif (uespLog.mineItemOnlyLevel >= 0) then
+		uespLog.MsgColor(uespLog.mineColor, "UESP::Only mining items with internal level "..tostring(uespLog.mineItemOnlyLevel)..".")
+	elseif (uespLog.mineItemOnlySubType >= 0) then
+		uespLog.MsgColor(uespLog.mineColor, "UESP::Only mining items with internal type of "..tostring(uespLog.mineItemOnlySubType)..".")
 	end
 end
 
@@ -6052,11 +6104,13 @@ end
 
 function uespLog.MineItemsIdCheck(note)
 	local itemId
-	local validCount = 0
-	local totalCount = 0
 	local logData = { }
 	local extraData = uespLog.GetTimeData()
-	local rangeIdStart = -1
+	
+	if (uespLog.IsIdCheckInProgress) then
+		uespLog.MsgColor(uespLog.mineColor, "UESP::ID Check is already in progress...")
+		return false
+	end
 
 	uespLog.MsgColor(uespLog.mineColor, "UESP::Starting ID check of items...")
 	
@@ -6066,35 +6120,72 @@ function uespLog.MineItemsIdCheck(note)
 	logData.gameVersion = _VERSION
 	uespLog.AppendDataToLog("all", logData, extraData)
 	
-	for itemId = 1, uespLog.MINEITEM_AUTO_MAXITEMID do
-	--for itemId = 1, 1000 do
+	uespLog.IdCheckRangeIdStart = -1
+	uespLog.CurrentIdCheckItemId = 1
+	uespLog.IdCheckValidCount = 0
+	uespLog.IdCheckTotalCount = 0
+	uespLog.IsIdCheckInProgress = true
+	
+	zo_callLater(uespLog.MineItemsIdCheckDoNext, uespLog.MINEITEM_IDCHECK_TIMEDELTA)
+end
+
+
+function uespLog.MineItemsIdCheckDoNext()
+	local startId = uespLog.CurrentIdCheckItemId
+	local endId = uespLog.CurrentIdCheckItemId + uespLog.MINEITEM_IDCHECK_NUMITEMS - 1
+	local itemId
+	local validCount = 0
+	
+	if (endId > uespLog.MINEITEM_AUTO_MAXITEMID) then
+		endId = uespLog.MINEITEM_AUTO_MAXITEMID
+	end
+
+	for itemId = startId, endId do
 		local itemLink = uespLog.MakeItemLink(itemId, 1, 1)
-		totalCount = totalCount + 1
+		uespLog.IdCheckTotalCount = uespLog.IdCheckTotalCount + 1
 			
 		if (uespLog.IsValidItemLink(itemLink)) then
+			 uespLog.IdCheckValidCount = uespLog.IdCheckValidCount + 1
 			 validCount = validCount + 1
 			 
-			if (rangeIdStart < 0) then
-				rangeIdStart = itemId
+			if (uespLog.IdCheckRangeIdStart < 0) then
+				uespLog.IdCheckRangeIdStart = itemId
 			end
-		elseif (rangeIdStart > 0) then
-			uespLog.MineItemsLogValidIdRange(rangeIdStart, itemId-1)
-			rangeIdStart = -1
+		elseif (uespLog.IdCheckRangeIdStart > 0) then
+			uespLog.MineItemsLogValidIdRange(uespLog.IdCheckRangeIdStart, itemId-1)
+			uespLog.IdCheckRangeIdStart = -1
 		end
+		
+		uespLog.CurrentIdCheckItemId = itemId
 	end
 	
-	if (rangeIdStart > 0) then
-		uespLog.MineItemsLogValidIdRange(rangeIdStart, itemId-1)
-		rangeIdStart = -1
+	uespLog.MsgColor(uespLog.mineColor,".     Item ID Check: "..tostring(startId).."-"..tostring(endId).." ("..tostring(validCount).." valid)")
+	
+	if (uespLog.CurrentIdCheckItemId < uespLog.MINEITEM_AUTO_MAXITEMID) then
+		uespLog.CurrentIdCheckItemId = uespLog.CurrentIdCheckItemId + 1
+		zo_callLater(uespLog.MineItemsIdCheckDoNext, uespLog.MINEITEM_IDCHECK_TIMEDELTA)
+	else
+		uespLog.MineItemsIdCheckEnd()
+	end
+	
+end
+
+
+function uespLog.MineItemsIdCheckEnd()
+
+	if (uespLog.IdCheckRangeIdStart > 0) then
+		uespLog.MineItemsLogValidIdRange(uespLog.IdCheckRangeIdStart, uespLog.CurrentIdCheckItemId-1)
+		uespLog.IdCheckRangeIdStart = -1
 	end
 	
 	logData = { }
 	logData.event = "mineItem::idCheck::end"
-	logData.validCount = validCount
-	logData.totalCount = totalCount
+	logData.validCount = uespLog.IdCheckValidCount
+	logData.totalCount = uespLog.IdCheckTotalCount
 	uespLog.AppendDataToLog("all", logData)
 	
-	uespLog.MsgColor(uespLog.mineColor, "UESP::Found "..tostring(validCount).." valid items!")
+	uespLog.MsgColor(uespLog.mineColor, "UESP::Found "..tostring(uespLog.IdCheckValidCount).." valid items!")
+	uespLog.IsIdCheckInProgress = false
 end
 
 
@@ -6148,6 +6239,20 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		end
 		
 		return
+	elseif (cmds[1] == "quick") then
+		local option = string.lower(cmds[2])
+		
+		if (option == "on") then
+			uespLog.savedVars.settings.data.mineItemOnlySubType = uespLog.MINEITEM_ONLYSUBTYPE
+			uespLog.savedVars.settings.data.mineItemOnlyLevel = uespLog.MINEITEM_ONLYLEVEL
+			uespLog.MsgColor(uespLog.mineColor, "UESP::Only mining items with internal level "..tostring(uespLog.savedVars.settings.data.mineItemOnlyLevel).." and type "..tostring(uespLog.savedVars.settings.data.mineItemOnlySubType)..".")
+		elseif (option == "off") then
+			uespLog.MsgColor(uespLog.mineColor, "UESP::Mining items with all internal levels/types.")
+		else
+			uespLog.MsgColor(uespLog.mineColor, "UESP::Valid options for 'quick' are 'on'/'off'.")
+		end
+		
+		return
 	elseif (cmds[1] == "end" or cmds[1] == "stop") then
 		uespLog.MineItemsAutoEnd()
 		return
@@ -6192,6 +6297,7 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems qualitymap")
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems subtype [subType]")
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems idcheck [note]")
+		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems quick [on/off]")
 		return
 	end
 	
@@ -7195,4 +7301,5 @@ end
 
 
 SLASH_COMMANDS["/upf"] = uespLog.ShowPvpFights
+
 

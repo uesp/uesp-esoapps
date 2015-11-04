@@ -468,7 +468,7 @@ uespLog.ignoredNPCs = {
 	["Fiendroth"] = 1,		--Imperial City
 	["Bear Cub"] = 1,		--Orsinium
 	["Pocket Mammoth"] = 1,	--Orsinium
-	["Chab Loon"] = 1,		--Orsinium
+	["Chub Loon"] = 1,		--Orsinium
 	["Pack Echatere"] = 1,	--Orsinium
 	["Echalette"] = 1,		--Orsinium
 }
@@ -1915,7 +1915,7 @@ function uespLog.ShowItemInfo (itemLink)
 		uespLog.MsgColor(uespLog.itemColor, ".    Bind: "..tostring(bindType))
 	end
 	
-	if (bookTitle ~= nil) then
+	if (bookTitle ~= nil or itemType == 8) then
 		uespLog.MsgColor(uespLog.itemColor, ".    Book: "..tostring(bookTitle).."    Known: "..tostring(isBookKnown))
 	end
 	

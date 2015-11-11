@@ -273,6 +273,7 @@
 --
 --		- v0.41 -
 --			- Added some more Orsinium mobs to ignore when logging.
+--			- Fixed logging of hireling mail items (properly logs hireling type).
 --
 
 
@@ -3175,15 +3176,15 @@ function uespLog.OnMailMessageTakeAttachedItem (eventCode, mailId)
 		return
 	end
 	
-	if (subject == "Getting Groceries" or senderDisplayName == "Gavin Gavonne") then
+	if (subject == "Getting Groceries" or subject == "Raw Provisioner Materials" or senderDisplayName == "Gavin Gavonne") then
 		tradeType = CRAFTING_TYPE_PROVISIONING
-	elseif (senderDisplayName == "Pacrooti") then
+	elseif (subject == "Raw Woodworking Materials" or senderDisplayName == "Pacrooti") then
 		tradeType = CRAFTING_TYPE_WOODWORKING
-	elseif (senderDisplayName == "Valinka Stoneheaver") then
+	elseif (subject == "Raw Blacksmithing Materials" or senderDisplayName == "Valinka Stoneheaver") then
 		tradeType = CRAFTING_TYPE_BLACKSMITHING
-	elseif (senderDisplayName == "Abnab") then
+	elseif (subject == "Raw Enchanting Materials" or senderDisplayName == "Abnab") then
 		tradeType = CRAFTING_TYPE_ENCHANTING
-	elseif (senderDisplayName == "UNKNOWN") then
+	elseif (subject == "Raw Clothing Materials" or senderDisplayName == "UNKNOWN") then
 		tradeType = CRAFTING_TYPE_CLOTHIER
 	elseif (subject == "Raw Materials") then -- Unknown hireling message
 		tradeType = 100
@@ -3203,6 +3204,8 @@ function uespLog.OnMailMessageTakeAttachedItem (eventCode, mailId)
 		logData.itemLink = uespLog.MakeNiceLink(lastItem.itemLink)
 		logData.qnt = lastItem.stack
 		logData.icon = lastItem.icon
+		logData.sender = senderDisplayName
+		logData.subject = subject
 		
 		uespLog.AppendDataToLog("all", logData, timeData)
 		

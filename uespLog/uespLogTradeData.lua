@@ -49,10 +49,12 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[ITEMSTYLE_ENEMY_DAEDRIC] 		= "uespLog\\images\\styledaedric.dds",		-- Daedra Heart, Daedric, 46151, ITEMSTYLE_ENEMY_DAEDRIC=20, /esoui/art/icons/crafting_walking_dead_mort_heart.dds
 	[ITEMSTYLE_AREA_ANCIENT_ELF] 	= "uespLog\\images\\styleancientelf.dds",	-- Palladium, Ancient Elf, 46152, ITEMSTYLE_AREA_ANCIENT_ELF=15, /esoui/art/icons/crafting_ore_palladuim.dds
 	[ITEMSTYLE_AREA_DWEMER] 	    = "uespLog\\images\\styledwemer.dds",		-- Dwemer Frame, Dwemer, 57587, ITEMSTYLE_AREA_DWEMER=14, /esoui/art/icons/crafting_dwemer_shiny_tube.dds
-	[ITEMSTYLE_AREA_YOKUDAN] 		= "uespLog/images/yicon.dds",
-	[33]					 		= "uespLog/images/aicon.dds", 				-- Akaviri
-	[28]					 		= "uespLog/images/malachite.dds", 			-- Glass
-	[29]					 		= "uespLog/images/charcoal.dds", 			-- Xivkyn
+	[ITEMSTYLE_AREA_YOKUDAN] 		= "uespLog/images/yicon.dds",				-- Yokudan, 35
+	[ITEMSTYLE_AREA_AKAVIRI] 		= "uespLog/images/aicon.dds", 				-- Akaviri, 33
+	[ITEMSTYLE_GLASS]		 		= "uespLog/images/malachite.dds", 			-- Glass, 28
+	[ITEMSTYLE_AREA_XIVKYN] 		= "uespLog/images/charcoal.dds", 			-- Xivkyn, 29
+	[ITEMSTYLE_UNDAUNTED] 			= "uespLog/images/laurel.dds",				-- Mercenary, 26, /esoui/art/icons/crafting_laurel.dds
+	[ITEMSTYLE_AREA_ANCIENT_ORC] 	= "uespLog/images/cassiterite.dds",			-- Ancient Orc, 22 /esoui/art/icons/crafting_smith_plug_standard_f_001.dds
 }
 
 
@@ -73,7 +75,11 @@ uespLog.STYLE_ICON_DATA = {
 	[ITEMSTYLE_AREA_ANCIENT_ELF] 	= "/esoui/art/icons/crafting_ore_palladuim.dds",
 	[ITEMSTYLE_AREA_DWEMER] 	    = "/esoui/art/icons/crafting_dwemer_shiny_tube.dds",
 	[ITEMSTYLE_AREA_YOKUDAN] 		= "uespLog/images/yicon.dds",
-	[33]					 		= "uespLog/images/aicon.dds", -- Akaviri
+	[ITEMSTYLE_AREA_AKAVIRI]		= "uespLog/images/aicon.dds",
+	[ITEMSTYLE_GLASS]		 		= "uespLog/images/malachite.dds",
+	[ITEMSTYLE_AREA_XIVKYN] 		= "uespLog/images/charcoal.dds",
+	[ITEMSTYLE_UNDAUNTED] 			= "/esoui/art/icons/crafting_laurel.dds",
+	[ITEMSTYLE_AREA_ANCIENT_ORC] 	= "/esoui/art/icons/crafting_smith_plug_standard_f_001.dds",
 }
 
 

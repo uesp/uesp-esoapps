@@ -274,8 +274,9 @@
 --		- v0.41 -
 --			- Added some more Orsinium mobs to ignore when logging.
 --			- Fixed logging of hireling mail items (properly logs hireling type).
+--			- Added new/missing style icons.
 --
-
+--	
 
 
 --	GLOBAL DEFINITIONS
@@ -2383,6 +2384,8 @@ uespLog.ITEMSTYLES = {
 	[33] = "Akaviri",
 	[34] = "Imperial (race)",
 	[35] = "Yokudan",
+	[36] = "Universal",
+	[37] = "Reach Winter",
 }
 
 

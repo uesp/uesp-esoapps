@@ -3181,13 +3181,13 @@ function uespLog.OnMailMessageTakeAttachedItem (eventCode, mailId)
 	
 	if (subject == "Getting Groceries" or subject == "Raw Provisioner Materials" or senderDisplayName == "Gavin Gavonne") then
 		tradeType = CRAFTING_TYPE_PROVISIONING
-	elseif (subject == "Raw Woodworking Materials" or senderDisplayName == "Pacrooti") then
+	elseif (subject == "Raw Woodworker Materials" or senderDisplayName == "Pacrooti") then
 		tradeType = CRAFTING_TYPE_WOODWORKING
-	elseif (subject == "Raw Blacksmithing Materials" or senderDisplayName == "Valinka Stoneheaver") then
+	elseif (subject == "Raw Blacksmith Materials" or senderDisplayName == "Valinka Stoneheaver") then
 		tradeType = CRAFTING_TYPE_BLACKSMITHING
-	elseif (subject == "Raw Enchanting Materials" or senderDisplayName == "Abnab") then
+	elseif (subject == "Raw Enchanter Materials" or senderDisplayName == "Abnab") then
 		tradeType = CRAFTING_TYPE_ENCHANTING
-	elseif (subject == "Raw Clothing Materials" or senderDisplayName == "UNKNOWN") then
+	elseif (subject == "Raw Clothier Materials" or senderDisplayName == "UNKNOWN") then
 		tradeType = CRAFTING_TYPE_CLOTHIER
 	elseif (subject == "Raw Materials") then -- Unknown hireling message
 		tradeType = 100

@@ -2988,7 +2988,7 @@ function uespLog.OnTargetChange (eventCode)
         if (name == nil or name == "" or x <= 0 or y <= 0) then
             return
         end
-		
+				
 		uespLog.lastTargetData.x = x
 		uespLog.lastTargetData.y = y
 		uespLog.lastTargetData.zone = zone
@@ -3036,6 +3036,8 @@ function uespLog.OnTargetChange (eventCode)
 		uespLog.AppendDataToLog("all", logData, uespLog.GetLastTargetData(), uespLog.GetTimeData())
 		
 		uespLog.DebugLogMsg("Npc "..name)
+	elseif (unitType == COMBAT_UNIT_TYPE_PLAYER) then
+		uespLog.lastOnTargetChange = ""
 	elseif (unitType ~= 0) then
 		uespLog.lastTargetData.level = ""
 		uespLog.lastTargetData.race = ""

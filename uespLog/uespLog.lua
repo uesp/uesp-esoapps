@@ -275,6 +275,8 @@
 --			- Added some more Orsinium mobs to ignore when logging.
 --			- Fixed logging of hireling mail items (properly logs hireling type).
 --			- Added new/missing style icons.
+--			- Removed the "Craft completed..." log message if no inspiration was gained.
+--			- Tweaked inventory style/trait icon positions.
 --
 --	
 
@@ -2889,7 +2891,9 @@ function uespLog.OnCraftCompleted (eventCode, craftSkill)
 	
 	uespLog.AddTotalInspiration(inspiration)
 	
-	uespLog.DebugLogMsg("Craft completed with "..tostring(inspiration).." xp ("..tostring(uespLog.GetTotalInspiration()).." since last reset)")
+	if (inspiration > 0) then
+		uespLog.DebugLogMsg("Craft completed with "..tostring(inspiration).." xp ("..tostring(uespLog.GetTotalInspiration()).." since last reset)")
+	end
 	
     for i = 1, numItemsGained do
 		local itemName, icon, stack, sellPrice, meetsUsageRequirement, equipType, itemType, itemStyle, quality, itemSoundCategory, itemInstanceId = GetLastCraftingResultItemInfo(i)

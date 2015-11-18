@@ -585,12 +585,12 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 	iconControl:SetDimensions(32, 32)
 	iconControl:ClearAnchors()
 	--iconControl:SetAnchor(RIGHT, rowControl, RIGHT, -50)
-	iconControl:SetAnchor(CENTER, rowControl, CENTER, 120 + iconOffset)
+	iconControl:SetAnchor(CENTER, rowControl, CENTER, 110 + iconOffset)
 		
 	styleIconControl:SetHidden(true)		
 	styleIconControl:SetDimensions(32, 32)
 	styleIconControl:ClearAnchors()
-	styleIconControl:SetAnchor(CENTER, rowControl, CENTER, 90 + iconOffset)
+	styleIconControl:SetAnchor(CENTER, rowControl, CENTER, 85 + iconOffset)
 	
 	if (itemStyleIcon ~= nil and (itemType == 1 or itemType == 2) and (equipType ~= 12 and equipType ~= 2) and uespLog.IsCraftDisplay()) then
 		styleIconControl:SetHidden(false)		

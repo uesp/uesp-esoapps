@@ -277,6 +277,13 @@
 --			- Added new/missing style icons.
 --			- Removed the "Craft completed..." log message if no inspiration was gained.
 --			- Tweaked inventory style/trait icon positions.
+--			- Added the /uesplorebook (/ulb) command. This turns the various "Lorebook Learned"
+--		      messages seen at the top of the window on/off as follows:
+--					/uesplorebook         -- Display help/status
+--					/uesplorebook all     -- Display all lorebook messages (default)
+--					/uesplorebook lore    -- Only display lore related lorebook messages
+--					/uesplorebook skill   -- Only display skill related lorebook messages
+--					/uesplorebook none    -- Display no lorebook messages
 --
 --	
 
@@ -338,6 +345,9 @@ uespLog.dumpIndexTable = { }
 uespLog.dumpTableTable = { }
 uespLog.countGlobal = 0
 uespLog.countGlobalError = 0
+
+uespLog.origLoreBookLearnedFunction = nil
+uespLog.origLoreBookLearnedSkillExpFunction = nil
 
 uespLog.NextSectionSizeWarning = { }
 uespLog.NextSectionWarningGameTime = { }
@@ -646,7 +656,8 @@ uespLog.DEFAULT_SETTINGS =
 			["chest"] = 120,
 			["heavy sack"] = 120,
 			["safebox"] = 120,
-		}
+		},
+		["loreBookMsg"] = 'all',
 	}
 }
 
@@ -654,6 +665,30 @@ uespLog.DEFAULT_SETTINGS =
 function uespLog.BoolToOnOff(flag)
 	if (flag) then return "on" end
 	return "off"
+end
+
+
+function uespLog.GetLoreBookMsgFlag()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.loreBookMsg == nil) then
+		uespLog.savedVars.settings.data.loreBookMsg = uespLog.DEFAULT_SETTINGS.loreBookMsg
+	end
+	
+	return uespLog.savedVars.settings.data.loreBookMsg
+end
+
+
+function uespLog.SetLoreBookMsgFlag(flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	uespLog.savedVars.settings.data.loreBookMsg = flag
 end
 
 
@@ -1406,6 +1441,8 @@ function uespLog.Initialize( self, addOnName )
 	
 	zo_callLater(uespLog.InitTradeData, 500) 
 	zo_callLater(uespLog.outputInitMessage, 4000)
+	
+	uespLog.OverrideLoreBookMessage(uespLog.loreBookMsg)
 end
 
 	--	Hook initialization onto the ADD_ON_LOADED event  
@@ -7323,3 +7360,53 @@ end
 SLASH_COMMANDS["/upf"] = uespLog.ShowPvpFights
 
 
+SLASH_COMMANDS["/uesplorebook"] = function (cmd)
+	cmd = string.lower(cmd)
+	
+	if (not uespLog.OverrideLoreBookMessage(cmd)) then
+		uespLog.Msg("UESP::Turns on/off the 'LoreBook' learned messages.")
+		uespLog.Msg(".     Use the format: /uesplorebook [all/skill/lore/none]")
+		uespLog.Msg(".     Current Setting is: "..tostring(uespLog.GetLoreBookMsgFlag()) )
+	else
+		uespLog.SetLoreBookMsgFlag(cmd)
+		uespLog.Msg("UESP:Set lore book display to: "..tostring(uespLog.GetLoreBookMsgFlag()) )
+	end
+		
+end
+
+
+SLASH_COMMANDS["/ulb"] = SLASH_COMMANDS["/uesplorebook"]
+
+
+function uespLog.OverrideLoreBookMessage(option)
+	--SI_LORE_LIBRARY_ANNOUNCE_BOOK_LEARNED 
+	--ingame/centerscreenannounce/centerscreenannouncehandlers.lua
+	
+	option = string.lower(option)
+	
+	if (uespLog.origLoreBookLearnedFunction == nil) then
+		uespLog.origLoreBookLearnedFunction = ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED]
+	end
+	
+	if (uespLog.origLoreBookLearnedSkillExpFunction == nil) then
+		uespLog.origLoreBookLearnedSkillExpFunction = ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED_SKILL_EXPERIENCE]
+	end
+	
+	if (option == 'none') then
+		ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED] = function(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, isMaxRank) end
+		ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED_SKILL_EXPERIENCE] = function(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, isMaxRank) end
+		return true
+	elseif (option == 'lore') then
+		ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED_SKILL_EXPERIENCE] = function(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, isMaxRank) end
+		return true
+	elseif (option == 'skill') then
+		ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED] = function(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, isMaxRank) end
+		return true
+	elseif (option == 'all') then
+		ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED] = origLoreBookLearnedFunction
+		ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED_SKILL_EXPERIENCE] = origLoreBookLearnedSkillExpFunction
+		return true
+	end
+
+	return false
+end

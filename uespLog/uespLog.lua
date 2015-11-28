@@ -7364,7 +7364,7 @@ SLASH_COMMANDS["/uesplorebook"] = function (cmd)
 	cmd = string.lower(cmd)
 	
 	if (not uespLog.OverrideLoreBookMessage(cmd)) then
-		uespLog.Msg("UESP::Turns on/off the 'LoreBook' learned messages.")
+		uespLog.Msg("UESP::Turns on/off the 'LoreBook Learned' messages.")
 		uespLog.Msg(".     Use the format: /uesplorebook [all/skill/lore/none]")
 		uespLog.Msg(".     Current Setting is: "..tostring(uespLog.GetLoreBookMsgFlag()) )
 	else

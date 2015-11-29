@@ -279,11 +279,10 @@
 --			- Tweaked inventory style/trait icon positions.
 --			- Added the /uesplorebook (/ulb) command. This turns the various "Lorebook Learned"
 --		      messages seen at the top of the window on/off as follows:
---					/uesplorebook         -- Display help/status
---					/uesplorebook all     -- Display all lorebook messages (default)
---					/uesplorebook lore    -- Only display lore related lorebook messages
---					/uesplorebook skill   -- Only display skill related lorebook messages
---					/uesplorebook none    -- Display no lorebook messages
+--					/uesplorebook        -- Display status
+--					/uesplorebook help   -- Display basic help
+--					/uesplorebook on     -- Display all lorebook messages (default)
+--					/uesplorebook off    -- Only display Mages Guild related lorebook messages
 --
 --	
 
@@ -657,7 +656,7 @@ uespLog.DEFAULT_SETTINGS =
 			["heavy sack"] = 120,
 			["safebox"] = 120,
 		},
-		["loreBookMsg"] = 'all',
+		["loreBookMsg"] = 'on',
 	}
 }
 
@@ -1294,6 +1293,17 @@ function uespLog.Initialize( self, addOnName )
 		return 
 	end
 	
+	if (uespLog.origLoreBookLearnedFunction == nil) then
+		uespLog.origLoreBookLearnedFunction = ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED]
+	end
+	
+	if (uespLog.origLoreBookLearnedSkillExpFunction == nil) then
+		uespLog.origLoreBookLearnedSkillExpFunction = ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED_SKILL_EXPERIENCE]
+	end
+	
+	ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED] = uespLog.EventLoreBookLearned
+	ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED_SKILL_EXPERIENCE] = uespLog.EventLoreBookLearnedSkillExperience
+	
 	uespLog.savedVars = {
 		["all"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "all", uespLog.DEFAULT_DATA),  
 		["achievements"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "achievements", uespLog.DEFAULT_DATA),  
@@ -1441,8 +1451,6 @@ function uespLog.Initialize( self, addOnName )
 	
 	zo_callLater(uespLog.InitTradeData, 500) 
 	zo_callLater(uespLog.outputInitMessage, 4000)
-	
-	uespLog.OverrideLoreBookMessage(uespLog.loreBookMsg)
 end
 
 	--	Hook initialization onto the ADD_ON_LOADED event  
@@ -7363,50 +7371,43 @@ SLASH_COMMANDS["/upf"] = uespLog.ShowPvpFights
 SLASH_COMMANDS["/uesplorebook"] = function (cmd)
 	cmd = string.lower(cmd)
 	
-	if (not uespLog.OverrideLoreBookMessage(cmd)) then
-		uespLog.Msg("UESP::Turns on/off the 'LoreBook Learned' messages.")
-		uespLog.Msg(".     Use the format: /uesplorebook [all/skill/lore/none]")
-		uespLog.Msg(".     Current Setting is: "..tostring(uespLog.GetLoreBookMsgFlag()) )
+	if (cmd == 'on') then
+		uespLog.SetLoreBookMsgFlag('on')
+		uespLog.Msg("UESP::Set LoreBook to: "..tostring(uespLog.GetLoreBookMsgFlag()) )
+	elseif (cmd == 'off') then
+		uespLog.SetLoreBookMsgFlag('off')
+		uespLog.Msg("UESP::Set LoreBook to: "..tostring(uespLog.GetLoreBookMsgFlag()) )
+	elseif (cmd == '') then
+		uespLog.Msg("UESP::Current LoreBook Setting is: "..tostring(uespLog.GetLoreBookMsgFlag()) )
 	else
-		uespLog.SetLoreBookMsgFlag(cmd)
-		uespLog.Msg("UESP:Set lore book display to: "..tostring(uespLog.GetLoreBookMsgFlag()) )
+		uespLog.Msg("UESP::Turns on/off the 'LoreBook Learned' messages.")
+		uespLog.Msg(".     Use the format: /uesplorebook [on/off]")
+		uespLog.Msg(".     Current Setting is: "..tostring(uespLog.GetLoreBookMsgFlag()) )
 	end
 		
 end
 
 
+function uespLog.EventLoreBookLearned(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, isMaxRank)
+	uespLog.DebugMsg("LoreBook Learned: "..tostring(guildReputationIndex))
+	
+	if (uespLog.GetLoreBookMsgFlag() == 'on') then
+		return uespLog.origLoreBookLearnedFunction(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, isMaxRank)
+	else
+	
+		if (guildReputationIndex > 0 and isMaxRank) then
+			return uespLog.origLoreBookLearnedFunction(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, isMaxRank)
+		end
+	end
+	
+end
+
+
+function uespLog.EventLoreBookLearnedSkillExperience(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, skillType, skillIndex, rank, previousXP, currentXP)
+	uespLog.DebugMsg("LoreBookSkillExp Learned: "..tostring(guildReputationIndex))
+	return uespLog.origLoreBookLearnedSkillExpFunction(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, skillType, skillIndex, rank, previousXP, currentXP)
+end
+
+
 SLASH_COMMANDS["/ulb"] = SLASH_COMMANDS["/uesplorebook"]
 
-
-function uespLog.OverrideLoreBookMessage(option)
-	--SI_LORE_LIBRARY_ANNOUNCE_BOOK_LEARNED 
-	--ingame/centerscreenannounce/centerscreenannouncehandlers.lua
-	
-	option = string.lower(option)
-	
-	if (uespLog.origLoreBookLearnedFunction == nil) then
-		uespLog.origLoreBookLearnedFunction = ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED]
-	end
-	
-	if (uespLog.origLoreBookLearnedSkillExpFunction == nil) then
-		uespLog.origLoreBookLearnedSkillExpFunction = ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED_SKILL_EXPERIENCE]
-	end
-	
-	if (option == 'none') then
-		ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED] = function(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, isMaxRank) end
-		ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED_SKILL_EXPERIENCE] = function(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, isMaxRank) end
-		return true
-	elseif (option == 'lore') then
-		ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED_SKILL_EXPERIENCE] = function(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, isMaxRank) end
-		return true
-	elseif (option == 'skill') then
-		ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED] = function(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, isMaxRank) end
-		return true
-	elseif (option == 'all') then
-		ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED] = origLoreBookLearnedFunction
-		ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED_SKILL_EXPERIENCE] = origLoreBookLearnedSkillExpFunction
-		return true
-	end
-
-	return false
-end

@@ -656,7 +656,7 @@ uespLog.DEFAULT_SETTINGS =
 			["heavy sack"] = 120,
 			["safebox"] = 120,
 		},
-		["loreBookMsg"] = 'on',
+		["loreBookMsg"] = true,
 	}
 }
 
@@ -7372,17 +7372,17 @@ SLASH_COMMANDS["/uesplorebook"] = function (cmd)
 	cmd = string.lower(cmd)
 	
 	if (cmd == 'on') then
-		uespLog.SetLoreBookMsgFlag('on')
-		uespLog.Msg("UESP::Set LoreBook to: "..tostring(uespLog.GetLoreBookMsgFlag()) )
+		uespLog.SetLoreBookMsgFlag(true)
+		uespLog.Msg("UESP::Set LoreBook to: "..uespLog.BoolToOnOff(uespLog.GetLoreBookMsgFlag()) )
 	elseif (cmd == 'off') then
-		uespLog.SetLoreBookMsgFlag('off')
-		uespLog.Msg("UESP::Set LoreBook to: "..tostring(uespLog.GetLoreBookMsgFlag()) )
+		uespLog.SetLoreBookMsgFlag(false)
+		uespLog.Msg("UESP::Set LoreBook to: "..uespLog.BoolToOnOff(uespLog.GetLoreBookMsgFlag()) )
 	elseif (cmd == '') then
-		uespLog.Msg("UESP::Current LoreBook Setting is: "..tostring(uespLog.GetLoreBookMsgFlag()) )
+		uespLog.Msg("UESP::Current LoreBook Setting is: "..uespLog.BoolToOnOff(uespLog.GetLoreBookMsgFlag()) )
 	else
 		uespLog.Msg("UESP::Turns on/off the 'LoreBook Learned' messages.")
 		uespLog.Msg(".     Use the format: /uesplorebook [on/off]")
-		uespLog.Msg(".     Current Setting is: "..tostring(uespLog.GetLoreBookMsgFlag()) )
+		uespLog.Msg(".     Current Setting is: "..uespLog.BoolToOnOff(uespLog.GetLoreBookMsgFlag()) )
 	end
 		
 end

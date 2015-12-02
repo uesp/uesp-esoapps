@@ -284,6 +284,7 @@
 --					/uesplorebook on     -- Display all lorebook messages (default)
 --					/uesplorebook off    -- Only display Mages Guild related lorebook messages
 --			- Fixed issue with message if you looted something at the same time as a group member.
+--			- Zipped install file includes the root folder "uespLog".
 --	
 
 

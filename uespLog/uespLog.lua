@@ -271,7 +271,7 @@
 --			- Fixed item links with no name showing (for Orsinium PTS).
 --			- Added Orsinium mobs to ignore when logging.
 --
---		- v0.41 -
+--		- v0.41 - 2 December 2015
 --			- Added some more Orsinium mobs to ignore when logging.
 --			- Fixed logging of hireling mail items (properly logs hireling type).
 --			- Added new/missing style icons.
@@ -291,7 +291,7 @@
 uespLog = { }
 
 uespLog.version = "0.41"
-uespLog.releaseDate = "2 November 2015"
+uespLog.releaseDate = "2 December 2015"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

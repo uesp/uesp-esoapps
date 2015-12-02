@@ -283,7 +283,7 @@
 --					/uesplorebook help   -- Display basic help
 --					/uesplorebook on     -- Display all lorebook messages (default)
 --					/uesplorebook off    -- Only display Mages Guild related lorebook messages
---
+--			- Fixed issue with message if you looted something at the same time as a group member.
 --	
 
 
@@ -2881,6 +2881,11 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 	elseif (uespLog.lastTargetData.action == uespLog.ACTION_STEALFROM or uespLog.lastTargetData.action == uespLog.ACTION_STEAL) then
 		rcvType = "stole"
 	end
+	
+	if (not self) then
+		rcvType = "looted"
+		msgType = "item"
+	end	
 
 	logData.event = "LootGained"
 	logData.itemLink = itemLink
@@ -2916,6 +2921,7 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 		local money, stolenMoney = GetLootMoney()
 		uespLog.DebugExtraMsg("UESP::LootMoney = "..tostring(money)..", stolen = "..tostring(stolenMoney))
 	else
+		
 		uespLog.DebugMsgColor(uespLog.itemColor, "UESP::Someone "..rcvType.." "..msgType.." "..niceLink.." (x"..tostring(quantity)..")")
 	end
 	

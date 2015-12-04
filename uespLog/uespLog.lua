@@ -7396,7 +7396,7 @@ end
 
 
 function uespLog.EventLoreBookLearned(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, isMaxRank)
-	uespLog.DebugMsg("LoreBook Learned: "..tostring(guildReputationIndex))
+	uespLog.DebugMsg("LoreBook Learned: "..tostring(guildReputationIndex)..", MaxRank: "..tostring(isMaxRank))
 	
 	if (uespLog.GetLoreBookMsgFlag() == 'on') then
 		return uespLog.origLoreBookLearnedFunction(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, isMaxRank)

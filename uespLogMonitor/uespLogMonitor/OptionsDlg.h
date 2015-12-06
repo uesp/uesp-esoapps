@@ -50,4 +50,6 @@ public:
 	CEdit m_BackupDataFilename;
 	afx_msg void OnBnClickedBrowsebackupdataButton();
 	CEdit m_BackupTimestampText;
+	CButton m_CharDataEnabledCheck;
+	CEdit m_CharDataFormURLText;
 };

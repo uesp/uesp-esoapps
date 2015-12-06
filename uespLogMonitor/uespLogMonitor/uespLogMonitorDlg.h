@@ -162,6 +162,7 @@ protected:
 	bool ParseSavedVarUserName		(const std::string VarName, void* pUserData);
 	bool ParseSavedVarAccount		(const std::string VarName, void* pUserData);
 	bool ParseSavedVarSection		(const std::string VarName, void* pUserData);
+	bool ParseSavedVarCharData      (const std::string VarName, void* pUserData);
 	bool ParseSavedVarGlobals		(const std::string VarName, void* pUserData);
 	bool ParseSavedVarAchievements	(const std::string VarName, void* pUserData);
 	bool ParseSavedVarAll			(const std::string VarName, void* pUserData);
@@ -200,7 +201,7 @@ protected:
 	std::string GetExtraLogData ();
 
 	bool SaveLuaVariable      (const std::string Filename, const std::string Variable);
-	std::string GetLuaVariableString (const std::string Variable);
+	std::string GetLuaVariableString (const std::string Variable, const bool LoadGlobal = true);
 
 	bool DumpLuaObjectFile  (const std::string VarName, void* pUserData);
 	bool DumpLuaObjectString(const std::string VarName, void* pUserData);

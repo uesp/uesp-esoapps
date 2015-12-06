@@ -315,6 +315,8 @@ bool CuespLogMonitorDlg::ParseSavedVarAccount (const std::string VarName, void* 
 	ParseSavedVarDataSection("all",				&CuespLogMonitorDlg::ParseSavedVarAll);
 	ParseSavedVarDataSection("achievements",	&CuespLogMonitorDlg::ParseSavedVarAchievements);
 
+	ParseSavedVarDataSection("charData", &CuespLogMonitorDlg::ParseSavedVarCharData);
+
 	ParseSavedVarDataSection("info",			&CuespLogMonitorDlg::ParseSavedVarInfo);
 	
 	return true;
@@ -504,6 +506,35 @@ bool CuespLogMonitorDlg::ParseSavedVarGlobals (const std::string VarName, void* 
 }
 
 
+bool CuespLogMonitorDlg::ParseSavedVarCharData(const std::string VarName, void* pUserData)
+{
+	std::string Version = ParseSavedVarDataVersion();
+
+	lua_getfield(m_pLuaState, -1, "data");
+
+	if (lua_isnil(m_pLuaState, -1))
+	{
+		lua_pop(m_pLuaState, 1);
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to find the 'data' field in charData section!");
+		return false;
+	}
+
+	int numObjects = lua_rawlen(m_pLuaState, -1);
+
+	std::string Output = GetLuaVariableString("uespCharData", false);
+	lua_pop(m_pLuaState, 1);
+
+	if (Output.empty())
+	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to parse the charData variable data!");
+		return false;
+	}
+
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Found the charData section with %d characters.", numObjects);
+	return true;
+}
+
+
 bool CuespLogMonitorDlg::ParseSavedVarAchievements (const std::string VarName, void* pUserData)
 {
 	std::string Version = ParseSavedVarDataVersion();
@@ -611,17 +642,20 @@ bool CuespLogMonitorDlg::SaveLuaVariable(const std::string Filename, const std::
 }
 
 
-std::string CuespLogMonitorDlg::GetLuaVariableString(const std::string Variable)
+std::string CuespLogMonitorDlg::GetLuaVariableString(const std::string Variable, const bool LoadGlobal)
 {
 	ulm_dumpinfo_t DumpInfo;
 	DumpInfo.OutputFile = false;
 	DumpInfo.TabLevel = 1;
 
-	lua_getglobal(m_pLuaState, Variable.c_str());
+	if (LoadGlobal)
+	{
+		lua_getglobal(m_pLuaState, Variable.c_str());
+	}
 
 	if (lua_isnil(m_pLuaState, -1))
 	{
-		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Could not find the variable '%s' in the LUA saved variable file!", Variable.c_str());
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Could not find the variable '%s'!", Variable.c_str());
 		lua_pop(m_pLuaState, 1);
 		return DumpInfo.OutputBuffer;
 	}

@@ -285,13 +285,16 @@
 --					/uesplorebook off    -- Only display Mages Guild related lorebook messages
 --			- Fixed issue with message if you looted something at the same time as a group member.
 --			- Zipped install file includes the root folder "uespLog".
+--
+--		- v0.42 -
+--
 --	
 
 
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "0.41"
+uespLog.version = "0.42"
 uespLog.releaseDate = "2 December 2015"
 uespLog.DATA_VERSION = 3
 
@@ -623,6 +626,12 @@ uespLog.IdCheckTotalCount = 0
 
 
 uespLog.DEFAULT_DATA = 
+{
+	data = {}
+}
+
+
+uespLog.DEFAULT_CHARDATA = 
 {
 	data = {}
 }
@@ -1306,11 +1315,12 @@ function uespLog.Initialize( self, addOnName )
 	ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED_SKILL_EXPERIENCE] = uespLog.EventLoreBookLearnedSkillExperience
 	
 	uespLog.savedVars = {
-		["all"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "all", uespLog.DEFAULT_DATA),  
-		["achievements"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "achievements", uespLog.DEFAULT_DATA),  
-		["globals"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "globals", uespLog.DEFAULT_DATA),  
-		["info"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "info", uespLog.DEFAULT_DATA),  
-		["settings"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "settings", uespLog.DEFAULT_SETTINGS),  		
+		["all"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "all", uespLog.DEFAULT_DATA),
+		["achievements"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "achievements", uespLog.DEFAULT_DATA),
+		["globals"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "globals", uespLog.DEFAULT_DATA),
+		["info"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "info", uespLog.DEFAULT_DATA),
+		["settings"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "settings", uespLog.DEFAULT_SETTINGS),
+		["charData"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "charData", uespLog.DEFAULT_CHARDATA),
 	}
 	
 	uespLog.mineItemsAutoNextItemId = uespLog.savedVars.settings.data.mineItemsAutoNextItemId or uespLog.mineItemsAutoNextItemId
@@ -1356,6 +1366,12 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SKILL_RANK_UPDATE, uespLog.OnSkillRankUpdate)
 
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CRAFT_COMPLETED, uespLog.OnCraftCompleted)
+	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOTS_FULL_UPDATE, uespLog.OnActionSlotsFullUpdate)	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOT_ABILITY_SLOTTED, uespLog.OnActionSlotAbilitySlotted)	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOT_UPDATED, uespLog.OnActionSlotUpdated)	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTIVE_QUICKSLOT_CHANGED, uespLog.OnActiveQuickSlotChanged)	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTIVE_WEAPON_PAIR_CHANGED, uespLog.OnActiveWeaponPairChanged)	
 	
 	ZO_InteractWindow:UnregisterForEvent(EVENT_CHATTER_BEGIN)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CONVERSATION_UPDATED, uespLog.OnConversationUpdated)
@@ -1452,6 +1468,7 @@ function uespLog.Initialize( self, addOnName )
 	
 	zo_callLater(uespLog.InitTradeData, 500) 
 	zo_callLater(uespLog.outputInitMessage, 4000)
+	zo_callLater(uespLog.InitCharData, 500)
 end
 
 	--	Hook initialization onto the ADD_ON_LOADED event  

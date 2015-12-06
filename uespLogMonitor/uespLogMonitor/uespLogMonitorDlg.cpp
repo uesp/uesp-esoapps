@@ -536,37 +536,15 @@ bool CuespLogMonitorDlg::ParseSavedVarInfo (const std::string VarName, void* pUs
 
 bool CuespLogMonitorDlg::SaveSavedVars()
 {
-	ulm_dumpinfo_t DumpInfo;
 	std::string Filename = GetSavedVarFilename();
 	std::string TmpFilename = Filename + ".tmp";
 	std::string CopyFilename = Filename + ".old";
 
-	PrintLogLine(ULM_LOGLEVEL_INFO, "Writing saved variables to '%s'...", Filename.c_str());
-
-	lua_getglobal(m_pLuaState, ULM_SAVEDVAR_NAME);
-
-	if (lua_isnil(m_pLuaState, -1))
+	if (!SaveLuaVariable(TmpFilename, ULM_SAVEDVAR_NAME))
 	{
-		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Could not find the variable '%s' in the LUA saved variable file!", ULM_SAVEDVAR_NAME);
-		lua_pop(m_pLuaState, 1);
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to write the saved variable data to file '%s'!", TmpFilename.c_str());
 		return false;
 	}
-
-	if (!DumpInfo.File.Open(TmpFilename, "wb"))
-	{
-		lua_settop(m_pLuaState, 0);
-		return false;
-	}
-
-	DumpInfo.File.Printf("%s = \n{\n", ULM_SAVEDVAR_NAME);
-	DumpInfo.TabLevel = 1;
-
-	bool Result = LuaIterateSimpleTableInOrder(-1, &CuespLogMonitorDlg::DumpLuaObject, (void *) &DumpInfo);
-
-	DumpInfo.File.Printf("}");
-	DumpInfo.File.Close();
-
-	lua_settop(m_pLuaState, 0);
 
 	if (!MoveFileEx(Filename.c_str(), CopyFilename.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_REPLACE_EXISTING))
 	{
@@ -580,11 +558,74 @@ bool CuespLogMonitorDlg::SaveSavedVars()
 		return false;
 	}
 
+	return true;
+}
+
+
+bool CuespLogMonitorDlg::SaveLuaVariable(const std::string Filename, const std::string Variable)
+{
+	ulm_dumpinfo_t DumpInfo;
+
+	DumpInfo.OutputFile = true;
+	DumpInfo.TabLevel = 1;
+
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Writing saved variables to '%s'...", Filename.c_str());
+	lua_getglobal(m_pLuaState, Variable.c_str());
+
+	if (lua_isnil(m_pLuaState, -1))
+	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Could not find the variable '%s' in the LUA saved variable file!", Variable.c_str());
+		lua_pop(m_pLuaState, 1);
+		return false;
+	}
+
+	if (!DumpInfo.File.Open(Filename, "wb"))
+	{
+		lua_settop(m_pLuaState, 0);
+		return false;
+	}
+
+	DumpInfo.File.Printf("%s = \n{\n", Variable);
+	DumpInfo.TabLevel = 1;
+
+	bool Result = LuaIterateSimpleTableInOrder(-1, &CuespLogMonitorDlg::DumpLuaObjectFile, (void *)&DumpInfo);
+
+	DumpInfo.File.Printf("}");
+	DumpInfo.File.Close();
+
+	lua_settop(m_pLuaState, 0);
+	
 	return Result;
 }
 
 
-bool CuespLogMonitorDlg::DumpLuaObject (const std::string ParentVarName, void* pUserData)
+std::string CuespLogMonitorDlg::GetLuaVariableString(const std::string Variable)
+{
+	ulm_dumpinfo_t DumpInfo;
+	DumpInfo.OutputFile = false;
+	DumpInfo.TabLevel = 1;
+
+	lua_getglobal(m_pLuaState, Variable.c_str());
+
+	if (lua_isnil(m_pLuaState, -1))
+	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Could not find the variable '%s' in the LUA saved variable file!", Variable.c_str());
+		lua_pop(m_pLuaState, 1);
+		return DumpInfo.OutputBuffer;
+	}
+
+	DumpInfo.OutputBuffer += Variable;
+	DumpInfo.OutputBuffer += " = \n{\n";
+
+	bool Result = LuaIterateSimpleTableInOrder(-1, &CuespLogMonitorDlg::DumpLuaObjectString, (void *)&DumpInfo);
+		
+	DumpInfo.OutputBuffer += "}";
+
+	return DumpInfo.OutputBuffer;
+}
+
+
+bool CuespLogMonitorDlg::DumpLuaObjectFile (const std::string ParentVarName, void* pUserData)
 {
 	ulm_dumpinfo_t* pDumpInfo = (ulm_dumpinfo_t *) pUserData;
 	if (pDumpInfo == nullptr) return false;
@@ -614,7 +655,7 @@ bool CuespLogMonitorDlg::DumpLuaObject (const std::string ParentVarName, void* p
 	if (valType == LUA_TSTRING)
 	{
 		Value = lua_tostring(m_pLuaState, -1);
-		pDumpInfo->File.Printf("[[%s]],\n", Value.c_str());
+		pDumpInfo->File.Printf("\"%s\",\n", Value.c_str());
 	}
 	else if (valType == LUA_TNUMBER)
 	{
@@ -633,7 +674,7 @@ bool CuespLogMonitorDlg::DumpLuaObject (const std::string ParentVarName, void* p
 		pDumpInfo->File.Printf("{\n");
 		++pDumpInfo->TabLevel;
 
-		bool Result = LuaIterateSimpleTableInOrder(-1, &CuespLogMonitorDlg::DumpLuaObject, (void *) pDumpInfo);
+		bool Result = LuaIterateSimpleTableInOrder(-1, &CuespLogMonitorDlg::DumpLuaObjectFile, (void *) pDumpInfo);
 
 		--pDumpInfo->TabLevel;
 		for (int i = 0; i < pDumpInfo->TabLevel; ++i) { pDumpInfo->File.Printf("\t"); }
@@ -643,7 +684,82 @@ bool CuespLogMonitorDlg::DumpLuaObject (const std::string ParentVarName, void* p
 	}
 	else
 	{
-		eso::PrintError("DumpLuaObject() -- Can't output LUA object with type %d!", valType);
+		eso::PrintError("DumpLuaObjectFile() -- Can't output LUA object with type %d!", valType);
+		return false;
+	}
+
+	return true;
+}
+
+
+bool CuespLogMonitorDlg::DumpLuaObjectString (const std::string ParentVarName, void* pUserData)
+{
+	ulm_dumpinfo_t* pDumpInfo = (ulm_dumpinfo_t *)pUserData;
+	if (pDumpInfo == nullptr) return false;
+
+	std::string VarName;
+	std::string Value;
+
+	int keyType = lua_type(m_pLuaState, -2);
+	int valType = lua_type(m_pLuaState, -1);
+
+	/* Output tab indentation */
+	for (int i = 0; i < pDumpInfo->TabLevel; ++i) { pDumpInfo->OutputBuffer += "\t"; }
+
+	if (keyType == LUA_TSTRING)
+	{
+		pDumpInfo->OutputBuffer += "[\"";
+		pDumpInfo->OutputBuffer += ParentVarName;
+		pDumpInfo->OutputBuffer += "\"] = ";
+	}
+	else if (keyType == LUA_TNUMBER)
+	{
+		pDumpInfo->OutputBuffer += "[";
+		pDumpInfo->OutputBuffer += ParentVarName;
+		pDumpInfo->OutputBuffer += "] = ";
+	}
+	else
+	{
+		pDumpInfo->OutputBuffer += "[\"unknown\"] = ";
+	}
+
+	if (valType == LUA_TSTRING)
+	{
+		Value = lua_tostring(m_pLuaState, -1);
+		pDumpInfo->OutputBuffer += "\"";
+		pDumpInfo->OutputBuffer += Value;
+		pDumpInfo->OutputBuffer += "\",\n";
+	}
+	else if (valType == LUA_TNUMBER)
+	{
+		Value = lua_tostring(m_pLuaState, -1);
+		pDumpInfo->OutputBuffer += Value;
+		pDumpInfo->OutputBuffer += ",\n";
+	}
+	else if (valType == LUA_TBOOLEAN)
+	{
+		Value = lua_toboolean(m_pLuaState, -1) != 0 ? "true" : "false";
+		pDumpInfo->OutputBuffer += Value;
+		pDumpInfo->OutputBuffer += ",\n";
+	}
+	else if (valType == LUA_TTABLE)
+	{
+		pDumpInfo->OutputBuffer += "\n";
+		for (int i = 0; i < pDumpInfo->TabLevel; ++i) { pDumpInfo->OutputBuffer += "\t"; }
+		pDumpInfo->OutputBuffer += "{\n";
+		++pDumpInfo->TabLevel;
+
+		bool Result = LuaIterateSimpleTableInOrder(-1, &CuespLogMonitorDlg::DumpLuaObjectString, (void *)pDumpInfo);
+
+		--pDumpInfo->TabLevel;
+		for (int i = 0; i < pDumpInfo->TabLevel; ++i) { pDumpInfo->OutputBuffer += "\t"; }
+		pDumpInfo->OutputBuffer += "},\n";
+
+		return Result;
+	}
+	else
+	{
+		eso::PrintError("DumpLuaObjectString() -- Can't output LUA object with type %d!", valType);
 		return false;
 	}
 

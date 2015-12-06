@@ -115,6 +115,10 @@ protected:
 	HANDLE				m_hSendQueueMutex;
 	LONG				m_StopSendQueueThread;
 
+	std::string					m_CharData;
+	std::vector<std::string>	m_CharDataScreenShots;
+	int							m_CharDataValidScreenShotCount;
+
 
 public:
 	enum { IDD = IDD_UESPLOGMONITOR_DIALOG };
@@ -167,6 +171,8 @@ protected:
 	bool ParseSavedVarAchievements	(const std::string VarName, void* pUserData);
 	bool ParseSavedVarAll			(const std::string VarName, void* pUserData);
 	bool ParseSavedVarInfo			(const std::string VarName, void* pUserData);
+
+	bool ParseCharDataScreenshots();
 
 	std::string ParseSavedVarDataVersion();
 

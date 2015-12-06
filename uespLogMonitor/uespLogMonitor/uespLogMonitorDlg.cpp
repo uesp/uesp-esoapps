@@ -112,7 +112,8 @@ CuespLogMonitorDlg::CuespLogMonitorDlg(CWnd* pParent) :
 	m_IsCheckingFile(false),
 	m_hSendQueueThread(NULL),
 	m_hSendQueueMutex(NULL),
-	m_StopSendQueueThread(0)
+	m_StopSendQueueThread(0),
+	m_CharDataValidScreenShotCount(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
@@ -510,6 +511,7 @@ bool CuespLogMonitorDlg::ParseSavedVarCharData(const std::string VarName, void* 
 {
 	std::string Version = ParseSavedVarDataVersion();
 
+	m_CharData = "";
 	lua_getfield(m_pLuaState, -1, "data");
 
 	if (lua_isnil(m_pLuaState, -1))
@@ -521,16 +523,72 @@ bool CuespLogMonitorDlg::ParseSavedVarCharData(const std::string VarName, void* 
 
 	int numObjects = lua_rawlen(m_pLuaState, -1);
 
-	std::string Output = GetLuaVariableString("uespCharData", false);
-	lua_pop(m_pLuaState, 1);
+	m_CharData = GetLuaVariableString("uespCharData", false);
 
-	if (Output.empty())
+	if (m_CharData.empty())
 	{
+		lua_pop(m_pLuaState, 1);
 		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to parse the charData variable data!");
 		return false;
 	}
 
-	PrintLogLine(ULM_LOGLEVEL_INFO, "Found the charData section with %d characters.", numObjects);
+	ParseCharDataScreenshots();
+
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Found the charData section with %d characters (%u bytes).", numObjects, m_CharData.length());
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Found %d valid screenShot files for the character data.", m_CharDataValidScreenShotCount);
+	lua_pop(m_pLuaState, 1);
+	return true;
+}
+
+
+bool CuespLogMonitorDlg::ParseCharDataScreenshots()
+{
+	int index = lua_gettop(m_pLuaState);
+	int i = 1;
+	
+	m_CharDataScreenShots.clear();
+	m_CharDataValidScreenShotCount = 0;
+
+	while (true)
+	{
+		lua_pushinteger(m_pLuaState, i);
+		lua_rawgeti(m_pLuaState, index, i);
+
+		if (lua_isnil(m_pLuaState, -1)) {
+			lua_pop(m_pLuaState, 2);
+			break;
+		}
+
+		lua_getfield(m_pLuaState, -1, "ScreenShot");
+
+		if (lua_isnil(m_pLuaState, -1))
+		{
+			m_CharDataScreenShots.push_back("");
+		}
+		else
+		{
+			m_CharDataScreenShots.push_back(lua_tostring(m_pLuaState, -1));
+
+			if (m_CharDataScreenShots.back().length() > 0)
+			{
+				bool Exists = eso::FileExists(m_CharDataScreenShots.back().c_str());
+
+				if (Exists)
+				{
+					PrintLogLine(ULM_LOGLEVEL_INFO, "%d: Found ScreenShot File: %s", i, m_CharDataScreenShots.back().c_str());
+					++m_CharDataValidScreenShotCount;
+				}
+				else
+				{
+					PrintLogLine(ULM_LOGLEVEL_INFO, "%d: Missing ScreenShot File: %s", i, m_CharDataScreenShots.back().c_str());
+				}
+			}
+		}
+		
+		lua_pop(m_pLuaState, 3);
+		++i;
+	}
+
 	return true;
 }
 

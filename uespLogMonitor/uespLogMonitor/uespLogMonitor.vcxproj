@@ -43,7 +43,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>D:\src\uesp\ESO\common\lua\src;D:\src\uesp\ESO\common\devil\include;D:\src\uesp\ESO\common\zlib;D:\src\uesp\ESO\common;$(IncludePath);D:\src\uesp\ESO\common\OpenSSL-Win32\include;D:\src\uesp\ESO\common</IncludePath>
+    <IncludePath>D:\src\uesp\ESOApps\common\lua\src;D:\src\uesp\ESOApps\common\devil\include;D:\src\uesp\ESOApps\common\zlib;$(IncludePath);D:\src\uesp\ESOApps\common\OpenSSL-Win32\include;D:\src\uesp\ESOApps\common</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>

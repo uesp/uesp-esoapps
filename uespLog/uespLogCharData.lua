@@ -145,6 +145,7 @@ function uespLog.CreateCharData (note)
 	charData.Buffs = uespLog.CreateCharDataBuffs()
 	charData.ActionBar = uespLog.CreateCharDataActionBar()
 	charData.EquipSlots = uespLog.CreateCharDataEquipSlots()
+	charData.ChampionPoints = uespLog.CreateCharDataChampionPoints()
 	
 	charData.Skills, charData.SkillPointsUsed = uespLog.CreateCharDataSkills()
 	charData.SkillPointsTotal = charData.SkillPointsUsed + charData.SkillPointsUnused
@@ -281,6 +282,53 @@ function uespLog.CreateCharDataSkills()
 	end
 	
 	return skills, totalSkillPoints
+end
+
+
+function uespLog.CreateCharDataChampionPoints()
+	local championPoints = {}
+	local numDisc = GetNumChampionDisciplines()
+	local discIndex
+	local skillIndex
+	
+	for discIndex = 1, numDisc do
+		local discName = tostring(GetChampionDisciplineName(discIndex))
+		local numSkills = GetNumChampionDisciplineSkills(discIndex)
+		local discPoints = GetNumPointsSpentInChampionDiscipline(discIndex)
+		
+		--championPoints[discName] = {}
+		--championPoints[discName]["PointsSpent"] = GetNumPointsSpentInChampionDiscipline(discIndex)
+		--championPoints[discName]["Attribute"] = GetChampionDisciplineAttribute(discIndex)		
+		
+		for skillIndex = 1, numSkills do
+			local skillName = GetChampionSkillName(discIndex, skillIndex)
+			local unlockLevel = GetChampionSkillUnlockLevel(discIndex, skillIndex)
+			local abilityId = GetChampionAbilityId(discIndex, skillIndex)
+			local spentPoints = GetNumPointsSpentOnChampionSkill(discIndex, skillIndex)
+			local description = GetChampionAbilityDescription(abilityId, spentPoints)
+			local name = discName .. ":" .. tostring(skillName)
+			
+			unlockLevel = unlockLevel or 100000
+			
+			if (spentPoints == 0 and unlockLevel <= discPoints) then
+				spentPoints = 1
+			end
+			
+			if (spentPoints > 0) then
+				championPoints[name] = { ["points"] = spentPoints, ["desc"] = description, ["id"] = id }
+			end
+		end
+	end
+	
+	championPoints["Health:Unspent"] = GetNumUnspentChampionPoints(ATTRIBUTE_HEALTH)
+	championPoints["Magicka:Unspent"] = GetNumUnspentChampionPoints(ATTRIBUTE_MAGICKA)
+	championPoints["Stamina:Unspent"] = GetNumUnspentChampionPoints(ATTRIBUTE_STAMINA)
+	championPoints["Health:Spent"] = GetNumSpentChampionPoints(ATTRIBUTE_HEALTH)
+	championPoints["Magicka:Spent"] = GetNumSpentChampionPoints(ATTRIBUTE_MAGICKA)
+	championPoints["Stamina:Spent"] = GetNumSpentChampionPoints(ATTRIBUTE_STAMINA)
+	championPoints["MaxSpendablePerAttribute"] = GetMaxSpendableChampionPointsInAttribute()
+	
+	return championPoints
 end
 
 

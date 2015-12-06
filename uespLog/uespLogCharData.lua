@@ -68,8 +68,10 @@ uespLog.CHARDATA_POWER = {
 }
 
 
-uespLog.charData_LastActionBarData = { }
-uespLog.charData_ActionBarData = { }
+uespLog.charData_ActionBarData = { 
+	[1] = { },
+	[2] = { }
+}
 
 
 function uespLog.InitCharData()
@@ -140,6 +142,7 @@ function uespLog.CreateCharData (note)
 	charData.Power = uespLog.CreateCharDataPower()
 	charData.Buffs = uespLog.CreateCharDataBuffs()
 	charData.ActionBar = uespLog.CreateCharDataActionBar()
+	charData.EquipSlots = uespLog.CreateCharDataEquipSlots()
 	
 	charData.Skills, charData.SkillPointsUsed = uespLog.CreateCharDataSkills()
 	charData.SkillPointsTotal = charData.SkillPointsUsed + charData.SkillPointsUnused
@@ -193,12 +196,38 @@ function uespLog.CreateCharDataBuffs()
 		local buffName, timeStarted, timeEnding, buffSlot, stackCount, iconFilename, buffType, effectType, abilityType, statusEffectType, abilityId, canClickOff = GetUnitBuffInfo("player", i)
 	
 		if (abilityId > 0) then
-			buffs[#buffs + 1] = { buffName, abilityId, iconFilename }
+			buffs[#buffs + 1] = { ["name"] = buffName, ["id"] = abilityId, ["icon"] = iconFilename }
 		end
 	
 	end
 
 	return buffs
+end
+
+
+function uespLog.CreateCharDataEquipSlots()
+	local wornSlots = GetBagSize(BAG_WORN)
+	local i
+	local equipSlots = { }
+	
+
+	for i = 1, wornSlots do
+		if (HasItemInSlot(BAG_WORN, i)) then
+			local itemLink = GetItemLink(BAG_WORN, i)
+			local itemName = GetItemName(BAG_WORN, i)
+			local condition = GetItemCondition(BAG_WORN, i)
+			local charges, maxCharges = GetChargeInfoForItem(BAG_WORN, i)
+			
+			if (maxCharges > 0) then
+				condition = math.floor(charges*100/maxCharges + 0.5)
+			end
+			
+			equipSlots[i] = { ["name"] = itemName, ["link"] = itemLink, ["condition"] = condition }
+		end
+	end
+	
+	
+	return equipSlots
 end
 
 
@@ -226,7 +255,7 @@ function uespLog.CreateCharDataSkills()
 				if (purchase and abilityId > 0) then
 					local description = GetAbilityDescription(abilityId)
 					
-					skills[skillName] = { rank, abilityId, texture, description }
+					skills[skillName] = { ["rank"] = rank, ["id"] = abilityId, ["icon"] = texture, ["desc"] = description }
 					totalSkillPoints = totalSkillPoints + 1
 					
 					if (rank > 4) then
@@ -246,28 +275,19 @@ end
 function uespLog.CreateCharDataActionBar()
 	local slots = {}
 	local i
+	local j
 	
-	for i = 3, 8 do
-		local texture = GetSlotTexture(i)
-		local id = GetSlotBoundId(i)
-		local name = GetSlotName(i)
-		local description = GetAbilityDescription(id)
-		
-		if (id > 0) then
-			slots[i] = { name, id, texture, description }
-		else
-			slots[i] = { '', 0, '' }
+	uespLog.SaveActionBarForCharData()
+	
+	for j = 1, 2 do
+		for i = 3, 8 do
+			slots[i + (j-1)*100] = uespLog.charData_ActionBarData[j][i]
 		end
 	end
 	
-	if (#uespLog.charData_LastActionBarData == 0) then
-		uespLog.Msg("WARNING: Unused weapon swap action bar skills not saved!")
-        uespLog.Msg(".        Try weapon swapping and save character again.")
-	else
-	
-		for i = 3, 8 do
-			slots[i+100] = uespLog.charData_LastActionBarData[i]
-		end
+	if (not uespLog.HasBothActionBarsForCharData()) then
+		uespLog.MsgColor(uespLog.errorColor, "WARNING: Unused weapon swap action bar skills not saved!")
+        uespLog.MsgColor(uespLog.errorColor, ".        Try weapon swapping and save character again.")
 	end
 	
 	return slots
@@ -275,7 +295,13 @@ end
 
 
 function uespLog.SaveActionBarForCharData()
-	uespLog.charData_ActionBarData = { }
+	local weaponPairIndex, isLocked = GetActiveWeaponPairInfo()
+	
+	if (weaponPairIndex < 1 or weaponPairIndex > 2) then
+		return false
+	end
+	
+	uespLog.charData_ActionBarData[weaponPairIndex] = { }
 	
 	for i = 3, 8 do
 		local texture = GetSlotTexture(i)
@@ -283,38 +309,52 @@ function uespLog.SaveActionBarForCharData()
 		local name = GetSlotName(i)
 		local description = GetAbilityDescription(id)
 		
-		uespLog.charData_ActionBarData[i] = { name, id, texture, description }
+		uespLog.charData_ActionBarData[weaponPairIndex][i] = { ["name"] = name, ["id"] = id, ["icon"] = texture, ["desc"] = description }
 	end
 	
 end
 
 
+function uespLog.HasBothActionBarsForCharData()
+
+	if (#uespLog.charData_ActionBarData[1] > 0 and #uespLog.charData_ActionBarData[2] > 0) then
+		return true
+	end
+
+	return false
+end
+
+
 function uespLog.OnActionSlotsFullUpdate (eventCode, isHotbarSwap)
+	--uespLog.DebugMsg("OnActionSlotsFullUpdate "..tostring(isHotbarSwap))
 	
 	if (isHotbarSwap) then
-		uespLog.charData_LastActionBarData = uespLog.charData_ActionBarData
-		uespLog.SaveActionBarForCharData()
+		--uespLog.SaveActionBarForCharData()
 	end
 	
 end
 
 
 function uespLog.OnActionSlotAbilitySlotted (eventCode, newAbilitySlotted)
-	uespLog.SaveActionBarForCharData()
+	--uespLog.DebugMsg("OnActionSlotAbilitySlotted "..tostring(newAbilitySlotted))
+	--uespLog.SaveActionBarForCharData()
 end
 
 
 function uespLog.OnActionSlotUpdated (eventCode, slotNum)
-	uespLog.SaveActionBarForCharData()
+	--uespLog.DebugMsg("OnActionSlotUpdated "..tostring(slotNum))
+	--uespLog.SaveActionBarForCharData()
 end
 
 
 function uespLog.OnActiveQuickSlotChanged (eventCode, slotId)
-	uespLog.SaveActionBarForCharData()
+	--uespLog.DebugMsg("OnActiveQuickSlotChanged "..tostring(slotId))
+	--uespLog.SaveActionBarForCharData()
 end
 
 
 function uespLog.OnActiveWeaponPairChanged (eventCode, activeWeaponPair, locked)
+	uespLog.DebugMsg("OnActiveWeaponPairChanged "..tostring(activeWeaponPair))
 	uespLog.SaveActionBarForCharData()
 end
 

@@ -525,6 +525,7 @@ uespLog.statColor = "44ffff"
 uespLog.mineColor = "99ff99"
 uespLog.mineColorWarning = "ff9999"
 uespLog.pvpColor = "ff33ff"
+uespLog.errorColor = "ff9999"
 
 uespLog.currentTargetData = {
 	name = "",

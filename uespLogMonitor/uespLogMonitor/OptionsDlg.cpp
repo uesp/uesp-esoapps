@@ -42,6 +42,8 @@ void COptionsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_ENABLED_CHECK, m_EnabledCheck);
 	DDX_Control(pDX, IDC_BACKUPFILENAME_TEXT, m_BackupDataFilename);
 	DDX_Control(pDX, IDC_BACKUPTIMESTAMP_TEXT, m_BackupTimestampText);
+	DDX_Control(pDX, IDC_CHARDATAENABLED_CHECK, m_CharDataEnabledCheck);
+	DDX_Control(pDX, IDC_CHARDATAFORMURL_TEXT, m_CharDataFormURLText);
 }
 
 
@@ -152,6 +154,11 @@ void COptionsDlg::GetControlData()
 	m_pOptions->UseLogName = static_cast<ulm_uselogname_t>(GetComboSelData(m_LogNameList, m_pOptions->UseLogName));
 
 	m_pOptions->Enabled = m_EnabledCheck.GetCheck() != 0;
+
+	m_pOptions->CharDataEnabled = m_CharDataEnabledCheck.GetCheck() != 0;
+
+	m_CharDataFormURLText.GetWindowText(Buffer);
+	m_pOptions->CharDataFormURL = Buffer;
 }
 
 
@@ -179,6 +186,9 @@ void COptionsDlg::SetControlData()
 
 	SelectComboItem(m_LogLevelList, m_pOptions->LogLevel);
 	SelectComboItem(m_LogNameList, m_pOptions->UseLogName);
+
+	m_CharDataEnabledCheck.SetCheck(m_pOptions->CharDataEnabled);
+	m_CharDataFormURLText.SetWindowText(m_pOptions->CharDataFormURL.c_str());
 
 	UpdateCustomNameState();
 }

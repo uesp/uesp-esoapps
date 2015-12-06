@@ -529,8 +529,7 @@ SLASH_COMMANDS["/uespskillpoints"] = function (cmd)
 	local skillPointsUnused = GetAvailableSkillPoints()
 	local skyShards = GetNumSkyShards()
 	
-	uespLog.Msg("You have used "..tostring(skillPointsUsed).." skill points.")
-	uespLog.Msg("You have "..tostring(skillPointsUnused).." unused skill points and "..tostring(skyShards).." skyshards.")
+	uespLog.Msg("You have used "..tostring(skillPointsUsed).." skill points, "..tostring(skillPointsUnused).." unused skill points and "..tostring(skyShards).." skyshards.")
 end
 
 

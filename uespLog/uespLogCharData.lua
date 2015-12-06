@@ -259,7 +259,7 @@ function uespLog.CreateCharDataSkills()
 	local skillType
 	local skillIndex
 	local abilityIndex
-	local totalSkillPoints = 0
+	local totalSkillPoints = -8   -- To account for crafting passives given by default
 	
 	for skillType = 1, numSkillTypes do
 		local numSkillLines = GetNumSkillLines(skillType)
@@ -275,6 +275,11 @@ function uespLog.CreateCharDataSkills()
 				local abilityId = GetSkillAbilityId(skillType, skillIndex, abilityIndex, false)
 				local description = GetAbilityDescription(abilityId)
 				local currentUpgradeLevel, maxUpgradeLevel = GetSkillAbilityUpgradeInfo(skillType, skillIndex, abilityIndex)
+				local skillType = "skill"
+				
+				if (ultimate) then
+					skillType = "ultimate"
+				end
 				
 				progressionIndex = progressionIndex or 0
 				currentUpgradeLevel = currentUpgradeLevel or 0
@@ -284,6 +289,7 @@ function uespLog.CreateCharDataSkills()
 					if (passive and currentUpgradeLevel > 0) then
 						rank = currentUpgradeLevel
 						totalSkillPoints = totalSkillPoints + rank
+						skillType = "passive"
 					elseif (progressionIndex > 0) then
 						local name, morph, skillRank = GetAbilityProgressionInfo(progressionIndex)
 						rank = skillRank + morph * 4
@@ -292,7 +298,7 @@ function uespLog.CreateCharDataSkills()
 						rank = 0
 					end
 					
-					skills[skillName] = { ["rank"] = rank, ["id"] = abilityId, ["icon"] = texture, ["desc"] = description }
+					skills[skillName] = { ["rank"] = rank, ["id"] = abilityId, ["icon"] = texture, ["desc"] = description, ["type"] = skillType, ["index"] = abilityIndex }
 				end
 				
 			end
@@ -479,7 +485,7 @@ function uespLog.GetSkillPointsUsed()
 	local skillType
 	local skillIndex
 	local abilityIndex
-	local totalSkillPoints = 0
+	local totalSkillPoints = -8			 -- To account for crafting passives given by default
 	
 	for skillType = 1, numSkillTypes do
 		local numSkillLines = GetNumSkillLines(skillType)

@@ -330,7 +330,7 @@ function uespLog.CreateCharDataChampionPoints()
 			local unlockLevel = GetChampionSkillUnlockLevel(discIndex, skillIndex)
 			local abilityId = GetChampionAbilityId(discIndex, skillIndex)
 			local spentPoints = GetNumPointsSpentOnChampionSkill(discIndex, skillIndex)
-			local description = GetChampionAbilityDescription(abilityId, spentPoints)
+			local description = GetChampionAbilityDescription(abilityId, 0)
 			local name = discName .. ":" .. tostring(skillName)
 			
 			unlockLevel = unlockLevel or 100000
@@ -340,7 +340,7 @@ function uespLog.CreateCharDataChampionPoints()
 			end
 			
 			if (spentPoints > 0) then
-				championPoints[name] = { ["points"] = spentPoints, ["desc"] = description, ["id"] = id }
+				championPoints[name] = { ["points"] = spentPoints, ["desc"] = description, ["id"] = abilityId }
 			end
 		end
 	end

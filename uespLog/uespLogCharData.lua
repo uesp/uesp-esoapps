@@ -74,6 +74,10 @@ uespLog.charData_ActionBarData = {
 }
 
 
+uespLog.charDataLastScreenShot = ""
+uespLog.charDataLastScreenShotTimestamp = 0
+
+
 function uespLog.InitCharData()
 	uespLog.SaveActionBarForCharData()
 end
@@ -150,7 +154,22 @@ function uespLog.CreateCharData (note)
 	charData.Skills, charData.SkillPointsUsed = uespLog.CreateCharDataSkills()
 	charData.SkillPointsTotal = charData.SkillPointsUsed + charData.SkillPointsUnused
 	
+	local screenShotDeltaTime = GetTimeStamp() - uespLog.charDataLastScreenShotTimestamp 
+	
+	if (screenShotDeltaTime >= 0 and screenShotDeltaTime <= 200) then
+		charData.ScreenShot = uespLog.charDataLastScreenShot	
+	else
+		charData.ScreenShot = ""
+	end
+	
 	return charData
+end
+
+
+function uespLog.OnScreenShotSaved(eventCode, directory, filename)
+	uespLog.charDataLastScreenShot = tostring(directory)..""..tostring(filename)
+	uespLog.charDataLastScreenShotTimestamp = GetTimeStamp()
+	uespLog.DebugMsg("Screenshot Saved: "..uespLog.charDataLastScreenShot)
 end
 
 

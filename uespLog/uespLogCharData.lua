@@ -354,7 +354,7 @@ end
 
 
 function uespLog.OnActiveWeaponPairChanged (eventCode, activeWeaponPair, locked)
-	uespLog.DebugMsg("OnActiveWeaponPairChanged "..tostring(activeWeaponPair))
+	--uespLog.DebugMsg("OnActiveWeaponPairChanged "..tostring(activeWeaponPair))
 	uespLog.SaveActionBarForCharData()
 end
 

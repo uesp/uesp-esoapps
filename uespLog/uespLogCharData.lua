@@ -253,16 +253,26 @@ function uespLog.CreateCharDataSkills()
 				local name, texture, rank, passive, ultimate, purchase, progressionIndex = GetSkillAbilityInfo(skillType, skillIndex, abilityIndex)
 				local skillName = tostring(skillTypeName)..":"..tostring(skillLineName)..":"..tostring(name)
 				local abilityId = GetSkillAbilityId(skillType, skillIndex, abilityIndex, false)
+				local description = GetAbilityDescription(abilityId)
+				local currentUpgradeLevel, maxUpgradeLevel = GetSkillAbilityUpgradeInfo(skillType, skillIndex, abilityIndex)
+				
+				progressionIndex = progressionIndex or 0
+				currentUpgradeLevel = currentUpgradeLevel or 0
 				
 				if (purchase and abilityId > 0) then
-					local description = GetAbilityDescription(abilityId)
+				
+					if (passive and currentUpgradeLevel > 0) then
+						rank = currentUpgradeLevel
+						totalSkillPoints = totalSkillPoints + rank
+					elseif (progressionIndex > 0) then
+						local name, morph, skillRank = GetAbilityProgressionInfo(progressionIndex)
+						rank = skillRank + morph * 4
+						totalSkillPoints = totalSkillPoints + 1 + math.floor(morph/2)
+					else
+						rank = 0
+					end
 					
 					skills[skillName] = { ["rank"] = rank, ["id"] = abilityId, ["icon"] = texture, ["desc"] = description }
-					totalSkillPoints = totalSkillPoints + 1
-					
-					if (rank > 4) then
-						totalSkillPoints = totalSkillPoints + 1
-					end
 				end
 				
 			end
@@ -397,5 +407,58 @@ function uespLog.Command_SaveCharData (cmd)
 end
 
 
+function uespLog.GetSkillPointsUsed()
+	local numSkillTypes = GetNumSkillTypes()
+	local skillType
+	local skillIndex
+	local abilityIndex
+	local totalSkillPoints = 0
+	
+	for skillType = 1, numSkillTypes do
+		local numSkillLines = GetNumSkillLines(skillType)
+		
+		for skillIndex = 1, numSkillLines do
+			local numSkillAbilities = GetNumSkillAbilities(skillType, skillIndex)
+			
+			for abilityIndex = 1, numSkillAbilities do
+				local name, texture, rank, passive, ultimate, purchase, progressionIndex = GetSkillAbilityInfo(skillType, skillIndex, abilityIndex)
+				local abilityId = GetSkillAbilityId(skillType, skillIndex, abilityIndex, false)
+				local currentUpgradeLevel, maxUpgradeLevel = GetSkillAbilityUpgradeInfo(skillType, skillIndex, abilityIndex)
+				
+				progressionIndex = progressionIndex or 0
+				currentUpgradeLevel = currentUpgradeLevel or 0
+				
+				if (purchase and abilityId > 0) then
+				
+					if (passive and currentUpgradeLevel > 0) then
+						totalSkillPoints = totalSkillPoints + currentUpgradeLevel
+					elseif (progressionIndex > 0) then
+						local name, morph, skillRank = GetAbilityProgressionInfo(progressionIndex)
+						totalSkillPoints = totalSkillPoints + 1 + math.floor(morph/2)
+					end
+				end
+				
+			end
+		end
+	
+	end
+	
+	return totalSkillPoints
+end
+
+
 SLASH_COMMANDS["/uespsavechar"] = uespLog.Command_SaveCharData
 SLASH_COMMANDS["/usc"] = uespLog.Command_SaveCharData
+
+
+SLASH_COMMANDS["/uespskillpoints"] = function (cmd)
+	local skillPointsUsed = uespLog.GetSkillPointsUsed()
+	local skillPointsUnused = GetAvailableSkillPoints()
+	local skyShards = GetNumSkyShards()
+	
+	uespLog.Msg("You have used "..tostring(skillPointsUsed).." skill points.")
+	uespLog.Msg("You have "..tostring(skillPointsUnused).." unused skill points and "..tostring(skyShards).." skyshards.")
+end
+
+
+SLASH_COMMANDS["/usp"] = SLASH_COMMANDS["/uespskillpoints"]

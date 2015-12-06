@@ -91,6 +91,19 @@ BEGIN_MESSAGE_MAP(CuespLogMonitorDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 
+void replaceAll(std::string& str, const std::string& from, const std::string& to)
+{
+	if (from.empty()) return;
+	size_t start_pos = 0;
+
+	while ((start_pos = str.find(from, start_pos)) != std::string::npos)
+	{
+		str.replace(start_pos, from.length(), to);
+		start_pos += to.length();
+	}
+}
+
+
 CuespLogMonitorDlg::CuespLogMonitorDlg(CWnd* pParent) :
 	CDialogEx(CuespLogMonitorDlg::IDD, pParent),
 	m_TimerId(0),
@@ -207,7 +220,6 @@ bool CuespLogMonitorDlg::LuaIterateSimpleTableInOrder (const int StackIndex, ULM
 		}
 
 		VarName = std::to_string((long long)i);
-
 		(this->*TableIteratorMethod)(VarName, pUserData);
 
 		lua_pop(m_pLuaState, 2);
@@ -216,7 +228,7 @@ bool CuespLogMonitorDlg::LuaIterateSimpleTableInOrder (const int StackIndex, ULM
 	}
 
 		/* Iterate all remaining keys */
-	lua_pushnil(m_pLuaState); 
+	lua_pushnil(m_pLuaState);
 	
     while (lua_next(m_pLuaState, index) != 0)
 	{
@@ -232,10 +244,10 @@ bool CuespLogMonitorDlg::LuaIterateSimpleTableInOrder (const int StackIndex, ULM
 		else if (keyType == LUA_TNUMBER) 
 		{
 			int Value = lua_tointeger(m_pLuaState, -2);
-
+			
 			if (Value > MaxValidIndex)
 			{
-				VarName = lua_tostring(m_pLuaState, -2);
+				VarName = std::to_string(Value);
 				(this->*TableIteratorMethod)(VarName, pUserData);
 			}
 		}
@@ -585,7 +597,7 @@ bool CuespLogMonitorDlg::SaveLuaVariable(const std::string Filename, const std::
 		return false;
 	}
 
-	DumpInfo.File.Printf("%s = \n{\n", Variable);
+	DumpInfo.File.Printf("%s = \n{\n", Variable.c_str());
 	DumpInfo.TabLevel = 1;
 
 	bool Result = LuaIterateSimpleTableInOrder(-1, &CuespLogMonitorDlg::DumpLuaObjectFile, (void *)&DumpInfo);
@@ -655,7 +667,13 @@ bool CuespLogMonitorDlg::DumpLuaObjectFile (const std::string ParentVarName, voi
 	if (valType == LUA_TSTRING)
 	{
 		Value = lua_tostring(m_pLuaState, -1);
-		pDumpInfo->File.Printf("\"%s\",\n", Value.c_str());
+
+		std::string newValue = Value;
+		replaceAll(newValue, "\n", "\\n");
+		replaceAll(newValue, "\r", "\\r");
+		replaceAll(newValue, "\"", "\\\"");
+
+		pDumpInfo->File.Printf("\"%s\",\n", newValue.c_str());
 	}
 	else if (valType == LUA_TNUMBER)
 	{
@@ -703,7 +721,7 @@ bool CuespLogMonitorDlg::DumpLuaObjectString (const std::string ParentVarName, v
 	int keyType = lua_type(m_pLuaState, -2);
 	int valType = lua_type(m_pLuaState, -1);
 
-	/* Output tab indentation */
+		/* Output tab indentation */
 	for (int i = 0; i < pDumpInfo->TabLevel; ++i) { pDumpInfo->OutputBuffer += "\t"; }
 
 	if (keyType == LUA_TSTRING)
@@ -727,7 +745,13 @@ bool CuespLogMonitorDlg::DumpLuaObjectString (const std::string ParentVarName, v
 	{
 		Value = lua_tostring(m_pLuaState, -1);
 		pDumpInfo->OutputBuffer += "\"";
-		pDumpInfo->OutputBuffer += Value;
+
+		std::string newValue = Value;
+		replaceAll(newValue, "\n", "\\n");
+		replaceAll(newValue, "\r", "\\r");
+		replaceAll(newValue, "\"", "\\\"");
+
+		pDumpInfo->OutputBuffer += newValue;
 		pDumpInfo->OutputBuffer += "\",\n";
 	}
 	else if (valType == LUA_TNUMBER)
@@ -908,19 +932,6 @@ std::string CuespLogMonitorDlg::EncodeLogDataForQuery (const std::string Data)
 	}
 
 	return EncodedData;
-}
-
-
-void replaceAll(std::string& str, const std::string& from, const std::string& to)
-{
-    if(from.empty()) return;
-    size_t start_pos = 0;
-
-    while((start_pos = str.find(from, start_pos)) != std::string::npos)
-	{
-        str.replace(start_pos, from.length(), to);
-        start_pos += to.length();
-    }
 }
 
 
@@ -1398,6 +1409,17 @@ BOOL CuespLogMonitorDlg::OnInitDialog()
 
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Program initialized...");
 	PrintSettings();
+
+		/* Load the saved variable file */
+	int Result = luaL_dofile(m_pLuaState, "d:\\temp\\test.lua");
+
+	if (Result != 0)
+	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to read the saved variable data (LUA error code %d)!", Result);
+		return false;
+	}
+
+	SaveLuaVariable("d:\\temp\\test_out.lua", "EquipSlots");
 		
 	return TRUE;
 }

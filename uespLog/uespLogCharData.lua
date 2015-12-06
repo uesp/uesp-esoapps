@@ -111,6 +111,7 @@ function uespLog.CreateCharData (note)
 	charData.ChampionPoints = GetPlayerChampionPointsEarned()
 	charData.BattleLevel = GetUnitBattleLevel("player")
 	charData.BattleVeteranRank = GetUnitVetBattleLevel("player")
+	charData.BuildType = uespLog.GetCharDataBuildType()
 	
 	charData.Alliance = GetAllianceName(GetUnitAlliance("player"))
 	charData.AllianceRank = GetUnitAvARank("player")
@@ -128,6 +129,7 @@ function uespLog.CreateCharData (note)
 	charData.AttributesHealth = GetAttributeSpentPoints(ATTRIBUTE_HEALTH)
 	charData.AttributesMagicka = GetAttributeSpentPoints(ATTRIBUTE_MAGICKA)
 	charData.AttributesStamina = GetAttributeSpentPoints(ATTRIBUTE_STAMINA)
+	charData.AttributesTotal = charData.AttributesUnspent + charData.AttributesHealth + charData.AttributesMagicka + charData.AttributesStamina
 	charData.SkillPointsUnused = GetAvailableSkillPoints()
 	charData.SkyShards = GetNumSkyShards()
 
@@ -322,6 +324,21 @@ function uespLog.HasBothActionBarsForCharData()
 	end
 
 	return false
+end
+
+
+function uespLog.GetCharDataBuildType()
+	local AttributesHealth = GetAttributeSpentPoints(ATTRIBUTE_HEALTH)
+	local AttributesMagicka = GetAttributeSpentPoints(ATTRIBUTE_MAGICKA)
+	local AttributesStamina = GetAttributeSpentPoints(ATTRIBUTE_STAMINA)
+	
+	if (AttributesMagicka >= 20 and AttributesMagicka * 0.75 > AttributesStamina) then
+		return "Magicka"
+	elseif (AttributesStamina >= 20 and AttributesStamina * 0.75 > AttributesMagicka) then
+		return "Stamina"
+	end
+	
+	return "Other"
 end
 
 

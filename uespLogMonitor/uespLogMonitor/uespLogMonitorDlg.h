@@ -23,8 +23,10 @@ enum ulm_loglevel_t {
 
 struct ulm_dumpinfo_t
 {
+	std::string OutputBuffer;
 	eso::CFile	File;
 	int			TabLevel;
+	bool		OutputFile;
 };
 
 
@@ -122,8 +124,6 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);
 	void PostURL();
 
-	bool LuaSerializeObject (const int StackIndex, const std::string VarName);
-
 	void InitTrayIcon();
 	bool IsInTray() { return m_IsInTray; }
 	void ShowInTray (const bool Show, const bool UpdateWindow);
@@ -199,7 +199,11 @@ protected:
 
 	std::string GetExtraLogData ();
 
-	bool DumpLuaObject (const std::string VarName, void* pUserData);
+	bool SaveLuaVariable      (const std::string Filename, const std::string Variable);
+	std::string GetLuaVariableString (const std::string Variable);
+
+	bool DumpLuaObjectFile  (const std::string VarName, void* pUserData);
+	bool DumpLuaObjectString(const std::string VarName, void* pUserData);
 
 	void UpdateDialogTitle();
 

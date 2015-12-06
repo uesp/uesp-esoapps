@@ -1,0 +1,344 @@
+-- uespLogCharData.lua -- by Dave Humphrey, dave@uesp.net
+-- 
+-- 
+
+
+uespLog.CHARDATA_STATS = {
+	[1] = "AttackPower",
+	[2] = "WeaponPower",
+	[3] = "ArmorRating",
+	[4] = "Magicka",
+	[5] = "MagickaRegenCombat",
+	[6] = "MagickaRegenIdle",
+	[7] = "Health",
+	[8] = "HealthRegenCombat",
+	[9] = "HealthRegenIdle",
+	[10] = "HealingTaken",
+	[11] = "Dodge",
+	[12] = "Parry",
+	[13] = "SpellResist",
+	[14] = "Block",
+	[16] = "CriticalStrike",
+	[20] = "Mitigation",
+	[22] = "PhysicalResist",
+	[23] = "SpellCritical",
+	[24] = "CriticalResistance",
+	[25] = "SpellPower",
+	[26] = "SpellMitigation",
+	[29] = "Stamina",
+	[30] = "StaminaRegenCombat",
+	[31] = "StaminaRegenIdle",
+	[32] = "Miss",
+	[33] = "PhysicalPenetration",
+	[34] = "SpellPenetration",
+	[35] = "Power",
+	[36] = "DamageResistStart",
+	[37] = "DamageResistGeneric",
+	[38] = "DamageResistPhysical",
+	[39] = "DamageResistFire",
+	[40] = "DamageResistShock",
+	[41] = "DamageResistOblivion",
+	[42] = "DamageResistCold",
+	[43] = "DamageResistEarth",
+	[44] = "DamageResistMagic",
+	[45] = "DamageResistDrown",
+	[46] = "DamageResistDisease",
+	[47] = "DamageResistPoison",
+	[48] = "MountStaminaMax",
+	[49] = "MountStaminaRegenCombat",
+	[50] = "MountStaminaRegenMoving",
+}
+
+
+uespLog.CHARDATA_POWER = {
+	[-2] = "Health",
+	[0] = "Magicka",
+	[1] = "Werewolf",
+	[2] = "Fervor",
+	[3] = "Combo",
+	[4] = "Power",
+	[5] = "Charges",
+	[7] = "Momentum",
+	[6] = "Stamina",
+	[8] = "Adrenaline",
+	[9] = "Finesse",
+	[10] = "Ultimate",
+	[11] = "MountStamina",
+	[12] = "HealthBonus",
+}
+
+
+uespLog.charData_LastActionBarData = { }
+uespLog.charData_ActionBarData = { }
+
+
+function uespLog.InitCharData()
+	uespLog.SaveActionBarForCharData()
+end
+
+
+function uespLog.SaveCharData (note)
+	local charData = uespLog.CreateCharData(note)
+	local arraySize = #uespLog.savedVars.charData.data
+	
+	uespLog.savedVars.charData.data[arraySize + 1] = charData
+	
+	uespLog.Msg("UESP::Saved current character data ("..tostring(#uespLog.savedVars.charData.data).." characters in log).")
+end
+
+
+function uespLog.CreateCharData (note)
+	local charData = { }
+	
+	charData.Note = note or ""
+	charData.TimeStamp = GetTimeStamp()
+	charData.TimeStamp64 = Id64ToString(charData.TimeStamp)
+	charData.Date = GetDateStringFromTimestamp(charData.Timestamp)
+	charData.APIVersion = GetAPIVersion()
+	
+	charData.CharName = GetUnitName("player")
+	charData.AccountName = GetDisplayName()
+	charData.Title = GetUnitTitle("player")
+	charData.Race = GetUnitRace("player")
+	charData.Class = GetUnitClass("player")
+	charData.Gender = GetUnitGender("player")
+	charData.Level = GetUnitLevel("player")
+	charData.VeteranRank = GetUnitVeteranRank("player")
+	charData.EffectiveLevel = GetUnitEffectiveLevel("player")
+	charData.Zone = GetUnitZone("player")
+	charData.ChampionPoints = GetPlayerChampionPointsEarned()
+	charData.BattleLevel = GetUnitBattleLevel("player")
+	charData.BattleVeteranRank = GetUnitVetBattleLevel("player")
+	
+	charData.Alliance = GetAllianceName(GetUnitAlliance("player"))
+	charData.AllianceRank = GetUnitAvARank("player")
+	charData.AlliancePoints = GetAlliancePoints()
+	charData.AllianceCampaign = GetCampaignName(GetAssignedCampaignId())
+	charData.AllianceGuestCampaign = GetCampaignName(GetGuestCampaignId())
+	
+	charData.Money = GetCurrentMoney()
+	charData.BankedMoney = GetBankedMoney()
+	charData.TelvarStones = GetCarriedCurrencyAmount(CURT_TELVAR_STONES)
+	charData.BankedTelvarStones = GetBankedTelvarStones()
+	
+	charData.Bounty = GetBounty()
+	charData.AttributesUnspent = GetAttributeUnspentPoints()
+	charData.AttributesHealth = GetAttributeSpentPoints(ATTRIBUTE_HEALTH)
+	charData.AttributesMagicka = GetAttributeSpentPoints(ATTRIBUTE_MAGICKA)
+	charData.AttributesStamina = GetAttributeSpentPoints(ATTRIBUTE_STAMINA)
+	charData.SkillPointsUnused = GetAvailableSkillPoints()
+	charData.SkyShards = GetNumSkyShards()
+
+	local inventoryBonus, maxInventoryBonus, staminaBonus, maxStaminaBonus, speedBonus, maxSpeedBonus = GetRidingStats()
+	charData.RidingInventory = inventoryBonus
+	charData.RidingStamina = staminaBonus
+	charData.RidingSpeeed = speedBonus
+	
+	charData.Stealth = GetUnitStealthState("player")
+	
+	charData.Stats = uespLog.CreateCharDataStats()
+	charData.Power = uespLog.CreateCharDataPower()
+	charData.Buffs = uespLog.CreateCharDataBuffs()
+	charData.ActionBar = uespLog.CreateCharDataActionBar()
+	
+	charData.Skills, charData.SkillPointsUsed = uespLog.CreateCharDataSkills()
+	charData.SkillPointsTotal = charData.SkillPointsUsed + charData.SkillPointsUnused
+	
+	return charData
+end
+
+
+function uespLog.CreateCharDataStats()
+	local stats = {}
+	local i
+	
+	for i = -10, 100 do
+		if (uespLog.CHARDATA_STATS[i] ~= nil) then
+			local stat = GetPlayerStat(i, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+			
+			if (stat ~= nil) then
+				stats[uespLog.CHARDATA_STATS[i]] = stat
+			end
+		end
+	end
+	
+	return stats
+end
+
+
+function uespLog.CreateCharDataPower()
+	local power = {}
+	local i
+	
+	for i = -10, 50 do
+		if (uespLog.CHARDATA_POWER[i] ~= nil) then
+			local current, currentMax, effectiveMax = GetUnitPower("player", i)
+			
+			if (currentMax ~= nil) then
+				power[uespLog.CHARDATA_POWER[i]] = currentMax
+			end
+		end
+	end
+	
+	return power
+end
+
+
+function uespLog.CreateCharDataBuffs()
+	local buffs = {}
+	local numBuffs = GetNumBuffs("player")
+	local i
+	
+	for i = 1, numBuffs do
+		local buffName, timeStarted, timeEnding, buffSlot, stackCount, iconFilename, buffType, effectType, abilityType, statusEffectType, abilityId, canClickOff = GetUnitBuffInfo("player", i)
+	
+		if (abilityId > 0) then
+			buffs[#buffs + 1] = { buffName, abilityId, iconFilename }
+		end
+	
+	end
+
+	return buffs
+end
+
+
+function uespLog.CreateCharDataSkills()
+	local skills = {}
+	local numSkillTypes = GetNumSkillTypes()
+	local skillType
+	local skillIndex
+	local abilityIndex
+	local totalSkillPoints = 0
+	
+	for skillType = 1, numSkillTypes do
+		local numSkillLines = GetNumSkillLines(skillType)
+		local skillTypeName = uespLog.GetSkillTypeName(skillType)
+		
+		for skillIndex = 1, numSkillLines do
+			local numSkillAbilities = GetNumSkillAbilities(skillType, skillIndex)
+			local skillLineName = GetSkillLineInfo(skillType, skillIndex)
+			
+			for abilityIndex = 1, numSkillAbilities do
+				local name, texture, rank, passive, ultimate, purchase, progressionIndex = GetSkillAbilityInfo(skillType, skillIndex, abilityIndex)
+				local skillName = tostring(skillTypeName)..":"..tostring(skillLineName)..":"..tostring(name)
+				local abilityId = GetSkillAbilityId(skillType, skillIndex, abilityIndex, false)
+				
+				if (purchase and abilityId > 0) then
+					local description = GetAbilityDescription(abilityId)
+					
+					skills[skillName] = { rank, abilityId, texture, description }
+					totalSkillPoints = totalSkillPoints + 1
+					
+					if (rank > 4) then
+						totalSkillPoints = totalSkillPoints + 1
+					end
+				end
+				
+			end
+		end
+	
+	end
+	
+	return skills, totalSkillPoints
+end
+
+
+function uespLog.CreateCharDataActionBar()
+	local slots = {}
+	local i
+	
+	for i = 3, 8 do
+		local texture = GetSlotTexture(i)
+		local id = GetSlotBoundId(i)
+		local name = GetSlotName(i)
+		local description = GetAbilityDescription(id)
+		
+		if (id > 0) then
+			slots[i] = { name, id, texture, description }
+		else
+			slots[i] = { '', 0, '' }
+		end
+	end
+	
+	if (#uespLog.charData_LastActionBarData == 0) then
+		uespLog.Msg("WARNING: Unused weapon swap action bar skills not saved!")
+        uespLog.Msg(".        Try weapon swapping and save character again.")
+	else
+	
+		for i = 3, 8 do
+			slots[i+100] = uespLog.charData_LastActionBarData[i]
+		end
+	end
+	
+	return slots
+end
+
+
+function uespLog.SaveActionBarForCharData()
+	uespLog.charData_ActionBarData = { }
+	
+	for i = 3, 8 do
+		local texture = GetSlotTexture(i)
+		local id = GetSlotBoundId(i)
+		local name = GetSlotName(i)
+		local description = GetAbilityDescription(id)
+		
+		uespLog.charData_ActionBarData[i] = { name, id, texture, description }
+	end
+	
+end
+
+
+function uespLog.OnActionSlotsFullUpdate (eventCode, isHotbarSwap)
+	
+	if (isHotbarSwap) then
+		uespLog.charData_LastActionBarData = uespLog.charData_ActionBarData
+		uespLog.SaveActionBarForCharData()
+	end
+	
+end
+
+
+function uespLog.OnActionSlotAbilitySlotted (eventCode, newAbilitySlotted)
+	uespLog.SaveActionBarForCharData()
+end
+
+
+function uespLog.OnActionSlotUpdated (eventCode, slotNum)
+	uespLog.SaveActionBarForCharData()
+end
+
+
+function uespLog.OnActiveQuickSlotChanged (eventCode, slotId)
+	uespLog.SaveActionBarForCharData()
+end
+
+
+function uespLog.OnActiveWeaponPairChanged (eventCode, activeWeaponPair, locked)
+	uespLog.SaveActionBarForCharData()
+end
+
+
+function uespLog.Command_SaveCharData (cmd)
+	cmd = string.lower(cmd)
+	
+	if (cmd == "help" or cmd == "") then
+		uespLog.Msg("UESP::Saves current character data to the log file.")
+		uespLog.Msg(".     /uespsavechar help    = Shows basic command format")
+		uespLog.Msg(".     /uespsavechar reset   = Clears character log")
+		uespLog.Msg(".     /uespsavechar status  = Shows current character log status")
+		uespLog.Msg(".     /uespsavechar [note]  = Saves current character with given note")
+	elseif (cmd == "status") then
+		uespLog.Msg("UESP::Currently there are "..tostring(#uespLog.savedVars.charData.data).." characters saved in log.")
+	elseif (cmd == "reset" or cmd == "clear") then
+		uespLog.savedVars.charData.data = { }
+		uespLog.Msg("UESP::Cleared logged character data.")
+	else
+		uespLog.SaveCharData(cmd)
+	end
+	
+end
+
+
+SLASH_COMMANDS["/uespsavechar"] = uespLog.Command_SaveCharData
+SLASH_COMMANDS["/usc"] = uespLog.Command_SaveCharData

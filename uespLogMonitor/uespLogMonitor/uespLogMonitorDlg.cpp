@@ -51,12 +51,15 @@ const char ULM_REGISTRY_KEY_UPDATETIME[] = "UpdateTime";
 const char ULM_REGISTRY_KEY_USELOGNAME[] = "UseLogName";
 const char ULM_REGISTRY_KEY_CUSTOMLOGNAME[] = "CustomLogName";
 const char ULM_REGISTRY_KEY_FORMURL[] = "FormURL";
+const char ULM_REGISTRY_KEY_CHARDATAFORMURL[] = "CharDataFormURL";
 const char ULM_REGISTRY_KEY_ENABLED[] = "Enabled";
+const char ULM_REGISTRY_KEY_CHARDATAENABLED[] = "CharDataEnabled";
 const char ULM_REGISTRY_KEY_SAVEDVARPATH[] = "SavedVarPath";
 const char ULM_REGISTRY_KEY_LASTTIMESTAMP[] = "LastTimeStamp";
 const char ULM_REGISTRY_KEY_LASTBACKUPTIMESTAMP[] = "LastBackupTimeStamp";
 const char ULM_REGISTRY_KEY_LOGLEVEL[] = "LogLevel";
 const char ULM_REGISTRY_KEY_BACKUPDATAFILENAME[] = "BackupDataFilename";
+const char ULM_REGISTRY_KEY_BACKUPCHARDATAFILENAME[] = "BackupCharDataFilename";
 
 const std::string ULM_LOGSTRING_JOIN("#STR#");
 const int  ULM_LOGSTRING_MAXLENGTH = 1900;
@@ -1634,6 +1637,7 @@ bool CuespLogMonitorDlg::LoadRegistrySettings (void)
 	m_Options.UseLogName = static_cast<ulm_uselogname_t>( pApp->GetProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_USELOGNAME, m_Options.UseLogName) );
 	m_Options.LogLevel = static_cast<ulm_loglevel_t>( pApp->GetProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_LOGLEVEL, m_Options.LogLevel) );
 	m_Options.Enabled = (pApp->GetProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_ENABLED, m_Options.Enabled) != 0);
+	m_Options.CharDataEnabled = (pApp->GetProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CHARDATAENABLED, m_Options.CharDataEnabled) != 0);
 
 	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CUSTOMLOGNAME, m_Options.CustomLogName.c_str());
 	m_Options.CustomLogName = Buffer;
@@ -1650,8 +1654,14 @@ bool CuespLogMonitorDlg::LoadRegistrySettings (void)
 	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPDATAFILENAME, m_Options.BackupDataFilename.c_str());
 	m_Options.BackupDataFilename = Buffer;
 
+	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPCHARDATAFILENAME, m_Options.BackupCharDataFilename.c_str());
+	m_Options.BackupCharDataFilename = Buffer;
+
 	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_FORMURL, m_Options.FormURL.c_str());
 	m_Options.FormURL = Buffer;
+
+	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CHARDATAFORMURL, m_Options.CharDataFormURL.c_str());
+	m_Options.CharDataFormURL = Buffer;
 
 	return true;
 }
@@ -1666,11 +1676,14 @@ bool CuespLogMonitorDlg::SaveRegistrySettings (void)
 	pApp->WriteProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_USELOGNAME, m_Options.UseLogName);
 	pApp->WriteProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_LOGLEVEL,   m_Options.LogLevel);
 	pApp->WriteProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_ENABLED,    m_Options.Enabled);
+	pApp->WriteProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CHARDATAENABLED, m_Options.CharDataEnabled);
 
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CUSTOMLOGNAME, m_Options.CustomLogName.c_str());
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_FORMURL,       m_Options.FormURL.c_str());
+	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CHARDATAFORMURL, m_Options.CharDataFormURL.c_str());
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_SAVEDVARPATH,  m_Options.SavedVarPath.c_str());
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPDATAFILENAME, m_Options.BackupDataFilename.c_str());
+	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPCHARDATAFILENAME, m_Options.BackupCharDataFilename.c_str());
 
 	Buffer.Format("%I64d", m_Options.LastTimeStamp);
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_LASTTIMESTAMP, Buffer);

@@ -537,6 +537,14 @@ bool CuespLogMonitorDlg::ParseSavedVarCharData(const std::string VarName, void* 
 		return false;
 	}
 
+	m_CharData += "\n";
+	m_CharData += "uespCharData.UserName = '";
+	m_CharData += GetCurrentUserName();
+	m_CharData += "'\n";
+	m_CharData += "uespCharData.WikiUser = '";
+	m_CharData += m_Options.UespWikiAccountName;
+	m_CharData += "'\n";
+
 	ParseCharDataScreenshots();
 
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Found the charData section with %d characters (%u bytes).", numObjects, m_CharData.length());
@@ -1032,7 +1040,7 @@ std::string CuespLogMonitorDlg::EncodeLogDataForQuery (const std::string Data)
 }
 
 
-bool CuespLogMonitorDlg::SendFormData (const std::string FormQuery)
+bool CuespLogMonitorDlg::SendFormData (const std::string FormURL, std::string FormQuery)
 {
 	HINTERNET hinet, higeo, hreq;
 	BOOL Result;
@@ -1044,17 +1052,16 @@ bool CuespLogMonitorDlg::SendFormData (const std::string FormQuery)
 	std::string SiteName;
 	std::string PageURI; 
 
-	size_t Pos = m_Options.FormURL.find("/");
+	size_t Pos = FormURL.find("/");
 
 	if (Pos == std::string::npos)
 	{
-		SiteName = m_Options.FormURL;
+		SiteName = FormURL;
 	}
 	else
 	{
-		SiteName.assign(m_Options.FormURL, 0, Pos);
-		PageURI.assign(m_Options.FormURL, Pos, m_Options.FormURL.size() - Pos);
-		//eso::PrintLog("URL: '%s' '%s'", SiteName.c_str(), PageURI.c_str());
+		SiteName.assign(FormURL, 0, Pos);
+		PageURI.assign(FormURL, Pos, FormURL.size() - Pos);
 	}
 
 	hinet = InternetOpen("MyBrowser/1.0", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
@@ -1086,13 +1093,13 @@ bool CuespLogMonitorDlg::SendFormData (const std::string FormQuery)
 
 	if (!Result) 
 	{
-		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to receive a HTTP response!");
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to receive a HTTP response when sending form data!");
 		return false;
 	}
 	
 	if (strcmp(Buffer, "200") != 0)
 	{
-		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Received a '%s' HTTP response!", Buffer);
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Received a '%s' HTTP response when sending form data!", Buffer);
 		return false;
 	}
 
@@ -1103,6 +1110,36 @@ bool CuespLogMonitorDlg::SendFormData (const std::string FormQuery)
 bool CuespLogMonitorDlg::SendQueuedData ()
 {
 	return true; // The send queue thread will automatically send data now
+}
+
+
+bool CuespLogMonitorDlg::SendQueuedCharDataThread()
+{
+	std::string FormQuery;
+
+	if (m_CharDataQueue.empty()) return true;
+
+	if (WaitForSingleObject(m_hSendQueueMutex, INFINITE) != WAIT_OBJECT_0)
+	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to wait for send queue mutex!");
+		return false;
+	}
+
+	std::string TempData = EncodeLogDataForQuery(m_CharDataQueue);
+	FormQuery += "chardata=";
+	FormQuery += TempData;
+	FormQuery += "&";
+
+	if (!SendFormData(m_Options.CharDataFormURL, FormQuery))
+	{
+		ReleaseMutex(m_hSendQueueMutex);
+		return false;
+	}
+
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Sent %u bytes of character data!", FormQuery.size());
+
+	ReleaseMutex(m_hSendQueueMutex);
+	return true;
 }
 
 
@@ -1134,7 +1171,7 @@ bool CuespLogMonitorDlg::SendQueuedDataThread()
 
 	if (FormQuery.size() > 0) 
 	{
-		if (!SendFormData(FormQuery)) 
+		if (!SendFormData(m_Options.FormURL, FormQuery)) 
 		{
 			ReleaseMutex(m_hSendQueueMutex);
 			return false;
@@ -1166,6 +1203,34 @@ bool CuespLogMonitorDlg::CheckAndSendLogData ()
 	}
 
 	return Result;
+}
+
+
+bool CuespLogMonitorDlg::CheckAndSendCharData()
+{
+	bool Result = true;
+
+	Result &= BackupCharData();
+	Result &= QueueCharData();
+
+	return Result;
+}
+
+
+bool CuespLogMonitorDlg::QueueCharData()
+{
+	if (m_CharData.empty()) return true;
+
+	if (WaitForSingleObject(m_hSendQueueMutex, 1000) != WAIT_OBJECT_0)
+	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "Failed to queue character data...failed to acquire send queue mutex!");
+		return false;
+	}
+
+	m_CharDataQueue += m_CharData;
+
+	ReleaseMutex(m_hSendQueueMutex);
+	return true;
 }
 
 
@@ -1431,12 +1496,10 @@ DWORD CuespLogMonitorDlg::SendQueueThreadProc()
 
 	while(!m_StopSendQueueThread)
 	{
-		//if (WaitForSingleObject(m_hSendQueueMutex, INFINITE) == WAIT_OBJECT_0) 
-		{ 
-			SendQueuedDataThread();
-			//ReleaseMutex(m_hSendQueueMutex);
-		}
+		SendQueuedDataThread();
+		Sleep(100);
 
+		SendQueuedCharDataThread();
 		Sleep(100);
 	}
 
@@ -1991,6 +2054,12 @@ bool CuespLogMonitorDlg::DoLogCheck(const bool OverrideEnable)
 		return false;
 	}
 
+	if (!CheckAndSendCharData())
+	{
+		ReleaseMutex(m_hSendQueueMutex);
+		return false;
+	}
+
 	UpdateLogFileSize();
 
 	bool Result = DeleteOldLogData();
@@ -2041,6 +2110,7 @@ bool CuespLogMonitorDlg::DeleteOldLogDataAccount (const std::string VarName, voi
 	DeleteOldLogDataSection("all", -1);
 	DeleteOldLogDataSection("globals", -1);
 	DeleteOldLogDataSection("achievements", -1);
+	DeleteOldLogDataSection("charData", -1);
 	return true;
 }
 
@@ -2158,8 +2228,6 @@ bool CuespLogMonitorDlg::BackupCharData()
 
 	eso::CFile File;
 	
-	PrintLogLine(ULM_LOGLEVEL_INFO, "Backing up character data...");
-
 	if (!File.Open(m_Options.BackupCharDataFilename, "a+b"))
 	{
 		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to open the backup character data file for output!");
@@ -2172,6 +2240,7 @@ bool CuespLogMonitorDlg::BackupCharData()
 		return false;
 	}
 
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Backed up %u bytes of character data...", m_CharData.size());
 	return true;
 }
 

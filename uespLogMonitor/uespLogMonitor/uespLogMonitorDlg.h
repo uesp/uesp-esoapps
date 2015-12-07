@@ -224,6 +224,7 @@ protected:
 	void UpdateDialogTitle();
 
 	bool BackupData (void);
+	bool BackupCharData(void);
 
 	bool SendEntireLog(const std::string Filename);
 

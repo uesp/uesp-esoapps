@@ -46,6 +46,7 @@ void COptionsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CHARDATAENABLED_CHECK, m_CharDataEnabledCheck);
 	DDX_Control(pDX, IDC_CHARDATAFORMURL_TEXT, m_CharDataFormURLText);
 	DDX_Control(pDX, IDC_BACKUPCHARDATAFILENAME_TEXT, m_BackupCharDataFilename);
+	DDX_Control(pDX, IDC_UESPWIKIUSERNAME_TEXT, m_UespWikiUserNameText);
 }
 
 
@@ -155,6 +156,9 @@ void COptionsDlg::GetControlData()
 	m_CustomNameText.GetWindowText(Buffer);
 	m_pOptions->CustomLogName = Buffer;
 
+	m_UespWikiUserNameText.GetWindowText(Buffer);
+	m_pOptions->UespWikiAccountName = Buffer;
+
     m_pOptions->LogLevel = static_cast<ulm_loglevel_t>(GetComboSelData(m_LogLevelList, m_pOptions->LogLevel));
 	m_pOptions->UseLogName = static_cast<ulm_uselogname_t>(GetComboSelData(m_LogNameList, m_pOptions->UseLogName));
 
@@ -185,6 +189,7 @@ void COptionsDlg::SetControlData()
 	m_FormURLText.SetWindowText(m_pOptions->FormURL.c_str());
 	m_SavedVarPathText.SetWindowText(m_pOptions->SavedVarPath.c_str());
 	m_CustomNameText.SetWindowText(m_pOptions->CustomLogName.c_str());
+	m_UespWikiUserNameText.SetWindowText(m_pOptions->UespWikiAccountName.c_str());
 	m_BackupDataFilename.SetWindowText(m_pOptions->BackupDataFilename.c_str());
 	m_BackupCharDataFilename.SetWindowText(m_pOptions->BackupCharDataFilename.c_str());
 
@@ -254,9 +259,6 @@ void COptionsDlg::OnBnClickedBrowsebackupdataButton()
 {
 	CString Buffer;
 	m_BackupDataFilename.GetWindowText(Buffer);
-
-	//TCHAR AbsFilename[MAX_PATH + 64];
-	//::GetFullPathNameA(Buffer, Buffer.GetLength(), AbsFilename, NULL);
 
 	CFileDialog FileDlg(FALSE, nullptr, Buffer, OFN_HIDEREADONLY, "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||", this);
 

@@ -52,4 +52,6 @@ public:
 	CEdit m_BackupTimestampText;
 	CButton m_CharDataEnabledCheck;
 	CEdit m_CharDataFormURLText;
+	CEdit m_BackupCharDataFilename;
+	afx_msg void OnBnClickedBrowsebackupchardataButton();
 };

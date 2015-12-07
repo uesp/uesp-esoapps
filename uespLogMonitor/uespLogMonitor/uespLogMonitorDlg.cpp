@@ -43,6 +43,7 @@
 
 const std::string ulm_options_t::DEFAULT_FORMURL("content3.uesp.net/esolog/esolog.php");
 const std::string ulm_options_t::DEFAULT_BACKUPDATAFILENAME("uespLog_backupData.txt");
+const std::string ulm_options_t::DEFAULT_BACKUPCHARDATAFILENAME("uespLog_backupCharData.txt");
 const std::string ulm_options_t::DEFAULT_CHARDATA_FORMURL("content3.uesp.net/esochardata/esochardata.php");
 
 const char ULM_REGISTRY_SECTION_SETTINGS[] = "Settings";

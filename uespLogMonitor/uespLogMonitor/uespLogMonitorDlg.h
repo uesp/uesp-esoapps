@@ -40,6 +40,7 @@ struct ulm_options_t
 	const static ulm_loglevel_t DEFAULT_LOGLEVEL = ULM_LOGLEVEL_INFO;
 	const static std::string DEFAULT_FORMURL;
 	const static std::string DEFAULT_BACKUPDATAFILENAME;
+	const static std::string DEFAULT_BACKUPCHARDATAFILENAME;
 	const static std::string DEFAULT_CHARDATA_FORMURL;
 
 	int					UpdateTime;		/* Time between updates in seconds */
@@ -50,6 +51,7 @@ struct ulm_options_t
 	std::string			CharDataFormURL;
 	std::string			SavedVarPath;
 	std::string			BackupDataFilename;
+	std::string			BackupCharDataFilename;
 	std::string			UespWikiAccountName;
 	bool				Enabled;
 	bool				CharDataEnabled;
@@ -68,6 +70,7 @@ struct ulm_options_t
 		SavedVarPath(),
 		LastTimeStamp(0),
 		BackupDataFilename(DEFAULT_BACKUPDATAFILENAME),
+		BackupCharDataFilename(DEFAULT_BACKUPCHARDATAFILENAME),
 		LastBackupTimeStamp(0)
 	{ 
 	}

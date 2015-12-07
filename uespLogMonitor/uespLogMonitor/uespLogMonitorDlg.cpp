@@ -2139,6 +2139,30 @@ void CuespLogMonitorDlg::OnViewOptions()
 }
 
 
+bool CuespLogMonitorDlg::BackupCharData()
+{
+	if (m_Options.BackupCharDataFilename.empty() || m_CharData.empty()) return true;
+
+	eso::CFile File;
+	
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Backing up character data...");
+
+	if (!File.Open(m_Options.BackupCharDataFilename, "a+b"))
+	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to open the backup character data file for output!");
+		return false;
+	}
+
+	if (!File.WriteString(m_CharData))
+	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to write the character data to the backup file!");
+		return false;
+	}
+
+	return true;
+}
+
+
 bool CuespLogMonitorDlg::BackupData()
 {
 	if (m_Options.BackupDataFilename.empty()) return true;

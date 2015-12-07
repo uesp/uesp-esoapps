@@ -119,6 +119,7 @@ protected:
 	
 	CUlmLogDataArray	m_SendQueue;
 	CUlmLogDataArray	m_BackupQueue;   // Data that should be backed up but not sent
+	std::string			m_CharDataQueue;
 
 	HANDLE				m_hSendQueueThread;
 	HANDLE				m_hSendQueueMutex;
@@ -197,12 +198,15 @@ protected:
 	bool CheckAndSendLogDataAchievement();
 	bool SendAllLogData();
 
+	bool CheckAndSendCharData();
+	bool QueueCharData();
+
 	bool SendLogData (CUlmLogDataArray& DataArray);
 	bool SendLogData (const std::string Section, const ulm_sectiondata_t Data);
 	bool BackupLogData (const std::string Section, const ulm_sectiondata_t Data);
 	bool SendQueuedData ();
 	std::string EncodeLogDataForQuery (const std::string Data);
-	bool SendFormData (const std::string FormQuery);
+	bool SendFormData (const std::string FormURL, std::string FormQuery);
 	bool HasQueuedData (void) { return m_SendQueue.size() > 0; }
 
 	std::string GetCurrentUserName ();
@@ -231,6 +235,7 @@ protected:
 	void InitSendQueueThread();
 	void DestroySendQueueThread();
 	bool SendQueuedDataThread();
+	bool SendQueuedCharDataThread();
 
 
 public:

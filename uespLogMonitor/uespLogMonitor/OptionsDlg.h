@@ -52,7 +52,7 @@ public:
 	CEdit m_BackupTimestampText;
 	CButton m_CharDataEnabledCheck;
 	CEdit m_CharDataFormURLText;
-	CEdit m_BackupCharDataFilename;
+	CEdit m_BackupCharDataFolder;
 	afx_msg void OnBnClickedBrowsebackupchardataButton();
 	CEdit m_UespWikiUserNameText;
 };

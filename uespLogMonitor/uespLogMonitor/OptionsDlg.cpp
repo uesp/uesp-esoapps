@@ -45,7 +45,7 @@ void COptionsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BACKUPTIMESTAMP_TEXT, m_BackupTimestampText);
 	DDX_Control(pDX, IDC_CHARDATAENABLED_CHECK, m_CharDataEnabledCheck);
 	DDX_Control(pDX, IDC_CHARDATAFORMURL_TEXT, m_CharDataFormURLText);
-	DDX_Control(pDX, IDC_BACKUPCHARDATAFILENAME_TEXT, m_BackupCharDataFilename);
+	DDX_Control(pDX, IDC_BACKUPCHARDATAFOLDER_TEXT, m_BackupCharDataFolder);
 	DDX_Control(pDX, IDC_UESPWIKIUSERNAME_TEXT, m_UespWikiUserNameText);
 }
 
@@ -150,8 +150,8 @@ void COptionsDlg::GetControlData()
 	m_BackupDataFilename.GetWindowText(Buffer);
 	m_pOptions->BackupDataFilename = Buffer;
 
-	m_BackupCharDataFilename.GetWindowText(Buffer);
-	m_pOptions->BackupCharDataFilename = Buffer;
+	m_BackupCharDataFolder.GetWindowText(Buffer);
+	m_pOptions->BackupCharDataFolder = Buffer;
 
 	m_CustomNameText.GetWindowText(Buffer);
 	m_pOptions->CustomLogName = Buffer;
@@ -191,7 +191,7 @@ void COptionsDlg::SetControlData()
 	m_CustomNameText.SetWindowText(m_pOptions->CustomLogName.c_str());
 	m_UespWikiUserNameText.SetWindowText(m_pOptions->UespWikiAccountName.c_str());
 	m_BackupDataFilename.SetWindowText(m_pOptions->BackupDataFilename.c_str());
-	m_BackupCharDataFilename.SetWindowText(m_pOptions->BackupCharDataFilename.c_str());
+	m_BackupCharDataFolder.SetWindowText(m_pOptions->BackupCharDataFolder.c_str());
 
 	m_EnabledCheck.SetCheck(m_pOptions->Enabled);
 
@@ -278,13 +278,18 @@ void COptionsDlg::OnCbnSelchangeLognameList()
 
 void COptionsDlg::OnBnClickedBrowsebackupchardataButton()
 {
+	CFolderPickerDialog m_dlg;
 	CString Buffer;
-	m_BackupCharDataFilename.GetWindowText(Buffer);
 
-	CFileDialog FileDlg(FALSE, nullptr, Buffer, OFN_HIDEREADONLY, "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||", this);
+	m_BackupCharDataFolder.GetWindowText(Buffer);
 
-	if (FileDlg.DoModal() != IDOK) return;
+	m_dlg.m_ofn.lpstrTitle = _T("Choose Folder for Backup Character Data:");
+	m_dlg.m_ofn.lpstrInitialDir = Buffer;
 
-	Buffer = FileDlg.GetPathName();
-	m_BackupCharDataFilename.SetWindowText(Buffer);
+	if (m_dlg.DoModal() != IDOK) return;
+
+	Buffer = m_dlg.GetPathName();  
+	Buffer += _T("\\");
+	
+	m_BackupCharDataFolder.SetWindowText(Buffer);
 }

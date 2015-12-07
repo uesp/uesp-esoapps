@@ -43,7 +43,7 @@
 
 const std::string ulm_options_t::DEFAULT_FORMURL("content3.uesp.net/esolog/esolog.php");
 const std::string ulm_options_t::DEFAULT_BACKUPDATAFILENAME("uespLog_backupData.txt");
-const std::string ulm_options_t::DEFAULT_BACKUPCHARDATAFILENAME("uespLog_backupCharData.txt");
+const std::string ulm_options_t::DEFAULT_BACKUPCHARDATAFOLDER("BackupCharData");
 const std::string ulm_options_t::DEFAULT_CHARDATA_FORMURL("content3.uesp.net/esochardata/esochardata.php");
 
 const char ULM_REGISTRY_SECTION_SETTINGS[] = "Settings";
@@ -60,7 +60,7 @@ const char ULM_REGISTRY_KEY_LASTTIMESTAMP[] = "LastTimeStamp";
 const char ULM_REGISTRY_KEY_LASTBACKUPTIMESTAMP[] = "LastBackupTimeStamp";
 const char ULM_REGISTRY_KEY_LOGLEVEL[] = "LogLevel";
 const char ULM_REGISTRY_KEY_BACKUPDATAFILENAME[] = "BackupDataFilename";
-const char ULM_REGISTRY_KEY_BACKUPCHARDATAFILENAME[] = "BackupCharDataFilename";
+const char ULM_REGISTRY_KEY_BACKUPCHARDATAFOLDER[] = "BackupCharDataFolder";
 
 const std::string ULM_LOGSTRING_JOIN("#STR#");
 const int  ULM_LOGSTRING_MAXLENGTH = 1900;
@@ -536,6 +536,14 @@ bool CuespLogMonitorDlg::ParseSavedVarCharData(const std::string VarName, void* 
 		lua_pop(m_pLuaState, 1);
 		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to parse the charData variable data!");
 		return false;
+	}
+
+	if (m_CharData.size() < CuespLogMonitorDlg::MINIMUM_VALID_CHARDATA_SIZE)
+	{
+		PrintLogLine(ULM_LOGLEVEL_INFO, "Found the charData section with no characters.");
+		m_CharData.clear();
+		lua_pop(m_pLuaState, 1);
+		return true;
 	}
 
 	m_CharData += "\n";
@@ -1721,8 +1729,8 @@ bool CuespLogMonitorDlg::LoadRegistrySettings (void)
 	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPDATAFILENAME, m_Options.BackupDataFilename.c_str());
 	m_Options.BackupDataFilename = Buffer;
 
-	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPCHARDATAFILENAME, m_Options.BackupCharDataFilename.c_str());
-	m_Options.BackupCharDataFilename = Buffer;
+	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPCHARDATAFOLDER, m_Options.BackupCharDataFolder.c_str());
+	m_Options.BackupCharDataFolder = Buffer;
 
 	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_FORMURL, m_Options.FormURL.c_str());
 	m_Options.FormURL = Buffer;
@@ -1751,7 +1759,7 @@ bool CuespLogMonitorDlg::SaveRegistrySettings (void)
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CHARDATAFORMURL, m_Options.CharDataFormURL.c_str());
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_SAVEDVARPATH,  m_Options.SavedVarPath.c_str());
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPDATAFILENAME, m_Options.BackupDataFilename.c_str());
-	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPCHARDATAFILENAME, m_Options.BackupCharDataFilename.c_str());
+	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPCHARDATAFOLDER, m_Options.BackupCharDataFolder.c_str());
 
 	Buffer.Format("%I64d", m_Options.LastTimeStamp);
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_LASTTIMESTAMP, Buffer);
@@ -2229,13 +2237,47 @@ void CuespLogMonitorDlg::OnViewOptions()
 
 bool CuespLogMonitorDlg::BackupCharData()
 {
-	if (m_Options.BackupCharDataFilename.empty() || m_CharData.empty()) return true;
-
 	eso::CFile File;
-	
-	if (!File.Open(m_Options.BackupCharDataFilename, "a+b"))
+	time_t rawtime;
+	struct tm * timeinfo;
+	char DateBuffer[80];
+	std::string Filename;
+	CString FilenameBuffer;
+	int FileIndex = 0;
+
+	if (m_Options.BackupCharDataFolder.empty() || m_CharData.empty()) return true;
+
+	if (!eso::EnsurePathExists(m_Options.BackupCharDataFolder))
 	{
-		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to open the backup character data file for output!");
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to create the backup folder '%s'!", m_Options.BackupCharDataFolder.c_str());
+		return false;
+	}
+
+	do {
+
+		if (FileIndex > 1000)
+		{
+			PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to create a character data backup filename that doesn't already exist!");
+			return false;
+		}
+
+		time(&rawtime);
+		timeinfo = localtime(&rawtime);
+		strftime(DateBuffer, 70, "%Y-%m-%d-%H%M%S", timeinfo);
+
+		if (FileIndex == 0)
+			FilenameBuffer.Format("uespBackupCharData-%s.txt", DateBuffer);
+		else
+			FilenameBuffer.Format("uespBackupCharData-%s-%d.txt", DateBuffer, FileIndex);
+
+		Filename = eso::TerminatePath(m_Options.BackupCharDataFolder);
+		Filename += FilenameBuffer;
+		++FileIndex;
+	} while (eso::FileExists(Filename.c_str()));
+	
+	if (!File.Open(Filename, "wb"))
+	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to open the backup character data file '%s' for output!", Filename.c_str());
 		return false;
 	}
 

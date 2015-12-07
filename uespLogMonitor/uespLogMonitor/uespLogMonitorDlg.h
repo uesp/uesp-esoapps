@@ -40,7 +40,7 @@ struct ulm_options_t
 	const static ulm_loglevel_t DEFAULT_LOGLEVEL = ULM_LOGLEVEL_INFO;
 	const static std::string DEFAULT_FORMURL;
 	const static std::string DEFAULT_BACKUPDATAFILENAME;
-	const static std::string DEFAULT_BACKUPCHARDATAFILENAME;
+	const static std::string DEFAULT_BACKUPCHARDATAFOLDER;
 	const static std::string DEFAULT_CHARDATA_FORMURL;
 
 	int					UpdateTime;		/* Time between updates in seconds */
@@ -51,7 +51,7 @@ struct ulm_options_t
 	std::string			CharDataFormURL;
 	std::string			SavedVarPath;
 	std::string			BackupDataFilename;
-	std::string			BackupCharDataFilename;
+	std::string			BackupCharDataFolder;
 	std::string			UespWikiAccountName;
 	bool				Enabled;
 	bool				CharDataEnabled;
@@ -70,7 +70,7 @@ struct ulm_options_t
 		SavedVarPath(),
 		LastTimeStamp(0),
 		BackupDataFilename(DEFAULT_BACKUPDATAFILENAME),
-		BackupCharDataFilename(DEFAULT_BACKUPCHARDATAFILENAME),
+		BackupCharDataFolder(DEFAULT_BACKUPCHARDATAFOLDER),
 		LastBackupTimeStamp(0)
 	{ 
 	}
@@ -96,6 +96,8 @@ typedef bool (CuespLogMonitorDlg::*ULM_LUA_TABLEITERATOR) (const std::string Var
 class CuespLogMonitorDlg : public CDialogEx
 {
 protected:
+	const static int MINIMUM_VALID_CHARDATA_SIZE = 24;
+
 	NOTIFYICONDATA	m_TrayIconData;
 	bool			m_IsInTray;
 

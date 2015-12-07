@@ -12,6 +12,7 @@ BEGIN_MESSAGE_MAP(COptionsDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BROWSE_BUTTON, &COptionsDlg::OnBnClickedBrowseButton)
 	ON_CBN_SELCHANGE(IDC_LOGNAME_LIST, &COptionsDlg::OnCbnSelchangeLognameList)
 	ON_BN_CLICKED(IDC_BROWSEBACKUPDATA_BUTTON, &COptionsDlg::OnBnClickedBrowsebackupdataButton)
+	ON_BN_CLICKED(IDC_BROWSEBACKUPCHARDATA_BUTTON, &COptionsDlg::OnBnClickedBrowsebackupchardataButton)
 END_MESSAGE_MAP()
 
 
@@ -44,6 +45,7 @@ void COptionsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BACKUPTIMESTAMP_TEXT, m_BackupTimestampText);
 	DDX_Control(pDX, IDC_CHARDATAENABLED_CHECK, m_CharDataEnabledCheck);
 	DDX_Control(pDX, IDC_CHARDATAFORMURL_TEXT, m_CharDataFormURLText);
+	DDX_Control(pDX, IDC_BACKUPCHARDATAFILENAME_TEXT, m_BackupCharDataFilename);
 }
 
 
@@ -147,6 +149,9 @@ void COptionsDlg::GetControlData()
 	m_BackupDataFilename.GetWindowText(Buffer);
 	m_pOptions->BackupDataFilename = Buffer;
 
+	m_BackupCharDataFilename.GetWindowText(Buffer);
+	m_pOptions->BackupCharDataFilename = Buffer;
+
 	m_CustomNameText.GetWindowText(Buffer);
 	m_pOptions->CustomLogName = Buffer;
 
@@ -181,6 +186,7 @@ void COptionsDlg::SetControlData()
 	m_SavedVarPathText.SetWindowText(m_pOptions->SavedVarPath.c_str());
 	m_CustomNameText.SetWindowText(m_pOptions->CustomLogName.c_str());
 	m_BackupDataFilename.SetWindowText(m_pOptions->BackupDataFilename.c_str());
+	m_BackupCharDataFilename.SetWindowText(m_pOptions->BackupCharDataFilename.c_str());
 
 	m_EnabledCheck.SetCheck(m_pOptions->Enabled);
 
@@ -267,3 +273,16 @@ void COptionsDlg::OnCbnSelchangeLognameList()
 }
 
 
+
+void COptionsDlg::OnBnClickedBrowsebackupchardataButton()
+{
+	CString Buffer;
+	m_BackupCharDataFilename.GetWindowText(Buffer);
+
+	CFileDialog FileDlg(FALSE, nullptr, Buffer, OFN_HIDEREADONLY, "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||", this);
+
+	if (FileDlg.DoModal() != IDOK) return;
+
+	Buffer = FileDlg.GetPathName();
+	m_BackupCharDataFilename.SetWindowText(Buffer);
+}

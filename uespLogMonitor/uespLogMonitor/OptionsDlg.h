@@ -54,4 +54,5 @@ public:
 	CEdit m_CharDataFormURLText;
 	CEdit m_BackupCharDataFilename;
 	afx_msg void OnBnClickedBrowsebackupchardataButton();
+	CEdit m_UespWikiUserNameText;
 };

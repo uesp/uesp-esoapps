@@ -50,6 +50,7 @@ const char ULM_REGISTRY_SECTION_SETTINGS[] = "Settings";
 const char ULM_REGISTRY_KEY_UPDATETIME[] = "UpdateTime";
 const char ULM_REGISTRY_KEY_USELOGNAME[] = "UseLogName";
 const char ULM_REGISTRY_KEY_CUSTOMLOGNAME[] = "CustomLogName";
+const char ULM_REGISTRY_KEY_UESPWIKIUSERNAME[] = "UespWikiUserName";
 const char ULM_REGISTRY_KEY_FORMURL[] = "FormURL";
 const char ULM_REGISTRY_KEY_CHARDATAFORMURL[] = "CharDataFormURL";
 const char ULM_REGISTRY_KEY_ENABLED[] = "Enabled";
@@ -1705,6 +1706,9 @@ bool CuespLogMonitorDlg::LoadRegistrySettings (void)
 	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CUSTOMLOGNAME, m_Options.CustomLogName.c_str());
 	m_Options.CustomLogName = Buffer;
 
+	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_UESPWIKIUSERNAME, m_Options.UespWikiAccountName.c_str());
+	m_Options.UespWikiAccountName = Buffer;
+
 	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_LASTTIMESTAMP, "0");
 	m_Options.LastTimeStamp = _atoi64(Buffer);
 
@@ -1742,6 +1746,7 @@ bool CuespLogMonitorDlg::SaveRegistrySettings (void)
 	pApp->WriteProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CHARDATAENABLED, m_Options.CharDataEnabled);
 
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CUSTOMLOGNAME, m_Options.CustomLogName.c_str());
+	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_UESPWIKIUSERNAME, m_Options.UespWikiAccountName.c_str());
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_FORMURL,       m_Options.FormURL.c_str());
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CHARDATAFORMURL, m_Options.CharDataFormURL.c_str());
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_SAVEDVARPATH,  m_Options.SavedVarPath.c_str());

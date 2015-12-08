@@ -44,7 +44,7 @@
 const std::string ulm_options_t::DEFAULT_FORMURL("content3.uesp.net/esolog/esolog.php");
 const std::string ulm_options_t::DEFAULT_BACKUPDATAFILENAME("uespLog_backupData.txt");
 const std::string ulm_options_t::DEFAULT_BACKUPCHARDATAFOLDER("BackupCharData");
-const std::string ulm_options_t::DEFAULT_CHARDATA_FORMURL("content3.uesp.net/esochardata/esochardata.php");
+const std::string ulm_options_t::DEFAULT_CHARDATA_FORMURL("content3.uesp.net/esochardata/parseCharData.php");
 
 const char ULM_REGISTRY_SECTION_SETTINGS[] = "Settings";
 const char ULM_REGISTRY_KEY_UPDATETIME[] = "UpdateTime";
@@ -1146,7 +1146,7 @@ bool CuespLogMonitorDlg::SendQueuedCharDataThread()
 	}
 
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Sent %u bytes of character data!", FormQuery.size());
-
+	m_CharDataQueue.clear();
 	ReleaseMutex(m_hSendQueueMutex);
 	return true;
 }

@@ -291,6 +291,10 @@ function uespLog.CreateCharDataSkills()
 						rank = currentUpgradeLevel
 						totalSkillPoints = totalSkillPoints + rank
 						skillType = "passive"
+					elseif (passive and currentUpgradeLevel == 0) then
+						rank = 1
+						totalSkillPoints = totalSkillPoints + 1
+						skillType = "passive"
 					elseif (progressionIndex > 0) then
 						local name, morph, skillRank = GetAbilityProgressionInfo(progressionIndex)
 						rank = skillRank + morph * 4
@@ -509,6 +513,8 @@ function uespLog.GetSkillPointsUsed()
 				
 					if (passive and currentUpgradeLevel > 0) then
 						totalSkillPoints = totalSkillPoints + currentUpgradeLevel
+					elseif (passive and currentUpgradeLevel == 0) then
+						totalSkillPoints = totalSkillPoints + 1
 					elseif (progressionIndex > 0) then
 						local name, morph, skillRank = GetAbilityProgressionInfo(progressionIndex)
 						totalSkillPoints = totalSkillPoints + 1 + math.floor(morph/2)

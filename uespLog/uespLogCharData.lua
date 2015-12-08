@@ -354,7 +354,10 @@ function uespLog.CreateCharDataChampionPoints()
 	championPoints["Stamina:Spent"] = GetNumSpentChampionPoints(ATTRIBUTE_STAMINA)
 	championPoints["MaxSpendablePerAttribute"] = GetMaxSpendableChampionPointsInAttribute()
 	
-	return championPoints
+	championPoints["Total:Unspent"] = championPoints["Health:Unspent"] + championPoints["Magicka:Unspent"] + championPoints["Stamina:Unspent"]
+	championPoints["Total:Spent"]   = championPoints["Health:Spent"] + championPoints["Magicka:Spent"] + championPoints["Stamina:Spent"]
+	
+	return championPoints, championPoints["Total:Spent"] , championPoints["Total:Unspent"]
 end
 
 
@@ -461,17 +464,17 @@ end
 
 
 function uespLog.Command_SaveCharData (cmd)
-	cmd = string.lower(cmd)
+	lcmd = string.lower(cmd)
 	
-	if (cmd == "help" or cmd == "") then
+	if (lcmd == "help" or cmd == "") then
 		uespLog.Msg("UESP::Saves current character data to the log file.")
 		uespLog.Msg(".     /uespsavechar help    = Shows basic command format")
 		uespLog.Msg(".     /uespsavechar reset   = Clears character log")
 		uespLog.Msg(".     /uespsavechar status  = Shows current character log status")
 		uespLog.Msg(".     /uespsavechar [note]  = Saves current character with given note")
-	elseif (cmd == "status") then
+	elseif (lcmd == "status") then
 		uespLog.Msg("UESP::Currently there are "..tostring(#uespLog.savedVars.charData.data).." characters saved in log.")
-	elseif (cmd == "reset" or cmd == "clear") then
+	elseif (lcmd == "reset" or lcmd == "clear") then
 		uespLog.savedVars.charData.data = { }
 		uespLog.Msg("UESP::Cleared logged character data.")
 	else

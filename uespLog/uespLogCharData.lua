@@ -468,10 +468,10 @@ function uespLog.Command_SaveCharData (cmd)
 	
 	if (lcmd == "help" or cmd == "") then
 		uespLog.Msg("UESP::Saves current character data to the log file.")
-		uespLog.Msg(".     /uespsavechar help    = Shows basic command format")
-		uespLog.Msg(".     /uespsavechar reset   = Clears character log")
-		uespLog.Msg(".     /uespsavechar status  = Shows current character log status")
-		uespLog.Msg(".     /uespsavechar [note]  = Saves current character with given note")
+		uespLog.Msg(".     /uespsavechar help         = Shows basic command format")
+		uespLog.Msg(".     /uespsavechar reset        = Clears character log")
+		uespLog.Msg(".     /uespsavechar status       = Shows current character log status")
+		uespLog.Msg(".     /uespsavechar [buildName]  = Saves current character with given build name")
 	elseif (lcmd == "status") then
 		uespLog.Msg("UESP::Currently there are "..tostring(#uespLog.savedVars.charData.data).." characters saved in log.")
 	elseif (lcmd == "reset" or lcmd == "clear") then

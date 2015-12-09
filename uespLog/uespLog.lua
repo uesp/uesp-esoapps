@@ -631,6 +631,11 @@ uespLog.DEFAULT_DATA =
 	data = {}
 }
 
+uespLog.DEFAULT_CHARINFO = 
+{
+	data = {}
+}
+
 
 uespLog.DEFAULT_CHARDATA = 
 {
@@ -1322,7 +1327,12 @@ function uespLog.Initialize( self, addOnName )
 		["info"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "info", uespLog.DEFAULT_DATA),
 		["settings"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "settings", uespLog.DEFAULT_SETTINGS),
 		["charData"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "charData", uespLog.DEFAULT_CHARDATA),
+		["charInfo"] = ZO_SavedVars:New("uespLogSavedVars", uespLog.DATA_VERSION, "charInfo", uespLog.DEFAULT_CHARINFO)
 	}
+	
+	if (uespLog.savedVars["charInfo"].data.lastFoodEaten ~= nil) then
+		uespLog.charDataLastFoodEaten = uespLog.savedVars["info"].data.lastFoodEaten 
+	end
 	
 	uespLog.mineItemsAutoNextItemId = uespLog.savedVars.settings.data.mineItemsAutoNextItemId or uespLog.mineItemsAutoNextItemId
 	uespLog.mineItemAutoReload = uespLog.savedVars.settings.data.mineItemAutoReload or uespLog.mineItemAutoReload

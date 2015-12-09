@@ -226,6 +226,8 @@ function uespLog.OnEatDrinkItem(bagId, slotIndex, isNewItem, itemSoundCategory, 
 	uespLog.charDataLastFoodEaten.reqLevel = reqLevel
 	uespLog.charDataLastFoodEaten.reqVetRank = reqVetRank
 	
+	uespLog.savedVars["charInfo"].data.lastFoodEaten = uespLog.charDataLastFoodEaten
+	
 	uespLog.DebugExtraMsg("UESP::You ate/drank "..tostring(itemLink).."")
 end
 

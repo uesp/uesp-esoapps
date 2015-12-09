@@ -322,7 +322,7 @@ bool CuespLogMonitorDlg::ParseSavedVarAccount (const std::string VarName, void* 
 	ParseSavedVarDataSection("all",				&CuespLogMonitorDlg::ParseSavedVarAll);
 	ParseSavedVarDataSection("achievements",	&CuespLogMonitorDlg::ParseSavedVarAchievements);
 
-	ParseSavedVarDataSection("charData", &CuespLogMonitorDlg::ParseSavedVarCharData);
+	ParseSavedVarDataSection("charData",		&CuespLogMonitorDlg::ParseSavedVarCharData);
 
 	ParseSavedVarDataSection("info",			&CuespLogMonitorDlg::ParseSavedVarInfo);
 	
@@ -573,11 +573,10 @@ bool CuespLogMonitorDlg::ParseCharDataScreenshots()
 
 	while (true)
 	{
-		lua_pushinteger(m_pLuaState, i);
 		lua_rawgeti(m_pLuaState, index, i);
 
 		if (lua_isnil(m_pLuaState, -1)) {
-			lua_pop(m_pLuaState, 2);
+			lua_pop(m_pLuaState, 1);
 			break;
 		}
 
@@ -607,7 +606,7 @@ bool CuespLogMonitorDlg::ParseCharDataScreenshots()
 			}
 		}
 		
-		lua_pop(m_pLuaState, 3);
+		lua_pop(m_pLuaState, 2);
 		++i;
 	}
 

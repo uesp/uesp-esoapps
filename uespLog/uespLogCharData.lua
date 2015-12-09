@@ -77,6 +77,15 @@ uespLog.charData_ActionBarData = {
 uespLog.charDataLastScreenShot = ""
 uespLog.charDataLastScreenShotTimestamp = 0
 
+uespLog.charDataLastFoodEaten = {
+	['name'] = '',
+	['itemLink'] = '',
+	['type'] = '',
+	['desc'] = '',
+	['reqLevel'] = '',
+	['reqVetRank'] = '',
+}
+
 
 function uespLog.InitCharData()
 	uespLog.SaveActionBarForCharData()
@@ -167,6 +176,13 @@ function uespLog.CreateCharData (note, forceSave)
 		charData.Werewolf = 0
 	end
 	
+	charData.LastFoodEatenName = uespLog.charDataLastFoodEaten.name
+	charData.LastFoodEatenLink = uespLog.charDataLastFoodEaten.itemLink
+	charData.LastFoodEatenType = uespLog.charDataLastFoodEaten.type
+	charData.LastFoodEatenDesc = uespLog.charDataLastFoodEaten.desc
+	charData.LastFoodEatenLevel = uespLog.charDataLastFoodEaten.reqLevel
+	charData.LastFoodEatenVetRank = uespLog.charDataLastFoodEaten.reqVetRank
+	
 	charData.Stats = uespLog.CreateCharDataStats()
 	charData.Power = uespLog.CreateCharDataPower()
 	charData.Buffs, charData.Vampire = uespLog.CreateCharDataBuffs()
@@ -186,6 +202,31 @@ function uespLog.CreateCharData (note, forceSave)
 	end
 	
 	return charData
+end
+
+
+function uespLog.OnEatDrinkItem(bagId, slotIndex, isNewItem, itemSoundCategory, updateReason)
+	local itemName = GetItemName(bagId, slotIndex)
+	local itemLink = GetItemLink(bagId, slotIndex)
+	local itemType = "unknown"
+	local hasAbility, abilityHeader, abilityDescription, cooldown, hasScaling, minLevel, maxLevel, isVeteranRank = GetItemLinkOnUseAbilityInfo(itemLink)
+	local reqLevel = GetItemLinkRequiredLevel(itemLink)
+	local reqVetRank = GetItemLinkRequiredVeteranRank(itemLink)
+	
+	if (itemSoundCategory == 18) then
+		itemType = "food"
+	elseif (itemSoundCategory == 19) then
+		itemType = "drink"
+	end
+	
+	uespLog.charDataLastFoodEaten.name = itemName
+	uespLog.charDataLastFoodEaten.itemLink = itemLink
+	uespLog.charDataLastFoodEaten.type = itemType
+	uespLog.charDataLastFoodEaten.desc = abilityDescription
+	uespLog.charDataLastFoodEaten.reqLevel = reqLevel
+	uespLog.charDataLastFoodEaten.reqVetRank = reqVetRank
+	
+	uespLog.DebugExtraMsg("UESP::You ate/drank "..tostring(itemLink).."")
 end
 
 

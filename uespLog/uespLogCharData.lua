@@ -233,7 +233,7 @@ function uespLog.CreateCharDataEquipSlots()
 	local equipSlots = { }
 	
 
-	for i = 1, wornSlots do
+	for i = 0, wornSlots do
 		if (HasItemInSlot(BAG_WORN, i)) then
 			local itemLink = GetItemLink(BAG_WORN, i)
 			local itemName = GetItemName(BAG_WORN, i)

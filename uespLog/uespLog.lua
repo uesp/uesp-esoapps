@@ -3031,6 +3031,11 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 		return
 	end
 	
+	if (updateReason == 0 and itemSoundCategory >= 18 and itemSoundCategory <= 19) then
+		uespLog.OnEatDrinkItem(bagId, slotIndex, isNewItem, itemSoundCategory, updateReason)
+		return
+	end
+	
 	if (not isNewItem) then
 		uespLog.DebugExtraMsg("UESP::Skipping inventory slot update for "..itemName..", old, reason "..tostring(updateReason)..", sound "..tostring(itemSoundCategory))
 		return

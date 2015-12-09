@@ -534,6 +534,12 @@ function uespLog.OnActiveWeaponPairChanged (eventCode, activeWeaponPair, locked)
 end
 
 
+function uespLog.ClearCharData()
+	uespLog.savedVars.charData.data = { }
+	uespLog.Msg("UESP::Cleared logged character data.")
+end
+
+
 function uespLog.Command_SaveCharData (cmd)
 	cmdWords = {}
 	for word in cmd:gmatch("%S+") do table.insert(cmdWords, word) end
@@ -550,8 +556,7 @@ function uespLog.Command_SaveCharData (cmd)
 	elseif (firstCmd == "status") then
 		uespLog.Msg("UESP::Currently there are "..tostring(#uespLog.savedVars.charData.data).." characters saved in log.")
 	elseif (firstCmd == "reset" or firstCmd == "clear") then
-		uespLog.savedVars.charData.data = { }
-		uespLog.Msg("UESP::Cleared logged character data.")
+		uespLog.ClearCharData()
 	elseif (firstCmd == "forcesave") then
 		cmdWords[1] = nil
 		buildName = table.concat(cmdWords, ' ')

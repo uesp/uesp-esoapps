@@ -636,7 +636,6 @@ uespLog.DEFAULT_CHARINFO =
 	data = {}
 }
 
-
 uespLog.DEFAULT_CHARDATA = 
 {
 	data = {}
@@ -1327,7 +1326,7 @@ function uespLog.Initialize( self, addOnName )
 		["info"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "info", uespLog.DEFAULT_DATA),
 		["settings"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "settings", uespLog.DEFAULT_SETTINGS),
 		["charData"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "charData", uespLog.DEFAULT_CHARDATA),
-		["charInfo"] = ZO_SavedVars:New("uespLogSavedVars", uespLog.DATA_VERSION, "charInfo", uespLog.DEFAULT_CHARINFO)
+		["charInfo"] = ZO_SavedVars:New("uespLogSavedVars", uespLog.DATA_VERSION, "charInfo", uespLog.DEFAULT_CHARINFO),
 	}
 	
 	if (uespLog.savedVars["charInfo"].data.lastFoodEaten ~= nil) then
@@ -6417,9 +6416,9 @@ function uespLog.ClearAllSavedVarSections()
 
 	for key, value in pairs(uespLog.savedVars) do
 	
-		if (key == "settings" or key == "info") then
+		if (key == "settings" or key == "info" or key == "charInfo") then
 			-- Keep data
-		elseif (key == "globals" or key == "all" or key == "achievements") then
+		elseif (key == "globals" or key == "all" or key == "achievements" or key == "charData") then
 			uespLog.savedVars[key].data = { }
 			uespLog.savedVars[key].version = uespLog.DATA_VERSION
 		else
@@ -6467,7 +6466,10 @@ SLASH_COMMANDS["/uespreset"] = function (cmd)
 		uespLog.SetTotalInspiration(0)
 		uespLog.ClearAllSavedVarSections()
 		uespLog.ClearRootSavedVar()
+		uespLog.ClearCharData()
 		uespLog.Msg("UESP::Reset all logged data")
+	elseif (cmd == "chardata") then
+		uespLog.ClearCharData()
 	elseif (cmd == "log") then
 		uespLog.ClearSavedVarSection("all")
 		uespLog.Msg("UESP::Reset regular logged data")

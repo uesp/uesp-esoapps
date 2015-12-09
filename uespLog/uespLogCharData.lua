@@ -53,7 +53,7 @@ uespLog.CHARDATA_STATS = {
 uespLog.CHARDATA_POWER = {
 	[-2] = "Health",
 	[0] = "Magicka",
-	[1] = "Werewolf",
+	--[1] = "Werewolf",  --Intereferes with "iswerewolf" stat
 	[2] = "Fervor",
 	[3] = "Combo",
 	[4] = "Power",
@@ -144,9 +144,15 @@ function uespLog.CreateCharData (note)
 	
 	charData.Stealth = GetUnitStealthState("player")
 	
+	if (IsWerewolf()) then
+		charData.Werewolf = 1
+	else
+		charData.Werewolf = 0
+	end
+	
 	charData.Stats = uespLog.CreateCharDataStats()
 	charData.Power = uespLog.CreateCharDataPower()
-	charData.Buffs = uespLog.CreateCharDataBuffs()
+	charData.Buffs, charData.Vampire = uespLog.CreateCharDataBuffs()
 	charData.ActionBar = uespLog.CreateCharDataActionBar()
 	charData.EquipSlots = uespLog.CreateCharDataEquipSlots()
 	charData.ChampionPoints = uespLog.CreateCharDataChampionPoints()
@@ -213,6 +219,7 @@ function uespLog.CreateCharDataBuffs()
 	local buffs = {}
 	local numBuffs = GetNumBuffs("player")
 	local i
+	local isVampire = false
 	
 	for i = 1, numBuffs do
 		local buffName, timeStarted, timeEnding, buffSlot, stackCount, iconFilename, buffType, effectType, abilityType, statusEffectType, abilityId, canClickOff = GetUnitBuffInfo("player", i)
@@ -220,10 +227,13 @@ function uespLog.CreateCharDataBuffs()
 		if (abilityId > 0) then
 			buffs[#buffs + 1] = { ["name"] = buffName, ["id"] = abilityId, ["icon"] = iconFilename }
 		end
-	
+		
+		if (string.find(buffName, "Vampirism") ~= nil) then 
+			isVampire = true
+		end
 	end
 
-	return buffs
+	return buffs, isVampire
 end
 
 

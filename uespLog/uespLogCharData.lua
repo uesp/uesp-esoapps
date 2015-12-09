@@ -83,18 +83,35 @@ function uespLog.InitCharData()
 end
 
 
-function uespLog.SaveCharData (note)
-	local charData = uespLog.CreateCharData(note)
-	local arraySize = #uespLog.savedVars.charData.data
+function uespLog.SaveCharData (note, forceSave)
+	forceSave = forceSave or false
+	local charData = uespLog.CreateCharData(note, forceSave)
+		
+	if (charData == nil) then
+		uespLog.MsgColor(uespLog.errorColor, "UESP::Did *not* save current character!")
+		return false
+	end
 	
+	local arraySize = #uespLog.savedVars.charData.data
 	uespLog.savedVars.charData.data[arraySize + 1] = charData
 	
 	uespLog.Msg("UESP::Saved current character data ("..tostring(#uespLog.savedVars.charData.data).." characters in log).")
+	return true
 end
 
 
-function uespLog.CreateCharData (note)
+function uespLog.CreateCharData (note, forceSave)
 	local charData = { }
+	
+	if (not uespLog.HasBothActionBarsForCharData()) then
+		if (not forceSave) then
+			uespLog.MsgColor(uespLog.errorColor, "ERROR: Unused weapon action bar skills not saved!")
+			uespLog.MsgColor(uespLog.errorColor, ".      Try weapon swapping and save character again.")
+			return nil
+		else
+			uespLog.MsgColor(uespLog.errorColor, "Warning: Unused weapon action bar skills not available!")
+		end
+	end
 	
 	charData.Note = note or ""
 	charData.TimeStamp = GetTimeStamp()
@@ -390,11 +407,6 @@ function uespLog.CreateCharDataActionBar()
 		end
 	end
 	
-	if (not uespLog.HasBothActionBarsForCharData()) then
-		uespLog.MsgColor(uespLog.errorColor, "WARNING: Unused weapon swap action bar skills not saved!")
-        uespLog.MsgColor(uespLog.errorColor, ".        Try weapon swapping and save character again.")
-	end
-	
 	return slots
 end
 
@@ -480,21 +492,29 @@ end
 
 
 function uespLog.Command_SaveCharData (cmd)
-	lcmd = string.lower(cmd)
+	cmdWords = {}
+	for word in cmd:gmatch("%S+") do table.insert(cmdWords, word) end
 	
-	if (lcmd == "help" or cmd == "") then
-		uespLog.Msg("UESP::Saves current character data to the log file.")
-		uespLog.Msg(".     /uespsavechar help         = Shows basic command format")
-		uespLog.Msg(".     /uespsavechar reset        = Clears character log")
-		uespLog.Msg(".     /uespsavechar status       = Shows current character log status")
-		uespLog.Msg(".     /uespsavechar [buildName]  = Saves current character with given build name")
-	elseif (lcmd == "status") then
+	firstCmd = string.lower(cmdWords[1]) or ""
+	
+	if (firstCmd == "help" or cmd == "" or (firstCmd == "forcesave" and #cmdWords <= 1)) then
+		uespLog.Msg("UESP::Saves current character data to the log file (or '/usc').")
+		uespLog.Msg(".     /usc help             = Shows basic command format")
+		uespLog.Msg(".     /usc reset            = Clears character log")
+		uespLog.Msg(".     /usc status           = Shows current character log status")
+		uespLog.Msg(".     /usc [buildName]      = Saves current character with given build name")
+		uespLog.Msg(".     /usc forcesave [name] = Saves character ignoring any errors")
+	elseif (firstCmd == "status") then
 		uespLog.Msg("UESP::Currently there are "..tostring(#uespLog.savedVars.charData.data).." characters saved in log.")
-	elseif (lcmd == "reset" or lcmd == "clear") then
+	elseif (firstCmd == "reset" or firstCmd == "clear") then
 		uespLog.savedVars.charData.data = { }
 		uespLog.Msg("UESP::Cleared logged character data.")
+	elseif (firstCmd == "forcesave") then
+		cmdWords[1] = nil
+		buildName = table.concat(cmdWords, ' ')
+		uespLog.SaveCharData(buildName, true)
 	else
-		uespLog.SaveCharData(cmd)
+		uespLog.SaveCharData(cmd, false)
 	end
 	
 end

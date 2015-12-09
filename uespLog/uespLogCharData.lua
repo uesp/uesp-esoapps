@@ -336,6 +336,8 @@ function uespLog.CreateCharDataChampionPoints()
 		local numSkills = GetNumChampionDisciplineSkills(discIndex)
 		local discPoints = GetNumPointsSpentInChampionDiscipline(discIndex)
 		
+		championPoints[discName .. ":Points"] = discPoints
+		
 		--championPoints[discName] = {}
 		--championPoints[discName]["PointsSpent"] = GetNumPointsSpentInChampionDiscipline(discIndex)
 		--championPoints[discName]["Attribute"] = GetChampionDisciplineAttribute(discIndex)		

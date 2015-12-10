@@ -316,7 +316,13 @@ bool CuespLogMonitorDlg::ParseSavedVarDataSection (const std::string SectionName
 
 bool CuespLogMonitorDlg::ParseSavedVarAccount (const std::string VarName, void* pUserData)
 {
-	PrintLogLine(ULM_LOGLEVEL_INFO, "Parsing data sections in saved variable log...");
+	if (VarName != "$AccountWide")
+	{
+		PrintLogLine(ULM_LOGLEVEL_INFO, "Skipping account section '%s'...", VarName.c_str());
+		return true;
+	}
+
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Parsing data sections in saved variable log for account '%s'...", VarName.c_str());
 
 	ParseSavedVarDataSection("globals",			&CuespLogMonitorDlg::ParseSavedVarGlobals);
 	ParseSavedVarDataSection("all",				&CuespLogMonitorDlg::ParseSavedVarAll);
@@ -2119,6 +2125,8 @@ bool CuespLogMonitorDlg::DeleteOldLogDataUser (const std::string VarName, void* 
 
 bool CuespLogMonitorDlg::DeleteOldLogDataAccount (const std::string VarName, void* pUserData)
 {
+	if (VarName != "$AccountWide") return true;
+
 	DeleteOldLogDataSection("all", -1);
 	DeleteOldLogDataSection("globals", -1);
 	DeleteOldLogDataSection("achievements", -1);

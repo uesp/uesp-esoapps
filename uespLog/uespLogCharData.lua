@@ -366,14 +366,57 @@ function uespLog.CreateCharDataSkills()
 						totalSkillPoints = totalSkillPoints + 1
 						skillType = "passive"
 					elseif (progressionIndex > 0) then
-						local name, morph, skillRank = GetAbilityProgressionInfo(progressionIndex)
+						local progName, morph, skillRank = GetAbilityProgressionInfo(progressionIndex)
 						rank = skillRank + morph * 4
 						totalSkillPoints = totalSkillPoints + 1 + math.floor(morph/2)
 					else
 						rank = 0
 					end
 					
-					skills[skillName] = { ["rank"] = rank, ["id"] = abilityId, ["icon"] = texture, ["desc"] = description, ["type"] = skillType, ["index"] = abilityIndex }
+					local channeled, castTime, channelTime = GetAbilityCastInfo(abilityId)
+					local minRange, maxRange = GetAbilityRange(abilityId)
+					local radius = GetAbilityRadius(abilityId)
+					local angleDistance = GetAbilityAngleDistance(abilityId)
+					local duration = GetAbilityDuration(abilityId)
+					local cost, mechanic = GetAbilityCost(abilityId)
+					local targetDesc = GetAbilityTargetDescription(abilityId) or ''
+					local costStr = tostring(cost) .. ' ' .. uespLog.GetCombatMechanicText(mechanic)
+					local rangeStr = ""
+					local areaStr = ""
+					
+					if (not channeled) then
+						channelTime = 0
+					end
+					
+					if (minRange > 0 and maxRange > 0) then
+						rangeStr = tostring(minRange/100) .. " - " .. tostring(maxRange/100) .. " meters"
+					elseif (minRange <= 0 and maxRange > 0) then
+						rangeStr = tostring(maxRange/100) .. " meters"
+					elseif (minRange > 0 and maxRange <= 0) then
+						rangeStr = "Under " .. tostring(minRange/100) .. " meters"
+					end
+					
+					if (angleDistance > 0) then
+						areaStr = tostring(radius/100) .. " x " .. tostring(angleDistance/50) .. " meters"
+					end
+		
+					skills[skillName] = {
+							["rank"] = rank, 
+							["id"] = abilityId, 
+							["icon"] = texture, 
+							["desc"] = description, 
+							["type"] = skillType, 
+							["index"] = abilityIndex,
+							["name"] = name, 
+							["area"] = areaStr,
+							["cost"] = costStr,
+							["range"] = rangeStr,
+							["radius"] = radius,
+							["castTime"] = castTime,
+							["channelTime"] = channelTime,
+							["duration"] = duration,
+							["target"] = targetDesc,
+						}
 				end
 				
 			end
@@ -450,6 +493,23 @@ function uespLog.CreateCharDataActionBar()
 end
 
 
+function uespLog.GetCombatMechanicText(id)
+	local textId = _G['SI_COMBATMECHANICTYPE' .. tostring(id)]
+	
+	if (textId == nil) then
+		return tostring(id)
+	end
+	
+	local text = GetString(textId)
+	
+	if (text == nil or text == "") then
+		return tostring(id)
+	end
+	
+	return text
+end
+
+
 function uespLog.SaveActionBarForCharData()
 	local weaponPairIndex, isLocked = GetActiveWeaponPairInfo()
 	
@@ -464,8 +524,47 @@ function uespLog.SaveActionBarForCharData()
 		local id = GetSlotBoundId(i)
 		local name = GetSlotName(i)
 		local description = GetAbilityDescription(id)
+		local channeled, castTime, channelTime = GetAbilityCastInfo(id)
+		local minRange, maxRange = GetAbilityRange(id)
+		local radius = GetAbilityRadius(id)
+		local angleDistance = GetAbilityAngleDistance(id)
+		local duration = GetAbilityDuration(id)
+		local cost, mechanic = GetAbilityCost(id)
+		local targetDesc = GetAbilityTargetDescription(id) or ''
+		local costStr = tostring(cost) .. ' ' .. uespLog.GetCombatMechanicText(mechanic)
+		local rangeStr = ""
+		local areaStr = ""
 		
-		uespLog.charData_ActionBarData[weaponPairIndex][i] = { ["name"] = name, ["id"] = id, ["icon"] = texture, ["desc"] = description }
+		if (not channeled) then
+			channelTime = 0
+		end
+		
+		if (minRange > 0 and maxRange > 0) then
+			rangeStr = tostring(minRange/100) .. " - " .. tostring(maxRange/100) .. " meters"
+		elseif (minRange <= 0 and maxRange > 0) then
+			rangeStr = tostring(maxRange/100) .. " meters"
+		elseif (minRange > 0 and maxRange <= 0) then
+			rangeStr = "Under " .. tostring(minRange/100) .. " meters"
+		end
+		
+		if (angleDistance > 0) then
+			areaStr = tostring(radius/100) .. " x " .. tostring(angleDistance/50) .. " meters"
+		end
+		
+		uespLog.charData_ActionBarData[weaponPairIndex][i] = { 
+				["name"] = name, 
+				["id"] = id, 
+				["icon"] = texture,
+				["desc"] = description,
+				["area"] = areaStr,
+				["cost"] = costStr,
+				["range"] = rangeStr,
+				["radius"] = radius,
+				["castTime"] = castTime,
+				["channelTime"] = channelTime,
+				["duration"] = duration,
+				["target"] = targetDesc,
+			}
 	end
 	
 end
@@ -620,3 +719,4 @@ end
 
 
 SLASH_COMMANDS["/usp"] = SLASH_COMMANDS["/uespskillpoints"]
+

@@ -1330,7 +1330,7 @@ function uespLog.Initialize( self, addOnName )
 	}
 	
 	if (uespLog.savedVars["charInfo"].data.lastFoodEaten ~= nil) then
-		uespLog.charDataLastFoodEaten = uespLog.savedVars["info"].data.lastFoodEaten 
+		uespLog.charDataLastFoodEaten = uespLog.savedVars["charInfo"].data.lastFoodEaten 
 	end
 	
 	uespLog.mineItemsAutoNextItemId = uespLog.savedVars.settings.data.mineItemsAutoNextItemId or uespLog.mineItemsAutoNextItemId

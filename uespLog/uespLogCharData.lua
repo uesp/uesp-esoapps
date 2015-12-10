@@ -138,7 +138,7 @@ function uespLog.CreateCharData (note, forceSave)
 	charData.VeteranRank = GetUnitVeteranRank("player")
 	charData.EffectiveLevel = GetUnitEffectiveLevel("player")
 	charData.Zone = GetUnitZone("player")
-	charData.ChampionPoints = GetPlayerChampionPointsEarned()
+	charData.ChampionPointsEarned = GetPlayerChampionPointsEarned()
 	charData.BattleLevel = GetUnitBattleLevel("player")
 	charData.BattleVeteranRank = GetUnitVetBattleLevel("player")
 	charData.BuildType = uespLog.GetCharDataBuildType()
@@ -398,10 +398,6 @@ function uespLog.CreateCharDataChampionPoints()
 		
 		championPoints[discName .. ":Points"] = discPoints
 		
-		--championPoints[discName] = {}
-		--championPoints[discName]["PointsSpent"] = GetNumPointsSpentInChampionDiscipline(discIndex)
-		--championPoints[discName]["Attribute"] = GetChampionDisciplineAttribute(discIndex)		
-		
 		for skillIndex = 1, numSkills do
 			local skillName = GetChampionSkillName(discIndex, skillIndex)
 			local unlockLevel = GetChampionSkillUnlockLevel(discIndex, skillIndex)
@@ -413,10 +409,10 @@ function uespLog.CreateCharDataChampionPoints()
 			unlockLevel = unlockLevel or 100000
 			
 			if (spentPoints == 0 and unlockLevel <= discPoints) then
-				spentPoints = 1
+				spentPoints = -1
 			end
 			
-			if (spentPoints > 0) then
+			if (spentPoints ~= 0) then
 				championPoints[name] = { ["points"] = spentPoints, ["desc"] = description, ["id"] = abilityId }
 			end
 		end

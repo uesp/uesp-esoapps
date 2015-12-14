@@ -1343,6 +1343,11 @@ function uespLog.Initialize( self, addOnName )
 	uespLog.pvpUpdate = uespLog.savedVars.settings.data.pvpUpdate or uespLog.pvpUpdate
 	uespLog.mineItemLastReloadTimeMS = GetGameTimeMilliseconds()
 	
+	if (uespLog.savedVars.charInfo.data.mercStyle == nil) then
+		uespLog.savedVars.charInfo.data.mercStyle = {}
+	end
+	
+	
 	zo_callLater(uespLog.InitAutoMining, 5000)
 	
 	uespLog.InitSettingsMenu()
@@ -1378,6 +1383,7 @@ function uespLog.Initialize( self, addOnName )
 
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CRAFT_COMPLETED, uespLog.OnCraftCompleted)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CRAFTING_STATION_INTERACT, uespLog.OnCraftStationInteract)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_STYLE_LEARNED, uespLog.OnStyleLearned)	
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOTS_FULL_UPDATE, uespLog.OnActionSlotsFullUpdate)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOT_ABILITY_SLOTTED, uespLog.OnActionSlotAbilitySlotted)	
@@ -2965,9 +2971,27 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 end
 
 
+function uespLog.OnStyleLearned (eventCode, styleIndex, chapterIndex)
+	uespLog.DebugExtraMsg("OnStyleLearned: "..tostring(styleIndex)..":"..tostring(chapterIndex))
+
+	if (styleIndex == 27) then
+		local itemStyle = select(5, GetSmithingStyleItemInfo(styleIndex))
+		
+		if chapterIndex == ITEM_STYLE_CHAPTER_ALL then
+			for i = 1, 14 do
+				uespLog.savedVars.charInfo.data.mercStyle[i] = true
+			end
+		else
+			uespLog.savedVars.charInfo.data.mercStyle[chapterIndex] = true
+		end
+	end
+
+end
+
+
 function uespLog.OnCraftStationInteract (eventCode, craftSkill, sameStation)
 	uespLog.DebugExtraMsg("OnCraftStationInteract: "..tostring(craftSkill))
-	
+		
 	if (craftSkill == CRAFTING_TYPE_BLACKSMITHING or craftSkill == CRAFTING_TYPE_CLOTHIER or craftSkill == CRAFTING_TYPE_WOODWORKING) then
 		uespLog.SaveMercenaryStylesKnown()
 	end

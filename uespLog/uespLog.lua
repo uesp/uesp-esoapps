@@ -1371,7 +1371,8 @@ function uespLog.Initialize( self, addOnName )
 
     EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LORE_BOOK_ALREADY_KNOWN, uespLog.OnLoreBookAlreadyKnown)
     EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LORE_BOOK_LEARNED, uespLog.OnLoreBookLearned)
-
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SHOW_BOOK, uespLog.OnShowBook)
+	
     EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SHOW_BOOK, uespLog.OnShowBook)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SKILL_RANK_UPDATE, uespLog.OnSkillRankUpdate)
 
@@ -2238,6 +2239,11 @@ function uespLog.OnLoreBookAlreadyKnown (eventCode, bookTitle)
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
 	uespLog.DebugLogMsg("Lore book "..bookTitle.." (already known)")
+end
+
+
+function uespLog.OnShowBook (eventCode, bookTitle, body, medium, showTitle)
+	uespLog.DebugMsgExtra("OnShowBook: "..tostring(bookTitle)/uespde
 end
 
 

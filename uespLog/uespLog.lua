@@ -2967,7 +2967,11 @@ end
 
 function uespLog.OnCraftStationInteract (eventCode, craftSkill, sameStation)
 	uespLog.DebugExtraMsg("OnCraftStationInteract: "..tostring(craftSkill))
-	uespLog.SaveMercenaryStylesKnown()
+	
+	if (craftSkill == CRAFTING_TYPE_BLACKSMITHING or craftSkill == CRAFTING_TYPE_CLOTHIER or craftSkill == CRAFTING_TYPE_WOODWORKING) then
+		uespLog.SaveMercenaryStylesKnown()
+	end
+	
 end
 
 

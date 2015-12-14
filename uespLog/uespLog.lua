@@ -1377,6 +1377,7 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SKILL_RANK_UPDATE, uespLog.OnSkillRankUpdate)
 
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CRAFT_COMPLETED, uespLog.OnCraftCompleted)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CRAFTING_STATION_INTERACT, uespLog.OnCraftStationInteract)
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOTS_FULL_UPDATE, uespLog.OnActionSlotsFullUpdate)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOT_ABILITY_SLOTTED, uespLog.OnActionSlotAbilitySlotted)	
@@ -2243,7 +2244,7 @@ end
 
 
 function uespLog.OnShowBook (eventCode, bookTitle, body, medium, showTitle)
-	uespLog.DebugMsgExtra("OnShowBook: "..tostring(bookTitle)/uespde
+	uespLog.DebugExtraMsg("OnShowBook: "..tostring(bookTitle))
 end
 
 
@@ -2959,6 +2960,92 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 	else
 		
 		uespLog.DebugMsgColor(uespLog.itemColor, "UESP::Someone "..rcvType.." "..msgType.." "..niceLink.." (x"..tostring(quantity)..")")
+	end
+	
+end
+
+
+function uespLog.OnCraftStationInteract (eventCode, craftSkill, sameStation)
+	uespLog.DebugExtraMsg("OnCraftStationInteract: "..tostring(craftSkill))
+	uespLog.SaveMercenaryStylesKnown()
+end
+
+
+uespLog.EQUIPTYPE_TO_CRAFTBOOKCHAPTER = {
+	[EQUIP_TYPE_CHEST] = 5,
+	[EQUIP_TYPE_COSTUME] = nil,
+	[EQUIP_TYPE_FEET] = 3,
+	[EQUIP_TYPE_HAND] = 7,
+	[EQUIP_TYPE_HEAD] = 8,
+	[EQUIP_TYPE_INVALID] = nil,
+	[EQUIP_TYPE_LEGS] = 9,
+	[EQUIP_TYPE_MAIN_HAND] = nil,
+	[EQUIP_TYPE_NECK] = nil,
+	[EQUIP_TYPE_OFF_HAND] = nil,
+	[EQUIP_TYPE_ONE_HAND] = nil,
+	[EQUIP_TYPE_RING] = nil,
+	[EQUIP_TYPE_SHOULDERS] = 12,
+	[EQUIP_TYPE_TWO_HAND] = nil,
+	[EQUIP_TYPE_WAIST] = 2,
+}
+
+
+uespLog.WEAPONTYPE_TO_CRAFTBOOKCHAPTER = {
+	[WEAPONTYPE_AXE] = 1,
+	[WEAPONTYPE_BOW] = 4,
+	[WEAPONTYPE_DAGGER] = 6,
+	[WEAPONTYPE_FIRE_STAFF] = 13,
+	[WEAPONTYPE_FROST_STAFF] = 13,
+	[WEAPONTYPE_HAMMER] = 10,
+	[WEAPONTYPE_HEALING_STAFF] = 13,
+	[WEAPONTYPE_LIGHTNING_STAFF] = 13,
+	[WEAPONTYPE_NONE] = nil,
+	[WEAPONTYPE_PROP] = nil,
+	[WEAPONTYPE_RUNE] = nil,
+	[WEAPONTYPE_SHIELD] = 11,
+	[WEAPONTYPE_SWORD] = 14,
+	[WEAPONTYPE_TWO_HANDED_AXE] = 1,
+	[WEAPONTYPE_TWO_HANDED_HAMMER] = 10,
+	[WEAPONTYPE_TWO_HANDED_SWORD] = 14,
+}
+
+
+function uespLog.SaveMercenaryStylesKnown()
+	-- BS
+	-- 1=Axe, 2=Mace, 3=Sword, 4=Battle Axe, 5=Maul, 6=Greatsword, 7=Dagger
+	-- 8=Cuirass, 9=Sabatons, 10=Gauntlets, 11=Helm, 12=Greaves, 13=Pauldron, 14=Girdle
+	-- CL
+	-- 1=Robe, 2=Shirt, 3=Shoes, 4=Gloves, 5=Hat, 6=Breeches, 7=Epaulets, 8=Sash
+	-- 9=Jack, 10=Boots, 11=Bracers, 12=Helmet, 13=Guards, 14=Arm Cops, 15=Belt
+	-- WW
+	-- 1=Bow, 2=Shield, 3=Inferno Staff, 4=Ice Staff, 5=Lightning Staff, 6=Restoration Staff, 
+	
+	local numPatterns = GetNumSmithingPatterns()
+	local patternIndex
+	
+	if (uespLog.savedVars.charInfo.data.mercStyle == nil) then
+		uespLog.savedVars.charInfo.data.mercStyle = {}
+	end
+	
+	for patternIndex = 1, numPatterns do
+		local known = IsSmithingStyleKnown(27, patternIndex)
+		local name, baseName = GetSmithingPatternInfo(patternIndex)
+		local numMaterial = GetSmithingPatternNextMaterialQuantity(patternIndex, 1, 1, 1)
+		local itemLink = GetSmithingPatternResultLink(patternIndex, 1, numMaterial, 1, 1)
+		--uespLog.DebugMsg(".    Link: "..tostring(itemLink))
+		
+		if (itemLink ~= "") then
+			local equipType = GetItemLinkEquipType(itemLink)
+			local weaponType = GetItemLinkWeaponType(itemLink)
+			local chapter = uespLog.WEAPONTYPE_TO_CRAFTBOOKCHAPTER[weaponType] or uespLog.EQUIPTYPE_TO_CRAFTBOOKCHAPTER[equipType] or 0
+			--uespLog.DebugMsg(".    EquipType: "..tostring(equipType))
+			--uespLog.DebugMsg(".    WeaponType: "..tostring(weaponType))
+			
+			if (chapter > 0) then
+				--uespLog.DebugMsg(".    "..tostring(baseName).." chapter "..tostring(chapter).." is "..tostring(known))
+				uespLog.savedVars.charInfo.data.mercStyle[chapter] = known
+			end
+		end
 	end
 	
 end
@@ -7460,4 +7547,5 @@ end
 
 
 SLASH_COMMANDS["/ulb"] = SLASH_COMMANDS["/uesplorebook"]
+
 

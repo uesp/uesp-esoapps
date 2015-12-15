@@ -519,6 +519,7 @@ uespLog.lastItemLinks = { }
 uespLog.researchColor = "00ffff"
 uespLog.timeColor = "00ffff"
 uespLog.traitColor = "00ffff"
+uespLog.craftColor = "66ffff"
 uespLog.countColor = "00ffff"
 uespLog.xpColor = "6699ff"
 uespLog.itemColor = "ff9900"
@@ -6802,6 +6803,208 @@ end
 
 
 SLASH_COMMANDS["/uri"] = SLASH_COMMANDS["/uespresearch"]
+
+
+uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
+	["mercenary"] = 26,
+	["breton"] = 1,
+	["dwemer"] = 14,
+	["ancient elf"] = 15,
+	["ancient_elf"] = 15,
+	["imperial"] = 16,
+	["barbaric"] = 17,
+	["primal"] = 19,
+	["redguard"] = 2,
+	["daedric"] = 20,
+	["ancient orc"] = 22,
+	["ancient_orc"] = 22,
+	["glass"] = 28,
+	["xivkyn"] = 29,
+	["akaviri"] = 33,
+	["dunmer"] = 4,
+	["dark elf"] = 4,
+	["dark_elf"] = 4,
+	["nord"] = 5,
+	["argonian"] = 6,
+	["altmer"] = 7,
+	["high elf"] = 7,
+	["high_elf"] = 7,
+	["bosmer"] = 8,
+	["wood elf"] = 8,
+	["wood_elf"] = 8,
+	["khajiit"] = 9,
+	["orc"] = 3,
+	["yokudan"] = 35,
+}
+
+
+uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
+	["mercenary"] = { 64716, 64717, 64718, 64719, 64720, 64721, 64722, 64723, 64723, 64725, 64726, 64727, 64728, 64729  }, --64715, 64730
+	["breton"] = 16425,
+	["dwemer"] = { 57573, 57574, 57575, 57576, 57577, 57578, 57579, 57580, 57581, 57582, 57583, 57584, 57585, 57586 }, -- 57572, 
+	["ancient elf"] = 51638,
+	["ancient_elf"] = 51638,
+	["imperial"] = 54868,
+	["barbaric"] = 51565,
+	["primal"] = 51345,
+	["redguard"] = 16427,
+	["daedric"] = 51688,
+	["ancient orc"] = { 69528, 69529, 69530, 69531, 69532, 69533, 69534, 69535, 69536, 69537, 69538, 69539, 69540, 69541 }, -- 69527, 69542
+	["ancient_orc"] = { 69528, 69529, 69530, 69531, 69532, 69533, 69534, 69535, 69536, 69537, 69538, 69539, 69540, 69541 }, -- 69527, 69542
+	["glass"] = { 64670, 64671, 64672, 64673, 64674, 64675, 64676, 64677, 64678, 64679, 64680, 64681, 64682, 64683 }, -- 64669, 64684
+	["yokudan"] = { 57606, 57607, 57608, 57609, 57610, 57611, 57612, 57613, 57614, 57615, 57616, 57617, 57618, 57619 }, -- 57605
+	["xivkyn"] = { 57835, 57836, 57837, 57838, 57839, 57840, 57841, 57842, 57843, 57844, 57845, 57846, 57847, 57848  }, -- 57834
+	["akaviri"] = { 57591, 57592, 57593, 57594, 57595, 57596, 57597, 57598, 57599, 57600, 57601, 57602, 57603, 57604 }, -- 57590
+	["dunmer"] = 27245,
+	["dark elf"] = 27245,
+	["dark_elf"] = 27245,
+	["nord"] = 27244,
+	["argonian"] = 27246,
+	["altmer"] = 16424,
+	["high elf"] = 16424,
+	["high_elf"] = 16424,
+	["bosmer"] = 16428,
+	["wood elf"] = 16428,
+	["wood_elf"] = 16428,
+	["khajiit"] = 44698,
+	["orc"] = 16426,
+}
+
+
+uespLog.CRAFTMOTIF_CHAPTERNAME = {
+	[1] = "Axes",
+	[2] = "Belts",
+	[3] = "Boots",
+	[4] = "Bows",
+	[5] = "Chests",
+	[6] = "Daggers",
+	[7] = "Gloves",
+	[8] = "Helmets",
+	[9] = "Legs",
+	[10] = "Maces",
+	[11] = "Shields",
+	[12] = "Shoulders",
+	[13] = "Staves",
+	[14] = "Swords",
+}
+
+
+function uespLog.GetStyleKnown(styleName)
+	local known = false
+	local knowAll = true
+	local unknownAll = true
+	local numStyles = GetNumSmithingStyleItems()
+	local styleIndex
+	local cmpStyleName = string.lower(styleName)
+	local itemStyle = uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE[cmpStyleName] or 0
+	local motifId = uespLog.CRAFTSTYLENAME_TO_MOTIFID[cmpStyleName] or false
+		
+	if (cmpStyleName == "" or itemStyle <= 0 or not motifId) then
+		return nil
+	end
+	
+	if (type(motifId) == "table") then
+		known = { }
+	
+		for i = 1,14 do
+			local itemLink = uespLog.MakeItemLink(motifId[i], 1, 1)
+			known[i] = uespLog.IsItemLinkBookKnown(itemLink)
+			knowAll = knowAll and known[i]
+			unknownAll = unknownAll and not known[i]
+		end
+		
+		if (knowAll) then
+			known = true
+		elseif (unknownAll) then
+			known = false
+		end
+	else
+		local itemLink = uespLog.MakeItemLink(motifId)
+		known = uespLog.IsItemLinkBookKnown(itemLink)
+		knowAll = known	
+	end
+	
+	return known
+end
+
+
+function uespLog.firstToUpper(str)
+    return tostring(str):gsub("^%l", string.upper)
+end
+
+
+function uespLog.titleCaseString(str)
+	local lStr = tostring(str):lower()
+    return lStr:gsub("(%l)(%w*)", function(a,b) return string.upper(a)..b end)
+end
+
+
+SLASH_COMMANDS["/uespstyle"] = function (cmd)
+	local lCmd = cmd:lower()
+	
+	if (cmd == "") then
+		uespLog.MsgColor(uespLog.craftColor, "UESP::Shows which chapters of an item style you know.")
+		uespLog.MsgColor(uespLog.craftColor, ".          /uespstyle [stylename]")
+		uespLog.MsgColor(uespLog.craftColor, ".          /uespstyle liststyles")
+		return
+	elseif (lCmd == "liststyles") then
+		local orderedNames = {}
+		local j = 1
+		local output = ""
+		
+		uespLog.MsgColor(uespLog.craftColor, "UESP:Valid style names for /uespstyle are:")
+
+		for k in pairs(uespLog.CRAFTSTYLENAME_TO_MOTIFID) do
+			table.insert(orderedNames, k)
+		end
+
+		table.sort(orderedNames)
+		
+		for i = 1, #orderedNames do
+			local niceName = uespLog.titleCaseString(orderedNames[i])
+			
+			output = output .. niceName .. string.rep(" ", 20 - #niceName/1.5)
+			j = j + 1
+						
+			if (j >= 4) then
+				j = 1
+				uespLog.MsgColor(uespLog.craftColor, ".     "..output)
+				output = ""
+			end
+
+		end
+		
+		if (output ~= "") then
+			uespLog.MsgColor(uespLog.craftColor, ".     "..output)
+		end
+	
+		return
+	end
+	
+	local known = uespLog.GetStyleKnown(cmd)
+	local niceName = uespLog.titleCaseString(cmd)
+	
+	if (known == nil) then
+		uespLog.MsgColor(uespLog.craftColor, "Error: Invalid item style '"..tostring(cmd).."'!")
+	elseif (type(known) == "table") then
+	
+		for i = 1,14 do
+			local chapterName = tostring(uespLog.CRAFTMOTIF_CHAPTERNAME[i])
+			
+			if (known[i]) then
+				uespLog.MsgColor(uespLog.craftColor, niceName.." style Chapter "..tostring(i)..", "..chapterName.." is known")
+			else
+				uespLog.MsgColor(uespLog.craftColor, niceName.." style Chapter "..tostring(i)..", "..chapterName.." is UNKNOWN")
+			end
+		end
+		
+	elseif (known) then
+		uespLog.MsgColor(uespLog.craftColor, niceName.." style is known for all pieces")
+	else
+		uespLog.MsgColor(uespLog.craftColor, niceName.." style is UNKNOWN for all pieces")
+	end
+	
+end
 
 
 function uespLog.ShowTargetInfo ()

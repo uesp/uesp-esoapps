@@ -3067,7 +3067,6 @@ function uespLog.IsItemLinkBookKnown(itemLink)
 		for i = 1, 14 do
 			allKnown = allKnown and (uespLog.savedVars.charInfo.data.mercStyle[i] or false)
 			isCertain = isCertain and (uespLog.savedVars.charInfo.data.mercStyle[i] ~= nil)
-			uespLog.DebugMsg(" i: "..tostring(i)..":"..tostring(allKnown)..":"..tostring(isCertain))
 		end
 		
 		return allKnown, isCertain
@@ -6784,17 +6783,14 @@ SLASH_COMMANDS["/uesptest"] = function (cmd)
 	-- Moon Phase ~ Full Moon, TimeStamp = 1438352285 (14:20 31 July 2015)
 	-- Moon Phase ~ Slightly Waxing Gibbous past First Quarter (0.3-0.35), TimeStamp = 1440087745 (12:26 20 Aug 2015)
 
-	--uespLog.DebugMsg("Showing Test Time (Full Moon, 0.5)....")
-	--uespLog.ShowTime(1435838770)
+	uespLog.DebugMsg("Showing Test Time (Full Moon, 0.5)....")
+	uespLog.ShowTime(1435838770)
 	
-	--uespLog.DebugMsg("Showing Test Time (Full Moon, 0.5)....")
-	--uespLog.ShowTime(1438352285)
+	uespLog.DebugMsg("Showing Test Time (Full Moon, 0.5)....")
+	uespLog.ShowTime(1438352285)
 	
-	--uespLog.DebugMsg("Showing Test Time (Waxing Gibbous Moon, 0.33)....")
-	--uespLog.ShowTime(1440087745)	
-	
-	uespLog.savedVars.charInfo.data.mercStyle[9] = nil
-	uespLog.savedVars.charInfo.data.mercStyle[12] = nil
+	uespLog.DebugMsg("Showing Test Time (Waxing Gibbous Moon, 0.33)....")
+	uespLog.ShowTime(1440087745)	
 end
 
 

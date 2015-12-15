@@ -2982,7 +2982,7 @@ function uespLog.OnStyleLearned (eventCode, styleIndex, chapterIndex)
 				uespLog.savedVars.charInfo.data.mercStyle[i] = true
 			end
 		else
-			uespLog.savedVars.charInfo.data.mercStyle[chapterIndex] = true
+			uespLog.savedVars.charInfo.data.mercStyle[tonumber(chapterIndex)] = true
 		end
 	end
 
@@ -3037,17 +3037,52 @@ uespLog.WEAPONTYPE_TO_CRAFTBOOKCHAPTER = {
 	[WEAPONTYPE_TWO_HANDED_SWORD] = 14,
 }
 
+                 
+function uespLog.IsItemLinkBookKnown(itemLink)
+	local itemName = GetItemLinkName(itemLink)
+	local bookIndex, chapterIndex, styleName, slotName = itemName:match("Crafting Motifs ([%d]+), Chapter ([%d]+): ([%a]+) ([%a]+)")
+	
+	if (bookIndex == nil) then
+		bookIndex, chapterIndex, styleName, slotName = itemName:match("Crafting Motifs ([%d]+), Chap%. ([%d]+): ([%a]+) ([%a]+)")
+	end
+	
+	--uespLog.DebugMsg(" BookIndex: "..tostring(bookIndex)..":"..tostring(chapterIndex)..":"..tostring(styleName)..":"..tostring(slotName))
+	
+		-- Mercenary Motifs
+		-- Crafting Motifs 19, Chap. 12: Mercenary XXXXX
+		-- Crafting Motifs 19, Chapter 6: Mercenary XXXXX
+	if (bookIndex == 19 or styleName == "Mercenary") then
+		chapterIndex = tonumber(chapterIndex)
+		local isKnown = uespLog.savedVars.charInfo.data.mercStyle[chapterIndex] or false
+		local isCertain = uespLog.savedVars.charInfo.data.mercStyle[chapterIndex] ~= nil
+		
+		return isKnown, isCertain
+	end
+
+	return IsItemLinkBookKnown(itemLink), true
+end
+
+
+function uespLog.IsItemLinkMercKnown(itemLink)
+	local equipType = GetItemLinkEquipType(itemLink)
+	local weaponType = GetItemLinkWeaponType(itemLink)
+	local chapterIndex = uespLog.WEAPONTYPE_TO_CRAFTBOOKCHAPTER[weaponType] or uespLog.EQUIPTYPE_TO_CRAFTBOOKCHAPTER[equipType] or 0
+	
+	return uespLog.IsMercChapterKnown(chapterIndex)
+end
+
+
+function uespLog.IsMercChapterKnown(chapterIndex)
+
+	if (uespLog.savedVars.charInfo.data.mercStyle == nil) then
+		uespLog.savedVars.charInfo.data.mercStyle = {}
+	end
+	
+	return uespLog.savedVars.charInfo.data.mercStyle[tonumber(chapterIndex)] or false
+end
+
 
 function uespLog.SaveMercenaryStylesKnown()
-	-- BS
-	-- 1=Axe, 2=Mace, 3=Sword, 4=Battle Axe, 5=Maul, 6=Greatsword, 7=Dagger
-	-- 8=Cuirass, 9=Sabatons, 10=Gauntlets, 11=Helm, 12=Greaves, 13=Pauldron, 14=Girdle
-	-- CL
-	-- 1=Robe, 2=Shirt, 3=Shoes, 4=Gloves, 5=Hat, 6=Breeches, 7=Epaulets, 8=Sash
-	-- 9=Jack, 10=Boots, 11=Bracers, 12=Helmet, 13=Guards, 14=Arm Cops, 15=Belt
-	-- WW
-	-- 1=Bow, 2=Shield, 3=Inferno Staff, 4=Ice Staff, 5=Lightning Staff, 6=Restoration Staff, 
-	
 	local numPatterns = GetNumSmithingPatterns()
 	local patternIndex
 	
@@ -3060,18 +3095,14 @@ function uespLog.SaveMercenaryStylesKnown()
 		local name, baseName = GetSmithingPatternInfo(patternIndex)
 		local numMaterial = GetSmithingPatternNextMaterialQuantity(patternIndex, 1, 1, 1)
 		local itemLink = GetSmithingPatternResultLink(patternIndex, 1, numMaterial, 1, 1)
-		--uespLog.DebugMsg(".    Link: "..tostring(itemLink))
 		
 		if (itemLink ~= "") then
 			local equipType = GetItemLinkEquipType(itemLink)
 			local weaponType = GetItemLinkWeaponType(itemLink)
 			local chapter = uespLog.WEAPONTYPE_TO_CRAFTBOOKCHAPTER[weaponType] or uespLog.EQUIPTYPE_TO_CRAFTBOOKCHAPTER[equipType] or 0
-			--uespLog.DebugMsg(".    EquipType: "..tostring(equipType))
-			--uespLog.DebugMsg(".    WeaponType: "..tostring(weaponType))
 			
 			if (chapter > 0) then
-				--uespLog.DebugMsg(".    "..tostring(baseName).." chapter "..tostring(chapter).." is "..tostring(known))
-				uespLog.savedVars.charInfo.data.mercStyle[chapter] = known
+				uespLog.savedVars.charInfo.data.mercStyle[tonumber(chapter)] = known
 			end
 		end
 	end
@@ -6727,15 +6758,17 @@ SLASH_COMMANDS["/uesptest"] = function (cmd)
 	-- Moon Phase ~ Full Moon, TimeStamp = 1438352285 (14:20 31 July 2015)
 	-- Moon Phase ~ Slightly Waxing Gibbous past First Quarter (0.3-0.35), TimeStamp = 1440087745 (12:26 20 Aug 2015)
 
-	uespLog.DebugMsg("Showing Test Time (Full Moon, 0.5)....")
-	uespLog.ShowTime(1435838770)
+	--uespLog.DebugMsg("Showing Test Time (Full Moon, 0.5)....")
+	--uespLog.ShowTime(1435838770)
 	
-	uespLog.DebugMsg("Showing Test Time (Full Moon, 0.5)....")
-	uespLog.ShowTime(1438352285)
+	--uespLog.DebugMsg("Showing Test Time (Full Moon, 0.5)....")
+	--uespLog.ShowTime(1438352285)
 	
-	uespLog.DebugMsg("Showing Test Time (Waxing Gibbous Moon, 0.33)....")
-	uespLog.ShowTime(1440087745)	
+	--uespLog.DebugMsg("Showing Test Time (Waxing Gibbous Moon, 0.33)....")
+	--uespLog.ShowTime(1440087745)	
 	
+	uespLog.savedVars.charInfo.data.mercStyle[9] = nil
+	uespLog.savedVars.charInfo.data.mercStyle[12] = nil
 end
 
 

@@ -287,7 +287,18 @@
 --			- Zipped install file includes the root folder "uespLog".
 --
 --		- v0.42 -
---			- Fixed known/unknown display of the Mercenary style motifs.
+--			- Fixed known/unknown display of the Mercenary style motifs. While the base game API is
+--			  is still bugged for this style (it always says the style/chapter is unknown), uespLog
+--			  now manually tracks the mercenary style. To setup simply visit a blacksmith and a 
+--			  woodworking station for the add-on to automatically save your currently known mercenary
+--			  chapters. This will be saved between sessions and updated automatically when you read
+--			  a new mercenary chapter. If the status of a mercenary motif is uncertain no text/icon 
+--			  will be displayed. 
+--			- Added the /uespstyle command for displaying which chapters of a particular motif are
+--			  known or unknown.
+--					/uespstyle [stylename]     Shows which chapters you currently know or not
+--					/uespstyle liststyles      Shows all the style names accepted by the command
+--			
 --
 --	
 
@@ -6944,8 +6955,8 @@ SLASH_COMMANDS["/uespstyle"] = function (cmd)
 	
 	if (cmd == "") then
 		uespLog.MsgColor(uespLog.craftColor, "UESP::Shows which chapters of an item style you know.")
-		uespLog.MsgColor(uespLog.craftColor, ".          /uespstyle [stylename]")
-		uespLog.MsgColor(uespLog.craftColor, ".          /uespstyle liststyles")
+		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle [stylename]      Shows which chapters of the style you know")
+		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle liststyles          Lists all styles valid for the command")
 		return
 	elseif (lCmd == "liststyles") then
 		local orderedNames = {}

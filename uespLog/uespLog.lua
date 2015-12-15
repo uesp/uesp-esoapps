@@ -286,7 +286,7 @@
 --			- Fixed issue with message if you looted something at the same time as a group member.
 --			- Zipped install file includes the root folder "uespLog".
 --
---		- v0.42 -
+--		- v0.50 -
 --			- Fixed known/unknown display of the Mercenary style motifs. While the base game API is
 --			  is still bugged for this style (it always says the style/chapter is unknown), uespLog
 --			  now manually tracks the mercenary style. To setup simply visit a blacksmith and a 
@@ -306,7 +306,7 @@
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "0.42"
+uespLog.version = "0.50"
 uespLog.releaseDate = "2 December 2015"
 uespLog.DATA_VERSION = 3
 

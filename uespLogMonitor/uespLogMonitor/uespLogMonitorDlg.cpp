@@ -43,8 +43,8 @@
 
 const std::string ulm_options_t::DEFAULT_FORMURL("content3.uesp.net/esolog/esolog.php");
 const std::string ulm_options_t::DEFAULT_BACKUPDATAFILENAME("uespLog_backupData.txt");
-const std::string ulm_options_t::DEFAULT_BACKUPCHARDATAFOLDER("BackupCharData");
-const std::string ulm_options_t::DEFAULT_CHARDATA_FORMURL("content3.uesp.net/esochardata/parseCharData.php");
+const std::string ulm_options_t::DEFAULT_BACKUPBUILDDATAFOLDER("BackupBuildData");
+const std::string ulm_options_t::DEFAULT_BUILDDATA_FORMURL("content3.uesp.net/esobuilddata/parseBuildData.php");
 
 const char ULM_REGISTRY_SECTION_SETTINGS[] = "Settings";
 const char ULM_REGISTRY_KEY_UPDATETIME[] = "UpdateTime";
@@ -52,15 +52,15 @@ const char ULM_REGISTRY_KEY_USELOGNAME[] = "UseLogName";
 const char ULM_REGISTRY_KEY_CUSTOMLOGNAME[] = "CustomLogName";
 const char ULM_REGISTRY_KEY_UESPWIKIUSERNAME[] = "UespWikiUserName";
 const char ULM_REGISTRY_KEY_FORMURL[] = "FormURL";
-const char ULM_REGISTRY_KEY_CHARDATAFORMURL[] = "CharDataFormURL";
+const char ULM_REGISTRY_KEY_BUILDDATAFORMURL[] = "BuildDataFormURL";
 const char ULM_REGISTRY_KEY_ENABLED[] = "Enabled";
-const char ULM_REGISTRY_KEY_CHARDATAENABLED[] = "CharDataEnabled";
+const char ULM_REGISTRY_KEY_BUILDDATAENABLED[] = "BuildDataEnabled";
 const char ULM_REGISTRY_KEY_SAVEDVARPATH[] = "SavedVarPath";
 const char ULM_REGISTRY_KEY_LASTTIMESTAMP[] = "LastTimeStamp";
 const char ULM_REGISTRY_KEY_LASTBACKUPTIMESTAMP[] = "LastBackupTimeStamp";
 const char ULM_REGISTRY_KEY_LOGLEVEL[] = "LogLevel";
 const char ULM_REGISTRY_KEY_BACKUPDATAFILENAME[] = "BackupDataFilename";
-const char ULM_REGISTRY_KEY_BACKUPCHARDATAFOLDER[] = "BackupCharDataFolder";
+const char ULM_REGISTRY_KEY_BACKUPBUILDDATAFOLDER[] = "BackupBuildDataFolder";
 
 const std::string ULM_LOGSTRING_JOIN("#STR#");
 const int  ULM_LOGSTRING_MAXLENGTH = 1900;
@@ -119,7 +119,7 @@ CuespLogMonitorDlg::CuespLogMonitorDlg(CWnd* pParent) :
 	m_hSendQueueThread(NULL),
 	m_hSendQueueMutex(NULL),
 	m_StopSendQueueThread(0),
-	m_CharDataValidScreenShotCount(0)
+	m_BuildDataValidScreenShotCount(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
@@ -328,7 +328,7 @@ bool CuespLogMonitorDlg::ParseSavedVarAccount (const std::string VarName, void* 
 	ParseSavedVarDataSection("all",				&CuespLogMonitorDlg::ParseSavedVarAll);
 	ParseSavedVarDataSection("achievements",	&CuespLogMonitorDlg::ParseSavedVarAchievements);
 
-	ParseSavedVarDataSection("charData",		&CuespLogMonitorDlg::ParseSavedVarCharData);
+	ParseSavedVarDataSection("buildData",		&CuespLogMonitorDlg::ParseSavedVarBuildData);
 
 	ParseSavedVarDataSection("info",			&CuespLogMonitorDlg::ParseSavedVarInfo);
 	
@@ -519,63 +519,63 @@ bool CuespLogMonitorDlg::ParseSavedVarGlobals (const std::string VarName, void* 
 }
 
 
-bool CuespLogMonitorDlg::ParseSavedVarCharData(const std::string VarName, void* pUserData)
+bool CuespLogMonitorDlg::ParseSavedVarBuildData(const std::string VarName, void* pUserData)
 {
 	std::string Version = ParseSavedVarDataVersion();
 
-	m_CharData = "";
+	m_BuildData = "";
 	lua_getfield(m_pLuaState, -1, "data");
 
 	if (lua_isnil(m_pLuaState, -1))
 	{
 		lua_pop(m_pLuaState, 1);
-		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to find the 'data' field in charData section!");
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to find the 'data' field in buildData section!");
 		return false;
 	}
 
 	int numObjects = lua_rawlen(m_pLuaState, -1);
 
-	m_CharData = GetLuaVariableString("uespCharData", false);
+	m_BuildData = GetLuaVariableString("uespBuildData", false);
 
-	if (m_CharData.empty())
+	if (m_BuildData.empty())
 	{
 		lua_pop(m_pLuaState, 1);
-		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to parse the charData variable data!");
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to parse the buildData variable data!");
 		return false;
 	}
 
-	if (m_CharData.size() < CuespLogMonitorDlg::MINIMUM_VALID_CHARDATA_SIZE)
+	if (m_BuildData.size() < CuespLogMonitorDlg::MINIMUM_VALID_BUILDDATA_SIZE)
 	{
-		PrintLogLine(ULM_LOGLEVEL_INFO, "Found the charData section with no characters.");
-		m_CharData.clear();
+		PrintLogLine(ULM_LOGLEVEL_INFO, "Found the buildData section with no characters.");
+		m_BuildData.clear();
 		lua_pop(m_pLuaState, 1);
 		return true;
 	}
 
-	m_CharData += "\n";
-	m_CharData += "uespCharData.UserName = '";
-	m_CharData += GetCurrentUserName();
-	m_CharData += "'\n";
-	m_CharData += "uespCharData.WikiUser = '";
-	m_CharData += m_Options.UespWikiAccountName;
-	m_CharData += "'\n";
+	m_BuildData += "\n";
+	m_BuildData += "uespBuildData.UserName = '";
+	m_BuildData += GetCurrentUserName();
+	m_BuildData += "'\n";
+	m_BuildData += "uespBuildData.WikiUser = '";
+	m_BuildData += m_Options.UespWikiAccountName;
+	m_BuildData += "'\n";
 
-	ParseCharDataScreenshots();
+	ParseBuildDataScreenshots();
 
-	PrintLogLine(ULM_LOGLEVEL_INFO, "Found the charData section with %d characters (%u bytes).", numObjects, m_CharData.length());
-	PrintLogLine(ULM_LOGLEVEL_INFO, "Found %d valid screenShot files for the character data.", m_CharDataValidScreenShotCount);
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Found the buildData section with %d characters (%u bytes).", numObjects, m_BuildData.length());
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Found %d valid screenShot files for the character data.", m_BuildDataValidScreenShotCount);
 	lua_pop(m_pLuaState, 1);
 	return true;
 }
 
 
-bool CuespLogMonitorDlg::ParseCharDataScreenshots()
+bool CuespLogMonitorDlg::ParseBuildDataScreenshots()
 {
 	int index = lua_gettop(m_pLuaState);
 	int i = 1;
 	
-	m_CharDataScreenShots.clear();
-	m_CharDataValidScreenShotCount = 0;
+	m_BuildDataScreenShots.clear();
+	m_BuildDataValidScreenShotCount = 0;
 
 	while (true)
 	{
@@ -590,24 +590,24 @@ bool CuespLogMonitorDlg::ParseCharDataScreenshots()
 
 		if (lua_isnil(m_pLuaState, -1))
 		{
-			m_CharDataScreenShots.push_back("");
+			m_BuildDataScreenShots.push_back("");
 		}
 		else
 		{
-			m_CharDataScreenShots.push_back(lua_tostring(m_pLuaState, -1));
+			m_BuildDataScreenShots.push_back(lua_tostring(m_pLuaState, -1));
 
-			if (m_CharDataScreenShots.back().length() > 0)
+			if (m_BuildDataScreenShots.back().length() > 0)
 			{
-				bool Exists = eso::FileExists(m_CharDataScreenShots.back().c_str());
+				bool Exists = eso::FileExists(m_BuildDataScreenShots.back().c_str());
 
 				if (Exists)
 				{
-					PrintLogLine(ULM_LOGLEVEL_INFO, "%d: Found ScreenShot File: %s", i, m_CharDataScreenShots.back().c_str());
-					++m_CharDataValidScreenShotCount;
+					PrintLogLine(ULM_LOGLEVEL_INFO, "%d: Found ScreenShot File: %s", i, m_BuildDataScreenShots.back().c_str());
+					++m_BuildDataValidScreenShotCount;
 				}
 				else
 				{
-					PrintLogLine(ULM_LOGLEVEL_INFO, "%d: Missing ScreenShot File: %s", i, m_CharDataScreenShots.back().c_str());
+					PrintLogLine(ULM_LOGLEVEL_INFO, "%d: Missing ScreenShot File: %s", i, m_BuildDataScreenShots.back().c_str());
 				}
 			}
 		}
@@ -1127,11 +1127,11 @@ bool CuespLogMonitorDlg::SendQueuedData ()
 }
 
 
-bool CuespLogMonitorDlg::SendQueuedCharDataThread()
+bool CuespLogMonitorDlg::SendQueuedBuildDataThread()
 {
 	std::string FormQuery;
 
-	if (m_CharDataQueue.empty()) return true;
+	if (m_BuildDataQueue.empty()) return true;
 
 	if (WaitForSingleObject(m_hSendQueueMutex, INFINITE) != WAIT_OBJECT_0)
 	{
@@ -1139,19 +1139,19 @@ bool CuespLogMonitorDlg::SendQueuedCharDataThread()
 		return false;
 	}
 
-	std::string TempData = EncodeLogDataForQuery(m_CharDataQueue);
+	std::string TempData = EncodeLogDataForQuery(m_BuildDataQueue);
 	FormQuery += "chardata=";
 	FormQuery += TempData;
 	FormQuery += "&";
 
-	if (!SendFormData(m_Options.CharDataFormURL, FormQuery))
+	if (!SendFormData(m_Options.BuildDataFormURL, FormQuery))
 	{
 		ReleaseMutex(m_hSendQueueMutex);
 		return false;
 	}
 
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Sent %u bytes of character data!", FormQuery.size());
-	m_CharDataQueue.clear();
+	m_BuildDataQueue.clear();
 	ReleaseMutex(m_hSendQueueMutex);
 	return true;
 }
@@ -1220,20 +1220,20 @@ bool CuespLogMonitorDlg::CheckAndSendLogData ()
 }
 
 
-bool CuespLogMonitorDlg::CheckAndSendCharData()
+bool CuespLogMonitorDlg::CheckAndSendBuildData()
 {
 	bool Result = true;
 
-	Result &= BackupCharData();
-	Result &= QueueCharData();
+	Result &= BackupBuildData();
+	Result &= QueueBuildData();
 
 	return Result;
 }
 
 
-bool CuespLogMonitorDlg::QueueCharData()
+bool CuespLogMonitorDlg::QueueBuildData()
 {
-	if (m_CharData.empty()) return true;
+	if (m_BuildData.empty()) return true;
 
 	if (WaitForSingleObject(m_hSendQueueMutex, 1000) != WAIT_OBJECT_0)
 	{
@@ -1241,7 +1241,7 @@ bool CuespLogMonitorDlg::QueueCharData()
 		return false;
 	}
 
-	m_CharDataQueue += m_CharData;
+	m_BuildDataQueue += m_BuildData;
 
 	ReleaseMutex(m_hSendQueueMutex);
 	return true;
@@ -1513,7 +1513,7 @@ DWORD CuespLogMonitorDlg::SendQueueThreadProc()
 		SendQueuedDataThread();
 		Sleep(100);
 
-		SendQueuedCharDataThread();
+		SendQueuedBuildDataThread();
 		Sleep(100);
 	}
 
@@ -1714,7 +1714,7 @@ bool CuespLogMonitorDlg::LoadRegistrySettings (void)
 	m_Options.UseLogName = static_cast<ulm_uselogname_t>( pApp->GetProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_USELOGNAME, m_Options.UseLogName) );
 	m_Options.LogLevel = static_cast<ulm_loglevel_t>( pApp->GetProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_LOGLEVEL, m_Options.LogLevel) );
 	m_Options.Enabled = (pApp->GetProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_ENABLED, m_Options.Enabled) != 0);
-	m_Options.CharDataEnabled = (pApp->GetProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CHARDATAENABLED, m_Options.CharDataEnabled) != 0);
+	m_Options.BuildDataEnabled = (pApp->GetProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BUILDDATAENABLED, m_Options.BuildDataEnabled) != 0);
 
 	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CUSTOMLOGNAME, m_Options.CustomLogName.c_str());
 	m_Options.CustomLogName = Buffer;
@@ -1734,14 +1734,14 @@ bool CuespLogMonitorDlg::LoadRegistrySettings (void)
 	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPDATAFILENAME, m_Options.BackupDataFilename.c_str());
 	m_Options.BackupDataFilename = Buffer;
 
-	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPCHARDATAFOLDER, m_Options.BackupCharDataFolder.c_str());
-	m_Options.BackupCharDataFolder = Buffer;
+	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPBUILDDATAFOLDER, m_Options.BackupBuildDataFolder.c_str());
+	m_Options.BackupBuildDataFolder = Buffer;
 
 	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_FORMURL, m_Options.FormURL.c_str());
 	m_Options.FormURL = Buffer;
 
-	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CHARDATAFORMURL, m_Options.CharDataFormURL.c_str());
-	m_Options.CharDataFormURL = Buffer;
+	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BUILDDATAFORMURL, m_Options.BuildDataFormURL.c_str());
+	m_Options.BuildDataFormURL = Buffer;
 
 	return true;
 }
@@ -1756,15 +1756,15 @@ bool CuespLogMonitorDlg::SaveRegistrySettings (void)
 	pApp->WriteProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_USELOGNAME, m_Options.UseLogName);
 	pApp->WriteProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_LOGLEVEL,   m_Options.LogLevel);
 	pApp->WriteProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_ENABLED,    m_Options.Enabled);
-	pApp->WriteProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CHARDATAENABLED, m_Options.CharDataEnabled);
+	pApp->WriteProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BUILDDATAENABLED, m_Options.BuildDataEnabled);
 
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CUSTOMLOGNAME, m_Options.CustomLogName.c_str());
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_UESPWIKIUSERNAME, m_Options.UespWikiAccountName.c_str());
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_FORMURL,       m_Options.FormURL.c_str());
-	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CHARDATAFORMURL, m_Options.CharDataFormURL.c_str());
+	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BUILDDATAFORMURL, m_Options.BuildDataFormURL.c_str());
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_SAVEDVARPATH,  m_Options.SavedVarPath.c_str());
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPDATAFILENAME, m_Options.BackupDataFilename.c_str());
-	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPCHARDATAFOLDER, m_Options.BackupCharDataFolder.c_str());
+	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPBUILDDATAFOLDER, m_Options.BackupBuildDataFolder.c_str());
 
 	Buffer.Format("%I64d", m_Options.LastTimeStamp);
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_LASTTIMESTAMP, Buffer);
@@ -2072,7 +2072,7 @@ bool CuespLogMonitorDlg::DoLogCheck(const bool OverrideEnable)
 		return false;
 	}
 
-	if (!CheckAndSendCharData())
+	if (!CheckAndSendBuildData())
 	{
 		ReleaseMutex(m_hSendQueueMutex);
 		return false;
@@ -2130,7 +2130,8 @@ bool CuespLogMonitorDlg::DeleteOldLogDataAccount (const std::string VarName, voi
 	DeleteOldLogDataSection("all", -1);
 	DeleteOldLogDataSection("globals", -1);
 	DeleteOldLogDataSection("achievements", -1);
-	DeleteOldLogDataSection("charData", -1);
+	DeleteOldLogDataSection("buildData", -1);
+
 	return true;
 }
 
@@ -2242,7 +2243,7 @@ void CuespLogMonitorDlg::OnViewOptions()
 }
 
 
-bool CuespLogMonitorDlg::BackupCharData()
+bool CuespLogMonitorDlg::BackupBuildData()
 {
 	eso::CFile File;
 	time_t rawtime;
@@ -2252,11 +2253,11 @@ bool CuespLogMonitorDlg::BackupCharData()
 	CString FilenameBuffer;
 	int FileIndex = 0;
 
-	if (m_Options.BackupCharDataFolder.empty() || m_CharData.empty()) return true;
+	if (m_Options.BackupBuildDataFolder.empty() || m_BuildData.empty()) return true;
 
-	if (!eso::EnsurePathExists(m_Options.BackupCharDataFolder))
+	if (!eso::EnsurePathExists(m_Options.BackupBuildDataFolder))
 	{
-		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to create the backup folder '%s'!", m_Options.BackupCharDataFolder.c_str());
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to create the backup folder '%s'!", m_Options.BackupBuildDataFolder.c_str());
 		return false;
 	}
 
@@ -2273,11 +2274,11 @@ bool CuespLogMonitorDlg::BackupCharData()
 		strftime(DateBuffer, 70, "%Y-%m-%d-%H%M%S", timeinfo);
 
 		if (FileIndex == 0)
-			FilenameBuffer.Format("uespBackupCharData-%s.txt", DateBuffer);
+			FilenameBuffer.Format("uespBackupBuildData-%s.txt", DateBuffer);
 		else
-			FilenameBuffer.Format("uespBackupCharData-%s-%d.txt", DateBuffer, FileIndex);
+			FilenameBuffer.Format("uespBackupBuildData-%s-%d.txt", DateBuffer, FileIndex);
 
-		Filename = eso::TerminatePath(m_Options.BackupCharDataFolder);
+		Filename = eso::TerminatePath(m_Options.BackupBuildDataFolder);
 		Filename += FilenameBuffer;
 		++FileIndex;
 	} while (eso::FileExists(Filename.c_str()));
@@ -2288,13 +2289,13 @@ bool CuespLogMonitorDlg::BackupCharData()
 		return false;
 	}
 
-	if (!File.WriteString(m_CharData))
+	if (!File.WriteString(m_BuildData))
 	{
 		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to write the character data to the backup file!");
 		return false;
 	}
 
-	PrintLogLine(ULM_LOGLEVEL_INFO, "Backed up %u bytes of character data...", m_CharData.size());
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Backed up %u bytes of character data...", m_BuildData.size());
 	return true;
 }
 

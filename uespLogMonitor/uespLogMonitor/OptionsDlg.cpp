@@ -43,9 +43,9 @@ void COptionsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_ENABLED_CHECK, m_EnabledCheck);
 	DDX_Control(pDX, IDC_BACKUPFILENAME_TEXT, m_BackupDataFilename);
 	DDX_Control(pDX, IDC_BACKUPTIMESTAMP_TEXT, m_BackupTimestampText);
-	DDX_Control(pDX, IDC_CHARDATAENABLED_CHECK, m_CharDataEnabledCheck);
-	DDX_Control(pDX, IDC_CHARDATAFORMURL_TEXT, m_CharDataFormURLText);
-	DDX_Control(pDX, IDC_BACKUPCHARDATAFOLDER_TEXT, m_BackupCharDataFolder);
+	DDX_Control(pDX, IDC_CHARDATAENABLED_CHECK, m_BuildDataEnabledCheck);
+	DDX_Control(pDX, IDC_CHARDATAFORMURL_TEXT, m_BuildDataFormURLText);
+	DDX_Control(pDX, IDC_BACKUPCHARDATAFOLDER_TEXT, m_BackupBuildDataFolder);
 	DDX_Control(pDX, IDC_UESPWIKIUSERNAME_TEXT, m_UespWikiUserNameText);
 }
 
@@ -150,8 +150,8 @@ void COptionsDlg::GetControlData()
 	m_BackupDataFilename.GetWindowText(Buffer);
 	m_pOptions->BackupDataFilename = Buffer;
 
-	m_BackupCharDataFolder.GetWindowText(Buffer);
-	m_pOptions->BackupCharDataFolder = Buffer;
+	m_BackupBuildDataFolder.GetWindowText(Buffer);
+	m_pOptions->BackupBuildDataFolder = Buffer;
 
 	m_CustomNameText.GetWindowText(Buffer);
 	m_pOptions->CustomLogName = Buffer;
@@ -164,10 +164,10 @@ void COptionsDlg::GetControlData()
 
 	m_pOptions->Enabled = m_EnabledCheck.GetCheck() != 0;
 
-	m_pOptions->CharDataEnabled = m_CharDataEnabledCheck.GetCheck() != 0;
+	m_pOptions->BuildDataEnabled = m_BuildDataEnabledCheck.GetCheck() != 0;
 
-	m_CharDataFormURLText.GetWindowText(Buffer);
-	m_pOptions->CharDataFormURL = Buffer;
+	m_BuildDataFormURLText.GetWindowText(Buffer);
+	m_pOptions->BuildDataFormURL = Buffer;
 }
 
 
@@ -191,15 +191,15 @@ void COptionsDlg::SetControlData()
 	m_CustomNameText.SetWindowText(m_pOptions->CustomLogName.c_str());
 	m_UespWikiUserNameText.SetWindowText(m_pOptions->UespWikiAccountName.c_str());
 	m_BackupDataFilename.SetWindowText(m_pOptions->BackupDataFilename.c_str());
-	m_BackupCharDataFolder.SetWindowText(m_pOptions->BackupCharDataFolder.c_str());
+	m_BackupBuildDataFolder.SetWindowText(m_pOptions->BackupBuildDataFolder.c_str());
 
 	m_EnabledCheck.SetCheck(m_pOptions->Enabled);
 
 	SelectComboItem(m_LogLevelList, m_pOptions->LogLevel);
 	SelectComboItem(m_LogNameList, m_pOptions->UseLogName);
 
-	m_CharDataEnabledCheck.SetCheck(m_pOptions->CharDataEnabled);
-	m_CharDataFormURLText.SetWindowText(m_pOptions->CharDataFormURL.c_str());
+	m_BuildDataEnabledCheck.SetCheck(m_pOptions->BuildDataEnabled);
+	m_BuildDataFormURLText.SetWindowText(m_pOptions->BuildDataFormURL.c_str());
 
 	UpdateCustomNameState();
 }
@@ -281,7 +281,7 @@ void COptionsDlg::OnBnClickedBrowsebackupchardataButton()
 	CFolderPickerDialog m_dlg;
 	CString Buffer;
 
-	m_BackupCharDataFolder.GetWindowText(Buffer);
+	m_BackupBuildDataFolder.GetWindowText(Buffer);
 
 	m_dlg.m_ofn.lpstrTitle = _T("Choose Folder for Backup Character Data:");
 	m_dlg.m_ofn.lpstrInitialDir = Buffer;
@@ -291,5 +291,5 @@ void COptionsDlg::OnBnClickedBrowsebackupchardataButton()
 	Buffer = m_dlg.GetPathName();  
 	Buffer += _T("\\");
 	
-	m_BackupCharDataFolder.SetWindowText(Buffer);
+	m_BackupBuildDataFolder.SetWindowText(Buffer);
 }

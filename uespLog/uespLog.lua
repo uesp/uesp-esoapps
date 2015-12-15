@@ -4875,8 +4875,9 @@ SLASH_COMMANDS["/uespcount"] = function(cmd)
 	local count1, size1 = uespLog.countSection("all")
 	local count2, size2 = uespLog.countSection("globals")
 	local count3, size3 = uespLog.countSection("achievements")
-	local count = count1 + count2 + count3
-	local size = size1 + size2 + size3
+	local count4, size4 = uespLog.countSection("charData")
+	local count = count1 + count2 + count3 + count4
+	local size = size1 + size2 + size3 + size4
 	
 	uespLog.MsgColor(uespLog.countColor, "UESP:: Total of " .. tostring(count) .. " records taking up " .. string.format("%.2f", size/1000000) .. " MB")
 end

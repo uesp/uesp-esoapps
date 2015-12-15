@@ -4744,7 +4744,7 @@ function uespLog.CountVarReturns(...)
 end
 
 
-uespLog.countVariable = function(object)
+ function uespLog.countVariable(object)
 	local size = 0
 	local count = 0
 	
@@ -4753,12 +4753,17 @@ uespLog.countVariable = function(object)
 	end
 	
 	for k, v in pairs(object) do
+		local vType = type(v)
 		count = count + 1
 		
-		if (type(v) == "string") then
+		if (vType == "string") then
 			size = size + #v + 16
-		elseif (type(v) == "number") then
+		elseif (vType == "number") then
 			size = size + 4
+		elseif (vType == "table") then
+			local tCount, tSize = uespLog.countVariable(v)
+			count = count + tCount - 1
+			size = size + tSize
 		end
 	end
 	
@@ -4766,12 +4771,16 @@ uespLog.countVariable = function(object)
 end
 
 
-uespLog.countSection = function(section)
+function uespLog.countSection(section)
 	local size = 0
 	local count = 0
 	
 	if (uespLog.savedVars[section] ~= nil) then
 		count, size = uespLog.countVariable(uespLog.savedVars[section].data)
+		
+		if (section == "charData") then
+			count = #uespLog.savedVars[section].data
+		end
 	end
 	
 	uespLog.Msg("UESP:: Section \"" .. tostring(section) .. "\" has " .. tostring(count) .. " records taking up " .. string.format("%.2f", size/1000000) .. " MB")

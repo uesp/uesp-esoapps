@@ -189,6 +189,7 @@ function uespLog.CreateCharData (note, forceSave)
 	charData.ActionBar = uespLog.CreateCharDataActionBar()
 	charData.EquipSlots = uespLog.CreateCharDataEquipSlots()
 	charData.ChampionPoints = uespLog.CreateCharDataChampionPoints()
+	charData.Crafting = uespLog.CreateCharDataCrafting()
 	
 	charData.Skills, charData.SkillPointsUsed = uespLog.CreateCharDataSkills()
 	charData.SkillPointsTotal = charData.SkillPointsUsed + charData.SkillPointsUnused
@@ -202,6 +203,42 @@ function uespLog.CreateCharData (note, forceSave)
 	end
 	
 	return charData
+end
+
+
+uespLog.CHARDATA_CRAFTSTYLE_NAMES = {
+	[1] = 'Altmer',
+	[2] = 'Dunmer',
+	[3] = 'Bosmer',
+	[4] = 'Nord',
+	[5] = 'Breton',
+	[6] = 'Redguard',
+	[7] = 'Khajiit',
+	[8] = 'Orc',
+	[9] = 'Argonian',
+	[10] = 'Imperial',
+	[11] = 'Ancient Elf',
+	[12] = 'Barbaric',
+	[13] = 'Primal',
+	[14] = 'Daedric',
+	[15] = 'Dwemer',
+	[16] = 'Glass',
+	[17] = 'Xivkyn',
+	[18] = 'Akaviri',
+	[19] = 'Mercenary',
+	[20] = 'Yokudan',
+	[21] = 'Ancient Orc',
+}
+
+
+function uespLog.CreateCharDataCrafting()
+	local crafting = {}
+	
+	for k, styleName in ipairs(uespLog.CHARDATA_CRAFTSTYLE_NAMES) do
+		crafting[styleName] = uespLog.GetStyleKnown(styleName)
+	end	
+	
+	return crafting
 end
 
 

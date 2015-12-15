@@ -287,6 +287,7 @@
 --			- Zipped install file includes the root folder "uespLog".
 --
 --		- v0.42 -
+--			- Fixed known/unknown display of the Mercenary style motifs.
 --
 --	
 
@@ -3052,7 +3053,26 @@ function uespLog.IsItemLinkBookKnown(itemLink)
 		-- Mercenary Motifs
 		-- Crafting Motifs 19, Chap. 12: Mercenary XXXXX
 		-- Crafting Motifs 19, Chapter 6: Mercenary XXXXX
-	if (bookIndex == 19 or styleName == "Mercenary") then
+		-- Crown Crafting Motifs 19: Mercenary
+		-- Crafting Motifs 19: Mercenary
+	if (itemName == "Crown Crafting Motifs 19: Mercenary" or itemName == "Crafting Motifs 19: Mercenary") then
+	
+		if (baseKnown) then
+			return baseKnown, true
+		end
+		
+		local allKnown = true
+		local isCertain = true
+		
+		for i = 1, 14 do
+			allKnown = allKnown and (uespLog.savedVars.charInfo.data.mercStyle[i] or false)
+			isCertain = isCertain and (uespLog.savedVars.charInfo.data.mercStyle[i] ~= nil)
+			uespLog.DebugMsg(" i: "..tostring(i)..":"..tostring(allKnown)..":"..tostring(isCertain))
+		end
+		
+		return allKnown, isCertain
+		
+	elseif (bookIndex == 19 or styleName == "Mercenary") then
 	
 		if (baseKnown) then
 			return baseKnown, true

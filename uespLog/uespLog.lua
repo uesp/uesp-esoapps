@@ -1340,7 +1340,7 @@ function uespLog.Initialize( self, addOnName )
 		["globals"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "globals", uespLog.DEFAULT_DATA),
 		["info"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "info", uespLog.DEFAULT_DATA),
 		["settings"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "settings", uespLog.DEFAULT_SETTINGS),
-		["charData"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "charData", uespLog.DEFAULT_CHARDATA),
+		["buildData"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "buildData", uespLog.DEFAULT_CHARDATA),
 		["charInfo"] = ZO_SavedVars:New("uespLogSavedVars", uespLog.DATA_VERSION, "charInfo", uespLog.DEFAULT_CHARINFO),
 	}
 	
@@ -4778,7 +4778,7 @@ function uespLog.countSection(section)
 	if (uespLog.savedVars[section] ~= nil) then
 		count, size = uespLog.countVariable(uespLog.savedVars[section].data)
 		
-		if (section == "charData") then
+		if (section == "buildData") then
 			count = #uespLog.savedVars[section].data
 		end
 	end
@@ -4884,7 +4884,7 @@ SLASH_COMMANDS["/uespcount"] = function(cmd)
 	local count1, size1 = uespLog.countSection("all")
 	local count2, size2 = uespLog.countSection("globals")
 	local count3, size3 = uespLog.countSection("achievements")
-	local count4, size4 = uespLog.countSection("charData")
+	local count4, size4 = uespLog.countSection("buildData")
 	local count = count1 + count2 + count3 + count4
 	local size = size1 + size2 + size3 + size4
 	
@@ -6712,7 +6712,7 @@ function uespLog.ClearAllSavedVarSections()
 	
 		if (key == "settings" or key == "info" or key == "charInfo") then
 			-- Keep data
-		elseif (key == "globals" or key == "all" or key == "achievements" or key == "charData") then
+		elseif (key == "globals" or key == "all" or key == "achievements" or key == "buildData") then
 			uespLog.savedVars[key].data = { }
 			uespLog.savedVars[key].version = uespLog.DATA_VERSION
 		else

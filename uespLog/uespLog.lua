@@ -298,6 +298,8 @@
 --			  known or unknown.
 --					/uespstyle [stylename]     Shows which chapters you currently know or not
 --					/uespstyle liststyles      Shows all the style names accepted by the command
+--			- uespLogMonitor updated to v? to include the character build data upload and a few
+--			  related bug fixes.
 --			
 --
 --	

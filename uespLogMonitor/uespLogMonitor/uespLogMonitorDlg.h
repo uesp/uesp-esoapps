@@ -40,21 +40,21 @@ struct ulm_options_t
 	const static ulm_loglevel_t DEFAULT_LOGLEVEL = ULM_LOGLEVEL_INFO;
 	const static std::string DEFAULT_FORMURL;
 	const static std::string DEFAULT_BACKUPDATAFILENAME;
-	const static std::string DEFAULT_BACKUPCHARDATAFOLDER;
-	const static std::string DEFAULT_CHARDATA_FORMURL;
+	const static std::string DEFAULT_BACKUPBUILDDATAFOLDER;
+	const static std::string DEFAULT_BUILDDATA_FORMURL;
 
 	int					UpdateTime;		/* Time between updates in seconds */
 	ulm_uselogname_t	UseLogName;
 	ulm_loglevel_t		LogLevel;
 	std::string			CustomLogName;
 	std::string			FormURL;
-	std::string			CharDataFormURL;
+	std::string			BuildDataFormURL;
 	std::string			SavedVarPath;
 	std::string			BackupDataFilename;
-	std::string			BackupCharDataFolder;
+	std::string			BackupBuildDataFolder;
 	std::string			UespWikiAccountName;
 	bool				Enabled;
-	bool				CharDataEnabled;
+	bool				BuildDataEnabled;
 	__int64				LastTimeStamp;
 	__int64				LastBackupTimeStamp;
 
@@ -64,13 +64,13 @@ struct ulm_options_t
 		LogLevel(DEFAULT_LOGLEVEL),
 		CustomLogName(),
 		FormURL(DEFAULT_FORMURL),
-		CharDataFormURL(DEFAULT_CHARDATA_FORMURL),
+		BuildDataFormURL(DEFAULT_BUILDDATA_FORMURL),
 		Enabled(true),
-		CharDataEnabled(true),
+		BuildDataEnabled(true),
 		SavedVarPath(),
 		LastTimeStamp(0),
 		BackupDataFilename(DEFAULT_BACKUPDATAFILENAME),
-		BackupCharDataFolder(DEFAULT_BACKUPCHARDATAFOLDER),
+		BackupBuildDataFolder(DEFAULT_BACKUPBUILDDATAFOLDER),
 		LastBackupTimeStamp(0)
 	{ 
 	}
@@ -96,7 +96,7 @@ typedef bool (CuespLogMonitorDlg::*ULM_LUA_TABLEITERATOR) (const std::string Var
 class CuespLogMonitorDlg : public CDialogEx
 {
 protected:
-	const static int MINIMUM_VALID_CHARDATA_SIZE = 24;
+	const static int MINIMUM_VALID_BUILDDATA_SIZE = 24;
 
 	NOTIFYICONDATA	m_TrayIconData;
 	bool			m_IsInTray;
@@ -121,15 +121,15 @@ protected:
 	
 	CUlmLogDataArray	m_SendQueue;
 	CUlmLogDataArray	m_BackupQueue;   // Data that should be backed up but not sent
-	std::string			m_CharDataQueue;
+	std::string			m_BuildDataQueue;
 
 	HANDLE				m_hSendQueueThread;
 	HANDLE				m_hSendQueueMutex;
 	LONG				m_StopSendQueueThread;
 
-	std::string					m_CharData;
-	std::vector<std::string>	m_CharDataScreenShots;
-	int							m_CharDataValidScreenShotCount;
+	std::string					m_BuildData;
+	std::vector<std::string>	m_BuildDataScreenShots;
+	int							m_BuildDataValidScreenShotCount;
 
 
 public:
@@ -178,13 +178,13 @@ protected:
 	bool ParseSavedVarUserName		(const std::string VarName, void* pUserData);
 	bool ParseSavedVarAccount		(const std::string VarName, void* pUserData);
 	bool ParseSavedVarSection		(const std::string VarName, void* pUserData);
-	bool ParseSavedVarCharData      (const std::string VarName, void* pUserData);
+	bool ParseSavedVarBuildData     (const std::string VarName, void* pUserData);
 	bool ParseSavedVarGlobals		(const std::string VarName, void* pUserData);
 	bool ParseSavedVarAchievements	(const std::string VarName, void* pUserData);
 	bool ParseSavedVarAll			(const std::string VarName, void* pUserData);
 	bool ParseSavedVarInfo			(const std::string VarName, void* pUserData);
 
-	bool ParseCharDataScreenshots();
+	bool ParseBuildDataScreenshots();
 
 	std::string ParseSavedVarDataVersion();
 
@@ -200,8 +200,8 @@ protected:
 	bool CheckAndSendLogDataAchievement();
 	bool SendAllLogData();
 
-	bool CheckAndSendCharData();
-	bool QueueCharData();
+	bool CheckAndSendBuildData();
+	bool QueueBuildData();
 
 	bool SendLogData (CUlmLogDataArray& DataArray);
 	bool SendLogData (const std::string Section, const ulm_sectiondata_t Data);
@@ -230,14 +230,14 @@ protected:
 	void UpdateDialogTitle();
 
 	bool BackupData (void);
-	bool BackupCharData(void);
+	bool BackupBuildData(void);
 
 	bool SendEntireLog(const std::string Filename);
 
 	void InitSendQueueThread();
 	void DestroySendQueueThread();
 	bool SendQueuedDataThread();
-	bool SendQueuedCharDataThread();
+	bool SendQueuedBuildDataThread();
 
 
 public:

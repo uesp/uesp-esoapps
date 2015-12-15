@@ -22,6 +22,7 @@ uespLog/localdeploy.sh
 # Ingore backup data
 uespLogMonitor/uespLogMonitor/uespLog_backup*
 uespLogMonitor/uespLogMonitor/BackupCharData*
+uespLogMonitor/uespLogMonitor/BackupBuildData*
 
 #
 parseGlobals/test*

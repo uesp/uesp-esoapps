@@ -50,9 +50,9 @@ public:
 	CEdit m_BackupDataFilename;
 	afx_msg void OnBnClickedBrowsebackupdataButton();
 	CEdit m_BackupTimestampText;
-	CButton m_CharDataEnabledCheck;
-	CEdit m_CharDataFormURLText;
-	CEdit m_BackupCharDataFolder;
+	CButton m_BuildDataEnabledCheck;
+	CEdit m_BuildDataFormURLText;
+	CEdit m_BackupBuildDataFolder;
 	afx_msg void OnBnClickedBrowsebackupchardataButton();
 	CEdit m_UespWikiUserNameText;
 };

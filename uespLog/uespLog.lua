@@ -6722,7 +6722,7 @@ function uespLog.ClearRootSavedVar()
 				for key4, value4 in pairs(value3) do	-- globals, all, info, settings, ....
 					uespLog.DebugExtraMsg("UESP::Clearing saved data section "..tostring(key4))
 					
-					if (key4 == "settings" or key4 == "info") then
+					if (key4 == "settings" or key4 == "info" or key4 == "charInfo") then
 						-- Keep data
 					elseif (key4 == "globals" or key4 == "all" or key4 == "achievements") then
 						uespLogSavedVars[key1][key2][key3][key4].data = { }

@@ -3039,6 +3039,7 @@ uespLog.WEAPONTYPE_TO_CRAFTBOOKCHAPTER = {
 
                  
 function uespLog.IsItemLinkBookKnown(itemLink)
+	local baseKnown = IsItemLinkBookKnown(itemLink)
 	local itemName = GetItemLinkName(itemLink)
 	local bookIndex, chapterIndex, styleName, slotName = itemName:match("Crafting Motifs ([%d]+), Chapter ([%d]+): ([%a]+) ([%a]+)")
 	
@@ -3052,6 +3053,11 @@ function uespLog.IsItemLinkBookKnown(itemLink)
 		-- Crafting Motifs 19, Chap. 12: Mercenary XXXXX
 		-- Crafting Motifs 19, Chapter 6: Mercenary XXXXX
 	if (bookIndex == 19 or styleName == "Mercenary") then
+	
+		if (baseKnown) then
+			return baseKnown, true
+		end
+		
 		chapterIndex = tonumber(chapterIndex)
 		local isKnown = uespLog.savedVars.charInfo.data.mercStyle[chapterIndex] or false
 		local isCertain = uespLog.savedVars.charInfo.data.mercStyle[chapterIndex] ~= nil
@@ -3059,7 +3065,7 @@ function uespLog.IsItemLinkBookKnown(itemLink)
 		return isKnown, isCertain
 	end
 
-	return IsItemLinkBookKnown(itemLink), true
+	return baseKnown, true
 end
 
 

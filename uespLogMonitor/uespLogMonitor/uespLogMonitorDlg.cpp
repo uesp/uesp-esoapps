@@ -21,6 +21,10 @@
 		- HTTP send queue is now threaded to prevent delays/pauses in UI when sending 
 		  large amounts of data.
 
+	v0.20 - December 2015
+		- Added support for automatic uploading of character build data.
+		- Fix for loading Lua files with a mix of number and non-number keys.
+
 
 	TODO:
 		- Proper UI threading.

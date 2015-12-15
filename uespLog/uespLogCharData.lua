@@ -92,7 +92,7 @@ function uespLog.InitCharData()
 end
 
 
-function uespLog.SaveCharData (note, forceSave)
+function uespLog.SaveBuildData (note, forceSave)
 	forceSave = forceSave or false
 	local charData = uespLog.CreateCharData(note, forceSave)
 		
@@ -101,10 +101,10 @@ function uespLog.SaveCharData (note, forceSave)
 		return false
 	end
 	
-	local arraySize = #uespLog.savedVars.charData.data
-	uespLog.savedVars.charData.data[arraySize + 1] = charData
+	local arraySize = #uespLog.savedVars.buildData.data
+	uespLog.savedVars.buildData.data[arraySize + 1] = charData
 	
-	uespLog.Msg("UESP::Saved current character data ("..tostring(#uespLog.savedVars.charData.data).." characters in log).")
+	uespLog.Msg("UESP::Saved current character data ("..tostring(#uespLog.savedVars.buildData.data).." characters in log).")
 	return true
 end
 
@@ -142,6 +142,7 @@ function uespLog.CreateCharData (note, forceSave)
 	charData.BattleLevel = GetUnitBattleLevel("player")
 	charData.BattleVeteranRank = GetUnitVetBattleLevel("player")
 	charData.BuildType = uespLog.GetCharDataBuildType()
+	charData.ActiveAbilityBar = GetActiveWeaponPairInfo()
 	
 	charData.Alliance = GetAllianceName(GetUnitAlliance("player"))
 	charData.AllianceRank = GetUnitAvARank("player")
@@ -682,35 +683,35 @@ function uespLog.OnActiveWeaponPairChanged (eventCode, activeWeaponPair, locked)
 end
 
 
-function uespLog.ClearCharData()
-	uespLog.savedVars.charData.data = { }
-	uespLog.Msg("UESP::Cleared logged character data.")
+function uespLog.ClearBuildData()
+	uespLog.savedVars.buildData.data = { }
+	uespLog.Msg("UESP::Cleared logged character build data.")
 end
 
 
-function uespLog.Command_SaveCharData (cmd)
+function uespLog.Command_SaveBuildData (cmd)
 	cmdWords = {}
 	for word in cmd:gmatch("%S+") do table.insert(cmdWords, word) end
 	
 	firstCmd = string.lower(cmdWords[1]) or ""
 	
 	if (firstCmd == "help" or cmd == "" or (firstCmd == "forcesave" and #cmdWords <= 1)) then
-		uespLog.Msg("UESP::Saves current character data to the log file (or '/usc').")
-		uespLog.Msg(".     /usc help             = Shows basic command format")
-		uespLog.Msg(".     /usc reset            = Clears character log")
-		uespLog.Msg(".     /usc status           = Shows current character log status")
-		uespLog.Msg(".     /usc [buildName]      = Saves current character with given build name")
-		uespLog.Msg(".     /usc forcesave [name] = Saves character ignoring any errors")
+		uespLog.Msg("UESP::Saves current character build data to the log file (or '/usb').")
+		uespLog.Msg(".     /usb help             = Shows basic command format")
+		uespLog.Msg(".     /usb reset            = Clears character log")
+		uespLog.Msg(".     /usb status           = Shows current character log status")
+		uespLog.Msg(".     /usb [buildName]      = Saves current character with given build name")
+		uespLog.Msg(".     /usb forcesave [name] = Saves character ignoring any errors")
 	elseif (firstCmd == "status") then
-		uespLog.Msg("UESP::Currently there are "..tostring(#uespLog.savedVars.charData.data).." characters saved in log.")
+		uespLog.Msg("UESP::Currently there are "..tostring(#uespLog.savedVars.buildData.data).." character builds saved in log.")
 	elseif (firstCmd == "reset" or firstCmd == "clear") then
-		uespLog.ClearCharData()
+		uespLog.ClearBuildData()
 	elseif (firstCmd == "forcesave") then
 		cmdWords[1] = nil
 		buildName = table.concat(cmdWords, ' ')
-		uespLog.SaveCharData(buildName, true)
+		uespLog.SaveBuildData(buildName, true)
 	else
-		uespLog.SaveCharData(cmd, false)
+		uespLog.SaveBuildData(cmd, false)
 	end
 	
 end
@@ -758,8 +759,8 @@ function uespLog.GetSkillPointsUsed()
 end
 
 
-SLASH_COMMANDS["/uespsavechar"] = uespLog.Command_SaveCharData
-SLASH_COMMANDS["/usc"] = uespLog.Command_SaveCharData
+SLASH_COMMANDS["/uespsavebuild"] = uespLog.Command_SaveBuildData
+SLASH_COMMANDS["/usb"] = uespLog.Command_SaveBuildData
 
 
 SLASH_COMMANDS["/uespskillpoints"] = function (cmd)

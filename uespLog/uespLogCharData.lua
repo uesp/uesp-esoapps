@@ -235,7 +235,23 @@ function uespLog.CreateCharDataCrafting()
 	local crafting = {}
 	
 	for k, styleName in ipairs(uespLog.CHARDATA_CRAFTSTYLE_NAMES) do
-		crafting[styleName] = uespLog.GetStyleKnown(styleName)
+		local known = uespLog.GetStyleKnown(styleName)
+		
+		if (type(known) == "table") then
+			crafting[styleName] = {}
+			
+			for k, v in ipairs(known) do
+				if (v) then
+					crafting[styleName][k] = 1
+				else
+					crafting[styleName][k] = 0
+				end
+			end
+		elseif (known) then
+			crafting[styleName] = 1
+		else
+			crafting[styleName] = 0
+		end
 	end	
 	
 	return crafting

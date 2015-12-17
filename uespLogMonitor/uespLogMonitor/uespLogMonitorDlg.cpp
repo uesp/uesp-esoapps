@@ -1588,17 +1588,6 @@ BOOL CuespLogMonitorDlg::OnInitDialog()
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Program initialized...");
 	PrintSettings();
 
-		/* Load the saved variable file */
-	int Result = luaL_dofile(m_pLuaState, "d:\\temp\\test.lua");
-
-	if (Result != 0)
-	{
-		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to read the saved variable data (LUA error code %d)!", Result);
-		return false;
-	}
-
-	SaveLuaVariable("d:\\temp\\test_out.lua", "EquipSlots");
-		
 	return TRUE;
 }
 

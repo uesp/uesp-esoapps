@@ -256,7 +256,7 @@ bool CuespLogMonitorDlg::LuaIterateSimpleTableInOrder (const int StackIndex, ULM
 		{
 			int Value = lua_tointeger(m_pLuaState, -2);
 			
-			if (Value > MaxValidIndex)
+			if (Value <= 0 || Value > MaxValidIndex)
 			{
 				VarName = std::to_string(Value);
 				(this->*TableIteratorMethod)(VarName, pUserData);

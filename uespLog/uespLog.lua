@@ -286,7 +286,9 @@
 --			- Fixed issue with message if you looted something at the same time as a group member.
 --			- Zipped install file includes the root folder "uespLog".
 --
---		- v0.50 -
+--		- v0.50 - 17 December 2015
+--			- REQUIRED UPDATE: uespLogMonitor updated to v0.20 to include the character build data
+--			  upload and some critical related bug fixes.
 --			- Fixed known/unknown display of the Mercenary style motifs. While the base game API is
 --			  is still bugged for this style (it always says the style/chapter is unknown), uespLog
 --			  now manually tracks the mercenary style. To setup simply visit a blacksmith and a 
@@ -298,8 +300,33 @@
 --			  known or unknown.
 --					/uespstyle [stylename]     Shows which chapters you currently know or not
 --					/uespstyle liststyles      Shows all the style names accepted by the command
---			- uespLogMonitor updated to v? to include the character build data upload and a few
---			  related bug fixes.
+--
+--			CHARACTER BUILD SAVING (needs testing)
+--				A new feature which permits the saving of character build data (equipment, action bars
+--				skills, champion points, buffs, etc...) and the uploading of the build data to the 
+--				UESP.net website for display (http://www.uesp.net/wiki/Special:EsoBuildData).
+--
+--				For more detailed instructions see: http://www.uesp.net/wiki/UESPWiki:EsoCharData
+--
+--				To Save Characters:
+--					Use the /uespsavebuild (or /usb) command in the game:
+--						/usb [buildname]			   -- Saves the character data
+--						/usb forcesave [buildname]     -- Saves data and ignores any errors
+--						/usb status					   -- Shows how many saved builds are in the log
+--						/usb clear					   -- Deletes all builds currently in the log
+--
+--				To Upload Characters:
+--					On PC/Windows you can use the included uespLogMonitor program to automatically
+--					upload the saved build data when the uespLog saved variabled file is updated.
+--
+--					http://esolog.uesp.net/submit.php -- Uploads all logged and character data
+--						from a saved variable file.
+--
+--					http://esobuilds.uesp.net/submit.php -- Uploads just the build data from a
+--						saved variable file.
+--
+--				Submit bugs and feature requests to @Reorx in game or at http://www.uesp.net/wiki/UESPWiki_talk:EsoCharData		
+--					
 --			
 --
 --	
@@ -309,7 +336,7 @@
 uespLog = { }
 
 uespLog.version = "0.50"
-uespLog.releaseDate = "2 December 2015"
+uespLog.releaseDate = "17 December 2015"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

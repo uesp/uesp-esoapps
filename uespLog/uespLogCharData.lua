@@ -355,7 +355,6 @@ function uespLog.CreateCharDataEquipSlots()
 	local wornSlots = GetBagSize(BAG_WORN)
 	local i
 	local equipSlots = { }
-	
 
 	for i = 0, wornSlots do
 		if (HasItemInSlot(BAG_WORN, i)) then

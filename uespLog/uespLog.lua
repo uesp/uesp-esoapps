@@ -6779,6 +6779,7 @@ SLASH_COMMANDS["/umi"] = SLASH_COMMANDS["/uespmineitems"]
 
 
 SLASH_COMMANDS["/uespreset"] = function (cmd)
+	cmd = cmd:lower()
 	
 	if (cmd == "all") then
 		uespLog.ClearSavedVarSection("all")
@@ -6789,7 +6790,7 @@ SLASH_COMMANDS["/uespreset"] = function (cmd)
 		uespLog.ClearRootSavedVar()
 		uespLog.ClearBuildData()
 		uespLog.Msg("UESP::Reset all logged data")
-	elseif (cmd == "chardata") then
+	elseif (cmd == "chardata" or cmd == "builddata") then
 		uespLog.ClearBuildData()
 	elseif (cmd == "log") then
 		uespLog.ClearSavedVarSection("all")

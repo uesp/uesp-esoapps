@@ -6787,10 +6787,10 @@ SLASH_COMMANDS["/uespreset"] = function (cmd)
 		uespLog.SetTotalInspiration(0)
 		uespLog.ClearAllSavedVarSections()
 		uespLog.ClearRootSavedVar()
-		uespLog.ClearCharData()
+		uespLog.ClearBuildData()
 		uespLog.Msg("UESP::Reset all logged data")
 	elseif (cmd == "chardata") then
-		uespLog.ClearCharData()
+		uespLog.ClearBuildData()
 	elseif (cmd == "log") then
 		uespLog.ClearSavedVarSection("all")
 		uespLog.Msg("UESP::Reset regular logged data")

@@ -299,7 +299,7 @@
 --			- Added the /uespstyle command for displaying which chapters of a particular motif are
 --			  known or unknown.
 --					/uespstyle [stylename]     Shows which chapters you currently know or not
---					/uespstyle liststyles      Shows all the style names accepted by the command
+--					/uespstyle list            Shows all the style names accepted by the command
 --
 --			CHARACTER BUILD SAVING (needs testing)
 --				A new feature which permits the saving of character build data (equipment, action bars
@@ -317,7 +317,7 @@
 --
 --				To Upload Characters:
 --					On PC/Windows you can use the included uespLogMonitor program to automatically
---					upload the saved build data when the uespLog saved variabled file is updated.
+--					upload the saved build data when the uespLog saved variable file is updated.
 --
 --					http://esolog.uesp.net/submit.php -- Uploads all logged and character data
 --						from a saved variable file.
@@ -7089,9 +7089,9 @@ SLASH_COMMANDS["/uespstyle"] = function (cmd)
 	if (cmd == "") then
 		uespLog.MsgColor(uespLog.craftColor, "UESP::Shows which chapters of an item style you know.")
 		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle [stylename]      Shows which chapters of the style you know")
-		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle liststyles          Lists all styles valid for the command")
+		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle list             Lists all styles valid for the command")
 		return
-	elseif (lCmd == "liststyles") then
+	elseif (lCmd == "liststyles" or lCmd == "list") then
 		local orderedNames = {}
 		local j = 1
 		local output = ""

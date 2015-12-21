@@ -327,7 +327,9 @@
 --
 --				Submit bugs and feature requests to @Reorx in game or at http://www.uesp.net/wiki/UESPWiki_talk:EsoCharData		
 --					
---			
+--		- v0.51 -
+--			- Added the "/uespsavebuild screenshot"	(or "/usb ss") command to take a nicely
+--			  framed screenshot of your character.
 --
 --	
 
@@ -335,7 +337,7 @@
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "0.50"
+uespLog.version = "0.51"
 uespLog.releaseDate = "17 December 2015"
 uespLog.DATA_VERSION = 3
 

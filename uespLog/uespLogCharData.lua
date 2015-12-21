@@ -701,6 +701,7 @@ function uespLog.Command_SaveBuildData (cmd)
 		uespLog.Msg(".     /usb status           = Shows current character log status")
 		uespLog.Msg(".     /usb [buildName]      = Saves current character with given build name")
 		uespLog.Msg(".     /usb forcesave [name] = Saves character ignoring any errors")
+		uespLog.Msg(".     /usb screenshot       = Takes a 'nice' screenshot of your character")
 	elseif (firstCmd == "status") then
 		uespLog.Msg("UESP::Currently there are "..tostring(#uespLog.savedVars.buildData.data).." character builds saved in log.")
 	elseif (firstCmd == "reset" or firstCmd == "clear") then
@@ -709,10 +710,57 @@ function uespLog.Command_SaveBuildData (cmd)
 		cmdWords[1] = nil
 		buildName = table.concat(cmdWords, ' ')
 		uespLog.SaveBuildData(buildName, true)
+	elseif (firstCmd == "ss" or firstCmd == "screenshot") then
+		uespLog.TakeCharDataScreenshot()
 	else
 		uespLog.SaveBuildData(cmd, false)
 	end
 	
+end
+
+
+uespLog.guiHiddenBefore = false
+uespLog.isTakingCharDataScreenshot = false
+
+
+function uespLog.TakeCharDataScreenshot()
+
+	if (uespLog.isTakingCharDataScreenshot) then
+		return false
+	end
+	
+	uespLog.Msg("UESP:Taking character screenshot in 1 sec...don't touch anything!")
+	
+	uespLog.isTakingCharDataScreenshot = true
+
+	SetFrameLocalPlayerInGameCamera(true)
+	SetFrameLocalPlayerTarget(0.5, 0.65)
+	SetFullscreenEffect(FULLSCREEN_EFFECT_CHARACTER_FRAMING_BLUR, 0.5, 0.65)
+	uespLog.guiHiddenBefore = GetGuiHidden("ingame")
+	
+	if (not uespLog.guiHiddenBefore) then
+		ToggleShowIngameGui()
+	end
+	
+	zo_callLater(uespLog.QueuedCharDataScreenshot, 1000)
+end
+
+
+function uespLog.QueuedCharDataScreenshot()
+	TakeScreenshot()
+	zo_callLater(uespLog.EndQueuedCharDataScreenshot, 500)
+end
+
+
+function uespLog.EndQueuedCharDataScreenshot()
+	SetFrameLocalPlayerInGameCamera(false)
+	SetFullscreenEffect(FULLSCREEN_EFFECT_NONE)
+	
+	if (not uespLog.guiHiddenBefore and GetGuiHidden("ingame")) then
+		ToggleShowIngameGui()
+	end
+	
+	uespLog.isTakingCharDataScreenshot = false
 end
 
 

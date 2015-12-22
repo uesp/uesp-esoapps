@@ -123,7 +123,7 @@ CuespLogMonitorDlg::CuespLogMonitorDlg(CWnd* pParent) :
 	m_hSendQueueThread(NULL),
 	m_hSendQueueMutex(NULL),
 	m_StopSendQueueThread(0),
-	m_BuildDataValidScreenShotCount(0)
+	m_BuildDataValidScreenshotCount(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
@@ -567,8 +567,11 @@ bool CuespLogMonitorDlg::ParseSavedVarBuildData(const std::string VarName, void*
 	ParseBuildDataScreenshots();
 
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Found the buildData section with %d characters (%u bytes).", numObjects, m_BuildData.length());
-	PrintLogLine(ULM_LOGLEVEL_INFO, "Found %d valid screenShot files for the character data.", m_BuildDataValidScreenShotCount);
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Found %d valid screenShot files for the character data.", m_BuildDataValidScreenshotCount);
 	lua_pop(m_pLuaState, 1);
+
+	LoadScreenshots();
+
 	return true;
 }
 
@@ -578,11 +581,14 @@ bool CuespLogMonitorDlg::ParseBuildDataScreenshots()
 	int index = lua_gettop(m_pLuaState);
 	int i = 1;
 	
-	m_BuildDataScreenShots.clear();
-	m_BuildDataValidScreenShotCount = 0;
+	m_Screenshots.clear();
+	m_BuildDataValidScreenshotCount = 0;
 
 	while (true)
 	{
+		ulm_screenshot_t Screenshot;
+		Screenshot.IsValid = false;
+
 		lua_rawgeti(m_pLuaState, index, i);
 
 		if (lua_isnil(m_pLuaState, -1)) {
@@ -594,33 +600,129 @@ bool CuespLogMonitorDlg::ParseBuildDataScreenshots()
 
 		if (lua_isnil(m_pLuaState, -1))
 		{
-			m_BuildDataScreenShots.push_back("");
 		}
 		else
 		{
-			m_BuildDataScreenShots.push_back(lua_tostring(m_pLuaState, -1));
+			Screenshot.Filename = lua_tostring(m_pLuaState, -1);
 
-			if (m_BuildDataScreenShots.back().length() > 0)
+			if (Screenshot.Filename.length() > 0)
 			{
-				bool Exists = eso::FileExists(m_BuildDataScreenShots.back().c_str());
+				bool Exists = eso::FileExists(Screenshot.Filename.c_str());
 
 				if (Exists)
 				{
-					PrintLogLine(ULM_LOGLEVEL_INFO, "%d: Found ScreenShot File: %s", i, m_BuildDataScreenShots.back().c_str());
-					++m_BuildDataValidScreenShotCount;
+					PrintLogLine(ULM_LOGLEVEL_INFO, "%d: Found ScreenShot File: %s", i, Screenshot.Filename.c_str());
+					++m_BuildDataValidScreenshotCount;
+					Screenshot.IsValid = true;
 				}
 				else
 				{
-					PrintLogLine(ULM_LOGLEVEL_INFO, "%d: Missing ScreenShot File: %s", i, m_BuildDataScreenShots.back().c_str());
+					PrintLogLine(ULM_LOGLEVEL_INFO, "%d: Missing ScreenShot File: %s", i, Screenshot.Filename.c_str());
 				}
 			}
 		}
 		
 		lua_pop(m_pLuaState, 2);
 		++i;
+
+		m_Screenshots.push_back(Screenshot);
 	}
 
 	return true;
+}
+
+
+bool CuespLogMonitorDlg::SendScreenshots()
+{
+
+
+	return true;
+}
+
+
+
+bool CuespLogMonitorDlg::LoadScreenshots()
+{
+	bool Result = true;
+
+	for (auto & it : m_Screenshots)
+	{
+		Result &= ConvertScreenshotToJpg(it);
+	}
+
+	return Result;
+}
+
+
+
+bool CuespLogMonitorDlg::LoadScreenshot(ulm_screenshot_t& Screenshot)
+{
+	if (!Screenshot.IsValid || Screenshot.JpgFilename.empty()) return true;
+
+	eso::CFile File;
+	fpos_t FileSize;
+
+	if (!File.Open(Screenshot.JpgFilename, "rb"))
+	{
+		Screenshot.IsValid = false;
+		return false;
+	}
+		
+	FileSize = File.GetSize();
+
+	if (FileSize <= 0 || FileSize + 100 >= INT_MAX)
+	{
+		Screenshot.IsValid = false;
+		return false;
+	}
+
+	Screenshot.FileData.resize((size_t)FileSize);
+
+
+	if (!File.ReadBytes(Screenshot.FileData.data(), (size_t)FileSize))
+	{
+		Screenshot.IsValid = false;
+		return false;
+	}
+
+	Screenshot.IsValid = true;
+
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Loaded %u bytes from the screenshot '%s'.", Screenshot.FileData.size(), Screenshot.JpgFilename.c_str());
+	return true;
+}
+
+
+bool CuespLogMonitorDlg::ConvertScreenshotToJpg(ulm_screenshot_t& Screenshot)
+{
+	if (!Screenshot.IsValid) return true;
+
+	CImage Image;
+	HRESULT Result;
+
+	Result = Image.Load(Screenshot.Filename.c_str());
+
+	if (FAILED(Result))
+	{
+		Screenshot.IsValid = false;
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to read the PNG screenshot file '%s'!", Screenshot.Filename.c_str());
+		return false;
+	}
+
+	std::string JpgFilename = std::tmpnam(nullptr);
+	JpgFilename += ".jpg";
+
+	Result = Image.Save(JpgFilename.c_str());
+
+	if (FAILED(Result))
+	{
+		Screenshot.IsValid = false;
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to save the converted JPG screenshot file '%s'!", JpgFilename.c_str());
+		return false;
+	}
+
+	Screenshot.JpgFilename = JpgFilename;
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Converted the screenshot file to a JPG '%s'!", JpgFilename.c_str());
+	return LoadScreenshot(Screenshot);
 }
 
 
@@ -1136,6 +1238,7 @@ bool CuespLogMonitorDlg::SendQueuedBuildDataThread()
 	std::string FormQuery;
 
 	if (m_BuildDataQueue.empty()) return true;
+	if (CuespLogMonitorDlg::CHARDATA_UPLOAD_TESTONLY) return true;
 
 	if (WaitForSingleObject(m_hSendQueueMutex, INFINITE) != WAIT_OBJECT_0)
 	{
@@ -1648,6 +1751,7 @@ void CuespLogMonitorDlg::PrintSettings (void)
 		break;
 	}
 
+	if (CuespLogMonitorDlg::CHARDATA_UPLOAD_TESTONLY) PrintLogLine(ULM_LOGLEVEL_INFO, "WARNING: CHARDATA_UPLOAD_TESTONLY is on! Not uploading char data!");
 }
 
 

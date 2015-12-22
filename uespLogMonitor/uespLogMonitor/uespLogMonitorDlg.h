@@ -84,10 +84,18 @@ struct ulm_sectiondata_t
 	__int64		TimeStamp;
 };
 
-
+typedef std::vector<unsigned char> CFileByteArray;
 typedef std::vector<std::string> CUlmLogArray;
 typedef std::vector<ulm_sectiondata_t> CUlmLogDataArray;
 typedef std::unordered_map<std::string, std::string> CUlmLogMap;
+
+struct ulm_screenshot_t 
+{
+	CFileByteArray	FileData;
+	std::string		Filename;
+	std::string		JpgFilename;
+	bool			IsValid;
+};
 
 class CuespLogMonitorDlg;
 typedef bool (CuespLogMonitorDlg::*ULM_LUA_TABLEITERATOR) (const std::string VarName, void* pUserData);
@@ -96,6 +104,9 @@ typedef bool (CuespLogMonitorDlg::*ULM_LUA_TABLEITERATOR) (const std::string Var
 class CuespLogMonitorDlg : public CDialogEx
 {
 protected:
+
+	const static int CHARDATA_UPLOAD_TESTONLY = true;	/* Don't actually upload chardata. Set to false for release builds */
+
 	const static int MINIMUM_VALID_BUILDDATA_SIZE = 24;
 
 	NOTIFYICONDATA	m_TrayIconData;
@@ -128,8 +139,9 @@ protected:
 	LONG				m_StopSendQueueThread;
 
 	std::string					m_BuildData;
-	std::vector<std::string>	m_BuildDataScreenShots;
-	int							m_BuildDataValidScreenShotCount;
+	//std::vector<std::string>	m_BuildDataScreenshots;
+	int							m_BuildDataValidScreenshotCount;
+	std::vector<ulm_screenshot_t> m_Screenshots;
 
 
 public:
@@ -185,6 +197,10 @@ protected:
 	bool ParseSavedVarInfo			(const std::string VarName, void* pUserData);
 
 	bool ParseBuildDataScreenshots();
+	bool SendScreenshots();
+	bool LoadScreenshots();
+	bool LoadScreenshot(ulm_screenshot_t& Screenshot);
+	bool ConvertScreenshotToJpg(ulm_screenshot_t& Screenshot);
 
 	std::string ParseSavedVarDataVersion();
 

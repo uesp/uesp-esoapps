@@ -363,12 +363,17 @@ function uespLog.CreateCharDataEquipSlots()
 			local condition = GetItemCondition(BAG_WORN, i)
 			local charges, maxCharges = GetChargeInfoForItem(BAG_WORN, i)
 			local icon = GetItemLinkInfo(itemLink)
+			local hasSet, setName, numBonuses, setCount, maxEquipped = GetItemLinkSetInfo(itemLink)
+			
+			if (not hasSet) then
+				setCount = 0
+			end
 			
 			if (maxCharges > 0) then
 				condition = math.floor(charges*100/maxCharges + 0.5)
 			end
 			
-			equipSlots[i] = { ["name"] = itemName, ["link"] = itemLink, ["condition"] = condition, ["icon"] = icon }
+			equipSlots[i] = { ["name"] = itemName, ["link"] = itemLink, ["condition"] = condition, ["icon"] = icon, ["setcount"] = setCount }
 		end
 	end
 	

@@ -330,6 +330,7 @@
 --		- v0.51 -
 --			- Added the "/uespsavebuild screenshot"	(or "/usb ss") command to take a nicely
 --			  framed screenshot of your character.
+--			- The set count of equipped items is now saved with the "/uespsavebuild" command.
 --
 --	
 

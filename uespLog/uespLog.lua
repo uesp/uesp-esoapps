@@ -331,7 +331,9 @@
 --			- Added the "/uespsavebuild screenshot"	(or "/usb ss") command to take a nicely
 --			  framed screenshot of your character.
 --			- The set count of equipped items is now saved with the "/uespsavebuild" command.
---			-- Added the "/uespmineitems count" parameter.
+--			- Added the "/uespmineitems count" parameter.
+--			- Added missing item level/subtype combinations for item mining.
+--			- Fixed minor bug with "/uespreset all" and build data.
 --	
 
 
@@ -6877,7 +6879,7 @@ function uespLog.ClearRootSavedVar()
 					
 					if (key4 == "settings" or key4 == "info" or key4 == "charInfo") then
 						-- Keep data
-					elseif (key4 == "globals" or key4 == "all" or key4 == "achievements") then
+					elseif (key4 == "globals" or key4 == "all" or key4 == "achievements" or key == "buildData") then
 						uespLogSavedVars[key1][key2][key3][key4].data = { }
 						uespLogSavedVars[key1][key2][key3][key4].version = uespLog.DATA_VERSION
 					else

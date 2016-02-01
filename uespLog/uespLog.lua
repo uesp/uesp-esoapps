@@ -331,7 +331,7 @@
 --			- Added the "/uespsavebuild screenshot"	(or "/usb ss") command to take a nicely
 --			  framed screenshot of your character.
 --			- The set count of equipped items is now saved with the "/uespsavebuild" command.
---
+--			-- Added the "/uespmineitems count" parameter.
 --	
 
 
@@ -602,33 +602,50 @@ uespLog.ALLIANCE_NAMES = {
 }
 
 uespLog.MINEITEM_LEVELS = {
-	{  1, 50,   1,   6, "dropped" },
-	{  1, 50 ,  7,   9, "dropped" },
-	{  1,  1,  30,  34, "crafted" },
-	{  4,  4,  25,  29, "crafted" },
-	{  6, 50,  20,  24, "crafted" },
+	{  1, 50,   0,  11, "dropped" },
+	{  1, 50,  18,  19, "unknown" },
+	{  1, 50,  20,  24, "crafted" },
+	{  1,  4,  25,  29, "crafted" },
+	{  1, 50,  30,  31, "crafted" },
+	{  1,  1,  32,  34, "crafted" },
+	{  1, 50,  37,  38, "unknown" },
 	{ 50, 50,  39,  48, "quest" },
+	{  1, 50,  49,  50, "unknown" },
 	{ 50, 50,  51,  60, "dropped" },
 	{ 50, 50,  61,  70, "dropped" },
+	{ 50, 50,  71,  80, "unknown" },
 	{ 50, 50,  81,  90, "dropped" },
 	{ 50, 50,  91, 100, "dropped" },
 	{ 50, 50, 101, 110, "dropped" },
 	{ 50, 50, 111, 120, "dropped/sold" },
+	{  1, 50, 121, 124, "unknown" },
 	{ 50, 50, 125, 134, "crafted" },
 	{ 50, 50, 135, 144, "crafted" },
 	{ 50, 50, 145, 154, "crafted" },
 	{ 50, 50, 155, 164, "crafted" },
 	{ 50, 50, 165, 174, "crafted" },
+	{  1, 50, 175, 175, "unknown" },
+	{  1, 50, 177, 177, "unknown" },
+	{ 50, 50, 188, 188, "unknown" },
+	{ 50, 50, 208, 208, "unknown" },
+	{ 50, 50, 228, 234, "unknown" },
 	{ 50, 50, 235, 235, "store" },
 	{ 50, 50, 236, 240, "crafted" }, --VR11
 	{ 50, 50, 241, 245, "dropped" }, --VR11
+	{ 50, 50, 246, 247, "unknown" },
+	{ 50, 50, 248, 251, "dropped" },
 	{ 50, 50, 253, 253, "store" },
 	{ 50, 50, 254, 258, "crafted" },
-	{ 50, 50, 259, 263, "dropped" },
+	{ 50, 50, 259, 267, "dropped" },
+	{ 50, 50, 268, 271, "unknown" },
 	{ 50, 50, 272, 276, "crafted" },
 	{ 50, 50, 277, 281, "dropped" },
+	{ 50, 50, 282, 282, "unknown" },
+	{ 50, 50, 283, 285, "dropped" },
+	{ 50, 50, 286, 289, "unknown" },
 	{ 50, 50, 290, 294, "crafted" },
 	{ 50, 50, 295, 299, "dropped" },
+	{ 50, 50, 300, 300, "unknown" },
 	{ 50, 50, 301, 301, "dropped" },
 	{ 50, 50, 304, 307, "dropped" },
 	{ 50, 50, 308, 312, "crafted" },
@@ -636,8 +653,61 @@ uespLog.MINEITEM_LEVELS = {
 	{  1, 50, 319, 319, "novalue" },
 	{ 50, 50, 323, 338, "novalue" },
 	{ 50, 50, 358, 364, "dropped" },
+	{ 50, 50, 365, 365, "unknown" },
 	{ 50, 50, 366, 370, "crafted" },
+	{ 50, 50, 378, 378, "unknown" },
 }
+
+
+uespLog.MINEITEM_LEVELS_SHORT = {
+	{  1, 50,   0,  11, "dropped" },
+	{  1, 50,  18,  19, "unknown" },
+	{  1, 50,  20,  24, "crafted" },
+	{  1,  4,  25,  29, "crafted" },
+	{  1, 50,  30,  31, "crafted" },
+	{  1,  1,  32,  34, "crafted" },
+	{  1, 50,  37,  38, "unknown" },
+	{ 50, 50,  39,  48, "quest" },
+	{  1, 50,  49,  50, "unknown" },
+	{ 50, 50,  51,  60, "dropped" },
+	{ 50, 50,  61,  70, "dropped" },
+	{ 50, 50,  71,  80, "unknown" },
+	{ 50, 50,  81,  90, "dropped" },
+	{ 50, 50,  91, 100, "dropped" },
+	{ 50, 50, 111, 120, "dropped/sold" },
+	{  1, 50, 121, 124, "unknown" },
+	{ 50, 50, 125, 125, "crafted" },
+	{ 50, 50, 127, 127, "crafted" },
+	{ 50, 50, 129, 129, "crafted" },
+	{ 50, 50, 131, 131, "crafted" },
+	{ 50, 50, 134, 134, "crafted" },
+	{  1, 50, 175, 175, "unknown" },
+	{  1, 50, 177, 177, "unknown" },
+	{ 50, 50, 188, 188, "unknown" },
+	{ 50, 50, 208, 208, "unknown" },
+	{ 50, 50, 228, 234, "unknown" },
+	{ 50, 50, 235, 235, "store" },
+	{ 50, 50, 246, 247, "unknown" },
+	{ 50, 50, 248, 251, "dropped" },
+	{ 50, 50, 253, 253, "store" },
+	{ 50, 50, 265, 267, "dropped" },
+	{ 50, 50, 268, 271, "unknown" },
+	{ 50, 50, 282, 282, "unknown" },
+	{ 50, 50, 283, 285, "dropped" },
+	{ 50, 50, 286, 289, "unknown" },
+	{ 50, 50, 300, 300, "unknown" },
+	{ 50, 50, 301, 301, "dropped" },
+	{ 50, 50, 304, 307, "dropped" },
+	{ 50, 50, 308, 309, "crafted" },
+	{  1, 50, 319, 319, "novalue" },
+	{ 50, 50, 324, 337, "novalue" },
+	{ 50, 50, 358, 364, "dropped" },
+	{ 50, 50, 365, 365, "unknown" },
+	{ 50, 50, 366, 366, "crafted" },
+	{ 50, 50, 378, 378, "unknown" },
+}
+
+uespLog.MINEITEM_ITEMCOUNTESTIMATE = 31000
 
 uespLog.MINEITEM_ONLYSUBTYPE = 366
 uespLog.MINEITEM_ONLYLEVEL = 50
@@ -6467,6 +6537,47 @@ function uespLog.MineItemsAutoEnd ()
 end
 
 
+function uespLog.MineItemsCount ()
+	local totalCount = 0
+
+	for i, value in ipairs(uespLog.MINEITEM_LEVELS) do
+		local levelStart = value[1]
+		local levelEnd = value[2]
+		local qualityStart = value[3]
+		local qualityEnd = value[4]
+		local comment = value[5]
+		
+		local numLevels = levelEnd - levelStart + 1
+		local numTypes = qualityEnd - qualityStart + 1
+		
+		totalCount = totalCount + numTypes * numLevels
+	end
+	
+	uespLog.MsgColor(uespLog.mineColor, "UESP::Total mine item entries = "..tostring(#uespLog.MINEITEM_LEVELS))
+	uespLog.MsgColor(uespLog.mineColor, "UESP::Total level/subtype combinations = "..tostring(totalCount))
+	uespLog.MsgColor(uespLog.mineColor, "UESP::Estimated item combinations = "..tostring(totalCount * uespLog.MINEITEM_ITEMCOUNTESTIMATE))
+	
+	totalCount = 0
+
+	for i, value in ipairs(uespLog.MINEITEM_LEVELS_SHORT) do
+		local levelStart = value[1]
+		local levelEnd = value[2]
+		local qualityStart = value[3]
+		local qualityEnd = value[4]
+		local comment = value[5]
+		
+		local numLevels = levelEnd - levelStart + 1
+		local numTypes = qualityEnd - qualityStart + 1
+		
+		totalCount = totalCount + numTypes * numLevels
+	end
+	
+	uespLog.MsgColor(uespLog.mineColor, "UESP::Total mine item entries (short) = "..tostring(#uespLog.MINEITEM_LEVELS_SHORT))
+	uespLog.MsgColor(uespLog.mineColor, "UESP::Total level/subtype combinations (short) = "..tostring(totalCount))
+	uespLog.MsgColor(uespLog.mineColor, "UESP::Estimated item combinations (short) = "..tostring(totalCount * uespLog.MINEITEM_ITEMCOUNTESTIMATE))
+end
+
+
 function uespLog.MineItemsAutoStatus ()
 	
 	if (uespLog.isAutoMiningItems) then
@@ -6656,6 +6767,9 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		end
 		
 		uespLog.MineItemsAutoStart()
+		return
+	elseif (cmds[1] == "count") then
+		uespLog.MineItemsCount()
 		return
 	elseif (cmds[1] == "subtype" or cmds[1] == "type") then
 		uespLog.mineItemOnlySubType = tonumber(cmds[2])
@@ -7980,5 +8094,6 @@ end
 
 
 SLASH_COMMANDS["/ulb"] = SLASH_COMMANDS["/uesplorebook"]
+
 
 

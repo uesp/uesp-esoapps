@@ -197,6 +197,7 @@ namespace eso {
 		if (CheckEso) 
 		{
 			if (m_FileIndexMap.find(0xFFFFF) != m_FileIndexMap.end()) {	ZosftHash = m_FileIndexMap[0xFFFFF]->Hash; return true;	}
+			if (m_FileIndexMap.find(0x00FFFFFF) != m_FileIndexMap.end()) { ZosftHash = m_FileIndexMap[0x00FFFFFF]->Hash; return true; }
 
 			if (HasFileHash(MNF_ESOZOSFT_HASH)) { ZosftHash = MNF_ESOZOSFT_HASH; return true; }
 			if (HasFileHash(0xF4FD2ECD)) { ZosftHash = 0xF4FD2ECD; return true; }

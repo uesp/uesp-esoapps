@@ -334,6 +334,7 @@
 --			- Added the "/uespmineitems count" parameter.
 --			- Added missing item level/subtype combinations for item mining.
 --			- Fixed minor bug with "/uespreset all" and build data.
+--			- Added the "/uespmineitems level" parameter.
 --	
 
 
@@ -1629,7 +1630,7 @@ function uespLog.InitAutoMining ()
 			uespLog.savedVars.settings.data.mineItemAutoReload = false
 			uespLog.mineItemAutoRestart = false
 			uespLog.savedVars.settings.data.mineItemAutoRestart = false
-			uespLog.MsgColor(uespLog.mineColor, "UESP::Stopped auto-mining due to reach max ID of "..tostring(uespLog.mineItemsAutoNextItemId))
+			uespLog.MsgColor(uespLog.mineColor, "UESP::Stopped auto-mining due to reaching max ID of "..tostring(uespLog.mineItemsAutoNextItemId))
 		else
 			uespLog.MsgColor(uespLog.mineColor, "UESP::Auto-restarting item mining at ID "..tostring(uespLog.mineItemsAutoNextItemId).." in 10 secs...")
 			zo_callLater(uespLog.MineItemsAutoLoop, 10000)
@@ -6748,7 +6749,9 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 	
 	for word in cmd:gmatch("%S+") do table.insert(cmds, word) end
 	
-	if (cmds[1] == "enable") then
+	command = string.lower(cmds[1])
+	
+	if (command == "enable") then
 		uespLog.MsgColor(uespLog.mineColor, "UESP::Enabled use of /uespmineitems (/umi)!")
 		uespLog.MsgColor(uespLog.mineColorWarning, ".         WARNING -- This feature is experimental and can crash the")
 		uespLog.MsgColor(uespLog.mineColorWarning, ".         ESO client! Use at your own risk....")
@@ -6761,7 +6764,7 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		return
 	end
 	
-	if (cmds[1] == "start" or cmds[1] == "begin") then
+	if (command == "start" or command == "begin") then
 		
 		if (cmds[2] ~= nil) then
 			uespLog.mineItemsAutoNextItemId = tonumber(cmds[2])
@@ -6770,10 +6773,10 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		
 		uespLog.MineItemsAutoStart()
 		return
-	elseif (cmds[1] == "count") then
+	elseif (command == "count") then
 		uespLog.MineItemsCount()
 		return
-	elseif (cmds[1] == "subtype" or cmds[1] == "type") then
+	elseif (command == "subtype" or cmds[1] == "type") then
 		uespLog.mineItemOnlySubType = tonumber(cmds[2])
 		if (uespLog.mineItemOnlySubType == null) then uespLog.mineItemOnlySubType = -1 end
 		uespLog.savedVars.settings.data.mineItemOnlySubType = uespLog.mineItemOnlySubType
@@ -6785,7 +6788,20 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		end
 		
 		return
-	elseif (cmds[1] == "quick") then
+	elseif (command == "level") then
+		uespLog.mineItemOnlyLevel = tonumber(cmds[2])
+		if (uespLog.mineItemOnlyLevel == null) then uespLog.mineItemOnlyLevel = -1 end
+		uespLog.savedVars.settings.data.mineItemOnlyLevel = uespLog.mineItemOnlyLevel
+		
+		if (uespLog.mineItemOnlyLevel < 0) then
+			uespLog.MsgColor(uespLog.mineColor, "UESP::Mining items with all internal levels.")
+		else
+			uespLog.MsgColor(uespLog.mineColor, "UESP::Only mining items with internal level of "..tostring(uespLog.mineItemOnlyLevel)..".")
+		end
+		
+		return
+	
+	elseif (command == "quick") then
 		local option = string.lower(cmds[2])
 		
 		if (option == "on") then
@@ -6799,20 +6815,20 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		end
 		
 		return
-	elseif (cmds[1] == "end" or cmds[1] == "stop") then
+	elseif (command == "end" or command == "stop") then
 		uespLog.MineItemsAutoEnd()
 		return
-	elseif (cmds[1] == "status") then
+	elseif (command == "status") then
 		uespLog.MineItemsAutoStatus()
 		return
-	elseif (cmds[1] == "qualitymap") then
+	elseif (command == "qualitymap") then
 		uespLog.MineItemsQualityMap(1)
 		uespLog.MineItemsQualityMap(50)
 		return
-	elseif (cmds[1] == "idcheck") then
+	elseif (command == "idcheck") then
 		uespLog.MineItemsIdCheck(cmds[2])
 		return
-	elseif (cmds[1] == "autostart") then
+	elseif (command == "autostart") then
 		uespLog.mineItemAutoReload = true
 		uespLog.mineItemAutoRestart = true
 		uespLog.savedVars.settings.data.mineItemAutoReload = true

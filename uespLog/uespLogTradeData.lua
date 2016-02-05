@@ -55,6 +55,16 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[ITEMSTYLE_AREA_XIVKYN] 		= "uespLog/images/charcoal.dds", 			-- Xivkyn, 29
 	[ITEMSTYLE_UNDAUNTED] 			= "uespLog/images/laurel.dds",				-- Mercenary, 26, /esoui/art/icons/crafting_laurel.dds
 	[ITEMSTYLE_AREA_ANCIENT_ORC] 	= "uespLog/images/cassiterite.dds",			-- Ancient Orc, 22 /esoui/art/icons/crafting_smith_plug_standard_f_001.dds
+	[47]							= "uespLog/images/roguessoot.dds",			-- Outlaw, 47 ITEMSTYLE_UNUSED9 /esoui/art/icons/crafting_outlaw_styleitem.dds, 
+	[ITEMSTYLE_DEITY_MALACATH]		= "uespLog/images/potash.dds", 				-- Malacath, 13 /esoui/art/icons/crafting_style_item_malacath.dds
+	[ITEMSTYLE_DEITY_TRINIMAC]		= "uespLog/images/aurictusk.dds",			-- Trinimac, 21 /esoui/art/icons/crafting_style_item_trinimac.dds
+	[ITEMSTYLE_AREA_SOUL_SHRIVEN]	= "uespLog/images/azureplasm.dds",			-- Soul Shriven, 30 /esoui/art/icons/crafting_runecrafter_plug_component_005.dds
+	[ITEMSTYLE_ALLIANCE_DAGGERFALL] = "uespLog/images/lionfang.dds",			-- Daggerfall, 23 /esoui/art/icons/crafting_style_item_daggerfall_covenant.dds
+	[ITEMSTYLE_ALLIANCE_EBONHEART] 	= "uespLog/images/dragonscute.dds",			-- Ebonheart, 24 /esoui/art/icons/crafting_style_item_ebonheart_pact.dds
+	[ITEMSTYLE_ALLIANCE_ALDMERI] 	= "uespLog/images/eaglefeather.dds",		-- Aldmeri, 25 /esoui/art/icons/crafting_style_item_aldmeri_dominion.dds
+	[ITEMSTYLE_UNIVERSAL] 			= "uespLog/images/mimicstone.dds",			-- Universal, 36 /esoui/art/icons/crafing_universal_item.dds  (incorrect spelling "crafing" in 1.9 PTS)
+	-- [ITEMSTYLE_ORG_DARK_BROTHERHOOD] = "",			-- Dark Brotherhood, 12, N/A
+	
 }
 
 
@@ -80,6 +90,14 @@ uespLog.STYLE_ICON_DATA = {
 	[ITEMSTYLE_AREA_XIVKYN] 		= "uespLog/images/charcoal.dds",
 	[ITEMSTYLE_UNDAUNTED] 			= "/esoui/art/icons/crafting_laurel.dds",
 	[ITEMSTYLE_AREA_ANCIENT_ORC] 	= "/esoui/art/icons/crafting_smith_plug_standard_f_001.dds",
+	[47]							= "/esoui/art/icons/crafting_outlaw_styleitem.dds",		-- ITEMSTYLE_UNUSED9
+	[ITEMSTYLE_DEITY_MALACATH]		= "/esoui/art/icons/crafting_style_item_malacath.dds",
+	[ITEMSTYLE_DEITY_TRINIMAC]		= "/esoui/art/icons/crafting_style_item_trinimac.dds",
+	[ITEMSTYLE_AREA_SOUL_SHRIVEN]	= "/esoui/art/icons/crafting_runecrafter_plug_component_005.dds",
+	[ITEMSTYLE_ALLIANCE_DAGGERFALL] = "/esoui/art/icons/crafting_style_item_daggerfall_covenant.dds",
+	[ITEMSTYLE_ALLIANCE_EBONHEART] 	= "/esoui/art/icons/crafting_style_item_ebonheart_pact.dds",
+	[ITEMSTYLE_ALLIANCE_ALDMERI] 	= "/esoui/art/icons/crafting_style_item_aldmeri_dominion.dds",
+	[ITEMSTYLE_UNIVERSAL] 			= "/esoui/art/icons/crafing_universal_item.dds",	-- Incorrect spelling "crafing" in 1.9 PTS
 }
 
 

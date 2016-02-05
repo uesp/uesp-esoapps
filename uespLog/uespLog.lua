@@ -335,6 +335,7 @@
 --			- Added missing item level/subtype combinations for item mining.
 --			- Fixed minor bug with "/uespreset all" and build data.
 --			- Added the "/uespmineitems level" parameter.
+--			- Added new Thieves Guild mobs to ignore list and removed "Mudcrab".
 --	
 
 
@@ -481,7 +482,7 @@ uespLog.ignoredNPCs = {
 	Cat = 1,
 	Rat = 1,
 	Lizard = 1,
-	Mudcrab = 1,
+	-- Mudcrab = 1,     -- Probably should track these as there are normal mobs and drop crafting supplies
 	Horse = 1,
 	Snake = 1,
 	Scorpion = 1,
@@ -510,10 +511,10 @@ uespLog.ignoredNPCs = {
 	Scrib = 1,
 	Antelope = 1,
 	Ox = 1,
-	Wormmouth = 1,  	--Craglorn
-	Skavenger = 1, 		--Craglorn
-	Fellrunner = 1,  	--Craglorn
-	Daggerback = 1,  	--Craglorn
+	Wormmouth = 1,  		--Craglorn
+	Skavenger = 1, 			--Craglorn
+	Fellrunner = 1,  		--Craglorn
+	Daggerback = 1,  		--Craglorn
 	["Fennec Fox"] = 1,  	--Craglorn
 	["Thorn Geko"] = 1,  	--Craglorn
 	["Pony Guar"] = 1,
@@ -535,6 +536,7 @@ uespLog.ignoredNPCs = {
 	["Chub Loon"] = 1,		--Orsinium
 	["Pack Echatere"] = 1,	--Orsinium
 	["Echalette"] = 1,		--Orsinium
+	["Sep Adder"] = 1,		--Tehives Guild
 }
 
 uespLog.lastTargetData = {
@@ -2557,7 +2559,6 @@ function uespLog.GetItemEquipTypeStr(equipType)
 end
 
 
-
 uespLog.ITEMSTYLES = {
 	[0]  = "None",
 	[1]  = "Breton",
@@ -2571,8 +2572,8 @@ uespLog.ITEMSTYLES = {
 	[9]  = "Khajiit",
 	[10] = "Unique",
 	[11] = "Aldermi Dominion",
-	[12] = "Ebonheart Pact",
-	[13] = "Daggerfall Covenant",
+	[12] = "Dark Brotherhood",
+	[13] = "Malacath",
 	[14] = "Dwemer",
 	[15] = "Ancient Elf",
 	[16] = "Imperial (area)",
@@ -2580,16 +2581,16 @@ uespLog.ITEMSTYLES = {
 	[18] = "Bandit",
 	[19] = "Primitive (Primal)",
 	[20] = "Daedric",
-	[21] = "Warrior",
+	[21] = "Trinimac",
 	[22] = "Mage",
-	[23] = "Rogue",
-	[24] = "Summoner",
-	[25] = "Marauder",
+	[23] = "Daggerfall",
+	[24] = "Ebonheart",
+	[25] = "Aldmeri",
 	[26] = "Healer",
 	[27] = "Battlemage",
 	[28] = "Nightblade",
 	[29] = "Ranger",
-	[30] = "Knight",
+	[30] = "Soul-Shriven",
 	[31] = "Draugr",
 	[32] = "Maormer",
 	[33] = "Akaviri",
@@ -2597,6 +2598,8 @@ uespLog.ITEMSTYLES = {
 	[35] = "Yokudan",
 	[36] = "Universal",
 	[37] = "Reach Winter",
+	[36] = "Universal",
+	[47] = "Outlaw",
 }
 
 
@@ -7114,6 +7117,27 @@ uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
 	["khajiit"] = 9,
 	["orc"] = 3,
 	["yokudan"] = 35,
+	
+			-- Thieves Guild
+	["outlaw"] = 47,
+	["malacath"] = 13,
+	["trinimac"] = 21,
+	["soul-shriven"] = 30,
+	["soulshriven"] = 30,
+	["soul shriven"] = 30,
+	["soul_shriven"] = 30,
+	["daggerfall"] = 23,
+	["daggerfall covenant"] = 23,
+	["daggerfall_covenant"] = 23,
+	["covenant"] = 23,
+	["ebonheart"] = 24,
+	["ebonheart pact"] = 24,
+	["ebonheart_pact"] = 24,
+	["pact"] = 24,
+	["aldmeri"] = 25,
+	["aldmeri dominion"] = 25,
+	["aldmeri_dominion"] = 25,
+	["dominion"] = 25,
 }
 
 
@@ -7147,6 +7171,27 @@ uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
 	["wood_elf"] = 16428,
 	["khajiit"] = 44698,
 	["orc"] = 16426,
+	
+			-- Thieves Guild
+	["outlaw"] = { 71523, 71524, 71525, 71526, 71527, 71528, 71529, 71530, 71531, 71532, 71533, 71534, 71535, 71536 }, -- 71522, 71537
+	["malacath"] = { 71567, 71568, 71569, 71570, 71571, 71572, 71573, 71574, 71575, 71576, 71577, 71578, 71579, 71580 }, -- 71566, 71581
+	["trinimac"] = { 71551, 71552, 71553, 71554, 71555, 71556, 71557, 71558, 71559, 71560, 71561, 71562, 71563, 71564 }, -- 71550, 71565
+	["soul-shriven"] = 71765,
+	["soulshriven"]  = 71765,
+	["soul shriven"] = 71765,
+	["soul_shriven"] = 71765,
+	["daggerfall"]          = { 71705, 71706, 71707, 71708, 71709, 71710, 71711, 71712, 71713, 71714, 71715, 71716, 71717, 71718 }, -- 71704, 71719
+	["daggerfall covenant"] = { 71705, 71706, 71707, 71708, 71709, 71710, 71711, 71712, 71713, 71714, 71715, 71716, 71717, 71718 }, -- 71704, 71719
+	["daggerfall_covenant"] = { 71705, 71706, 71707, 71708, 71709, 71710, 71711, 71712, 71713, 71714, 71715, 71716, 71717, 71718 }, -- 71704, 71719
+	["covenant"]            = { 71705, 71706, 71707, 71708, 71709, 71710, 71711, 71712, 71713, 71714, 71715, 71716, 71717, 71718 }, -- 71704, 71719
+	["ebonheart"]      = { 71721, 71722, 71723, 71724, 71725, 71726, 71727, 71728, 71729, 71730, 71731, 71732, 71733, 71734 }, -- 71720, 71735
+	["ebonheart pact"] = { 71721, 71722, 71723, 71724, 71725, 71726, 71727, 71728, 71729, 71730, 71731, 71732, 71733, 71734 }, -- 71720, 71735
+	["ebonheart_pact"] = { 71721, 71722, 71723, 71724, 71725, 71726, 71727, 71728, 71729, 71730, 71731, 71732, 71733, 71734 }, -- 71720, 71735
+	["pact"]           = { 71721, 71722, 71723, 71724, 71725, 71726, 71727, 71728, 71729, 71730, 71731, 71732, 71733, 71734 }, -- 71720, 71735
+	["aldmeri"]          = { 71689, 71690, 71691, 71692, 71693, 71694, 71695, 71696, 71697, 71698, 71699, 71700, 71701, 71702 }, -- 71688, 71703
+	["aldmeri dominion"] = { 71689, 71690, 71691, 71692, 71693, 71694, 71695, 71696, 71697, 71698, 71699, 71700, 71701, 71702 }, -- 71688, 71703
+	["aldmeri_dominion"] = { 71689, 71690, 71691, 71692, 71693, 71694, 71695, 71696, 71697, 71698, 71699, 71700, 71701, 71702 }, -- 71688, 71703
+	["dominion"]          = { 71689, 71690, 71691, 71692, 71693, 71694, 71695, 71696, 71697, 71698, 71699, 71700, 71701, 71702 }, -- 71688, 71703
 }
 
 

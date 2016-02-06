@@ -336,6 +336,7 @@
 --			- Fixed minor bug with "/uespreset all" and build data.
 --			- Added the "/uespmineitems level" parameter.
 --			- Added new Thieves Guild mobs to ignore list and removed "Mudcrab".
+--			- Add support for logging "Thieves Trove" along with treasure timer.
 --	
 
 
@@ -790,6 +791,7 @@ uespLog.DEFAULT_SETTINGS =
 			["chest"] = 120,
 			["heavy sack"] = 120,
 			["safebox"] = 120,
+			["thieves trove"] = 300,
 		},
 		["loreBookMsg"] = true,
 	}
@@ -1462,6 +1464,10 @@ function uespLog.Initialize( self, addOnName )
 	uespLog.mineItemOnlyLevel = uespLog.savedVars.settings.data.mineItemOnlyLevel or uespLog.mineItemOnlyLevel
 	uespLog.pvpUpdate = uespLog.savedVars.settings.data.pvpUpdate or uespLog.pvpUpdate
 	uespLog.mineItemLastReloadTimeMS = GetGameTimeMilliseconds()
+	
+	if (uespLog.savedVars.settings.data.TREASURE_TIMER_DURATIONS["thieves trove"] == nil) then
+		uespLog.savedVars.settings.data.TREASURE_TIMER_DURATIONS["thieves trove"] = uespLog.DEFAULT_SETTINGS.data.TREASURE_TIMER_DURATIONS["thieves trove"]
+	end
 	
 	if (uespLog.savedVars.charInfo.data.mercStyle == nil) then
 		uespLog.savedVars.charInfo.data.mercStyle = {}
@@ -2972,7 +2978,7 @@ end
 
 
 function uespLog.OnLootUpdated (eventCode, actionName, isOwned)
-	--uespLog.DebugMsg("OnLootUpdated::count = "..tostring(GetNumLootItems()))
+	--uespLog.DebugMsg("OnLootUpdated::"..tostring(uespLog.lastTargetData.name).."  count = "..tostring(GetNumLootItems()))
 	--uespLog.DebugExtraMsg("OnLootUpdated::actionName = "..tostring(actionName))
 	--uespLog.DebugExtraMsg("OnLootUpdated::isOwned = "..tostring(isOwned))
 	
@@ -2986,6 +2992,7 @@ function uespLog.OnTreasureLooted (targetName)
 	local duration = uespLog.GetTreasureTimers()[safeName]
 
 	if (not uespLog.IsTreasureTimerEnabled() or duration == nil or duration <= 0) then
+		-- uespLog.DebugExtraMsg("OnTreasureLooted::Skipped creating timer for "..tostring(targetName))
 		return
 	end
 		
@@ -3002,7 +3009,7 @@ function uespLog.OnLootClosed (eventCode)
 	
 	if (uespLog.lastLootUpdateCount == 0) then
 		uespLog.OnTreasureLooted(uespLog.lastLootTargetName)
-		--uespLog.DebugMsg("Finished looting "..tostring(uespLog.lastLootTargetName))
+		-- uespLog.DebugMsg("Finished looting "..tostring(uespLog.lastLootTargetName))
 	elseif (uespLog.lastLootUpdateCount > 0) then
 		--uespLog.DebugMsg("Did not finish looting "..tostring(uespLog.lastLootTargetName))
 	else
@@ -3854,6 +3861,8 @@ function uespLog.OnUpdate ()
 	
 		if (name == "Heavy Sack") then
 			uespLog.OnFoundTreasure("Heavy Sack")
+		elseif (name == "Thieves Trove") then
+			uespLog.OnFoundTreasure("Thieves Trove")
 		end
 	
     elseif (action == uespLog.ACTION_FISH) then

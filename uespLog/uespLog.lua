@@ -337,6 +337,7 @@
 --			- Added the "/uespmineitems level" parameter.
 --			- Added new Thieves Guild mobs to ignore list and removed "Mudcrab".
 --			- Add support for logging "Thieves Trove" along with treasure timer.
+--			- The new item tags are logged and shown in item info.
 --	
 
 
@@ -2062,6 +2063,19 @@ function uespLog.ShowItemInfo (itemLink)
 		traitText = ", " .. tostring(traitText)
 	end
 	
+	local tagCount = GetItemLinkNumItemTags(itemLink)
+	local tagString = ""
+	
+	for i = 1, tagCount do
+		local tagDesc = GetItemLinkItemTagDescription(itemLink, i)
+		
+		if (i > 1) then
+			tagString = tagString .. ", "
+		end
+		
+		tagString = tagString .. tagDesc
+	end
+	
 	uespLog.MsgColor(uespLog.itemColor, ".    Level: "..levelString.."     Value: "..tostring(value).."     Condition: "..tostring(condition).."     Quality: "..tostring(quality))
 	uespLog.MsgColor(uespLog.itemColor, ".    Style: "..styleStr.." ("..tostring(itemStyle)..")     Trait: "..uespLog.GetItemTraitName(trait).." ("..tostring(trait)..") "..tostring(traitText))
 	uespLog.MsgColor(uespLog.itemColor, ".    Icon: "..tostring(icon))
@@ -2142,6 +2156,10 @@ function uespLog.ShowItemInfo (itemLink)
 	
 	if (materialLevelDescription ~= nil and materialLevelDescription ~= "") then
 		uespLog.MsgColor(uespLog.itemColor, ".    Material Level: "..tostring(materialLevelDescription))
+	end
+	
+	if (tagString ~= "") then
+		uespLog.MsgColor(uespLog.itemColor, ".    Tags: "..tostring(tagString))
 	end
 		
 	if (flavourText ~= "") then
@@ -5296,8 +5314,9 @@ function uespLog.CreateItemLinkLog (itemLink)
 	end
 	
 	local traitAbilityCount = 0
+	local maxTraits = GetMaxTraits()
 	
-	for i = 1, GetMaxTraits() do
+	for i = 1, maxTraits  do
 		local hasTraitAbility, traitAbilityDescription, traitCooldown = GetItemLinkTraitOnUseAbilityInfo(itemLink, i)
 		
 		if (hasTraitAbility) then
@@ -5326,6 +5345,23 @@ function uespLog.CreateItemLinkLog (itemLink)
 	if (flagString ~= "") then
 		logData.flag = flagString
 	end
+	
+	local tagCount = GetItemLinkNumItemTags(itemLink)
+	local tagString = ""
+	
+	for i = 1, tagCount do
+		local tagDesc = GetItemLinkItemTagDescription(itemLink, i)
+		
+		if (i > 1) then
+			tagString = tagString .. ", "
+		end
+		
+		tagString = tagString .. tagDesc
+	end
+	
+	if (tagString ~= "") then
+		logData.tags = tagString
+	end	
 	
 	return logData
 end

@@ -1,6 +1,6 @@
-## Title: UespLog v0.50
-## APIVersion: 100013
-## Version: 0.50
+## Title: UespLog v0.60
+## APIVersion: 100014
+## Version: 0.60
 ## Author: Daveh@uesp
 ## Description: Logs game data for uesp.net and a few other useful crafting related functions.
 ## OptionalDependsOn: LibStub LibAddonMenu-2.0

@@ -327,7 +327,7 @@
 --
 --				Submit bugs and feature requests to @Reorx in game or at http://www.uesp.net/wiki/UESPWiki_talk:EsoCharData		
 --					
---		- v0.51 -
+--		- v0.60 - 4 March 2016
 --			- Added the "/uespsavebuild screenshot"	(or "/usb ss") command to take a nicely
 --			  framed screenshot of your character.
 --			- The set count of equipped items is now saved with the "/uespsavebuild" command.
@@ -338,14 +338,16 @@
 --			- Added new Thieves Guild mobs to ignore list and removed "Mudcrab".
 --			- Add support for logging "Thieves Trove" along with treasure timer.
 --			- The new item tags are logged and shown in item info.
---	
+--			- Fixed bug in manual tracking of Ancient Orc and Mercenary styles (although they should now
+--			  be tracked correctly in-game after the Thieves Guilds update).	
+--
 
 
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "0.51"
-uespLog.releaseDate = "17 December 2015"
+uespLog.version = "0.60"
+uespLog.releaseDate = "4 March 2016"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -3121,7 +3123,44 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 end
 
 
+uespLog.CHAPTERINDEX_TO_DISPLAYEDCHAPTER = {
+	[0]  = 0,
+	[1]  = 8,
+	[2]  = 7,
+	[3]  = 3,
+	[4]  = 9,
+	[5]  = 5,
+	[6]  = 2,
+	[7]  = 12,
+	[8]  = 14,
+	[9]  = 10,
+	[10] = 1,
+	[11] = 6,
+	[12] = 13,
+	[13] = 11,
+	[14] = 4,
+}
+
+
 function uespLog.OnStyleLearned (eventCode, styleIndex, chapterIndex)
+	-- chapterIndex is *not* the chapter as displayed on the book/item
+	--		chapterIndex => Displayed Chapter
+	--				0 	=> All Chapters
+	--				1 	=> 8 (Helmets)
+	--				2	=> 7 (Gloves)	
+	--				3 	=> 3 (Boots)
+	--				4 	=> 9 (Legs)
+	--				5 	=> 5 (Chests)
+	--				6 	=> 2 (Belts)
+	--				7 	=> 12 (Shoulders)
+	--				8 	=> 14 (Swords)
+	--				9 	=> 10 (Maces)
+	--				10	=> 1 (Axes) 
+	--				11 	=> 6 (Daggers)
+	--				12 	=> 13 (Staves)
+	--				13 	=> 11 (Shields)
+	--				14 	=> 4 (Bows)
+	--
 	uespLog.DebugExtraMsg("OnStyleLearned: "..tostring(styleIndex)..":"..tostring(chapterIndex))
 
 	if (styleIndex == 27) then
@@ -3131,8 +3170,9 @@ function uespLog.OnStyleLearned (eventCode, styleIndex, chapterIndex)
 			for i = 1, 14 do
 				uespLog.savedVars.charInfo.data.mercStyle[i] = true
 			end
-		else
-			uespLog.savedVars.charInfo.data.mercStyle[tonumber(chapterIndex)] = true
+		elseif (chapterIndex >= 1 and chapterIndex <= 14) then
+			local realIndex = uespLog.CHAPTERINDEX_TO_DISPLAYEDCHAPTER[tonumber(chapterIndex)]
+			uespLog.savedVars.charInfo.data.mercStyle[realIndex] = true
 		end
 	elseif (styleIndex == 23) then
 		local itemStyle = select(5, GetSmithingStyleItemInfo(styleIndex))
@@ -3141,8 +3181,9 @@ function uespLog.OnStyleLearned (eventCode, styleIndex, chapterIndex)
 			for i = 1, 14 do
 				uespLog.savedVars.charInfo.data.ancientOrcStyle[i] = true
 			end
-		else
-			uespLog.savedVars.charInfo.data.ancientOrcStyle[tonumber(chapterIndex)] = true
+		elseif (chapterIndex >= 1 and chapterIndex <= 14) then
+			local realIndex = uespLog.CHAPTERINDEX_TO_DISPLAYEDCHAPTER[tonumber(chapterIndex)]
+			uespLog.savedVars.charInfo.data.ancientOrcStyle[realIndex] = true
 		end
 	end
 
@@ -5346,17 +5387,20 @@ function uespLog.CreateItemLinkLog (itemLink)
 		logData.flag = flagString
 	end
 	
-	local tagCount = GetItemLinkNumItemTags(itemLink)
 	local tagString = ""
 	
-	for i = 1, tagCount do
-		local tagDesc = GetItemLinkItemTagDescription(itemLink, i)
-		
-		if (i > 1) then
-			tagString = tagString .. ", "
+	if (GetItemLinkNumItemTags ~= nil) then
+		local tagCount = GetItemLinkNumItemTags(itemLink)
+	
+		for i = 1, tagCount do
+			local tagDesc = GetItemLinkItemTagDescription(itemLink, i)
+			
+			if (i > 1) then
+				tagString = tagString .. ", "
+			end
+			
+			tagString = tagString .. tagDesc
 		end
-		
-		tagString = tagString .. tagDesc
 	end
 	
 	if (tagString ~= "") then

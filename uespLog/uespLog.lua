@@ -4585,6 +4585,8 @@ function uespLog.DumpSkillTypes(note, classOnly, raceOnly)
 			
 			logData.xpString = "0"
 			logData.numRanks = 1
+			logData.totalXp = 0
+			local lastRankXP = 0
 		
 			for i = 1, 70 do
 				local startXP, nextRankStartXP = GetSkillLineRankXPExtents(skillType, skillIndex, i)
@@ -4593,8 +4595,10 @@ function uespLog.DumpSkillTypes(note, classOnly, raceOnly)
 					break
 				end
 				
-				logData.xpString = logData.xpString .. "," .. tostring(nextRankStartXP)
+				logData.xpString = logData.xpString .. "," .. tostring(nextRankStartXP - lastRankXP)
 				logData.numRanks = logData.numRanks + 1
+				logData.totalXp = nextRankStartXP
+				lastRankXP = nextRankStartXP
 			end
 			
 			logData.skillIndex = skillIndex

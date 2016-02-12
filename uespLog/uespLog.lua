@@ -2065,17 +2065,20 @@ function uespLog.ShowItemInfo (itemLink)
 		traitText = ", " .. tostring(traitText)
 	end
 	
-	local tagCount = GetItemLinkNumItemTags(itemLink)
 	local tagString = ""
 	
-	for i = 1, tagCount do
-		local tagDesc = GetItemLinkItemTagDescription(itemLink, i)
+	if (GetItemLinkNumItemTags ~= nil) then
+		local tagCount = GetItemLinkNumItemTags(itemLink)
 		
-		if (i > 1) then
-			tagString = tagString .. ", "
+		for i = 1, tagCount do
+			local tagDesc = GetItemLinkItemTagDescription(itemLink, i)
+			
+			if (i > 1) then
+				tagString = tagString .. ", "
+			end
+			
+			tagString = tagString .. tagDesc
 		end
-		
-		tagString = tagString .. tagDesc
 	end
 	
 	uespLog.MsgColor(uespLog.itemColor, ".    Level: "..levelString.."     Value: "..tostring(value).."     Condition: "..tostring(condition).."     Quality: "..tostring(quality))

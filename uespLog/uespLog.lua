@@ -2544,7 +2544,7 @@ function uespLog.OnQuestCounterChanged (eventCode, journalIndex, questName, cond
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
  
-	uespLog.DebugLogMsg("Change in quest "..questName.."::"..conditionText)
+	uespLog.DebugLogMsg("Change in quest "..questName.."::"..conditionText.." ("..tostring(newConditionVal).."/"..tostring(conditionMax)..")")
 end
 
 
@@ -8233,7 +8233,7 @@ end
 
 
 function uespLog.EventLoreBookLearned(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, isMaxRank)
-	uespLog.DebugMsg("LoreBook Learned: "..tostring(guildReputationIndex)..", MaxRank: "..tostring(isMaxRank))
+	uespLog.DebugExtraMsg("LoreBook Learned: "..tostring(guildReputationIndex)..", MaxRank: "..tostring(isMaxRank))
 	
 	if (uespLog.GetLoreBookMsgFlag() == 'on') then
 		return uespLog.origLoreBookLearnedFunction(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, isMaxRank)

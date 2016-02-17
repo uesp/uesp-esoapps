@@ -112,13 +112,19 @@ end
 
 function uespLog.OnPlayerDeactivated (eventCode)
 	uespLog.DebugExtraMsg("OnPlayerDeactivated")
-	uespLog.SaveCharData()
+	
+	if (uespLog.GetAutoSaveCharData()) then
+		uespLog.SaveCharData()
+	end
 end
 
 
 function uespLog.OnLogoutDisallowed (eventCode, quitRequested)
 	uespLog.DebugExtraMsg("OnLogoutDisallowed")
-	uespLog.SaveCharData()
+	
+	if (uespLog.GetAutoSaveCharData()) then
+		uespLog.SaveCharData()
+	end
 end
 
 

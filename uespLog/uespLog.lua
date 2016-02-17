@@ -806,6 +806,7 @@ uespLog.DEFAULT_SETTINGS =
 			["thieves trove"] = 300,
 		},
 		["loreBookMsg"] = true,
+		["autoSaveCharData"] = false,
 	}
 }
 
@@ -837,6 +838,30 @@ function uespLog.SetLoreBookMsgFlag(flag)
 	end
 	
 	uespLog.savedVars.settings.data.loreBookMsg = flag
+end
+
+
+function uespLog.GetAutoSaveCharData()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.autoSaveCharData == nil) then
+		uespLog.savedVars.settings.data.autoSaveCharData = uespLog.DEFAULT_SETTINGS.autoSaveCharData
+	end
+	
+	return uespLog.savedVars.settings.data.autoSaveCharData
+end
+
+
+function uespLog.SetAutoSaveCharData(flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	uespLog.savedVars.settings.data.autoSaveCharData = flag
 end
 
 
@@ -8254,6 +8279,37 @@ SLASH_COMMANDS["/uesplorebook"] = function (cmd)
 	end
 		
 end
+
+
+SLASH_COMMANDS["/uespsavechardata"] = function (cmd)
+	cmd = string.lower(cmd)
+	
+	if (cmd == 'on') then
+		uespLog.SetAutoSaveCharData(true)
+		uespLog.Msg("UESP::Set auto saving of character data to: "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
+	elseif (cmd == 'off') then
+		uespLog.SetAutoSaveCharData(false)
+		uespLog.Msg("UESP::Set auto saving of character data to: "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
+	elseif (cmd == 'save') then
+		
+		if (uespLog.SaveCharData()) then
+			uespLog.Msg("UESP::Manually saved the current character data.")
+		else
+			uespLog.Msg("UESP::Error saving the current character data!")
+		end
+		
+	elseif (cmd == '') then
+		uespLog.Msg("UESP::Current auto saving of character data is: "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
+	else
+		uespLog.Msg("UESP::Turns on/off the automatic saving of character data.")
+		uespLog.Msg(".     Use the format: /uesplorebook [on/off]")
+		uespLog.Msg(".     Current Setting is: "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
+	end
+		
+end
+
+
+SLASH_COMMANDS["/uscd"] = SLASH_COMMANDS["/uespsavechardata"]
 
 
 function uespLog.EventLoreBookLearned(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, isMaxRank)

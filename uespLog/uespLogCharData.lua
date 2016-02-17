@@ -187,11 +187,34 @@ function uespLog.CreateInventorySlotData (bagId, slotIndex)
 end
 
 
+uespLog.PLATFORM_STRINGS = {
+	[0] = "XBox",
+	[1] = "PS4",
+	[2] = "PC",
+}
+
+
+function uespLog.GetUIPlatformString (platform)
+	local value = tonumber(platform)
+	
+	if (platform == nil) then
+		value = tonumber(GetUIPlatform())
+	end
+	
+	if (value < 0 or value > 2) then
+		return tostring(value)
+	end
+	
+	return uespLog.PLATFORM_STRINGS[value]
+end
+
+
 function uespLog.GetUniqueAccountName()
 	local serverName = GetUniqueNameForCharacter()	
 	local accountName = GetDisplayName()
+	local platformName = uespLog.GetUIPlatformString()
 	
-	return tostring(serverName) .. tostring(accountName)
+	return tostring(serverName) .. platformName .. tostring(accountName)
 end
 
 

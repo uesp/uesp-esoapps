@@ -340,6 +340,7 @@
 --			- The new item tags are logged and shown in item info.
 --			- Fixed bug in manual tracking of Ancient Orc and Mercenary styles (although they should now
 --			  be tracked correctly in-game after the Thieves Guilds update).	
+--			- Werewolf character state is properly saved when saving a build.
 --
 
 

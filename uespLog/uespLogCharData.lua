@@ -99,10 +99,6 @@ function uespLog.SaveCharData (note)
 		return false
 	end
 	
-	-- Telvar?
-	-- Gold?
-	-- Banked Gold/Telvar
-	
 	uespLog.savedVars.charInfo.data.charData = charData
 	uespLog.savedVars.charData.data.bank = uespLog.CreateBankInventoryData()
 	

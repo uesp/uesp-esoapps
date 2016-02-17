@@ -283,6 +283,8 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	charData.BankedMoney = GetBankedMoney()
 	charData.TelvarStones = GetCarriedCurrencyAmount(CURT_TELVAR_STONES)
 	charData.BankedTelvarStones = GetBankedTelvarStones()
+	charData.InventorySize = GetBagSize(BAG_BACKPACK)
+	charData.BankSize = GetBagSize(BAG_BACKPACK)	
 	
 	charData.Bounty = GetBounty()
 	charData.AttributesUnspent = GetAttributeUnspentPoints()
@@ -323,7 +325,7 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	charData.Crafting = uespLog.CreateCharDataCrafting()
 	
 	charData.Skills, charData.SkillPointsUsed = uespLog.CreateCharDataSkills()
-	charData.SkillPointsTotal = charData.SkillPointsUsed + charData.SkillPointsUnused
+	charData.SkillPointsTotal = charData.SkillPointsUsed + charData.SkillPointsUnused	
 	
 	local screenShotDeltaTime = GetTimeStamp() - uespLog.charDataLastScreenShotTimestamp 
 	

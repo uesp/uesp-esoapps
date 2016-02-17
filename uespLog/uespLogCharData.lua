@@ -78,7 +78,6 @@ uespLog.charDataLastScreenShot = ""
 uespLog.charDataLastScreenShotTimestamp = 0
 
 uespLog.charDataLastFoodEaten = {
-	['name'] = '',
 	['itemLink'] = '',
 	['type'] = '',
 	['desc'] = '',
@@ -100,7 +99,7 @@ function uespLog.SaveCharData (note)
 	end
 	
 	uespLog.savedVars.charData.data = charData
-	uespLog.savedVars.bankData.data = uespLog.CreateBankInventoryData()
+	uespLog.savedVars.bankData.data = uespLog.CreateBankData()
 	
 	return true
 end
@@ -140,12 +139,12 @@ function uespLog.CreateInventoryData ()
 	local inventory = { }
 	local i
 	
-	inventory.size = GetBagSize(BAG_BACKPACK)
-	inventory.timestamp = GetTimeStamp()
-	inventory.gold = GetCurrentMoney()
-	inventory.telvar = GetCarriedCurrencyAmount(CURT_TELVAR_STONES)
+	inventory.Size = GetBagSize(BAG_BACKPACK)
+	inventory.TimeStamp = GetTimeStamp()
+	inventory.Gold = GetCurrentMoney()
+	inventory.Telvar = GetCarriedCurrencyAmount(CURT_TELVAR_STONES)
 	
-	for i = 0, inventory.size do
+	for i = 0, inventory.Size do
 		inventory[#inventory + 1] = uespLog.CreateInventorySlotData(BAG_BACKPACK, i)
 	end
 	
@@ -153,24 +152,23 @@ function uespLog.CreateInventoryData ()
 end
 
 
-function uespLog.CreateBankInventoryData ()
+function uespLog.CreateBankData ()
 	--BAG_BANK == 2
-	local inventory = { }
+	local bankData = { }
 	local i
 	
-	inventory.size = GetBagSize(BAG_BANK)
-	inventory.timestamp = GetTimeStamp()
+	bankData.Size = GetBagSize(BAG_BANK)
+	bankData.TimeStamp = GetTimeStamp()
+	bankData.Gold = GetBankedMoney()
+	bankData.Telvar = GetBankedCurrencyAmount(CURT_TELVAR_STONES)
+	bankData.UniqueAccountName = uespLog.GetUniqueAccountName()
+	bankData.Inventory = {}
 	
-	inventory.gold = GetBankedMoney()
-	inventory.telvar = GetBankedCurrencyAmount(CURT_TELVAR_STONES)
-	
-	inventory.UniqueAccountName = uespLog.GetUniqueAccountName()
-	
-	for i = 0, inventory.size do
-		inventory[#inventory + 1] = uespLog.CreateInventorySlotData(BAG_BANK, i)
+	for i = 0, bankData.Size do
+		bankData.Inventory[#bankData.Inventory + 1] = uespLog.CreateInventorySlotData(BAG_BANK, i)
 	end
 	
-	return inventory
+	return bankData
 end
 
 
@@ -825,7 +823,7 @@ end
 
 function uespLog.ClearCharData()
 	uespLog.savedVars.charData.data = { }
-	uespLog.savedVars.BankData.data = { }
+	uespLog.savedVars.bankData.data = { }
 	uespLog.Msg("UESP::Cleared all character data.")
 end
 

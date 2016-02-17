@@ -8281,7 +8281,7 @@ SLASH_COMMANDS["/uesplorebook"] = function (cmd)
 end
 
 
-SLASH_COMMANDS["/uespsavechardata"] = function (cmd)
+SLASH_COMMANDS["/uespchardata"] = function (cmd)
 	cmd = string.lower(cmd)
 	
 	if (cmd == 'on') then
@@ -8302,14 +8302,14 @@ SLASH_COMMANDS["/uespsavechardata"] = function (cmd)
 		uespLog.Msg("UESP::Current auto saving of character data is: "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
 	else
 		uespLog.Msg("UESP::Turns on/off the automatic saving of character data.")
-		uespLog.Msg(".     Use the format: /uesplorebook [on/off]")
+		uespLog.Msg(".     Use the format: /uespchardata [on/off/save]")
 		uespLog.Msg(".     Current Setting is: "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
 	end
 		
 end
 
 
-SLASH_COMMANDS["/uscd"] = SLASH_COMMANDS["/uespsavechardata"]
+SLASH_COMMANDS["/ucd"] = SLASH_COMMANDS["/uespchardata"]
 
 
 function uespLog.EventLoreBookLearned(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, isMaxRank)

@@ -113,7 +113,7 @@ class CuespLogMonitorDlg : public CDialogEx
 {
 protected:
 
-	const static int CHARDATA_UPLOAD_TESTONLY  = true;	/* Don't actually upload char/build data. Set to false for release builds */
+	const static int CHARDATA_UPLOAD_TESTONLY  = false;	/* Don't actually upload char/build data. Set to false for release builds */
 	const static int BUILDDATA_UPLOAD_TESTONLY = false;
 
 	const static int MINIMUM_VALID_BUILDDATA_SIZE = 24;

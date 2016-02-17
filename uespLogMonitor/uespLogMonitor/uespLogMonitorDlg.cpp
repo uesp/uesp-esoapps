@@ -665,7 +665,9 @@ bool CuespLogMonitorDlg::ParseSavedVarBankData (const std::string VarName, void*
 		
 	int numObjects = lua_rawlen(m_pLuaState, -1);
 
-	std::string nameBuffer = "uespCharData[\"Bank\"]";
+	char nameBuffer[256];
+	snprintf(nameBuffer, 250, "uespCharData[%d]", m_CharDataCount + 1);
+
 	std::string dataString = GetLuaVariableString(nameBuffer, false);
 
 	if (dataString.empty())
@@ -682,6 +684,7 @@ bool CuespLogMonitorDlg::ParseSavedVarBankData (const std::string VarName, void*
 		return true;
 	}
 
+	++m_CharDataCount;
 	if (m_CharData.empty()) m_CharData = "uespCharData = {}\n";
 
 	m_CharData += "\n";
@@ -696,6 +699,8 @@ bool CuespLogMonitorDlg::ParseSavedVarBankData (const std::string VarName, void*
 	m_CharData += ".WikiUser = '";
 	m_CharData += m_Options.UespWikiAccountName;
 	m_CharData += "'\n";
+	m_CharData += nameBuffer;
+	m_CharData += ".IsBank = 1\n";
 
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Found the bankData section with %d rows (%u bytes).", numObjects, m_CharData.length());
 	lua_pop(m_pLuaState, 1);

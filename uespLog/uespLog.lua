@@ -759,6 +759,13 @@ uespLog.DEFAULT_DATA =
 
 uespLog.DEFAULT_CHARINFO = 
 {
+	data = {
+		["charData"] =  { },
+	}
+}
+
+uespLog.DEFAULT_BUILDDATA = 
+{
 	data = {}
 }
 
@@ -1452,12 +1459,17 @@ function uespLog.Initialize( self, addOnName )
 		["globals"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "globals", uespLog.DEFAULT_DATA),
 		["info"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "info", uespLog.DEFAULT_DATA),
 		["settings"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "settings", uespLog.DEFAULT_SETTINGS),
-		["buildData"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "buildData", uespLog.DEFAULT_CHARDATA),
+		["buildData"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "buildData", uespLog.DEFAULT_BUILDDATA),
+		["charData"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "charData", uespLog.DEFAULT_CHARDATA),
 		["charInfo"] = ZO_SavedVars:New("uespLogSavedVars", uespLog.DATA_VERSION, "charInfo", uespLog.DEFAULT_CHARINFO),
 	}
 	
 	if (uespLog.savedVars["charInfo"].data.lastFoodEaten ~= nil) then
 		uespLog.charDataLastFoodEaten = uespLog.savedVars["charInfo"].data.lastFoodEaten 
+	end
+	
+	if (uespLog.savedVars["charInfo"].data.charData == nil) then
+		uespLog.savedVars["charInfo"].data.charData = { }
 	end
 	
 	uespLog.mineItemsAutoNextItemId = uespLog.savedVars.settings.data.mineItemsAutoNextItemId or uespLog.mineItemsAutoNextItemId
@@ -1487,6 +1499,9 @@ function uespLog.Initialize( self, addOnName )
 	uespLog.InitSettingsMenu()
 			
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_RETICLE_TARGET_CHANGED, uespLog.OnTargetChange)
+	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_PLAYER_DEACTIVATED, uespLog.OnPlayerDeactivated)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOGOUT_DISALLOWED, uespLog.OnLogoutDisallowed)	 
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_QUEST_CONDITION_COUNTER_CHANGED, uespLog.OnQuestCounterChanged)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_QUEST_ADDED, uespLog.OnQuestAdded)
@@ -4937,16 +4952,19 @@ end
 	
 	for k, v in pairs(object) do
 		local vType = type(v)
+		local stringName = tostring(k)
 		count = count + 1
 		
 		if (vType == "string") then
-			size = size + #v + 16
+			size = size + #v + 2 + #stringName + 10
 		elseif (vType == "number") then
-			size = size + 4
+			size = size + 4 + #stringName + 10
+		elseif (vType == "boolean") then
+			size = size + 5 + #stringName + 10
 		elseif (vType == "table") then
 			local tCount, tSize = uespLog.countVariable(v)
 			count = count + tCount - 1
-			size = size + tSize
+			size = size + tSize + #stringName
 		end
 	end
 	
@@ -5068,8 +5086,10 @@ SLASH_COMMANDS["/uespcount"] = function(cmd)
 	local count2, size2 = uespLog.countSection("globals")
 	local count3, size3 = uespLog.countSection("achievements")
 	local count4, size4 = uespLog.countSection("buildData")
-	local count = count1 + count2 + count3 + count4
-	local size = size1 + size2 + size3 + size4
+	local count5, size5 = uespLog.countSection("charData")
+	local count6, size6 = uespLog.countSection("charInfo")
+	local count = count1 + count2 + count3 + count4 + count5 + count6
+	local size = size1 + size2 + size3 + size4 + size5 + size6
 	
 	uespLog.MsgColor(uespLog.countColor, "UESP:: Total of " .. tostring(count) .. " records taking up " .. string.format("%.2f", size/1000000) .. " MB")
 end
@@ -7025,9 +7045,12 @@ SLASH_COMMANDS["/uespreset"] = function (cmd)
 		uespLog.ClearAllSavedVarSections()
 		uespLog.ClearRootSavedVar()
 		uespLog.ClearBuildData()
+		uespLog.ClearCharData()
 		uespLog.Msg("UESP::Reset all logged data")
-	elseif (cmd == "chardata" or cmd == "builddata") then
+	elseif (cmd == "builddata") then
 		uespLog.ClearBuildData()
+	elseif (cmd == "chardata") then
+		uespLog.ClearCharData()
 	elseif (cmd == "log") then
 		uespLog.ClearSavedVarSection("all")
 		uespLog.Msg("UESP::Reset regular logged data")

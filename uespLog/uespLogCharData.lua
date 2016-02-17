@@ -92,9 +92,100 @@ function uespLog.InitCharData()
 end
 
 
+function uespLog.SaveCharData (note)
+	local charData = uespLog.CreateCharData(note)
+		
+	if (charData == nil) then
+		return false
+	end
+	
+	-- Telvar?
+	-- Gold?
+	-- Banked Gold/Telvar
+	
+	uespLog.savedVars.charInfo.data.charData = charData
+	uespLog.savedVars.charData.data.bank = uespLog.CreateBankInventoryData()
+	
+	return true
+end
+
+
+function uespLog.OnPlayerDeactivated (eventCode)
+	uespLog.DebugExtraMsg("OnPlayerDeactivated")
+	uespLog.SaveCharData()
+end
+
+
+function uespLog.OnLogoutDisallowed (eventCode, quitRequested)
+	uespLog.DebugExtraMsg("OnLogoutDisallowed")
+	uespLog.SaveCharData()
+end
+
+
+function uespLog.CreateCharData (note)
+	local charData = uespLog.CreateBuildData(note, true, true)
+	
+	charData.inventory = uespLog.CreateInventoryData()
+	
+	return charData
+end
+
+
+function uespLog.CreateInventoryData ()
+	-- BAG_BACKPACK == 1
+	-- GetMaxBags()
+	-- GetItemTotalCount(BAG_BACKPACK, i)
+	local inventory = { }
+	local i
+	
+	inventory.size = GetBagSize(BAG_BACKPACK)
+	inventory.timestamp = GetTimeStamp()
+	inventory.gold = GetCurrentMoney()
+	inventory.telvar = GetCarriedCurrencyAmount(CURT_TELVAR_STONES)
+	
+	for i = 0, inventory.size do
+		inventory[#inventory + 1] = uespLog.CreateInventorySlotData(BAG_BACKPACK, i)
+	end
+	
+	return inventory
+end
+
+
+function uespLog.CreateBankInventoryData ()
+	--BAG_BANK == 2
+	local inventory = { }
+	local i
+	
+	inventory.size = GetBagSize(BAG_BANK)
+	inventory.timestamp = GetTimeStamp()
+	
+	inventory.gold = GetBankedMoney()
+	inventory.telvar = GetBankedCurrencyAmount(CURT_TELVAR_STONES)
+	
+	for i = 0, inventory.size do
+		inventory[#inventory + 1] = uespLog.CreateInventorySlotData(BAG_BANK, i)
+	end
+	
+	return inventory
+end
+
+
+function uespLog.CreateInventorySlotData (bagId, slotIndex)
+	local count = GetSlotStackSize(bagId, slotIndex)
+	local itemLink = GetItemLink(bagId, slotIndex)
+	local niceLink = uespLog.MakeNiceLink(itemLink)
+	
+	if (count == 0 or itemLink == "") then
+		return nil
+	end
+	
+	return tostring(count) .. " " .. niceLink
+end
+
+
 function uespLog.SaveBuildData (note, forceSave)
 	forceSave = forceSave or false
-	local charData = uespLog.CreateCharData(note, forceSave)
+	local charData = uespLog.CreateBuildData(note, forceSave, false)
 		
 	if (charData == nil) then
 		uespLog.MsgColor(uespLog.errorColor, "UESP::Did *not* save current character!")
@@ -109,15 +200,16 @@ function uespLog.SaveBuildData (note, forceSave)
 end
 
 
-function uespLog.CreateCharData (note, forceSave)
+function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	local charData = { }
+	suppressMsg = suppressMsg or true
 	
 	if (not uespLog.HasBothActionBarsForCharData()) then
 		if (not forceSave) then
 			uespLog.MsgColor(uespLog.errorColor, "ERROR: Unused weapon action bar skills not saved!")
 			uespLog.MsgColor(uespLog.errorColor, ".      Try weapon swapping and save character again.")
 			return nil
-		else
+		elseif (not suppressMsg) then
 			uespLog.MsgColor(uespLog.errorColor, "Warning: Unused weapon action bar skills not available!")
 		end
 	end
@@ -130,6 +222,7 @@ function uespLog.CreateCharData (note, forceSave)
 	
 	charData.CharName = GetUnitName("player")
 	charData.AccountName = GetDisplayName()
+	charData.UniqueName = GetUniqueNameForCharacter(charData.CharName)
 	charData.Title = GetUnitTitle("player")
 	charData.Race = GetUnitRace("player")
 	charData.Class = GetUnitClass("player")
@@ -346,7 +439,7 @@ function uespLog.CreateCharDataBuffs()
 		
 		if (string.find(buffName, "Vampirism") ~= nil) then 
 			isVampire = true
-		if (buffName == "Lycanthropy") then 
+		elseif (buffName == "Lycanthropy") then 
 			isWerewolf = true
 		end
 		
@@ -689,6 +782,13 @@ end
 function uespLog.OnActiveWeaponPairChanged (eventCode, activeWeaponPair, locked)
 	--uespLog.DebugMsg("OnActiveWeaponPairChanged "..tostring(activeWeaponPair))
 	uespLog.SaveActionBarForCharData()
+end
+
+
+function uespLog.ClearCharData()
+	uespLog.savedVars.charInfo.data.charData = { }
+	uespLog.savedVars.charData.data.bank = { }
+	uespLog.Msg("UESP::Cleared all character data.")
 end
 
 

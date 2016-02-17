@@ -390,6 +390,15 @@ function uespLog.CreateCharDataCrafting()
 end
 
 
+function uespLog.OnZoneChanged(eventCode, zoneName, subZoneName, newSubzone, zoneId, subZoneId)
+	uespLog.DebugExtraMsg("OnZoneChanged")
+	
+	if (uespLog.GetAutoSaveCharData()) then
+		uespLog.SaveCharData()
+	end
+end
+
+
 function uespLog.OnEatDrinkItem(bagId, slotIndex, isNewItem, itemSoundCategory, updateReason)
 	local itemName = GetItemName(bagId, slotIndex)
 	local itemLink = GetItemLink(bagId, slotIndex)

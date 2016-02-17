@@ -157,6 +157,7 @@ function uespLog.CreateBankData ()
 	local bankData = { }
 	local i
 	
+	bankData.IsBank = 1
 	bankData.Size = GetBagSize(BAG_BANK)
 	bankData.TimeStamp = GetTimeStamp()
 	bankData.Gold = GetBankedMoney()

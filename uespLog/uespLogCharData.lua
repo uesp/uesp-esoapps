@@ -100,7 +100,7 @@ function uespLog.SaveCharData (note)
 	end
 	
 	uespLog.savedVars.charInfo.data.charData = charData
-	uespLog.savedVars.charData.data.bank = uespLog.CreateBankInventoryData()
+	uespLog.savedVars.charData.data.Bank = uespLog.CreateBankInventoryData()
 	
 	return true
 end
@@ -127,7 +127,7 @@ end
 function uespLog.CreateCharData (note)
 	local charData = uespLog.CreateBuildData(note, true, true)
 	
-	charData.inventory = uespLog.CreateInventoryData()
+	charData.Inventory = uespLog.CreateInventoryData()
 	
 	return charData
 end
@@ -164,6 +164,8 @@ function uespLog.CreateBankInventoryData ()
 	inventory.gold = GetBankedMoney()
 	inventory.telvar = GetBankedCurrencyAmount(CURT_TELVAR_STONES)
 	
+	inventory.UniqueAccountName = uespLog.GetUniqueAccountName()
+	
 	for i = 0, inventory.size do
 		inventory[#inventory + 1] = uespLog.CreateInventorySlotData(BAG_BANK, i)
 	end
@@ -182,6 +184,14 @@ function uespLog.CreateInventorySlotData (bagId, slotIndex)
 	end
 	
 	return tostring(count) .. " " .. niceLink
+end
+
+
+function uespLog.GetUniqueAccountName()
+	local serverName = GetUniqueNameForCharacter()	
+	local accountName = GetDisplayName()
+	
+	return tostring(serverName) .. tostring(accountName)
 end
 
 
@@ -224,6 +234,7 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	
 	charData.CharName = GetUnitName("player")
 	charData.AccountName = GetDisplayName()
+	charData.UniqueAccountName = uespLog.GetUniqueAccountName()
 	charData.UniqueName = GetUniqueNameForCharacter(charData.CharName)
 	charData.Title = GetUnitTitle("player")
 	charData.Race = GetUnitRace("player")
@@ -789,7 +800,7 @@ end
 
 function uespLog.ClearCharData()
 	uespLog.savedVars.charInfo.data.charData = { }
-	uespLog.savedVars.charData.data.bank = { }
+	uespLog.savedVars.charData.data.Bank = { }
 	uespLog.Msg("UESP::Cleared all character data.")
 end
 

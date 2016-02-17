@@ -48,7 +48,9 @@
 const std::string ulm_options_t::DEFAULT_FORMURL("content3.uesp.net/esolog/esolog.php");
 const std::string ulm_options_t::DEFAULT_BACKUPDATAFILENAME("uespLog_backupData.txt");
 const std::string ulm_options_t::DEFAULT_BACKUPBUILDDATAFOLDER("BackupBuildData");
+const std::string ulm_options_t::DEFAULT_BACKUPCHARDATAFOLDER("BackupCharData");
 const std::string ulm_options_t::DEFAULT_BUILDDATA_FORMURL("content3.uesp.net/esobuilddata/parseBuildData.php");
+const std::string ulm_options_t::DEFAULT_CHARDATA_FORMURL("content3.uesp.net/esobuilddata/parseCharData.php");
 
 const char ULM_REGISTRY_SECTION_SETTINGS[] = "Settings";
 const char ULM_REGISTRY_KEY_UPDATETIME[] = "UpdateTime";
@@ -57,14 +59,17 @@ const char ULM_REGISTRY_KEY_CUSTOMLOGNAME[] = "CustomLogName";
 const char ULM_REGISTRY_KEY_UESPWIKIUSERNAME[] = "UespWikiUserName";
 const char ULM_REGISTRY_KEY_FORMURL[] = "FormURL";
 const char ULM_REGISTRY_KEY_BUILDDATAFORMURL[] = "BuildDataFormURL";
+const char ULM_REGISTRY_KEY_CHARDATAFORMURL[] = "BuildDataFormURL";
 const char ULM_REGISTRY_KEY_ENABLED[] = "Enabled";
 const char ULM_REGISTRY_KEY_BUILDDATAENABLED[] = "BuildDataEnabled";
+const char ULM_REGISTRY_KEY_CHARDATAENABLED[] = "BuildDataEnabled";
 const char ULM_REGISTRY_KEY_SAVEDVARPATH[] = "SavedVarPath";
 const char ULM_REGISTRY_KEY_LASTTIMESTAMP[] = "LastTimeStamp";
 const char ULM_REGISTRY_KEY_LASTBACKUPTIMESTAMP[] = "LastBackupTimeStamp";
 const char ULM_REGISTRY_KEY_LOGLEVEL[] = "LogLevel";
 const char ULM_REGISTRY_KEY_BACKUPDATAFILENAME[] = "BackupDataFilename";
 const char ULM_REGISTRY_KEY_BACKUPBUILDDATAFOLDER[] = "BackupBuildDataFolder";
+const char ULM_REGISTRY_KEY_BACKUPCHARDATAFOLDER[] = "BackupBuildDataFolder";
 
 const std::string ULM_LOGSTRING_JOIN("#STR#");
 const int  ULM_LOGSTRING_MAXLENGTH = 1900;
@@ -322,8 +327,9 @@ bool CuespLogMonitorDlg::ParseSavedVarAccount (const std::string VarName, void* 
 {
 	if (VarName != "$AccountWide")
 	{
-		PrintLogLine(ULM_LOGLEVEL_INFO, "Skipping account section '%s'...", VarName.c_str());
-		return true;
+		return ParseSavedVarCharacterAccount(VarName, pUserData);
+		//PrintLogLine(ULM_LOGLEVEL_INFO, "Skipping account section '%s'...", VarName.c_str());
+		//return true;
 	}
 
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Parsing data sections in saved variable log for account '%s'...", VarName.c_str());
@@ -333,9 +339,20 @@ bool CuespLogMonitorDlg::ParseSavedVarAccount (const std::string VarName, void* 
 	ParseSavedVarDataSection("achievements",	&CuespLogMonitorDlg::ParseSavedVarAchievements);
 
 	ParseSavedVarDataSection("buildData",		&CuespLogMonitorDlg::ParseSavedVarBuildData);
+	ParseSavedVarDataSection("charData",        &CuespLogMonitorDlg::ParseSavedVarCharData);
 
 	ParseSavedVarDataSection("info",			&CuespLogMonitorDlg::ParseSavedVarInfo);
 	
+	return true;
+}
+
+
+bool CuespLogMonitorDlg::ParseSavedVarCharacterAccount(const std::string VarName, void* pUserData)
+{
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Parsing data sections in saved variable log for account '%s'...", VarName.c_str());
+
+	ParseSavedVarDataSection("charData", &CuespLogMonitorDlg::ParseSavedVarCharData);
+
 	return true;
 }
 
@@ -571,6 +588,64 @@ bool CuespLogMonitorDlg::ParseSavedVarBuildData(const std::string VarName, void*
 	lua_pop(m_pLuaState, 1);
 
 	LoadScreenshots();
+
+	return true;
+}
+
+
+bool CuespLogMonitorDlg::ParseSavedVarCharData(const std::string VarName, void* pUserData)
+{
+	std::string Version = ParseSavedVarDataVersion();
+
+	m_BankData = "";
+
+	lua_getfield(m_pLuaState, -1, "data");
+
+	if (lua_isnil(m_pLuaState, -1))
+	{
+		lua_pop(m_pLuaState, 1);
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to find the 'data' field in charData account section!");
+		return false;
+	}
+
+	lua_getfield(m_pLuaState, -1, "Bank");
+
+	if (lua_isnil(m_pLuaState, -1))
+	{
+		lua_pop(m_pLuaState, 1);
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to find the 'Bank' field in charData account section!");
+		return false;
+	}
+
+	int numObjects = lua_rawlen(m_pLuaState, -1);
+
+	m_BankData = GetLuaVariableString("uespCharData.Bank", false);
+
+	if (m_BankData.empty())
+	{
+		lua_pop(m_pLuaState, 1);
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to parse the charData.Bank variable data!");
+		return false;
+	}
+
+	if (m_BankData.size() < CuespLogMonitorDlg::MINIMUM_VALID_BUILDDATA_SIZE)
+	{
+		PrintLogLine(ULM_LOGLEVEL_INFO, "Found the charData section with no content.");
+		m_BankData.clear();
+		lua_pop(m_pLuaState, 1);
+		return true;
+	}
+
+	m_BankData += "\n";
+	m_BankData += "uespCharData.Bank.UserName = '";
+	m_BankData += GetCurrentUserName();
+	m_BankData += "'\n";
+	m_BankData += "uespCharData.Bank.WikiUser = '";
+	m_BankData += m_Options.UespWikiAccountName;
+	m_BankData += "'\n";
+
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Found the charData Bank section with %d rows (%u bytes).", numObjects, m_BankData.length());
+	lua_pop(m_pLuaState, 1);
 
 	return true;
 }
@@ -1238,7 +1313,7 @@ bool CuespLogMonitorDlg::SendQueuedBuildDataThread()
 	std::string FormQuery;
 
 	if (m_BuildDataQueue.empty()) return true;
-	if (CuespLogMonitorDlg::CHARDATA_UPLOAD_TESTONLY) return true;
+	if (CuespLogMonitorDlg::BUILDDATA_UPLOAD_TESTONLY) return true;
 
 	if (WaitForSingleObject(m_hSendQueueMutex, INFINITE) != WAIT_OBJECT_0)
 	{
@@ -1812,6 +1887,7 @@ bool CuespLogMonitorDlg::LoadRegistrySettings (void)
 	m_Options.LogLevel = static_cast<ulm_loglevel_t>( pApp->GetProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_LOGLEVEL, m_Options.LogLevel) );
 	m_Options.Enabled = (pApp->GetProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_ENABLED, m_Options.Enabled) != 0);
 	m_Options.BuildDataEnabled = (pApp->GetProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BUILDDATAENABLED, m_Options.BuildDataEnabled) != 0);
+	m_Options.CharDataEnabled = (pApp->GetProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CHARDATAENABLED, m_Options.CharDataEnabled) != 0);
 
 	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CUSTOMLOGNAME, m_Options.CustomLogName.c_str());
 	m_Options.CustomLogName = Buffer;
@@ -1834,11 +1910,17 @@ bool CuespLogMonitorDlg::LoadRegistrySettings (void)
 	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPBUILDDATAFOLDER, m_Options.BackupBuildDataFolder.c_str());
 	m_Options.BackupBuildDataFolder = Buffer;
 
+	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPCHARDATAFOLDER, m_Options.BackupCharDataFolder.c_str());
+	m_Options.BackupCharDataFolder = Buffer;
+
 	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_FORMURL, m_Options.FormURL.c_str());
 	m_Options.FormURL = Buffer;
 
 	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BUILDDATAFORMURL, m_Options.BuildDataFormURL.c_str());
 	m_Options.BuildDataFormURL = Buffer;
+
+	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CHARDATAFORMURL, m_Options.CharDataFormURL.c_str());
+	m_Options.CharDataFormURL = Buffer;
 
 	return true;
 }
@@ -1854,14 +1936,17 @@ bool CuespLogMonitorDlg::SaveRegistrySettings (void)
 	pApp->WriteProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_LOGLEVEL,   m_Options.LogLevel);
 	pApp->WriteProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_ENABLED,    m_Options.Enabled);
 	pApp->WriteProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BUILDDATAENABLED, m_Options.BuildDataEnabled);
+	pApp->WriteProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CHARDATAENABLED, m_Options.CharDataEnabled);
 
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CUSTOMLOGNAME, m_Options.CustomLogName.c_str());
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_UESPWIKIUSERNAME, m_Options.UespWikiAccountName.c_str());
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_FORMURL,       m_Options.FormURL.c_str());
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BUILDDATAFORMURL, m_Options.BuildDataFormURL.c_str());
+	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CHARDATAFORMURL, m_Options.CharDataFormURL.c_str());
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_SAVEDVARPATH,  m_Options.SavedVarPath.c_str());
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPDATAFILENAME, m_Options.BackupDataFilename.c_str());
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPBUILDDATAFOLDER, m_Options.BackupBuildDataFolder.c_str());
+	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPCHARDATAFOLDER, m_Options.BackupCharDataFolder.c_str());
 
 	Buffer.Format("%I64d", m_Options.LastTimeStamp);
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_LASTTIMESTAMP, Buffer);

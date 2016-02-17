@@ -41,7 +41,9 @@ struct ulm_options_t
 	const static std::string DEFAULT_FORMURL;
 	const static std::string DEFAULT_BACKUPDATAFILENAME;
 	const static std::string DEFAULT_BACKUPBUILDDATAFOLDER;
+	const static std::string DEFAULT_BACKUPCHARDATAFOLDER;
 	const static std::string DEFAULT_BUILDDATA_FORMURL;
+	const static std::string DEFAULT_CHARDATA_FORMURL;
 
 	int					UpdateTime;		/* Time between updates in seconds */
 	ulm_uselogname_t	UseLogName;
@@ -49,12 +51,15 @@ struct ulm_options_t
 	std::string			CustomLogName;
 	std::string			FormURL;
 	std::string			BuildDataFormURL;
+	std::string			CharDataFormURL;
 	std::string			SavedVarPath;
 	std::string			BackupDataFilename;
 	std::string			BackupBuildDataFolder;
+	std::string			BackupCharDataFolder;
 	std::string			UespWikiAccountName;
 	bool				Enabled;
 	bool				BuildDataEnabled;
+	bool				CharDataEnabled;
 	__int64				LastTimeStamp;
 	__int64				LastBackupTimeStamp;
 
@@ -65,12 +70,15 @@ struct ulm_options_t
 		CustomLogName(),
 		FormURL(DEFAULT_FORMURL),
 		BuildDataFormURL(DEFAULT_BUILDDATA_FORMURL),
+		CharDataFormURL(DEFAULT_CHARDATA_FORMURL),
 		Enabled(true),
 		BuildDataEnabled(true),
+		CharDataEnabled(true),
 		SavedVarPath(),
 		LastTimeStamp(0),
 		BackupDataFilename(DEFAULT_BACKUPDATAFILENAME),
 		BackupBuildDataFolder(DEFAULT_BACKUPBUILDDATAFOLDER),
+		BackupCharDataFolder(DEFAULT_BACKUPCHARDATAFOLDER),
 		LastBackupTimeStamp(0)
 	{ 
 	}
@@ -105,7 +113,8 @@ class CuespLogMonitorDlg : public CDialogEx
 {
 protected:
 
-	const static int CHARDATA_UPLOAD_TESTONLY = false;	/* Don't actually upload chardata. Set to false for release builds */
+	const static int CHARDATA_UPLOAD_TESTONLY  = false;	/* Don't actually upload char/build data. Set to false for release builds */
+	const static int BUILDDATA_UPLOAD_TESTONLY = false;
 
 	const static int MINIMUM_VALID_BUILDDATA_SIZE = 24;
 
@@ -133,6 +142,7 @@ protected:
 	CUlmLogDataArray	m_SendQueue;
 	CUlmLogDataArray	m_BackupQueue;   // Data that should be backed up but not sent
 	std::string			m_BuildDataQueue;
+	std::string			m_CharDataQueue;
 
 	HANDLE				m_hSendQueueThread;
 	HANDLE				m_hSendQueueMutex;
@@ -142,6 +152,9 @@ protected:
 	//std::vector<std::string>	m_BuildDataScreenshots;
 	int							m_BuildDataValidScreenshotCount;
 	std::vector<ulm_screenshot_t> m_Screenshots;
+
+	std::string					m_CharData;
+	std::string					m_BankData;
 
 
 public:
@@ -186,16 +199,18 @@ protected:
 	bool LuaIterateSimpleTable (const int StackIndex, ULM_LUA_TABLEITERATOR TableIteratorMethod, void* pUserData);
 	bool LuaIterateSimpleTableInOrder (const int StackIndex, ULM_LUA_TABLEITERATOR TableIteratorMethod, void* pUserData);
 
-	bool ParseSavedVarFirstLevel	(const std::string VarName, void* pUserData);
-	bool ParseSavedVarUserName		(const std::string VarName, void* pUserData);
-	bool ParseSavedVarAccount		(const std::string VarName, void* pUserData);
-	bool ParseSavedVarSection		(const std::string VarName, void* pUserData);
-	bool ParseSavedVarBuildData     (const std::string VarName, void* pUserData);
-	bool ParseSavedVarGlobals		(const std::string VarName, void* pUserData);
-	bool ParseSavedVarAchievements	(const std::string VarName, void* pUserData);
-	bool ParseSavedVarAll			(const std::string VarName, void* pUserData);
-	bool ParseSavedVarInfo			(const std::string VarName, void* pUserData);
-
+	bool ParseSavedVarFirstLevel	  (const std::string VarName, void* pUserData);
+	bool ParseSavedVarUserName		  (const std::string VarName, void* pUserData);
+	bool ParseSavedVarAccount		  (const std::string VarName, void* pUserData);
+	bool ParseSavedVarSection		  (const std::string VarName, void* pUserData);
+	bool ParseSavedVarBuildData       (const std::string VarName, void* pUserData);
+	bool ParseSavedVarCharData        (const std::string VarName, void* pUserData);
+	bool ParseSavedVarGlobals		  (const std::string VarName, void* pUserData);
+	bool ParseSavedVarAchievements	  (const std::string VarName, void* pUserData);
+	bool ParseSavedVarAll			  (const std::string VarName, void* pUserData);
+	bool ParseSavedVarInfo			  (const std::string VarName, void* pUserData);
+	bool ParseSavedVarCharacterAccount(const std::string VarName, void* pUserData);
+  
 	bool ParseBuildDataScreenshots();
 	bool SendScreenshots();
 	bool LoadScreenshots();

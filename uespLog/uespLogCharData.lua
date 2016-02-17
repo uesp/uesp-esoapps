@@ -171,6 +171,7 @@ function uespLog.CreateCharData (note, forceSave)
 	
 	charData.Stealth = GetUnitStealthState("player")
 	
+		-- Note: This function doesn't seem to work, or only works if the character is actually in Werewolf form at the time
 	if (IsWerewolf()) then
 		charData.Werewolf = 1
 	else
@@ -186,7 +187,7 @@ function uespLog.CreateCharData (note, forceSave)
 	
 	charData.Stats = uespLog.CreateCharDataStats()
 	charData.Power = uespLog.CreateCharDataPower()
-	charData.Buffs, charData.Vampire = uespLog.CreateCharDataBuffs()
+	charData.Buffs, charData.Vampire, charData.Werewolf = uespLog.CreateCharDataBuffs()
 	charData.ActionBar = uespLog.CreateCharDataActionBar()
 	charData.EquipSlots = uespLog.CreateCharDataEquipSlots()
 	charData.ChampionPoints = uespLog.CreateCharDataChampionPoints()
@@ -334,6 +335,7 @@ function uespLog.CreateCharDataBuffs()
 	local numBuffs = GetNumBuffs("player")
 	local i
 	local isVampire = false
+	local isWerewolf = false
 	
 	for i = 1, numBuffs do
 		local buffName, timeStarted, timeEnding, buffSlot, stackCount, iconFilename, buffType, effectType, abilityType, statusEffectType, abilityId, canClickOff = GetUnitBuffInfo("player", i)
@@ -344,10 +346,13 @@ function uespLog.CreateCharDataBuffs()
 		
 		if (string.find(buffName, "Vampirism") ~= nil) then 
 			isVampire = true
+		if (buffName == "Lycanthropy") then 
+			isWerewolf = true
 		end
+		
 	end
 
-	return buffs, isVampire
+	return buffs, isVampire, isWerewolf
 end
 
 

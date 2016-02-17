@@ -113,10 +113,11 @@ class CuespLogMonitorDlg : public CDialogEx
 {
 protected:
 
-	const static int CHARDATA_UPLOAD_TESTONLY  = false;	/* Don't actually upload char/build data. Set to false for release builds */
+	const static int CHARDATA_UPLOAD_TESTONLY  = true;	/* Don't actually upload char/build data. Set to false for release builds */
 	const static int BUILDDATA_UPLOAD_TESTONLY = false;
 
 	const static int MINIMUM_VALID_BUILDDATA_SIZE = 24;
+	const static int MINIMUM_VALID_CHARDATA_SIZE = 32;
 
 	NOTIFYICONDATA	m_TrayIconData;
 	bool			m_IsInTray;
@@ -154,7 +155,7 @@ protected:
 	std::vector<ulm_screenshot_t> m_Screenshots;
 
 	std::string					m_CharData;
-	std::string					m_BankData;
+	int							m_CharDataCount;
 
 
 public:
@@ -205,6 +206,7 @@ protected:
 	bool ParseSavedVarSection		  (const std::string VarName, void* pUserData);
 	bool ParseSavedVarBuildData       (const std::string VarName, void* pUserData);
 	bool ParseSavedVarCharData        (const std::string VarName, void* pUserData);
+	bool ParseSavedVarBankData        (const std::string VarName, void* pUserData);
 	bool ParseSavedVarGlobals		  (const std::string VarName, void* pUserData);
 	bool ParseSavedVarAchievements	  (const std::string VarName, void* pUserData);
 	bool ParseSavedVarAll			  (const std::string VarName, void* pUserData);
@@ -232,7 +234,9 @@ protected:
 	bool SendAllLogData();
 
 	bool CheckAndSendBuildData();
+	bool CheckAndSendCharData();
 	bool QueueBuildData();
+	bool QueueCharData();
 
 	bool SendLogData (CUlmLogDataArray& DataArray);
 	bool SendLogData (const std::string Section, const ulm_sectiondata_t Data);
@@ -248,7 +252,7 @@ protected:
 	bool DeleteOldLogDataRoot (const std::string VarName, void* pUserData);
 	bool DeleteOldLogDataUser (const std::string VarName, void* pUserData);
 	bool DeleteOldLogDataAccount (const std::string VarName, void* pUserData);
-	bool DeleteOldLogDataSection (const std::string Section, const int StackIndex);
+	bool DeleteOldLogDataSection (const std::string Section, const int StackIndex, const std::string Parent);
 
 	std::string GetExtraLogData ();
 
@@ -261,6 +265,7 @@ protected:
 	void UpdateDialogTitle();
 
 	bool BackupData (void);
+	bool BackupCharData(void);
 	bool BackupBuildData(void);
 
 	bool SendEntireLog(const std::string Filename);
@@ -269,6 +274,7 @@ protected:
 	void DestroySendQueueThread();
 	bool SendQueuedDataThread();
 	bool SendQueuedBuildDataThread();
+	bool SendQueuedCharDataThread();
 
 
 public:

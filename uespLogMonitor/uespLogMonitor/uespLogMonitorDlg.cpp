@@ -59,17 +59,17 @@ const char ULM_REGISTRY_KEY_CUSTOMLOGNAME[] = "CustomLogName";
 const char ULM_REGISTRY_KEY_UESPWIKIUSERNAME[] = "UespWikiUserName";
 const char ULM_REGISTRY_KEY_FORMURL[] = "FormURL";
 const char ULM_REGISTRY_KEY_BUILDDATAFORMURL[] = "BuildDataFormURL";
-const char ULM_REGISTRY_KEY_CHARDATAFORMURL[] = "BuildDataFormURL";
+const char ULM_REGISTRY_KEY_CHARDATAFORMURL[] = "CharDataFormURL";
 const char ULM_REGISTRY_KEY_ENABLED[] = "Enabled";
 const char ULM_REGISTRY_KEY_BUILDDATAENABLED[] = "BuildDataEnabled";
-const char ULM_REGISTRY_KEY_CHARDATAENABLED[] = "BuildDataEnabled";
+const char ULM_REGISTRY_KEY_CHARDATAENABLED[] = "CharDataEnabled";
 const char ULM_REGISTRY_KEY_SAVEDVARPATH[] = "SavedVarPath";
 const char ULM_REGISTRY_KEY_LASTTIMESTAMP[] = "LastTimeStamp";
 const char ULM_REGISTRY_KEY_LASTBACKUPTIMESTAMP[] = "LastBackupTimeStamp";
 const char ULM_REGISTRY_KEY_LOGLEVEL[] = "LogLevel";
 const char ULM_REGISTRY_KEY_BACKUPDATAFILENAME[] = "BackupDataFilename";
 const char ULM_REGISTRY_KEY_BACKUPBUILDDATAFOLDER[] = "BackupBuildDataFolder";
-const char ULM_REGISTRY_KEY_BACKUPCHARDATAFOLDER[] = "BackupBuildDataFolder";
+const char ULM_REGISTRY_KEY_BACKUPCHARDATAFOLDER[] = "BackupCharDataFolder";
 
 const std::string ULM_LOGSTRING_JOIN("#STR#");
 const int  ULM_LOGSTRING_MAXLENGTH = 1900;
@@ -128,7 +128,8 @@ CuespLogMonitorDlg::CuespLogMonitorDlg(CWnd* pParent) :
 	m_hSendQueueThread(NULL),
 	m_hSendQueueMutex(NULL),
 	m_StopSendQueueThread(0),
-	m_BuildDataValidScreenshotCount(0)
+	m_BuildDataValidScreenshotCount(0),
+	m_CharDataCount(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
@@ -328,8 +329,6 @@ bool CuespLogMonitorDlg::ParseSavedVarAccount (const std::string VarName, void* 
 	if (VarName != "$AccountWide")
 	{
 		return ParseSavedVarCharacterAccount(VarName, pUserData);
-		//PrintLogLine(ULM_LOGLEVEL_INFO, "Skipping account section '%s'...", VarName.c_str());
-		//return true;
 	}
 
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Parsing data sections in saved variable log for account '%s'...", VarName.c_str());
@@ -339,7 +338,7 @@ bool CuespLogMonitorDlg::ParseSavedVarAccount (const std::string VarName, void* 
 	ParseSavedVarDataSection("achievements",	&CuespLogMonitorDlg::ParseSavedVarAchievements);
 
 	ParseSavedVarDataSection("buildData",		&CuespLogMonitorDlg::ParseSavedVarBuildData);
-	ParseSavedVarDataSection("charData",        &CuespLogMonitorDlg::ParseSavedVarCharData);
+	ParseSavedVarDataSection("bankData",        &CuespLogMonitorDlg::ParseSavedVarBankData);
 
 	ParseSavedVarDataSection("info",			&CuespLogMonitorDlg::ParseSavedVarInfo);
 	
@@ -347,7 +346,7 @@ bool CuespLogMonitorDlg::ParseSavedVarAccount (const std::string VarName, void* 
 }
 
 
-bool CuespLogMonitorDlg::ParseSavedVarCharacterAccount(const std::string VarName, void* pUserData)
+bool CuespLogMonitorDlg::ParseSavedVarCharacterAccount (const std::string VarName, void* pUserData)
 {
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Parsing data sections in saved variable log for account '%s'...", VarName.c_str());
 
@@ -597,8 +596,6 @@ bool CuespLogMonitorDlg::ParseSavedVarCharData(const std::string VarName, void* 
 {
 	std::string Version = ParseSavedVarDataVersion();
 
-	m_BankData = "";
-
 	lua_getfield(m_pLuaState, -1, "data");
 
 	if (lua_isnil(m_pLuaState, -1))
@@ -608,43 +605,99 @@ bool CuespLogMonitorDlg::ParseSavedVarCharData(const std::string VarName, void* 
 		return false;
 	}
 
-	lua_getfield(m_pLuaState, -1, "Bank");
-
-	if (lua_isnil(m_pLuaState, -1))
-	{
-		lua_pop(m_pLuaState, 1);
-		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to find the 'Bank' field in charData account section!");
-		return false;
-	}
-
 	int numObjects = lua_rawlen(m_pLuaState, -1);
 
-	m_BankData = GetLuaVariableString("uespCharData.Bank", false);
+	char nameBuffer[256];
+	snprintf(nameBuffer, 250, "uespCharData[%d]", m_CharDataCount + 1);
+	
+	std::string dataString = GetLuaVariableString(nameBuffer, false);
 
-	if (m_BankData.empty())
+	if (dataString.empty())
 	{
 		lua_pop(m_pLuaState, 1);
-		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to parse the charData.Bank variable data!");
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to parse the charData variable data!");
 		return false;
 	}
 
-	if (m_BankData.size() < CuespLogMonitorDlg::MINIMUM_VALID_BUILDDATA_SIZE)
+	if (dataString.size() < CuespLogMonitorDlg::MINIMUM_VALID_CHARDATA_SIZE)
 	{
 		PrintLogLine(ULM_LOGLEVEL_INFO, "Found the charData section with no content.");
-		m_BankData.clear();
 		lua_pop(m_pLuaState, 1);
 		return true;
 	}
 
-	m_BankData += "\n";
-	m_BankData += "uespCharData.Bank.UserName = '";
-	m_BankData += GetCurrentUserName();
-	m_BankData += "'\n";
-	m_BankData += "uespCharData.Bank.WikiUser = '";
-	m_BankData += m_Options.UespWikiAccountName;
-	m_BankData += "'\n";
+	++m_CharDataCount;
+	if (m_CharData.empty()) m_CharData = "uespCharData = {}\n";
 
-	PrintLogLine(ULM_LOGLEVEL_INFO, "Found the charData Bank section with %d rows (%u bytes).", numObjects, m_BankData.length());
+	m_CharData += "\n";
+	m_CharData += dataString;
+
+	m_CharData += "\n";
+	m_CharData += nameBuffer;
+	m_CharData += ".UserName = '";
+	m_CharData += GetCurrentUserName();
+	m_CharData += "'\n";
+	m_CharData += nameBuffer;
+	m_CharData += ".WikiUser = '";
+	m_CharData += m_Options.UespWikiAccountName;
+	m_CharData += "'\n";
+
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Found the charData section with %d rows (%u bytes).", numObjects, m_CharData.length());
+	lua_pop(m_pLuaState, 1);
+
+	return true;
+}
+
+
+
+bool CuespLogMonitorDlg::ParseSavedVarBankData (const std::string VarName, void* pUserData)
+{
+	std::string Version = ParseSavedVarDataVersion();
+
+	lua_getfield(m_pLuaState, -1, "data");
+
+	if (lua_isnil(m_pLuaState, -1))
+	{
+		lua_pop(m_pLuaState, 1);
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to find the 'data' field in bankData account section!");
+		return false;
+	}
+		
+	int numObjects = lua_rawlen(m_pLuaState, -1);
+
+	std::string nameBuffer = "uespCharData[\"Bank\"]";
+	std::string dataString = GetLuaVariableString(nameBuffer, false);
+
+	if (dataString.empty())
+	{
+		lua_pop(m_pLuaState, 1);
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to parse the bankData variable data!");
+		return false;
+	}
+
+	if (dataString.size() < CuespLogMonitorDlg::MINIMUM_VALID_CHARDATA_SIZE)
+	{
+		PrintLogLine(ULM_LOGLEVEL_INFO, "Found the bankData section with no content.");
+		lua_pop(m_pLuaState, 1);
+		return true;
+	}
+
+	if (m_CharData.empty()) m_CharData = "uespCharData = {}\n";
+
+	m_CharData += "\n";
+	m_CharData += dataString;
+
+	m_CharData += "\n";
+	m_CharData += nameBuffer;
+	m_CharData += ".UserName = '";
+	m_CharData += GetCurrentUserName();
+	m_CharData += "'\n";
+	m_CharData += nameBuffer;
+	m_CharData += ".WikiUser = '";
+	m_CharData += m_Options.UespWikiAccountName;
+	m_CharData += "'\n";
+
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Found the bankData section with %d rows (%u bytes).", numObjects, m_CharData.length());
 	lua_pop(m_pLuaState, 1);
 
 	return true;
@@ -1332,8 +1385,39 @@ bool CuespLogMonitorDlg::SendQueuedBuildDataThread()
 		return false;
 	}
 
-	PrintLogLine(ULM_LOGLEVEL_INFO, "Sent %u bytes of character data!", FormQuery.size());
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Sent %u bytes of build data!", FormQuery.size());
 	m_BuildDataQueue.clear();
+	ReleaseMutex(m_hSendQueueMutex);
+	return true;
+}
+
+
+bool CuespLogMonitorDlg::SendQueuedCharDataThread()
+{
+	std::string FormQuery;
+
+	if (m_CharDataQueue.empty()) return true;
+	if (CuespLogMonitorDlg::CHARDATA_UPLOAD_TESTONLY) return true;
+
+	if (WaitForSingleObject(m_hSendQueueMutex, INFINITE) != WAIT_OBJECT_0)
+	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to wait for send queue mutex!");
+		return false;
+	}
+
+	std::string TempData = EncodeLogDataForQuery(m_CharDataQueue);
+	FormQuery += "chardata=";
+	FormQuery += TempData;
+	FormQuery += "&";
+
+	if (!SendFormData(m_Options.CharDataFormURL, FormQuery))
+	{
+		ReleaseMutex(m_hSendQueueMutex);
+		return false;
+	}
+
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Sent %u bytes of character data!", FormQuery.size());
+	m_CharDataQueue.clear();
 	ReleaseMutex(m_hSendQueueMutex);
 	return true;
 }
@@ -1413,9 +1497,38 @@ bool CuespLogMonitorDlg::CheckAndSendBuildData()
 }
 
 
+bool CuespLogMonitorDlg::CheckAndSendCharData()
+{
+	bool Result = true;
+
+	Result &= BackupCharData();
+	Result &= QueueCharData();
+
+	return Result;
+}
+
+
+
 bool CuespLogMonitorDlg::QueueBuildData()
 {
 	if (m_BuildData.empty()) return true;
+
+	if (WaitForSingleObject(m_hSendQueueMutex, 1000) != WAIT_OBJECT_0)
+	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "Failed to queue build data...failed to acquire send queue mutex!");
+		return false;
+	}
+
+	m_BuildDataQueue += m_BuildData;
+
+	ReleaseMutex(m_hSendQueueMutex);
+	return true;
+}
+
+
+bool CuespLogMonitorDlg::QueueCharData()
+{
+	if (m_CharData.empty()) return true;
 
 	if (WaitForSingleObject(m_hSendQueueMutex, 1000) != WAIT_OBJECT_0)
 	{
@@ -1423,7 +1536,7 @@ bool CuespLogMonitorDlg::QueueBuildData()
 		return false;
 	}
 
-	m_BuildDataQueue += m_BuildData;
+	m_CharDataQueue += m_CharData;
 
 	ReleaseMutex(m_hSendQueueMutex);
 	return true;
@@ -1696,6 +1809,9 @@ DWORD CuespLogMonitorDlg::SendQueueThreadProc()
 		Sleep(100);
 
 		SendQueuedBuildDataThread();
+		Sleep(100);
+
+		SendQueuedCharDataThread();
 		Sleep(100);
 	}
 
@@ -2238,6 +2354,10 @@ bool CuespLogMonitorDlg::DoLogCheck(const bool OverrideEnable)
 		}
 	}
 
+	m_BuildData = "";
+	m_CharData = "";
+	m_CharDataCount = 0;
+
 	if (!HasLogChanged()) return false;
 	if (!LoadSavedVars()) return false;
 
@@ -2255,6 +2375,12 @@ bool CuespLogMonitorDlg::DoLogCheck(const bool OverrideEnable)
 	}
 
 	if (!CheckAndSendBuildData())
+	{
+		ReleaseMutex(m_hSendQueueMutex);
+		return false;
+	}
+
+	if (!CheckAndSendCharData())
 	{
 		ReleaseMutex(m_hSendQueueMutex);
 		return false;
@@ -2307,24 +2433,30 @@ bool CuespLogMonitorDlg::DeleteOldLogDataUser (const std::string VarName, void* 
 
 bool CuespLogMonitorDlg::DeleteOldLogDataAccount (const std::string VarName, void* pUserData)
 {
-	if (VarName != "$AccountWide") return true;
+	if (VarName != "$AccountWide")
+	{
+		DeleteOldLogDataSection("charData", -1, VarName);
+		return true;
+	}
 
-	DeleteOldLogDataSection("all", -1);
-	DeleteOldLogDataSection("globals", -1);
-	DeleteOldLogDataSection("achievements", -1);
-	DeleteOldLogDataSection("buildData", -1);
+	DeleteOldLogDataSection("all", -1, VarName);
+	DeleteOldLogDataSection("globals", -1, VarName);
+	DeleteOldLogDataSection("achievements", -1, VarName);
+	DeleteOldLogDataSection("buildData", -1, VarName);
+
+	DeleteOldLogDataSection("bankData", -1, VarName);
 
 	return true;
 }
 
 
-bool CuespLogMonitorDlg::DeleteOldLogDataSection (const std::string Section, const int StackIndex)
+bool CuespLogMonitorDlg::DeleteOldLogDataSection (const std::string Section, const int StackIndex, const std::string Parent)
 {
 	lua_getfield(m_pLuaState, StackIndex, Section.c_str());
 
 	if (lua_isnil(m_pLuaState, -1))
 	{
-		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to find the section '%s' in the saved variable data!", Section.c_str());
+		PrintLogLine(ULM_LOGLEVEL_INFO, "Failed to delete the section '%s::%s' as it doesn't exist!", Parent.c_str(), Section.c_str());
 		lua_pop(m_pLuaState, 1);
 		return false;
 	}
@@ -2447,7 +2579,7 @@ bool CuespLogMonitorDlg::BackupBuildData()
 
 		if (FileIndex > 1000)
 		{
-			PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to create a character data backup filename that doesn't already exist!");
+			PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to create a build data backup filename that doesn't already exist!");
 			return false;
 		}
 
@@ -2467,17 +2599,74 @@ bool CuespLogMonitorDlg::BackupBuildData()
 	
 	if (!File.Open(Filename, "wb"))
 	{
-		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to open the backup character data file '%s' for output!", Filename.c_str());
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to open the backup build data file '%s' for output!", Filename.c_str());
 		return false;
 	}
 
 	if (!File.WriteString(m_BuildData))
 	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to write the build data to the backup file!");
+		return false;
+	}
+
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Backed up %u bytes of build data...", m_BuildData.size());
+	return true;
+}
+
+
+bool CuespLogMonitorDlg::BackupCharData()
+{
+	eso::CFile File;
+	time_t rawtime;
+	struct tm * timeinfo;
+	char DateBuffer[80];
+	std::string Filename;
+	CString FilenameBuffer;
+	int FileIndex = 0;
+
+	if (m_Options.BackupCharDataFolder.empty() || m_CharData.empty()) return true;
+
+	if (!eso::EnsurePathExists(m_Options.BackupCharDataFolder))
+	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to create the backup folder '%s'!", m_Options.BackupCharDataFolder.c_str());
+		return false;
+	}
+
+	do {
+
+		if (FileIndex > 1000)
+		{
+			PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to create a character data backup filename that doesn't already exist!");
+			return false;
+		}
+
+		time(&rawtime);
+		timeinfo = localtime(&rawtime);
+		strftime(DateBuffer, 70, "%Y-%m-%d-%H%M%S", timeinfo);
+
+		if (FileIndex == 0)
+			FilenameBuffer.Format("uespBackupCharData-%s.txt", DateBuffer);
+		else
+			FilenameBuffer.Format("uespBackupCharData-%s-%d.txt", DateBuffer, FileIndex);
+
+		Filename = eso::TerminatePath(m_Options.BackupCharDataFolder);
+		Filename += FilenameBuffer;
+		++FileIndex;
+	} while (eso::FileExists(Filename.c_str()));
+
+	if (!File.Open(Filename, "wb"))
+	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to open the backup character data file '%s' for output!", Filename.c_str());
+		return false;
+	}
+
+	if (!File.WriteString(m_CharData))
+	{
 		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to write the character data to the backup file!");
 		return false;
 	}
 
-	PrintLogLine(ULM_LOGLEVEL_INFO, "Backed up %u bytes of character data...", m_BuildData.size());
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Backed up %u bytes of character data...", m_CharData.size());
 	return true;
 }
 
@@ -2585,7 +2774,7 @@ void CuespLogMonitorDlg::OnFileSendotherlog()
 	CFileDialog FileDlg(FALSE, nullptr, "", OFN_HIDEREADONLY, "LUA Files (*.lua)|*.lua|All Files (*.*)|*.*||", this);
 
 	if (FileDlg.DoModal() != IDOK) return;
-	std::string Buffer = FileDlg.GetPathName();
+	std::string Buffer = (const char *) FileDlg.GetPathName();
 
 	SendEntireLog(Buffer);
 }

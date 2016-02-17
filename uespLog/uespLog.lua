@@ -759,12 +759,15 @@ uespLog.DEFAULT_DATA =
 
 uespLog.DEFAULT_CHARINFO = 
 {
-	data = {
-		["charData"] =  { },
-	}
+	data = {}
 }
 
 uespLog.DEFAULT_BUILDDATA = 
+{
+	data = {}
+}
+
+uespLog.DEFAULT_BANKDATA = 
 {
 	data = {}
 }
@@ -1485,16 +1488,13 @@ function uespLog.Initialize( self, addOnName )
 		["info"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "info", uespLog.DEFAULT_DATA),
 		["settings"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "settings", uespLog.DEFAULT_SETTINGS),
 		["buildData"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "buildData", uespLog.DEFAULT_BUILDDATA),
-		["charData"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "charData", uespLog.DEFAULT_CHARDATA),
+		["bankData"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "bankData", uespLog.DEFAULT_BANKDATA),
+		["charData"] = ZO_SavedVars:New("uespLogSavedVars", uespLog.DATA_VERSION, "charData", uespLog.DEFAULT_CHARDATA),
 		["charInfo"] = ZO_SavedVars:New("uespLogSavedVars", uespLog.DATA_VERSION, "charInfo", uespLog.DEFAULT_CHARINFO),
 	}
 	
 	if (uespLog.savedVars["charInfo"].data.lastFoodEaten ~= nil) then
 		uespLog.charDataLastFoodEaten = uespLog.savedVars["charInfo"].data.lastFoodEaten 
-	end
-	
-	if (uespLog.savedVars["charInfo"].data.charData == nil) then
-		uespLog.savedVars["charInfo"].data.charData = { }
 	end
 	
 	uespLog.mineItemsAutoNextItemId = uespLog.savedVars.settings.data.mineItemsAutoNextItemId or uespLog.mineItemsAutoNextItemId
@@ -5113,8 +5113,9 @@ SLASH_COMMANDS["/uespcount"] = function(cmd)
 	local count4, size4 = uespLog.countSection("buildData")
 	local count5, size5 = uespLog.countSection("charData")
 	local count6, size6 = uespLog.countSection("charInfo")
-	local count = count1 + count2 + count3 + count4 + count5 + count6
-	local size = size1 + size2 + size3 + size4 + size5 + size6
+	local count7, size7 = uespLog.countSection("bankData")
+	local count = count1 + count2 + count3 + count4 + count5 + count6 + count7
+	local size = size1 + size2 + size3 + size4 + size5 + size6 + size7
 	
 	uespLog.MsgColor(uespLog.countColor, "UESP:: Total of " .. tostring(count) .. " records taking up " .. string.format("%.2f", size/1000000) .. " MB")
 end

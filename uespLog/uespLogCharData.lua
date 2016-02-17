@@ -99,8 +99,8 @@ function uespLog.SaveCharData (note)
 		return false
 	end
 	
-	uespLog.savedVars.charInfo.data.charData = charData
-	uespLog.savedVars.charData.data.Bank = uespLog.CreateBankInventoryData()
+	uespLog.savedVars.charData.data = charData
+	uespLog.savedVars.bankData.data = uespLog.CreateBankInventoryData()
 	
 	return true
 end
@@ -824,8 +824,8 @@ end
 
 
 function uespLog.ClearCharData()
-	uespLog.savedVars.charInfo.data.charData = { }
-	uespLog.savedVars.charData.data.Bank = { }
+	uespLog.savedVars.charData.data = { }
+	uespLog.savedVars.BankData.data = { }
 	uespLog.Msg("UESP::Cleared all character data.")
 end
 

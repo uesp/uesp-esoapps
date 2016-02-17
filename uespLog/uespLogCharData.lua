@@ -86,6 +86,10 @@ uespLog.charDataLastFoodEaten = {
 }
 
 
+uespLog.CHARDATA_MINTIMESTAMP_DIFF = 60
+uespLog.charDataLastSaveTimestamp = 0
+
+
 function uespLog.InitCharData()
 	uespLog.SaveActionBarForCharData()
 end
@@ -101,6 +105,9 @@ function uespLog.SaveCharData (note)
 	uespLog.savedVars.charData.data = charData
 	uespLog.savedVars.bankData.data = uespLog.CreateBankData()
 	
+	uespLog.DebugMsg("UESP::Saved character data...")
+	
+	uespLog.charDataLastSaveTimestamp = GetTimeStamp()
 	return true
 end
 
@@ -390,10 +397,16 @@ function uespLog.CreateCharDataCrafting()
 end
 
 
+
+
+
 function uespLog.OnZoneChanged(eventCode, zoneName, subZoneName, newSubzone, zoneId, subZoneId)
 	uespLog.DebugExtraMsg("OnZoneChanged")
+	--uespLog.DebugMsg("Uesp::OnZoneChanged "..tostring(zoneName)..", "..tostring(subZoneName)..", "..tostring(newSubzone)..", "..tostring(zoneId)..", "..tostring(subZoneId))
 	
-	if (uespLog.GetAutoSaveCharData()) then
+	local diffTime = GetTimeStamp() - uespLog.charDataLastSaveTimestamp
+	
+	if (uespLog.GetAutoSaveCharData() and diffTime > uespLog.CHARDATA_MINTIMESTAMP_DIFF) then
 		uespLog.SaveCharData()
 	end
 end

@@ -397,9 +397,6 @@ function uespLog.CreateCharDataCrafting()
 end
 
 
-
-
-
 function uespLog.OnZoneChanged(eventCode, zoneName, subZoneName, newSubzone, zoneId, subZoneId)
 	uespLog.DebugExtraMsg("OnZoneChanged")
 	--uespLog.DebugMsg("Uesp::OnZoneChanged "..tostring(zoneName)..", "..tostring(subZoneName)..", "..tostring(newSubzone)..", "..tostring(zoneId)..", "..tostring(subZoneId))

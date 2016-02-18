@@ -550,7 +550,9 @@ function uespLog.CreateCharDataSkills()
 		
 		for skillIndex = 1, numSkillLines do
 			local numSkillAbilities = GetNumSkillAbilities(skillType, skillIndex)
-			local skillLineName = GetSkillLineInfo(skillType, skillIndex)
+			local skillLineName, skillLineRank = GetSkillLineInfo(skillType, skillIndex)
+			
+			skills[tostring(skillTypeName)..":"..tostring(skillLineName)] = skillLineRank
 			
 			for abilityIndex = 1, numSkillAbilities do
 				local name, texture, rank, passive, ultimate, purchase, progressionIndex = GetSkillAbilityInfo(skillType, skillIndex, abilityIndex)

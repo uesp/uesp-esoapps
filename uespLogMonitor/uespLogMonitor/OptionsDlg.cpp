@@ -12,7 +12,8 @@ BEGIN_MESSAGE_MAP(COptionsDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BROWSE_BUTTON, &COptionsDlg::OnBnClickedBrowseButton)
 	ON_CBN_SELCHANGE(IDC_LOGNAME_LIST, &COptionsDlg::OnCbnSelchangeLognameList)
 	ON_BN_CLICKED(IDC_BROWSEBACKUPDATA_BUTTON, &COptionsDlg::OnBnClickedBrowsebackupdataButton)
-	ON_BN_CLICKED(IDC_BROWSEBACKUPCHARDATA_BUTTON, &COptionsDlg::OnBnClickedBrowsebackupchardataButton)
+	ON_BN_CLICKED(IDC_BROWSEBACKUPCHARDATA_BUTTON, &COptionsDlg::OnBnClickedBrowsebackupbuilddataButton)
+	ON_BN_CLICKED(IDC_BUILDDATAENABLED_CHECK, &COptionsDlg::OnBnClickedBuilddataenabledCheck)
 END_MESSAGE_MAP()
 
 
@@ -43,10 +44,13 @@ void COptionsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_ENABLED_CHECK, m_EnabledCheck);
 	DDX_Control(pDX, IDC_BACKUPFILENAME_TEXT, m_BackupDataFilename);
 	DDX_Control(pDX, IDC_BACKUPTIMESTAMP_TEXT, m_BackupTimestampText);
-	DDX_Control(pDX, IDC_CHARDATAENABLED_CHECK, m_BuildDataEnabledCheck);
-	DDX_Control(pDX, IDC_CHARDATAFORMURL_TEXT, m_BuildDataFormURLText);
-	DDX_Control(pDX, IDC_BACKUPCHARDATAFOLDER_TEXT, m_BackupBuildDataFolder);
+	DDX_Control(pDX, IDC_BUILDDATAENABLED_CHECK, m_BuildDataEnabledCheck);
+	DDX_Control(pDX, IDC_BUILDDATAFORMURL_TEXT, m_BuildDataFormURLText);
+	DDX_Control(pDX, IDC_BACKUPBUILDDATAFOLDER_TEXT, m_BackupBuildDataFolder);
 	DDX_Control(pDX, IDC_UESPWIKIUSERNAME_TEXT, m_UespWikiUserNameText);
+	DDX_Control(pDX, IDC_CHARDATAENABLED_CHECK, m_CharDataEnabledCheck);
+	DDX_Control(pDX, IDC_CHARDATAFORMURL_TEXT, m_CharDataFormURLText);
+	DDX_Control(pDX, IDC_BACKUPCHARDATAFOLDER_TEXT, m_BackupCharDataFolder);
 }
 
 
@@ -168,6 +172,14 @@ void COptionsDlg::GetControlData()
 
 	m_BuildDataFormURLText.GetWindowText(Buffer);
 	m_pOptions->BuildDataFormURL = Buffer;
+
+	m_pOptions->CharDataEnabled = m_CharDataEnabledCheck.GetCheck() != 0;
+
+	m_BackupCharDataFolder.GetWindowText(Buffer);
+	m_pOptions->BackupCharDataFolder = Buffer;
+
+	m_CharDataFormURLText.GetWindowText(Buffer);
+	m_pOptions->CharDataFormURL = Buffer;
 }
 
 
@@ -192,6 +204,7 @@ void COptionsDlg::SetControlData()
 	m_UespWikiUserNameText.SetWindowText(m_pOptions->UespWikiAccountName.c_str());
 	m_BackupDataFilename.SetWindowText(m_pOptions->BackupDataFilename.c_str());
 	m_BackupBuildDataFolder.SetWindowText(m_pOptions->BackupBuildDataFolder.c_str());
+	m_BackupCharDataFolder.SetWindowText(m_pOptions->BackupCharDataFolder.c_str());
 
 	m_EnabledCheck.SetCheck(m_pOptions->Enabled);
 
@@ -200,6 +213,9 @@ void COptionsDlg::SetControlData()
 
 	m_BuildDataEnabledCheck.SetCheck(m_pOptions->BuildDataEnabled);
 	m_BuildDataFormURLText.SetWindowText(m_pOptions->BuildDataFormURL.c_str());
+
+	m_CharDataEnabledCheck.SetCheck(m_pOptions->CharDataEnabled);
+	m_CharDataFormURLText.SetWindowText(m_pOptions->CharDataFormURL.c_str());
 
 	UpdateCustomNameState();
 }
@@ -276,14 +292,14 @@ void COptionsDlg::OnCbnSelchangeLognameList()
 
 
 
-void COptionsDlg::OnBnClickedBrowsebackupchardataButton()
+void COptionsDlg::OnBnClickedBrowsebackupbuilddataButton()
 {
 	CFolderPickerDialog m_dlg;
 	CString Buffer;
 
 	m_BackupBuildDataFolder.GetWindowText(Buffer);
 
-	m_dlg.m_ofn.lpstrTitle = _T("Choose Folder for Backup Character Data:");
+	m_dlg.m_ofn.lpstrTitle = _T("Choose Folder for Backup Build Data:");
 	m_dlg.m_ofn.lpstrInitialDir = Buffer;
 
 	if (m_dlg.DoModal() != IDOK) return;
@@ -292,4 +308,29 @@ void COptionsDlg::OnBnClickedBrowsebackupchardataButton()
 	Buffer += _T("\\");
 	
 	m_BackupBuildDataFolder.SetWindowText(Buffer);
+}
+
+
+void COptionsDlg::OnBnClickedBrowsebackupchardataButton()
+{
+	CFolderPickerDialog m_dlg;
+	CString Buffer;
+
+	m_BackupCharDataFolder.GetWindowText(Buffer);
+
+	m_dlg.m_ofn.lpstrTitle = _T("Choose Folder for Backup Character Data:");
+	m_dlg.m_ofn.lpstrInitialDir = Buffer;
+
+	if (m_dlg.DoModal() != IDOK) return;
+
+	Buffer = m_dlg.GetPathName();
+	Buffer += _T("\\");
+
+	m_BackupCharDataFolder.SetWindowText(Buffer);
+}
+
+
+void COptionsDlg::OnBnClickedBuilddataenabledCheck()
+{
+	// TODO: Add your control notification handler code here
 }

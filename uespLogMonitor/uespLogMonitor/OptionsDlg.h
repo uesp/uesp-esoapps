@@ -53,6 +53,11 @@ public:
 	CButton m_BuildDataEnabledCheck;
 	CEdit m_BuildDataFormURLText;
 	CEdit m_BackupBuildDataFolder;
+	afx_msg void OnBnClickedBrowsebackupbuilddataButton();
 	afx_msg void OnBnClickedBrowsebackupchardataButton();
 	CEdit m_UespWikiUserNameText;
+	CButton m_CharDataEnabledCheck;
+	CEdit m_CharDataFormURLText;
+	CEdit m_BackupCharDataFolder;
+	afx_msg void OnBnClickedBuilddataenabledCheck();
 };

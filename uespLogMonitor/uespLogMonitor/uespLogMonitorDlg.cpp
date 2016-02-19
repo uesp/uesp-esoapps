@@ -28,6 +28,7 @@
 	v0.30 - 4 March 2016
 		- Added character data uploading support.
 		- Remote error messages are output when a form upload/parse fails.
+		- Build data uploading correctly follows the "enabled" flag.
 
 
 	TODO:
@@ -52,7 +53,7 @@
 const std::string ulm_options_t::DEFAULT_FORMURL("content3.uesp.net/esolog/esolog.php");
 const std::string ulm_options_t::DEFAULT_BACKUPDATAFILENAME("uespLog_backupData.txt");
 const std::string ulm_options_t::DEFAULT_BACKUPBUILDDATAFOLDER("BackupBuildData");
-const std::string ulm_options_t::DEFAULT_BACKUPCHARDATAFOLDER("BackupCharData");
+const std::string ulm_options_t::DEFAULT_BACKUPCHARDATAFOLDER("");
 const std::string ulm_options_t::DEFAULT_BUILDDATA_FORMURL("content3.uesp.net/esobuilddata/parseBuildData.php");
 const std::string ulm_options_t::DEFAULT_CHARDATA_FORMURL("content3.uesp.net/esobuilddata/parseCharData.php");
 
@@ -1506,6 +1507,8 @@ bool CuespLogMonitorDlg::CheckAndSendBuildData()
 {
 	bool Result = true;
 
+	if (!m_Options.BuildDataEnabled) return true;
+
 	Result &= BackupBuildData();
 	Result &= QueueBuildData();
 
@@ -1516,6 +1519,8 @@ bool CuespLogMonitorDlg::CheckAndSendBuildData()
 bool CuespLogMonitorDlg::CheckAndSendCharData()
 {
 	bool Result = true;
+
+	if (!m_Options.CharDataEnabled) return true;
 
 	Result &= BackupCharData();
 	Result &= QueueCharData();

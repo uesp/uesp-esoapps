@@ -184,12 +184,18 @@ function uespLog.CreateInventorySlotData (bagId, slotIndex)
 	local count = GetSlotStackSize(bagId, slotIndex)
 	local itemLink = GetItemLink(bagId, slotIndex)
 	local niceLink = uespLog.MakeNiceLink(itemLink)
+	local isJunk = IsItemJunk(bagId, slotIndex)
+	local extraData = ""
 	
 	if (count == 0 or itemLink == "") then
 		return nil
 	end
 	
-	return tostring(count) .. " " .. niceLink
+	if (isJunk) then
+		extraData = "Junk"
+	end
+	
+	return tostring(count) .. " " .. niceLink .. " " .. extraData;
 end
 
 

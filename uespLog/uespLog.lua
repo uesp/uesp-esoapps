@@ -1497,6 +1497,10 @@ function uespLog.Initialize( self, addOnName )
 		uespLog.charDataLastFoodEaten = uespLog.savedVars["charInfo"].data.lastFoodEaten 
 	end
 	
+	if (uespLog.savedVars["charInfo"].data.actionBar ~= nil) then
+		uespLog.charData_ActionBarData = uespLog.savedVars["charInfo"].data.actionBar 
+	end
+	
 	uespLog.mineItemsAutoNextItemId = uespLog.savedVars.settings.data.mineItemsAutoNextItemId or uespLog.mineItemsAutoNextItemId
 	uespLog.mineItemAutoReload = uespLog.savedVars.settings.data.mineItemAutoReload or uespLog.mineItemAutoReload
 	uespLog.mineItemAutoRestart = uespLog.savedVars.settings.data.mineItemAutoRestart or uespLog.mineItemAutoRestart

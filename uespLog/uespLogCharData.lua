@@ -789,12 +789,13 @@ function uespLog.SaveActionBarForCharData()
 			}
 	end
 	
+	uespLog.savedVars.charInfo.data.actionBar = uespLog.charData_ActionBarData	
 end
 
 
 function uespLog.HasBothActionBarsForCharData()
 
-	if (#uespLog.charData_ActionBarData[1] > 0 and #uespLog.charData_ActionBarData[2] > 0) then
+	if (uespLog.charData_ActionBarData[1][3] ~= nil and uespLog.charData_ActionBarData[2][3] ~= nil) then
 		return true
 	end
 
@@ -829,19 +830,19 @@ end
 
 function uespLog.OnActionSlotAbilitySlotted (eventCode, newAbilitySlotted)
 	--uespLog.DebugMsg("OnActionSlotAbilitySlotted "..tostring(newAbilitySlotted))
-	--uespLog.SaveActionBarForCharData()
+	uespLog.SaveActionBarForCharData()
 end
 
 
 function uespLog.OnActionSlotUpdated (eventCode, slotNum)
 	--uespLog.DebugMsg("OnActionSlotUpdated "..tostring(slotNum))
-	--uespLog.SaveActionBarForCharData()
+	uespLog.SaveActionBarForCharData()
 end
 
 
 function uespLog.OnActiveQuickSlotChanged (eventCode, slotId)
 	--uespLog.DebugMsg("OnActiveQuickSlotChanged "..tostring(slotId))
-	--uespLog.SaveActionBarForCharData()
+	uespLog.SaveActionBarForCharData()
 end
 
 

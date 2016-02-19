@@ -25,6 +25,7 @@ protected:
 public:
 	CStatic m_VersionLabel;
 	virtual BOOL OnInitDialog();
+	afx_msg void OnStnClickedVersionLabel();
 };
 
 #endif

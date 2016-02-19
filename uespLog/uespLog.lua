@@ -341,6 +341,9 @@
 --			- Fixed bug in manual tracking of Ancient Orc and Mercenary styles (although they should now
 --			  be tracked correctly in-game after the Thieves Guilds update).	
 --			- Werewolf character state is properly saved when saving a build.
+--			- Action bars are saved between sessions so you should no longer have to swap weapon bars each time
+--			  you login to save a character build. Also fixed a bug which incorrectly considered action bar data
+--			  to be not saved even though it was.
 --
 
 

@@ -284,6 +284,8 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	charData.BattleVeteranRank = GetUnitVetBattleLevel("player")
 	charData.BuildType = uespLog.GetCharDataBuildType()
 	charData.ActiveAbilityBar = GetActiveWeaponPairInfo()
+	charData.SecondsPlayed = GetSecondsPlayed()
+	charData.Latency = GetLatency()
 	
 	charData.Alliance = GetAllianceName(GetUnitAlliance("player"))
 	charData.AllianceRank = GetUnitAvARank("player")

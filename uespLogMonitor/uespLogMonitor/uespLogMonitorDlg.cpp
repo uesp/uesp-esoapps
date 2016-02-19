@@ -25,6 +25,10 @@
 		- Added support for automatic uploading of character build data.
 		- Fix for loading Lua files with a mix of number and non-number keys.
 
+	v0.30 - 4 March 2016
+		- Added character data uploading support.
+		- Remote error messages are output when a form upload/parse fails.
+
 
 	TODO:
 		- Proper UI threading.
@@ -1333,12 +1337,17 @@ bool CuespLogMonitorDlg::SendFormData (const std::string FormURL, std::string Fo
 		return false;
 	}
 	
-	char Buffer[220];
-	DWORD Size = 200;
+	char Buffer[1220];
+	DWORD Size = 1200;
 	
 	Sleep(100); // TODO?
 
 	Result = HttpQueryInfo(hreq, HTTP_QUERY_STATUS_CODE, &Buffer, &Size, NULL);
+	
+	char ErrorBuffer[1220] = "X-Uesp-Error";
+	DWORD ErrorSize = 1200;
+	DWORD ErrorResult = HttpQueryInfo(hreq, HTTP_QUERY_CUSTOM, (LPVOID)ErrorBuffer, &ErrorSize, NULL);
+	if (!ErrorResult) strcpy(ErrorBuffer, "Unknown Error!");
 
 	InternetCloseHandle(hreq);
 	InternetCloseHandle(higeo);
@@ -1347,12 +1356,14 @@ bool CuespLogMonitorDlg::SendFormData (const std::string FormURL, std::string Fo
 	if (!Result) 
 	{
 		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to receive a HTTP response when sending form data!");
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "\t\t%s", ErrorBuffer);
 		return false;
 	}
 	
 	if (strcmp(Buffer, "200") != 0)
 	{
 		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Received a '%s' HTTP response when sending form data!", Buffer);
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "\t\t%s", ErrorBuffer);
 		return false;
 	}
 
@@ -2307,6 +2318,11 @@ void CuespLogMonitorDlg::PostURL()
 
 	  Result = HttpQueryInfo(hreq, HTTP_QUERY_STATUS_CODE, &Buffer, &Size, NULL);
 	  eso::PrintLog("HTTP Query Info = %d (%s)", Result, Buffer);  
+
+	  char ErrorBuffer[1220] = "X-EsoBuildData-Error";
+	  DWORD ErrorSize = 1200;
+	  DWORD ErrorResult = HttpQueryInfo(hreq, HTTP_QUERY_CUSTOM, (LPVOID)ErrorBuffer, &ErrorSize, NULL);
+	  if (!ErrorResult) strcpy(ErrorBuffer, "Unknown Error!");
 
 	  InternetCloseHandle(hreq);
 	  InternetCloseHandle(higeo);

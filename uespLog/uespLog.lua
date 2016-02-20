@@ -344,6 +344,8 @@
 --			- Action bars are saved between sessions so you should no longer have to swap weapon bars each time
 --			  you login to save a character build. Also fixed a bug which incorrectly considered action bar data
 --			  to be not saved even though it was.
+--			- The last food/drink consumed will be properly tracked for build/character data. Potions and other
+--			  items consumed will be ignored.
 --
 
 

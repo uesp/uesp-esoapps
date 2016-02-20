@@ -422,15 +422,19 @@ end
 function uespLog.OnEatDrinkItem(bagId, slotIndex, isNewItem, itemSoundCategory, updateReason)
 	local itemName = GetItemName(bagId, slotIndex)
 	local itemLink = GetItemLink(bagId, slotIndex)
-	local itemType = "unknown"
+	local itemTypeString = "unknown"
 	local hasAbility, abilityHeader, abilityDescription, cooldown, hasScaling, minLevel, maxLevel, isVeteranRank = GetItemLinkOnUseAbilityInfo(itemLink)
 	local reqLevel = GetItemLinkRequiredLevel(itemLink)
 	local reqVetRank = GetItemLinkRequiredVeteranRank(itemLink)
+	local itemType = GetItemLinkItemType(itemLink)
 	
-	if (itemSoundCategory == 18) then
-		itemType = "food"
-	elseif (itemSoundCategory == 19) then
-		itemType = "drink"
+		-- Note: If the food/drink eaten was the last one in the stack then itemLink will be empty as it no longer exists
+	if (itemType == 4) then
+		itemTypeString = "food"
+	elseif (itemType == 12) then
+		itemTypeString = "drink"
+	else
+		return
 	end
 	
 	uespLog.charDataLastFoodEaten.name = itemName

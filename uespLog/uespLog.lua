@@ -3551,7 +3551,7 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 		return
 	end
 	
-	if (updateReason == 0 and itemSoundCategory >= 18 and itemSoundCategory <= 19) then
+	if (updateReason == 0 and itemSoundCategory >= 18 and itemSoundCategory <= 19 and not isNewItem) then
 		uespLog.OnEatDrinkItem(bagId, slotIndex, isNewItem, itemSoundCategory, updateReason)
 		return
 	end

@@ -427,11 +427,7 @@ function uespLog.OnEatDrinkItem(bagId, slotIndex, isNewItem, itemSoundCategory, 
 	local reqLevel = GetItemLinkRequiredLevel(itemLink)
 	local reqVetRank = GetItemLinkRequiredVeteranRank(itemLink)
 	local itemType = GetItemLinkItemType(itemLink)
-	
-	if (isNewItem) then
-		return
-	end
-	
+		
 		-- Note: If the food/drink eaten was the last one in the stack then itemLink will be empty as it no longer exists
 	if (itemType == 4) then
 		itemTypeString = "food"
@@ -450,7 +446,7 @@ function uespLog.OnEatDrinkItem(bagId, slotIndex, isNewItem, itemSoundCategory, 
 	
 	uespLog.savedVars.charInfo.data.lastFoodEaten = uespLog.charDataLastFoodEaten
 	
-	uespLog.DebugExtraMsg("UESP::You ate/drank "..tostring(itemLink).." reason "..tostring(updateReason)..", new "..tostring(isNewItem)..", sound "..tostring(itemSoundCategory) )
+	uespLog.DebugExtraMsg("UESP::You ate/drank "..tostring(itemLink)..", sound "..tostring(itemSoundCategory) )
 end
 
 

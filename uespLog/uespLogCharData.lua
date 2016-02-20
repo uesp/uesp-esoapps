@@ -430,16 +430,16 @@ function uespLog.OnEatDrinkItem(bagId, slotIndex, isNewItem, itemSoundCategory, 
 		
 		-- Note: If the food/drink eaten was the last one in the stack then itemLink will be empty as it no longer exists
 	if (itemType == 4) then
-		itemTypeString = "food"
+		itemTypeString = "Food"
 	elseif (itemType == 12) then
-		itemTypeString = "drink"
+		itemTypeString = "Drink"
 	else
 		return
 	end
 	
 	uespLog.charDataLastFoodEaten.name = itemName
 	uespLog.charDataLastFoodEaten.itemLink = itemLink
-	uespLog.charDataLastFoodEaten.type = itemType
+	uespLog.charDataLastFoodEaten.type = itemTypeString
 	uespLog.charDataLastFoodEaten.desc = abilityDescription
 	uespLog.charDataLastFoodEaten.reqLevel = reqLevel
 	uespLog.charDataLastFoodEaten.reqVetRank = reqVetRank

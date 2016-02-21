@@ -6766,7 +6766,6 @@ end
 
 
 function uespLog.MineItemsAutoStartPotionData ()
-	uespLog.mineItemPotionDataEffectIndex = 0
 	uespLog.isAutoMiningItems = true
 	uespLog.savedVars.settings.data.isAutoMiningItems = uespLog.isAutoMiningItems
 	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Started auto-mining item potion data at effect index "..tostring(uespLog.mineItemPotionDataEffectIndex))
@@ -7161,8 +7160,13 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		uespLog.savedVars.settings.data.mineItemAutoRestart = true
 		
 		if (cmds[2] ~= nil) then
-			uespLog.mineItemsAutoNextItemId = tonumber(cmds[2])
-			uespLog.savedVars.settings.data.mineItemsAutoNextItemId = uespLog.mineItemsAutoNextItemId
+			if (uespLog.mineItemPotionData) then
+				uespLog.mineItemPotionDataEffectIndex = tonumber(cmds[2])
+				uespLog.savedVars.settings.data.mineItemPotionDataEffectIndex = uespLog.mineItemPotionDataEffectIndex
+			else
+				uespLog.mineItemsAutoNextItemId = tonumber(cmds[2])
+				uespLog.savedVars.settings.data.mineItemsAutoNextItemId = uespLog.mineItemsAutoNextItemId
+			end
 		end
 		
 		uespLog.MsgColor(uespLog.mineColor, "UESP::Turned on item mining auto reload and restart!")

@@ -757,7 +757,7 @@ uespLog.IdCheckValidCount = 0
 uespLog.IdCheckTotalCount = 0
 uespLog.mineItemPotionData = false
 uespLog.mineItemPotionDataEffectIndex = 0
-uespLog.MINEITEM_POTION_MAXEFFECTINDEX = 23
+uespLog.MINEITEM_POTION_MAXEFFECTINDEX = 24
 uespLog.MINEITEM_POTION_ITEMID = 54339
 uespLog.MINEITEM_POTION_MAGICITEMID = 1234567
 
@@ -7212,7 +7212,7 @@ function uespLog.ClearAllSavedVarSections()
 	
 		if (key == "settings" or key == "info" or key == "charInfo") then
 			-- Keep data
-		elseif (key == "globals" or key == "all" or key == "achievements" or key == "buildData") then
+		elseif (key == "globals" or key == "all" or key == "achievements" or key == "buildData" or key == "charData" or key == "bankData") then
 			uespLog.savedVars[key].data = { }
 			uespLog.savedVars[key].version = uespLog.DATA_VERSION
 		else
@@ -7233,7 +7233,7 @@ function uespLog.ClearRootSavedVar()
 					
 					if (key4 == "settings" or key4 == "info" or key4 == "charInfo") then
 						-- Keep data
-					elseif (key4 == "globals" or key4 == "all" or key4 == "achievements" or key == "buildData") then
+					elseif (key4 == "globals" or key4 == "all" or key4 == "achievements" or key == "buildData" or key == "charData" or key == "bankData") then
 						uespLogSavedVars[key1][key2][key3][key4].data = { }
 						uespLogSavedVars[key1][key2][key3][key4].version = uespLog.DATA_VERSION
 					else

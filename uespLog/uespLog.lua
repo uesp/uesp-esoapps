@@ -346,6 +346,7 @@
 --			  to be not saved even though it was.
 --			- The last food/drink consumed will be properly tracked for build/character data. Potions and other
 --			  items consumed will be ignored.
+--			- Added chat message when you take gold from mail attachments.
 --
 
 
@@ -383,6 +384,8 @@ uespLog.currentVeteranXp = GetUnitVeteranPoints('player')
 
 uespLog.lastMailItems = { }
 uespLog.lastMailId = 0
+uespLog.lastMailGold = 0
+uespLog.lastMailCOD = 0
 
 uespLog.lastPlayerHP = -1
 uespLog.lastPlayerMG = -1
@@ -1609,6 +1612,8 @@ function uespLog.Initialize( self, addOnName )
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CHAT_MESSAGE_CHANNEL, uespLog.OnChatMessage)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_MAIL_TAKE_ATTACHED_ITEM_SUCCESS, uespLog.OnMailMessageTakeAttachedItem)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_MAIL_TAKE_ATTACHED_MONEY_SUCCESS, uespLog.OnMailMessageTakeAttachedMoney)
+	 
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_MAIL_READABLE, uespLog.OnMailMessageReadable)
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_JUSTICE_GOLD_PICKPOCKETED, uespLog.OnGoldPickpocketed)
@@ -3761,6 +3766,8 @@ function uespLog.OnMailMessageReadable (eventCode, mailId)
 	
 	uespLog.lastMailItems = { }
 	uespLog.lastMailId = mailId
+	uespLog.lastMailGold = attachedMoney
+	uespLog.lastMailCOD = codAmount
 		
 	for attachIndex = 1, numAttachments do
 		local itemLink = GetAttachedItemLink(mailId, attachIndex)
@@ -3777,13 +3784,31 @@ function uespLog.OnMailMessageReadable (eventCode, mailId)
 end
 
 
+function uespLog.OnMailMessageTakeAttachedMoney (eventCode, mailId)
+	local senderDisplayName, senderCharacterName, subject, icon, unread, fromSystem, fromCustomerService, returned, numAttachments, attachedMoney, codAmount, expiresInDays, secsSinceReceived = GetMailItemInfo(mailId)
+	
+	if (attachedMoney > 0) then
+		uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You received "..tostring(attachedMoney).."gp from mail attachment.")
+	elseif (uespLog.lastMailGold > 0) then
+		uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You received "..tostring(uespLog.lastMailGold).."gp from mail attachment.")
+	end
+	
+	if (uespLog.lastMailCOD > 0) then
+		uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You paid a mail COD charge of "..tostring(uespLog.lastMailGold).."gp.")
+	end
+	
+	uespLog.lastMailGold = 0
+	uespLog.lastMailCOD = 0
+end
+
+
 function uespLog.OnMailMessageTakeAttachedItem (eventCode, mailId)
 	local senderDisplayName, senderCharacterName, subject, icon, unread, fromSystem, fromCustomerService, returned, numAttachments, attachedMoney, codAmount, expiresInDays, secsSinceReceived = GetMailItemInfo(mailId)
 	local tradeType = CRAFTING_TYPE_INVALID
 	local logData = { }
 	local timeData = uespLog.GetTimeData()
 	
-	uespLog.DebugExtraMsg("Received mail item from " ..tostring(senderDisplayName))
+	uespLog.DebugExtraMsg("Received mail item from " ..tostring(senderDisplayName).." money="..tostring(attachedMoney))
 	
 	if (mailId ~= uespLog.lastMailId or #uespLog.lastMailItems == 0) then
 		uespLog.DebugMsg("No attachments in mail")

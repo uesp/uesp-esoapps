@@ -5485,8 +5485,8 @@ function uespLog.LogItemLink (itemLink, event, extraData)
 	local logData = uespLog.CreateItemLinkLog(itemLink)
 	logData.event = event
 	
-	if (extraData.magicItemId ~= nil) then
-		extraData.itemLink = string.gsub(extraData.itemLink, tostring(extraData.realItemId), tostring(extraData.magicItemId))
+	if (extraData.magicItemId ~= nil ) then
+		logData.itemLink = string.gsub(itemLink, tostring(extraData.realItemId), tostring(extraData.magicItemId))
 		extraData.magicItemId = nil
 	end
 	
@@ -6531,6 +6531,11 @@ function uespLog.MineItemIteratePotionData (effectIndex)
 	local setCount = 0
 	local badCount = 0
 	local extraData = uespLog.GetTimeData()
+	local isFirst = true
+	local fullItemLog = { }
+	local lastItemLog = { }
+	local newItemLog = { }
+	local diffItemLog = { }
 
 	for i, value in ipairs(uespLog.MINEITEM_LEVELS) do
 		local levelStart = value[1]
@@ -6547,10 +6552,35 @@ function uespLog.MineItemIteratePotionData (effectIndex)
 				itemLink = uespLog.MakeItemLinkEx( { itemId = uespLog.MINEITEM_POTION_ITEMID, level = level, quality = quality, potionEffect = effectIndex } )
 				
 				if (uespLog.IsValidItemLink(itemLink)) then
-					extraData.comment = comment
-					extraData.realItemId = uespLog.MINEITEM_POTION_ITEMID
-					extraData.magicItemId = uespLog.MINEITEM_POTION_MAGICITEMID
-					uespLog.LogItemLink(itemLink, "mineitem", extraData)
+				
+					if (isFirst) then
+						isFirst = false
+						
+						extraData.comment = comment
+						extraData.realItemId = uespLog.MINEITEM_POTION_ITEMID
+						
+						fullItemLog = uespLog.CreateItemLinkLog(itemLink)
+						fullItemLog.event = "mineitem"
+						fullItemLog.itemLink = string.gsub(fullItemLog.itemLink, tostring(extraData.realItemId), tostring(uespLog.MINEITEM_POTION_MAGICITEMID))
+						
+						uespLog.AppendDataToLog("all", fullItemLog, extraData)
+						extraData.comment = nil
+						lastItemLog = fullItemLog
+					else
+						newItemLog = uespLog.CreateItemLinkLog(itemLink)
+						
+						extraData.comment = comment
+						extraData.realItemId = uespLog.MINEITEM_POTION_ITEMID
+						extraData.magicItemId = uespLog.MINEITEM_POTION_MAGICITEMID
+						
+						diffItemLog = uespLog.CompareItemLogs(lastItemLog, newItemLog)
+						diffItemLog.event = "mi"
+						diffItemLog.itemLink = string.gsub(diffItemLog.itemLink, tostring(extraData.realItemId), tostring(uespLog.MINEITEM_POTION_MAGICITEMID))
+						
+						uespLog.AppendDataToLog("all", diffItemLog, extraData)
+						lastItemLog = newItemLog
+					end					
+
 				else
 					badItems = badItems + 1
 					uespLog.mineItemBadCount = uespLog.mineItemBadCount + 1
@@ -6680,9 +6710,6 @@ function uespLog.MineItemsAutoLoop ()
 end
 
 
-
-
-
 function uespLog.MineItemsAutoLoopPotionData ()
 	local initItemId
 	
@@ -6695,7 +6722,9 @@ function uespLog.MineItemsAutoLoopPotionData ()
 
 		-- Chain the call to keep going if required
 	if (uespLog.isAutoMiningItems) then
-		if (uespLog.mineItemPotionDataEffectIndex < uespLog.MINEITEM_POTION_MAXEFFECTINDEX) then
+		if (uespLog.mineItemPotionDataEffectIndex > uespLog.MINEITEM_POTION_MAXEFFECTINDEX) then
+			uespLog.MineItemsAutoEnd()
+		else
 			zo_callLater(uespLog.MineItemsAutoLoopPotionData, uespLog.MINEITEMS_AUTODELAY)
 		end
 	end
@@ -6740,7 +6769,7 @@ function uespLog.MineItemsAutoStartPotionData ()
 	uespLog.mineItemPotionDataEffectIndex = 0
 	uespLog.isAutoMiningItems = true
 	uespLog.savedVars.settings.data.isAutoMiningItems = uespLog.isAutoMiningItems
-	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Started auto-mining item potion data.")
+	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Started auto-mining item potion data at effect index "..tostring(uespLog.mineItemPotionDataEffectIndex))
 	
 	zo_callLater(uespLog.MineItemsAutoLoopPotionData, uespLog.MINEITEMS_AUTODELAY)
 end
@@ -6794,9 +6823,15 @@ function uespLog.MineItemsAutoEnd ()
 	
 	if (not uespLog.mineItemAutoRestartOutputEnd) then
 		uespLog.MineItemsOutputEndLog()
+		uespLog.mineItemAutoRestartOutputEnd = true
 	end
 	
-	uespLog.MsgColor(uespLog.mineColor, "UESP::Stopped auto-mining items at ID "..tostring(uespLog.mineItemsAutoNextItemId))
+	if (uespLog.mineItemPotionData) then
+		uespLog.MsgColor(uespLog.mineColor, "UESP::Stopped auto-mining potion data at effect index "..tostring(uespLog.mineItemPotionDataEffectIndex))	
+	else
+		uespLog.MsgColor(uespLog.mineColor, "UESP::Stopped auto-mining items at ID "..tostring(uespLog.mineItemsAutoNextItemId))
+	end
+	
 	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Total auto-mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad")	
 end
 
@@ -6852,10 +6887,13 @@ function uespLog.MineItemsAutoStatus ()
 		uespLog.MsgColor(uespLog.mineColor, "UESP::Not currently auto-mining items.")
 	end
 	
-	uespLog.MsgColor(uespLog.mineColor, "UESP::Next auto-mine itemId is "..tostring(uespLog.mineItemsAutoNextItemId))
+	if (not uespLog.mineItemPotionData) then
+		uespLog.MsgColor(uespLog.mineColor, "UESP::Next auto-mine itemId is "..tostring(uespLog.mineItemsAutoNextItemId))
+	end
 	
 	if (uespLog.mineItemPotionData) then
 		uespLog.MsgColor(uespLog.mineColor, "UESP::Mining item potion data.")
+		uespLog.MsgColor(uespLog.mineColor, "UESP::Next potion effect index is "..tostring(uespLog.mineItemPotionDataEffectIndex))
 	elseif (uespLog.mineItemOnlyLevel >= 0 and uespLog.mineItemOnlySubType >= 0) then
 		uespLog.MsgColor(uespLog.mineColor, "UESP::Only mining items with internal level "..tostring(uespLog.mineItemOnlyLevel).." and type of "..tostring(uespLog.mineItemOnlySubType)..".")
 	elseif (uespLog.mineItemOnlyLevel >= 0) then
@@ -7030,8 +7068,13 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 	if (command == "start" or command == "begin") then
 		
 		if (cmds[2] ~= nil) then
-			uespLog.mineItemsAutoNextItemId = tonumber(cmds[2])
-			uespLog.savedVars.settings.data.mineItemsAutoNextItemId = uespLog.mineItemsAutoNextItemId
+			if (uespLog.mineItemPotionData) then
+				uespLog.mineItemPotionDataEffectIndex = tonumber(cmds[2])
+				uespLog.savedVars.settings.data.mineItemPotionDataEffectIndex = uespLog.mineItemPotionDataEffectIndex
+			else
+				uespLog.mineItemsAutoNextItemId = tonumber(cmds[2])
+				uespLog.savedVars.settings.data.mineItemsAutoNextItemId = uespLog.mineItemsAutoNextItemId
+			end
 		end
 		
 		uespLog.MineItemsAutoStart()

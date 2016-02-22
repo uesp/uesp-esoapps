@@ -186,6 +186,7 @@ function uespLog.CreateInventorySlotData (bagId, slotIndex)
 	local itemLink = GetItemLink(bagId, slotIndex)
 	local niceLink = uespLog.MakeNiceLink(itemLink)
 	local isJunk = IsItemJunk(bagId, slotIndex)
+	local isConsumable = IsItemLinkConsumable(itemLink)
 	local extraData = ""
 	
 	if (count == 0 or itemLink == "") then
@@ -193,7 +194,11 @@ function uespLog.CreateInventorySlotData (bagId, slotIndex)
 	end
 	
 	if (isJunk) then
-		extraData = "Junk"
+		extraData = extraData .. "Junk "
+	end
+	
+	if (isConsumable) then
+		extraData = extraData .. "Cons "
 	end
 	
 	return tostring(count) .. " " .. niceLink .. " " .. extraData;

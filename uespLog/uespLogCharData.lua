@@ -134,6 +134,7 @@ function uespLog.CreateCharData (note)
 	local charData = uespLog.CreateBuildData(note, true, true)
 	
 	charData.Inventory = uespLog.CreateInventoryData()
+	charData.Research = uespLog.GetCharDataResearchInfo()
 	
 	return charData
 end
@@ -986,6 +987,72 @@ function uespLog.GetSkillPointsUsed()
 	end
 	
 	return totalSkillPoints
+end
+
+
+function uespLog.MergeTables(table1, table2)
+
+	for k,v in pairs(table2) do 
+		table1[k] = v
+	end
+	
+	return table1
+end
+
+
+function uespLog.GetCharDataResearchInfo()
+	local researchData = {}
+	
+	local researchData1 = uespLog.GetCharDataResearchInfoCraftType(CRAFTING_TYPE_CLOTHIER)
+	local researchData2 = uespLog.GetCharDataResearchInfoCraftType(CRAFTING_TYPE_BLACKSMITHING)
+	local researchData3 = uespLog.GetCharDataResearchInfoCraftType(CRAFTING_TYPE_WOODWORKING)
+	
+	uespLog.MergeTables(researchData, researchData1)
+	uespLog.MergeTables(researchData, researchData2)
+	uespLog.MergeTables(researchData, researchData3)
+	
+	researchData["Timestamp"] = GetTimeStamp()
+	
+	return researchData
+end
+
+
+function uespLog.GetCharDataResearchInfoCraftType(craftingType)
+	local TradeskillName = uespLog.GetCraftingName(craftingType)
+	local numLines = GetNumSmithingResearchLines(craftingType)
+	local maxSimultaneousResearch = GetMaxSimultaneousSmithingResearch(craftingType)
+	local researchCount = 0
+	local researchData = {}
+	
+	if (numLines == 0 or maxSimultaneousResearch == 0) then
+		return researchData
+	end
+	
+	for researchLineIndex = 1, numLines do
+		local slotName, icon, numTraits, timeRequiredForNextResearchSecs = GetSmithingResearchLineInfo(craftingType, researchLineIndex)
+		
+		for traitIndex = 1, numTraits do
+			local duration, timeRemainingSecs = GetSmithingResearchLineTraitTimes(craftingType, researchLineIndex, traitIndex)
+			local traitType, traitDescription, known = GetSmithingResearchLineTraitInfo(craftingType, researchLineIndex, traitIndex)
+			local traitName = uespLog.GetItemTraitName(traitType)
+			
+			if (duration ~= nil) then
+				researchCount = researchCount + 1
+				researchData[TradeskillName .. ":Trait" .. tostring(researchCount)] = traitName
+				researchData[TradeskillName .. ":Item" .. tostring(researchCount)] = slotName
+				researchData[TradeskillName .. ":Time" .. tostring(researchCount)] = timeRemainingSecs
+			end
+		end
+	end
+	
+	if (researchCount < maxSimultaneousResearch) then
+		local slotsOpen = maxSimultaneousResearch - researchCount
+		researchData[TradeskillName .. ":Open"] = slotsOpen
+	else
+		researchData[TradeskillName .. ":Open"] = 0
+	end
+
+	return researchData
 end
 
 

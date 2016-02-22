@@ -7326,7 +7326,7 @@ SLASH_COMMANDS["/uti"] = function (cmd)
 end
 
 
-uespLog.GetCraftingName = function (craftingType)
+function uespLog.GetCraftingName(craftingType)
 
 	if (craftingType == CRAFTING_TYPE_ALCHEMY) then return "Alchemy" end
 	if (craftingType == CRAFTING_TYPE_BLACKSMITHING) then return "Blacksmithing" end
@@ -7340,7 +7340,7 @@ uespLog.GetCraftingName = function (craftingType)
 end
 
 
-uespLog.GetShortCraftingName = function (craftingType)
+function uespLog.GetShortCraftingName(craftingType)
 
 	if (craftingType == CRAFTING_TYPE_ALCHEMY) then return "AL" end
 	if (craftingType == CRAFTING_TYPE_BLACKSMITHING) then return "BS" end
@@ -7354,12 +7354,12 @@ uespLog.GetShortCraftingName = function (craftingType)
 end
 
 
-uespLog.GetItemTraitName = function (traitType)
+function uespLog.GetItemTraitName (traitType)
 	return GetString(SI_ITEMTRAITTYPE0 + traitType)
 end
 
 
-uespLog.ShowResearchInfo = function (craftingType)
+function uespLog.ShowResearchInfo (craftingType)
 	local TradeskillName = uespLog.GetCraftingName(craftingType)
 	local numLines = GetNumSmithingResearchLines(craftingType)
 	local maxSimultaneousResearch = GetMaxSimultaneousSmithingResearch(craftingType)

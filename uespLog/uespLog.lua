@@ -8557,4 +8557,35 @@ end
 SLASH_COMMANDS["/ulb"] = SLASH_COMMANDS["/uesplorebook"]
 
 
+function uespLog.SplitCommands(cmd)
+	local cmds = {}
+	for word in cmd:gmatch("%S+") do table.insert(cmds, word) end
+	return cmds
+end
+
+
+SLASH_COMMANDS["/uespquestitem"] = function(cmd)
+	--  |H1:quest_item:QUESTITEMID|h|h
+	-- questItemId
+	local cmds = uespLog.SplitCommands(cmd)
+	local questItemId = tonumber(cmds[1]) or 0
+	
+	if (questItemId <= 0) then
+		return
+	end
+	
+	local questItemLink = "|H1:quest_item:"..tostring(questItemId).."|h|h"
+	uespLog.Msg("UESP::Made quest item link ".. questItemLink)
+	ZO_PopupTooltip_SetLink(questItemLink)	
+	
+	uespLog.Msg("UESP::.    Name = ".. tostring(GetItemLinkName(questItemLink)))
+	uespLog.Msg("UESP::.    Desc = ".. tostring(GetItemLinkFlavorText(questItemLink)))
+	
+end
+
+
+SLASH_COMMANDS["/uqi"] = SLASH_COMMANDS["/uespquestitem"]
+
+
+
 

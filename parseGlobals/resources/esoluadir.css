@@ -7,3 +7,7 @@
 	padding: 3px;
 	list-style-type: none;
 }
+
+.esold_list li a {
+	text-decoration: none;
+}

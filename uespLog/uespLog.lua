@@ -352,7 +352,9 @@
 --					/uesptrait blacksmith		Shows known traits for blacksmithing
 --					/uesptrait clothier			Shows known traits for clothier
 --					/uesptrait woodworking		Shows known traits for woodworking
---			  Reworked the "/uespcount traits" command to just show the known trait counts.
+--			  Note that traits shown as "[trait name]" in this command are being researched and are not
+--			  considered as being "known".  Reworked the "/uespcount traits" command to just show the known 
+--			  trait counts.
 --
 
 

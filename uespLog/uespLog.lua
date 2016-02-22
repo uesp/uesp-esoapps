@@ -347,6 +347,12 @@
 --			- The last food/drink consumed will be properly tracked for build/character data. Potions and other
 --			  items consumed will be ignored.
 --			- Added chat message when you take gold from mail attachments.
+--			- Added the "/uesptrait" command to show known trait information:
+--					/uesptrait       			Shows all traits for all crafting skills
+--					/uesptrait blacksmith		Shows known traits for blacksmithing
+--					/uesptrait clothier			Shows known traits for clothier
+--					/uesptrait woodworking		Shows known traits for woodworking
+--			  Reworked the "/uespcount traits" command to just show the known trait counts.
 --
 
 
@@ -5105,9 +5111,8 @@ function uespLog.countTraits(craftingSkillType)
 	
 	for researchLineIndex = 1, numLines do
 		local name, icon, numTraits, timeRequiredForNextResearchSecs = GetSmithingResearchLineInfo(craftingSkillType, researchLineIndex)
-
-	    uespLog.MsgColor(uespLog.traitColor, "UESP::Traits for "..tradeName.."::"..tostring(name))
-	
+		local lineKnownCount = 0
+		
 		for traitIndex = 1, numTraits do
 			local traitType, traitDescription, known = GetSmithingResearchLineTraitInfo(craftingSkillType, researchLineIndex, traitIndex)
 			
@@ -5116,14 +5121,17 @@ function uespLog.countTraits(craftingSkillType)
 			
 				if (known) then
 					knownStr = "known"
-					uespLog.MsgColor(uespLog.traitColor, ".       "..uespLog.GetItemTraitName(traitType).." is "..knownStr)
+					--uespLog.MsgColor(uespLog.traitColor, ".       "..uespLog.GetItemTraitName(traitType).." is "..knownStr)
 					totalKnown = totalKnown + 1
+					lineKnownCount = lineKnownCount + 1
 				else
 				end
 				
 				totalTraits = totalTraits + 1
 			end
 		end
+		
+		uespLog.MsgColor(uespLog.traitColor, ".     Traits for "..tradeName.."::"..tostring(name).." "..tostring(lineKnownCount).. " / "..tostring(numTraits))
 	end
 
 	uespLog.MsgColor(uespLog.traitColor, ".  You know "..totalKnown.." of "..totalTraits.." "..tradeName.." traits.")
@@ -8565,7 +8573,7 @@ end
 
 
 SLASH_COMMANDS["/uespquestitem"] = function(cmd)
-	--  |H1:quest_item:QUESTITEMID|h|h
+	-- |H1:quest_item:QUESTITEMID|h|h
 	-- questItemId
 	local cmds = uespLog.SplitCommands(cmd)
 	local questItemId = tonumber(cmds[1]) or 0
@@ -8587,5 +8595,98 @@ end
 SLASH_COMMANDS["/uqi"] = SLASH_COMMANDS["/uespquestitem"]
 
 
+SLASH_COMMANDS["/uesptrait"] = function(cmd)
+	local cmds = uespLog.SplitCommands(cmd)
+	local cmd1 = tostring(cmds[1]):lower()
+	
+	if (cmd1 == "blacksmith" or cmd1 == "blacksmithing" or cmd1 == "black") then
+		uespLog.ShowTraitInfo(CRAFTING_TYPE_BLACKSMITHING)
+	elseif (cmd1 == "clothing" or cmd1 == "clothier" or cmd1 == "cloth") then
+		uespLog.ShowTraitInfo(CRAFTING_TYPE_CLOTHIER)
+	elseif (cmd1 == "woodwork" or cmd1 == "woodworking" or cmd1 == "wood" or cmd1 == "woodworker") then
+		uespLog.ShowTraitInfo(CRAFTING_TYPE_WOODWORKING)
+	else
+		uespLog.ShowTraitInfo(CRAFTING_TYPE_CLOTHIER)
+		uespLog.ShowTraitInfo(CRAFTING_TYPE_BLACKSMITHING)
+		uespLog.ShowTraitInfo(CRAFTING_TYPE_WOODWORKING)
+	end
+	
+end
 
+
+function uespLog.implode(tab, delim)
+    local output = ""
+	local isFirst = true
+	local strDelim = tostring(delim)
+	
+    for _, v in pairs(tab) do
+	
+		if (not isFirst) then
+			output = output .. strDelim
+		end
+		
+        output = output .. tostring(v)
+		isFirst = false
+    end
+	
+    return output
+end
+
+
+function uespLog.ShowTraitInfo(craftingType)
+	local TradeskillName = uespLog.GetCraftingName(craftingType)
+	local numLines = GetNumSmithingResearchLines(craftingType)
+	local totalAllTraits = 0
+	local totalknownTraits = 0
+	
+	if (numLines == 0) then
+		uespLog.MsgColor(uespLog.researchColor, TradeskillName.." doesn't have any research lines available!")
+		return
+	end
+	
+	uespLog.MsgColor(uespLog.researchColor, TradeskillName.." Trait Info:")
+	
+	for researchLineIndex = 1, numLines do
+		local slotName, _, numTraits, _ = GetSmithingResearchLineInfo(craftingType, researchLineIndex)
+		local knownTraits = {}
+		local unknownTraits = {}
+		local totalTraits = 0
+		local knownTraitCount = 0
+		local unknownTraitCount = 0
+		
+		for traitIndex = 1, numTraits do
+			local duration, timeRemainingSecs = GetSmithingResearchLineTraitTimes(craftingType, researchLineIndex, traitIndex)
+			local traitType, _, known = GetSmithingResearchLineTraitInfo(craftingType, researchLineIndex, traitIndex)
+			local traitName = uespLog.GetItemTraitName(traitType)
+			totalTraits = totalTraits + 1
+			
+			if (known) then
+				knownTraits[traitIndex] = traitName
+				knownTraitCount = knownTraitCount + 1
+			elseif (duration ~= nil ) then  -- Being researched
+				knownTraits[traitIndex] = "["..traitName.."]"
+				unknownTraitCount = unknownTraitCount + 1
+			else
+				unknownTraits[traitIndex] = traitName
+				unknownTraitCount = unknownTraitCount + 1
+			end
+		end
+		
+		totalAllTraits = totalAllTraits + totalTraits
+		totalknownTraits = totalknownTraits + #knownTraits
+		
+		if (unknownTraitCount == 0) then
+			uespLog.MsgColor(uespLog.researchColor, ".     "..tostring(slotName)..": All traits known")
+		elseif (knownTraitCount == 0) then
+			uespLog.MsgColor(uespLog.researchColor, ".     "..tostring(slotName)..": No traits known")
+		else
+			local knownString = uespLog.implode(knownTraits, ", ")
+			uespLog.MsgColor(uespLog.researchColor, ".     "..tostring(slotName).." ("..tostring(knownTraitCount).."/"..tostring(totalTraits).."): "..knownString)
+		end
+	end
+	
+	uespLog.MsgColor(uespLog.researchColor, ".          "..tostring(totalknownTraits).." of "..tostring(totalAllTraits).." traits known")
+	
+	return totalknownTraits, totalAllTraits
+end
 

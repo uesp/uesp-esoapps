@@ -587,6 +587,7 @@ uespLog.lastMoneyChange = 0
 uespLog.lastMoneyGameTime = 0
 uespLog.lastItemLink = ""
 uespLog.lastItemLinks = { }
+uespLog.lastItemLinkUsed = ""
 
 uespLog.researchColor = "00ffff"
 uespLog.timeColor = "00ffff"
@@ -1686,8 +1687,11 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_KEEP_UNDER_ATTACK_CHANGED, uespLog.OnKeepUnderAttack)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_KEEP_GATE_STATE_CHANGED, uespLog.OnKeepGateStateChanged)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_GUILD_KEEP_CLAIM_UPDATED, uespLog.OnGuildKeepClaimUpdated)	
+	
+	uespLog.Old_ZO_InventorySlot_DoPrimaryAction = ZO_InventorySlot_DoPrimaryAction
+	ZO_InventorySlot_DoPrimaryAction = uespLog.ZO_InventorySlot_DoPrimaryAction
 		
-	-- EVENT_ARTIFACT_CONTROL_STATE(integer eventCode, string artifactName, integer keepId, string playerName, integer playerAlliance, integer controlEvent, integer controlState, integer campaignId)
+	--EVENT_ARTIFACT_CONTROL_STATE(integer eventCode, string artifactName, integer keepId, string playerName, integer playerAlliance, integer controlEvent, integer controlState, integer campaignId)
 	--EVENT_CAPTURE_AREA_STATUS (integer eventCode, integer keepId, integer objectiveId, integer battlegroundContext, integer capturePoolValue, integer capturePoolMax, integer capturingPlayers, integer contestingPlayers, integer 	owningAlliance)
 	--EVENT_CORONATE_EMPEROR_NOTIFICATION (integer eventCode, integer campaignId, string emperorName, integer emperorAlliance)
 	--EVENT_DEPOSE_EMPEROR_NOTIFICATION (integer eventCode, integer campaignId, string emperorName, integer emperorAlliance, bool abdication)
@@ -3612,6 +3616,8 @@ end
 
 function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, itemSoundCategory, updateReason)
 	local itemName = GetItemName(bagId, slotIndex)
+	
+	uespLog.DebugExtraMsg("UESP::Inventory slot("..tostring(bagId)..","..tostring(slotIndex)..") update for "..itemName..", isNew "..tostring(isNewItem)..", reason "..tostring(updateReason)..", sound "..tostring(itemSoundCategory))
 
 		-- Skip durability updates or items already logged
 	if (updateReason == INVENTORY_UPDATE_REASON_DURABILITY_CHANGE) then
@@ -8758,4 +8764,29 @@ function uespLog.trim(s)
 	end
 	
 	return (s:gsub("^%s*(.-)%s*$", "%1"))
+end
+
+
+function uespLog.ZO_InventorySlot_DoPrimaryAction(inventorySlot)
+	local buttonPart = inventorySlot
+    local controlType = inventorySlot:GetType()
+	
+    if (controlType == CT_CONTROL and buttonPart.slotControlType and buttonPart.slotControlType == "listSlot") then
+		inventorySlot = inventorySlot:GetNamedChild("Button")
+	end
+	
+	uespLog.lastItemLinkUsed = ""
+	
+	if (inventorySlot ~= nil) then
+		local bagId = inventorySlot.bagId
+		local slotIndex = inventorySlot.slotIndex
+		
+		if (bagId ~= nil and slotIndex ~= nil) then
+			local itemLink = GetItemLink(bagId, slotIndex)
+			uespLog.lastItemLinkUsed = itemLink
+		end
+
+	end
+	
+	return uespLog.Old_ZO_InventorySlot_DoPrimaryAction(inventorySlot)
 end

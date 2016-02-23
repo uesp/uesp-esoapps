@@ -435,12 +435,28 @@ function uespLog.OnEatDrinkItem(bagId, slotIndex, isNewItem, itemSoundCategory, 
 	local reqLevel = GetItemLinkRequiredLevel(itemLink)
 	local reqVetRank = GetItemLinkRequiredVeteranRank(itemLink)
 	local itemType = GetItemLinkItemType(itemLink)
+	
+		-- Fix the issue of using the last food/drink and having no itemLink left when queried
+	if (itemName == "" and uespLog.lastItemLinkUsed ~= "") then
+		itemLink = uespLog.lastItemLinkUsed
+		itemName = GetItemLinkName(itemLink)
+		hasAbility, abilityHeader, abilityDescription, cooldown, hasScaling, minLevel, maxLevel, isVeteranRank = GetItemLinkOnUseAbilityInfo(itemLink)
+		reqLevel = GetItemLinkRequiredLevel(itemLink)
+		reqVetRank = GetItemLinkRequiredVeteranRank(itemLink)
+		itemType = GetItemLinkItemType(itemLink)
+	end
 		
-		-- Note: If the food/drink eaten was the last one in the stack then itemLink will be empty as it no longer exists
 	if (itemType == 4) then
 		itemTypeString = "Food"
 	elseif (itemType == 12) then
 		itemTypeString = "Drink"
+	elseif (itemName == "") then
+		itemName = ""
+		itemLink = ""
+		itemTypeString = ""
+		abilityDescription = ""
+		reqLevel = 0
+		reqVetRank = 0
 	else
 		return
 	end

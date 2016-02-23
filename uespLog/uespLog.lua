@@ -8586,12 +8586,13 @@ SLASH_COMMANDS["/uespchardata"] = function (cmd)
 			uespLog.Msg("UESP::Error saving the current character data!")
 		end
 		
-	elseif (cmd == '') then
-		uespLog.Msg("UESP::Current auto saving of character data is: "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
 	else
-		uespLog.Msg("UESP::Turns on/off the automatic saving of character data.")
-		uespLog.Msg(".     Use the format: /uespchardata [on/off/save]")
-		uespLog.Msg(".     Current Setting is: "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
+		uespLog.Msg("UESP::Turns on/off the automatic saving of character data. Use the format:")
+		uespLog.Msg(".     /uespchardata [on/off]                   Turn automatic saving on/off")
+		uespLog.Msg(".     /uespchardata save                      Manually save the character data")
+		uespLog.Msg(".     /uespchardata password [text]     Change the character data password")
+		uespLog.Msg(".     /uespchardata password clear    Set no password")
+		uespLog.Msg(".     Automatic saving is currently "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
 	end
 		
 end

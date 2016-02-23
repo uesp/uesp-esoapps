@@ -8639,7 +8639,7 @@ function uespLog.ShowTraitInfo(craftingType)
 	local TradeskillName = uespLog.GetCraftingName(craftingType)
 	local numLines = GetNumSmithingResearchLines(craftingType)
 	local totalAllTraits = 0
-	local totalknownTraits = 0
+	local totalKnownTraits = 0
 	
 	if (numLines == 0) then
 		uespLog.MsgColor(uespLog.researchColor, TradeskillName.." doesn't have any research lines available!")
@@ -8675,7 +8675,7 @@ function uespLog.ShowTraitInfo(craftingType)
 		end
 		
 		totalAllTraits = totalAllTraits + totalTraits
-		totalknownTraits = totalknownTraits + #knownTraits
+		totalKnownTraits = totalKnownTraits + knownTraitCount
 		
 		if (unknownTraitCount == 0) then
 			uespLog.MsgColor(uespLog.researchColor, ".     "..tostring(slotName)..": All traits known")
@@ -8687,8 +8687,8 @@ function uespLog.ShowTraitInfo(craftingType)
 		end
 	end
 	
-	uespLog.MsgColor(uespLog.researchColor, ".          "..tostring(totalknownTraits).." of "..tostring(totalAllTraits).." traits known")
+	uespLog.MsgColor(uespLog.researchColor, ".          "..tostring(totalKnownTraits).." of "..tostring(totalAllTraits).." traits known")
 	
-	return totalknownTraits, totalAllTraits
+	return totalKnownTraits, totalAllTraits
 end
 

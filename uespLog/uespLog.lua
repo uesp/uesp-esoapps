@@ -835,6 +835,7 @@ uespLog.DEFAULT_SETTINGS =
 		["loreBookMsg"] = true,
 		["autoSaveCharData"] = false,
 		["charDataPassword"] = "",
+		["charDataOldPassword"] = "",
 	}
 }
 
@@ -904,6 +905,20 @@ function uespLog.GetCharDataPassword()
 	end
 	
 	return uespLog.savedVars.settings.data.charDataPassword
+end
+
+
+function uespLog.GetCharDataOldPassword()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.charDataOldPassword == nil) then
+		uespLog.savedVars.settings.data.charDataOldPassword = uespLog.DEFAULT_SETTINGS.charDataOldPassword
+	end
+	
+	return uespLog.savedVars.settings.data.charDataOldPassword
 end
 
 
@@ -1549,6 +1564,12 @@ function uespLog.Initialize( self, addOnName )
 	if (uespLog.savedVars["charInfo"].data.actionBar ~= nil) then
 		uespLog.charData_ActionBarData = uespLog.savedVars["charInfo"].data.actionBar 
 	end
+	
+	if (uespLog.savedVars.settings.data.charDataPassword == nil) then
+		uespLog.savedVars.settings.data.charDataPassword = ""
+	end
+	
+	uespLog.savedVars.settings.data.charDataOldPassword = uespLog.savedVars.settings.data.charDataPassword
 	
 	uespLog.mineItemsAutoNextItemId = uespLog.savedVars.settings.data.mineItemsAutoNextItemId or uespLog.mineItemsAutoNextItemId
 	uespLog.mineItemAutoReload = uespLog.savedVars.settings.data.mineItemAutoReload or uespLog.mineItemAutoReload

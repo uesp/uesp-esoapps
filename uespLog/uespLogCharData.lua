@@ -1012,12 +1012,81 @@ function uespLog.GetCharDataResearchInfo()
 	local researchData2 = uespLog.GetCharDataResearchInfoCraftType(CRAFTING_TYPE_BLACKSMITHING)
 	local researchData3 = uespLog.GetCharDataResearchInfoCraftType(CRAFTING_TYPE_WOODWORKING)
 	
+	local researchTrait1 = uespLog.GetCharDataResearchTraits(CRAFTING_TYPE_CLOTHIER)
+	local researchTrait2 = uespLog.GetCharDataResearchTraits(CRAFTING_TYPE_BLACKSMITHING)
+	local researchTrait3 = uespLog.GetCharDataResearchTraits(CRAFTING_TYPE_WOODWORKING)
+	
 	uespLog.MergeTables(researchData, researchData1)
 	uespLog.MergeTables(researchData, researchData2)
 	uespLog.MergeTables(researchData, researchData3)
+	uespLog.MergeTables(researchData, researchTrait1)
+	uespLog.MergeTables(researchData, researchTrait2)
+	uespLog.MergeTables(researchData, researchTrait3)
 	
 	researchData["Timestamp"] = GetTimeStamp()
 	
+	return researchData
+end
+
+
+function uespLog.GetCharDataResearchTraits(craftingType)
+	local TradeskillName = uespLog.GetCraftingName(craftingType)
+	local numLines = GetNumSmithingResearchLines(craftingType)
+	local totalAllTraits = 0
+	local totalKnownTraits = 0
+	local researchData = {}
+	local varName = ""
+	
+	if (numLines == 0) then
+		return researchData
+	end
+	
+	for researchLineIndex = 1, numLines do
+		local slotName, _, numTraits, _ = GetSmithingResearchLineInfo(craftingType, researchLineIndex)
+		local knownTraits = {}
+		local unknownTraits = {}
+		local totalTraits = 0
+		local knownTraitCount = 0
+		local unknownTraitCount = 0
+		
+		for traitIndex = 1, numTraits do
+			local duration, timeRemainingSecs = GetSmithingResearchLineTraitTimes(craftingType, researchLineIndex, traitIndex)
+			local traitType, _, known = GetSmithingResearchLineTraitInfo(craftingType, researchLineIndex, traitIndex)
+			local traitName = uespLog.GetItemTraitName(traitType)
+			totalTraits = totalTraits + 1
+			
+			if (known) then
+				knownTraits[traitIndex] = traitName
+				knownTraitCount = knownTraitCount + 1
+			elseif (duration ~= nil ) then  -- Being researched
+				knownTraits[traitIndex] = "["..traitName.."]"
+				unknownTraitCount = unknownTraitCount + 1
+			else
+				unknownTraits[traitIndex] = traitName
+				unknownTraitCount = unknownTraitCount + 1
+			end
+		end
+		
+		totalAllTraits = totalAllTraits + totalTraits
+		totalKnownTraits = totalKnownTraits + knownTraitCount
+		varName = TradeskillName..":Trait:"..tostring(slotName)
+		
+		if (unknownTraitCount == 0) then
+			researchData[varName] = "All traits known"
+		elseif (knownTraitCount == 0) then
+			researchData[varName] = "No traits known"
+		else
+			local knownString = uespLog.implode(knownTraits, ", ")
+			researchData[varName] = knownString .. " ("..tostring(knownTraitCount).."/"..tostring(totalTraits)..")"
+		end
+		
+		researchData[varName..":Known"] = knownTraitCount
+		researchData[varName..":Total"] = totalTraits
+	end
+	
+	varName = TradeskillName..":Trait"
+	researchData[varName..":Known"] = totalKnownTraits
+	researchData[varName..":Total"] = totalAllTraits
 	return researchData
 end
 

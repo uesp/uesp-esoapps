@@ -355,6 +355,8 @@
 --			  Note that traits shown as "[trait name]" in this command are being researched and are not
 --			  considered as being "known".  Reworked the "/uespcount traits" command to just show the known 
 --			  trait counts.
+--			- Added the "/uespskillpoints" or "/usp" that shows the total number of skill points used and
+--			  acquired on the character.
 --
 
 
@@ -598,6 +600,7 @@ uespLog.mineColor = "99ff99"
 uespLog.mineColorWarning = "ff9999"
 uespLog.pvpColor = "ff33ff"
 uespLog.errorColor = "ff9999"
+uespLog.warningColor = "ff9999"
 
 uespLog.currentTargetData = {
 	name = "",
@@ -831,6 +834,7 @@ uespLog.DEFAULT_SETTINGS =
 		},
 		["loreBookMsg"] = true,
 		["autoSaveCharData"] = false,
+		["charDataPassword"] = "",
 	}
 }
 
@@ -886,6 +890,30 @@ function uespLog.SetAutoSaveCharData(flag)
 	end
 	
 	uespLog.savedVars.settings.data.autoSaveCharData = flag
+end
+
+
+function uespLog.GetCharDataPassword()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.charDataPassword == nil) then
+		uespLog.savedVars.settings.data.charDataPassword = uespLog.DEFAULT_SETTINGS.charDataPassword
+	end
+	
+	return uespLog.savedVars.settings.data.charDataPassword
+end
+
+
+function uespLog.SetCharDataPassword(passwd)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	uespLog.savedVars.settings.data.charDataPassword = passwd
 end
 
 
@@ -8513,14 +8541,22 @@ end
 
 
 SLASH_COMMANDS["/uespchardata"] = function (cmd)
-	cmd = string.lower(cmd)
-	
+	cmds = uespLog.SplitCommands(cmd)
+	cmd = string.lower(cmds[1] or "")
+		
 	if (cmd == 'on') then
 		uespLog.SetAutoSaveCharData(true)
 		uespLog.Msg("UESP::Set auto saving of character data to: "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
+		
+		if (uespLog.GetCharDataPassword() == "") then
+			uespLog.MsgColor(uespLog.warningColor, "Warning: You should set a char data password with the command:")
+			uespLog.MsgColor(uespLog.warningColor, ".                   /uespchardata password [something]")
+		end
 	elseif (cmd == 'off') then
 		uespLog.SetAutoSaveCharData(false)
 		uespLog.Msg("UESP::Set auto saving of character data to: "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
+	elseif (cmd == 'password') then
+		uespLog.UpdateCharDataPassword(cmds[2], cmds[3])
 	elseif (cmd == 'save') then
 		
 		if (uespLog.SaveCharData()) then
@@ -8692,3 +8728,12 @@ function uespLog.ShowTraitInfo(craftingType)
 	return totalKnownTraits, totalAllTraits
 end
 
+
+function uespLog.trim(s)
+
+	if (s == nil) then
+		return ""
+	end
+	
+	return (s:gsub("^%s*(.-)%s*$", "%1"))
+end

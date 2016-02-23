@@ -134,6 +134,7 @@ function uespLog.CreateCharData (note)
 	local charData = uespLog.CreateBuildData(note, true, true)
 	
 	charData.Password = uespLog.GetCharDataPassword()
+	charData.OldPassword = uespLog.GetCharDataOldPassword()
 	charData.Inventory = uespLog.CreateInventoryData()
 	charData.Research = uespLog.GetCharDataResearchInfo()
 	

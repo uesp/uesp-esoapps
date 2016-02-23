@@ -119,6 +119,8 @@ protected:
 	const static int MINIMUM_VALID_BUILDDATA_SIZE = 24;
 	const static int MINIMUM_VALID_CHARDATA_SIZE = 32;
 
+	const static int MAXIMUM_FORMERROR_RETRYCOUNT = 10;
+
 	NOTIFYICONDATA	m_TrayIconData;
 	bool			m_IsInTray;
 
@@ -148,6 +150,7 @@ protected:
 	HANDLE				m_hSendQueueThread;
 	HANDLE				m_hSendQueueMutex;
 	LONG				m_StopSendQueueThread;
+	int					m_FormErrorRetryCount;
 
 	std::string					m_BuildData;
 	//std::vector<std::string>	m_BuildDataScreenshots;

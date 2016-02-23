@@ -134,7 +134,8 @@ CuespLogMonitorDlg::CuespLogMonitorDlg(CWnd* pParent) :
 	m_hSendQueueMutex(NULL),
 	m_StopSendQueueThread(0),
 	m_BuildDataValidScreenshotCount(0),
-	m_CharDataCount(0)
+	m_CharDataCount(0),
+	m_FormErrorRetryCount(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
@@ -1356,18 +1357,21 @@ bool CuespLogMonitorDlg::SendFormData (const std::string FormURL, std::string Fo
 
 	if (!Result) 
 	{
-		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to receive a HTTP response when sending form data!");
-		PrintLogLine(ULM_LOGLEVEL_ERROR, "\t\t%s", ErrorBuffer);
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to receive a HTTP response when sending form data! %s", ErrorBuffer);
+		//PrintLogLine(ULM_LOGLEVEL_ERROR, "\t\t%s", ErrorBuffer);
+		++m_FormErrorRetryCount;
 		return false;
 	}
 	
 	if (strcmp(Buffer, "200") != 0)
 	{
-		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Received a '%s' HTTP response when sending form data!", Buffer);
-		PrintLogLine(ULM_LOGLEVEL_ERROR, "\t\t%s", ErrorBuffer);
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Received a '%s' HTTP response when sending form data! %s", Buffer, ErrorBuffer);
+		//PrintLogLine(ULM_LOGLEVEL_ERROR, "\t\t%s", ErrorBuffer);
+		++m_FormErrorRetryCount;
 		return false;
 	}
 
+	m_FormErrorRetryCount = 0;
 	return true;
 }
 
@@ -1398,6 +1402,13 @@ bool CuespLogMonitorDlg::SendQueuedBuildDataThread()
 
 	if (!SendFormData(m_Options.BuildDataFormURL, FormQuery))
 	{
+		if (m_FormErrorRetryCount > MAXIMUM_FORMERROR_RETRYCOUNT)
+		{
+			m_FormErrorRetryCount = 0;
+			PrintLogLine(ULM_LOGLEVEL_INFO, "Exceeded %d failed send attempts...aborting send of build data!", MAXIMUM_FORMERROR_RETRYCOUNT);
+			m_BuildDataQueue.clear();
+		}
+
 		ReleaseMutex(m_hSendQueueMutex);
 		return false;
 	}
@@ -1429,6 +1440,13 @@ bool CuespLogMonitorDlg::SendQueuedCharDataThread()
 
 	if (!SendFormData(m_Options.CharDataFormURL, FormQuery))
 	{
+		if (m_FormErrorRetryCount > MAXIMUM_FORMERROR_RETRYCOUNT)
+		{
+			m_FormErrorRetryCount = 0;
+			PrintLogLine(ULM_LOGLEVEL_INFO, "Exceeded %d failed send attempts...aborting send of character data!", MAXIMUM_FORMERROR_RETRYCOUNT);
+			m_CharDataQueue.clear();
+		}
+
 		ReleaseMutex(m_hSendQueueMutex);
 		return false;
 	}
@@ -1470,6 +1488,13 @@ bool CuespLogMonitorDlg::SendQueuedDataThread()
 	{
 		if (!SendFormData(m_Options.FormURL, FormQuery)) 
 		{
+			if (m_FormErrorRetryCount > MAXIMUM_FORMERROR_RETRYCOUNT)
+			{
+				m_FormErrorRetryCount = 0;
+				PrintLogLine(ULM_LOGLEVEL_INFO, "Exceeded %d failed send attempts...aborting send of log data!", MAXIMUM_FORMERROR_RETRYCOUNT);
+				m_SendQueue.erase(m_SendQueue.begin(), m_SendQueue.begin() + i);
+			}
+
 			ReleaseMutex(m_hSendQueueMutex);
 			return false;
 		}

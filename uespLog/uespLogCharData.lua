@@ -133,6 +133,7 @@ end
 function uespLog.CreateCharData (note)
 	local charData = uespLog.CreateBuildData(note, true, true)
 	
+	charData.Password = uespLog.GetCharDataPassword()
 	charData.Inventory = uespLog.CreateInventoryData()
 	charData.Research = uespLog.GetCharDataResearchInfo()
 	
@@ -1144,4 +1145,34 @@ end
 
 
 SLASH_COMMANDS["/usp"] = SLASH_COMMANDS["/uespskillpoints"]
+
+
+function uespLog.UpdateCharDataPassword(password1, password2)
+	password1 = uespLog.trim(password1)
+	password2 = uespLog.trim(password2)
+
+	if (password1 == nil or password1 == "") then
+		uespLog.ShowCharDataPassword()
+		return
+	elseif (password1:lower() == "clear") then
+		uespLog.SetCharDataPassword("")
+	else
+		uespLog.SetCharDataPassword(password1)
+	end
+	
+	uespLog.ShowCharDataPassword()
+end
+
+
+function uespLog.ShowCharDataPassword()
+	local currentPassword = uespLog.GetCharDataPassword()
+	
+	if (currentPassword == "") then
+		uespLog.Msg("You have no char data password!")
+	else
+		uespLog.Msg("Current char data password is '"..tostring(uespLog.GetCharDataPassword()).."'.")
+	end
+		
+end
+
 

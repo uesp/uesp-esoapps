@@ -357,6 +357,8 @@
 --			  trait counts.
 --			- Added the "/uespskillpoints" or "/usp" that shows the total number of skill points used and
 --			  acquired on the character.
+--			- Quest item links are now logged (this is currently the only way to get information about quest items).
+--			- Removed the "Quest conversation updated" log message from normal output.
 --
 
 
@@ -1614,6 +1616,8 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_QUEST_COMPLETE_EXPERIENCE, uespLog.OnQuestCompleteExperience)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_QUEST_OPTIONAL_STEP_ADVANCED, uespLog.OnQuestOptionalStepAdvanced)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SKILL_POINTS_CHANGED, uespLog.OnSkillPointsChanged)
+	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTIVE_QUEST_TOOL_CHANGED, uespLog.OnQuestToolChanged)	
 		
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOOT_UPDATED, uespLog.OnLootUpdated)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOOT_RECEIVED, uespLog.OnLootGained)
@@ -2388,7 +2392,7 @@ function uespLog.OnQuestOffered (eventCode)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.currentConversationData, uespLog.GetTimeData())
 	
-	uespLog.DebugMsg("UESP::Updated Conversation (QuestOffered)...")
+	uespLog.DebugExtraMsg("UESP::Updated Conversation (QuestOffered)...")
 	--uespLog.DebugExtraMsg("UESP::dialog = "..tostring(dialog))
 	--uespLog.DebugExtraMsg("UESP::response = "..tostring(response))
 	--uespLog.DebugExtraMsg("UESP::farewell = "..tostring(farewell))	
@@ -2622,8 +2626,9 @@ function uespLog.OnQuestAdded (eventCode, journalIndex, questName, objectiveName
 	logData.objective = objectiveName
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
-	 
 	uespLog.DebugLogMsg("Quest added "..questName.."::"..objectiveName)
+	
+	uespLog.CheckQuestItems(journalIndex, questName)
 end
 
 
@@ -8817,4 +8822,59 @@ function uespLog.ReloadUI(guiName)
 	uespLog.OnLogoutAutoSaveCharData()
 	
 	return uespLog.Old_ReloadUI(guiName)
+end
+
+
+function uespLog.OnQuestToolChanged(eventCode, journalIndex, toolIndex)
+	uespLog.DebugExtraMsg("UESP::OnQuestToolChanged "..tostring(journalIndex).." "..tostring(toolIndex))
+	--GetQuestItemInfo(number journalQuestIndex, number stepIndex, number conditionIndex)
+	--Returns: textureName iconFilename, number stackCount, string name, number questItemId
+	--GetQuestItemTooltipInfo(number journalQuestIndex, number stepIndex, number conditionIndex)
+	--Returns: string header, string itemName, string tooltipText
+end
+
+
+function uespLog.CheckQuestItems(journalIndex, questName)
+	local numSteps = GetJournalQuestNumSteps(journalIndex)
+	local stepIndex
+	local condIndex
+		
+	for stepIndex = 1, numSteps do
+		local numConditions = GetJournalQuestNumConditions(journalIndex, stepIndex)
+		local lastItemLink = ""
+		
+		for condIndex = 1, numConditions do
+			local itemLink = GetQuestItemLink(journalIndex, stepIndex, condIndex)
+			
+			if (itemLink ~= "" and itemLink ~= lastItemLink) then
+				uespLog.LogQuestItemLink(journalIndex, stepIndex, condIndex, questName)
+				lastItemLink = itemLink
+			end
+		end
+	end
+	
+end
+
+
+function uespLog.LogQuestItemLink(journalIndex, stepIndex, conditionIndex, questName)
+	local itemLink = GetQuestItemLink(journalIndex, stepIndex, conditionIndex)
+	local logData = {}
+	
+	if (itemLink == "") then
+		return
+	end
+	
+	logData.event = "QuestItem"
+	logData.itemLink = itemLink
+	logData.journalIndex = journalIndex
+	logData.stepIndex = stepIndex
+	logData.conditionIndex = conditionIndex
+	logData.questName = questName
+	
+	logData.texture, _, _, logData.questId = GetQuestItemInfo(journalIndex, stepIndex, conditionIndex)
+	logData.header, logData.name, logData.desc = GetQuestItemTooltipInfo(journalIndex, stepIndex, conditionIndex)
+	
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
+	uespLog.DebugMsg("UESP::Logged quest item link "..tostring(itemLink))
 end

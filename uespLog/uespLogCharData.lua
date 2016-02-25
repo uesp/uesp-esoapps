@@ -88,6 +88,7 @@ uespLog.charDataLastFoodEaten = {
 
 uespLog.CHARDATA_MINTIMESTAMP_DIFF = 60
 uespLog.charDataLastSaveTimestamp = 0
+uespLog.charDataLogoutSave = false
 
 
 function uespLog.InitCharData()
@@ -112,21 +113,23 @@ function uespLog.SaveCharData (note)
 end
 
 
+function uespLog.OnLogoutAutoSaveCharData()
+
+	if (uespLog.GetAutoSaveCharData() and not uespLog.charDataLogoutSave) then
+		uespLog.SaveCharData()
+		uespLog.charDataLogoutSave = true
+	end
+	
+end
+
+
 function uespLog.OnPlayerDeactivated (eventCode)
 	uespLog.DebugExtraMsg("OnPlayerDeactivated")
-	
-	if (uespLog.GetAutoSaveCharData()) then
-		uespLog.SaveCharData()
-	end
 end
 
 
 function uespLog.OnLogoutDisallowed (eventCode, quitRequested)
 	uespLog.DebugExtraMsg("OnLogoutDisallowed")
-	
-	if (uespLog.GetAutoSaveCharData()) then
-		uespLog.SaveCharData()
-	end
 end
 
 

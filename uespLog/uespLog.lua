@@ -1690,6 +1690,13 @@ function uespLog.Initialize( self, addOnName )
 	
 	uespLog.Old_ZO_InventorySlot_DoPrimaryAction = ZO_InventorySlot_DoPrimaryAction
 	ZO_InventorySlot_DoPrimaryAction = uespLog.ZO_InventorySlot_DoPrimaryAction
+	
+	uespLog.Old_Quit = Quit
+	uespLog.Old_Logout = Logout
+	uespLog.Old_ReloadUI = ReloadUI
+	Quit = uespLog.Quit
+	Logout = uespLog.Logout
+	ReloadUI = uespLog.ReloadUI
 		
 	--EVENT_ARTIFACT_CONTROL_STATE(integer eventCode, string artifactName, integer keepId, string playerName, integer playerAlliance, integer controlEvent, integer controlState, integer campaignId)
 	--EVENT_CAPTURE_AREA_STATUS (integer eventCode, integer keepId, integer objectiveId, integer battlegroundContext, integer capturePoolValue, integer capturePoolMax, integer capturingPlayers, integer contestingPlayers, integer 	owningAlliance)
@@ -8789,4 +8796,25 @@ function uespLog.ZO_InventorySlot_DoPrimaryAction(inventorySlot)
 	end
 	
 	return uespLog.Old_ZO_InventorySlot_DoPrimaryAction(inventorySlot)
+end
+
+
+function uespLog.Quit()
+	uespLog.OnLogoutAutoSaveCharData()
+	
+	return uespLog.Old_Quit()
+end
+
+
+function uespLog.Logout()
+	uespLog.OnLogoutAutoSaveCharData()
+	
+	return uespLog.Old_Logout()
+end
+
+
+function uespLog.ReloadUI(guiName)
+	uespLog.OnLogoutAutoSaveCharData()
+	
+	return uespLog.Old_ReloadUI(guiName)
 end

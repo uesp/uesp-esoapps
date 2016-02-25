@@ -8836,23 +8836,33 @@ end
 
 function uespLog.CheckQuestItems(journalIndex, questName)
 	local numSteps = GetJournalQuestNumSteps(journalIndex)
+	local numTools = GetQuestToolCount(journalIndex)
 	local stepIndex
 	local condIndex
+	local loggedItemLinks = {}
 		
 	for stepIndex = 1, numSteps do
 		local numConditions = GetJournalQuestNumConditions(journalIndex, stepIndex)
-		local lastItemLink = ""
 		
 		for condIndex = 1, numConditions do
 			local itemLink = GetQuestItemLink(journalIndex, stepIndex, condIndex)
 			
-			if (itemLink ~= "" and itemLink ~= lastItemLink) then
+			if (itemLink ~= "" and not loggedItemLinks[itemLink]) then
 				uespLog.LogQuestItemLink(journalIndex, stepIndex, condIndex, questName)
-				lastItemLink = itemLink
+				loggedItemLinks[itemLink] = true
 			end
 		end
 	end
 	
+	for toolIndex = 1, numTools do
+		local itemLink = GetQuestToolLink(journalIndex, toolIndex)
+		
+		if (itemLink ~= "" and not loggedItemLinks[itemLink]) then
+			uespLog.LogQuestToolItemLink(journalIndex, toolIndex, questName)
+			loggedItemLinks[itemLink] = true
+		end
+	end
+
 end
 
 
@@ -8876,5 +8886,30 @@ function uespLog.LogQuestItemLink(journalIndex, stepIndex, conditionIndex, quest
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
+	itemLink = GetQuestItemLink(journalIndex, stepIndex, conditionIndex, LINK_STYLE_BRACKETS)
 	uespLog.DebugMsg("UESP::Logged quest item link "..tostring(itemLink))
+end
+
+
+function uespLog.LogQuestToolItemLink(journalIndex, toolIndex, questName)
+	local itemLink = GetQuestToolLink(journalIndex, toolIndex)
+	local logData = {}
+	
+	if (itemLink == "") then
+		return
+	end
+	
+	logData.event = "QuestItem"
+	logData.itemLink = itemLink
+	logData.journalIndex = journalIndex
+	logData.toolIndex = toolIndex
+	logData.questName = questName
+		
+	logData.texture, _, _, _, logData.questId = GetQuestToolInfo(journalIndex, toolIndex)
+	logData.header, logData.name, logData.desc = GetQuestToolTooltipInfo(journalIndex, toolIndex)
+	
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
+	itemLink = GetQuestToolLink(journalIndex, toolIndex, LINK_STYLE_BRACKETS)
+	uespLog.DebugMsg("UESP::Logged quest tool item link "..tostring(itemLink))
 end

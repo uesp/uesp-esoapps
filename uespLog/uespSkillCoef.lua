@@ -1,11 +1,20 @@
 -- uespLogTradeData.lua -- by Dave Humphrey, dave@uesp.net
--- Code specific to mining skill coefficients
+-- Code specific to mining skill coefficients.
 
 --/ud uespLog.SkillCoefData['Crystal Shard']
 --/ud uespLog.SkillCoefAbilityData['Crystal Shard']
 
 uespLog.SkillCoefData = {}
 uespLog.SkillCoefAbilityData = {}
+uespLog.SkillCoefAbilityCount = 0
+uespLog.SkillCoefDataPointCount = 0
+
+uespLog.SkillCoef_CaptureWykkyd_Prefix = "SkillCoef"
+uespLog.SkillCoef_CaptureWykkyd_StartIndex = 1
+uespLog.SkillCoef_CaptureWykkyd_IsWorking = false
+uespLog.SkillCoef_CaptureWykkyd_EndIndex = 5
+uespLog.SkillCoef_CaptureWykkyd_CurrentIndex = 5
+uespLog.SkillCoef_CaptureWykkyd_TimeDelayLoadSet = 5000
 
 
 SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
@@ -34,19 +43,18 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		local skillName = uespLog.implodeStart(cmds, " ", 2)
 		uespLog.ShowSkillCoef(skillName)
 	elseif (cmd1 == "status") then
-		local numSkills = 0
-		local numPoints = 0
-		
-		for name, skillsData in pairs(uespLog.SkillCoefData) do
-			numPoints = #skillsData
-			numSkills = numSkills + 1
-		end
-		
-		uespLog.Msg("There are "..tostring(numSkills).." skills with "..tostring(numPoints).." data points for calculating skill coefficients.")
+		uespLog.Msg("There are "..tostring(uespLog.SkillCoefAbilityCount).." skills with "..tostring(uespLog.SkillCoefDataPointCount).." data points for calculating skill coefficients.")
 	elseif (cmd1 == "clear" or cmd1 == "reset") then
 		uespLog.ClearSkillCoefData()
 	elseif (cmd1 == "savewyk") then
 		uespLog.CaptureSkillCoefDataWykkyd(cmds[2], cmds[3], cmds[4])
+	elseif (cmd1 == "stop" or cmd1 == "end" or cmd1 == "abort") then
+		uespLog.SkillCoef_CaptureWykkyd_CurrentIndex = uespLog.SkillCoef_CaptureWykkyd_EndIndex + 1
+		
+		if (uespLog.SkillCoef_CaptureWykkyd_IsWorking) then
+			uespLog.SkillCoef_CaptureWykkyd_IsWorking = false
+			uespLog.Msg("Stopped saving skill data using Wykkyd's sets...")
+		end
 	else
 		uespLog.Msg("Saves and calculates coefficients for all skills the character knows. Note that the saved skill data is *not* saved when you /reloadui or logout.")
 		uespLog.Msg("To use use the 'save' command with at least 3 different sets of character stat (spell damage/magicka or weapon damage/stamina) and then use the 'calc' command.")
@@ -58,7 +66,6 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		uespLog.Msg(".     /usc status               Current status of saved skill data")
 		uespLog.Msg(".     /usc clear                 Resets the saved skill data")
 		uespLog.Msg(".     /usc savewyk [prefix] [start] [end]  Saves skill data using Wykkyd's Outfitter. For example: '/usc savewyk Test 1 9' would try to load the sets 'Test1'...'Test10' and save the skill data for each of them.")
-		
 	end
 
 end
@@ -66,15 +73,62 @@ end
 SLASH_COMMANDS["/usc"] = SLASH_COMMANDS["/uespskillcoef"]
 
 
-uespLog.SkillCoef_CaptureWykkyd_Prefix = "SkillCoef"
-uespLog.SkillCoef_CaptureWykkyd_StartIndex = 1
-uespLog.SkillCoef_CaptureWykkyd_EndIndex = 5
-uespLog.SkillCoef_CaptureWykkyd_CurrentIndex = 5
-uespLog.SkillCoef_CaptureWykkyd_TimeDelayLoadSet = 5000
+function uespLog.LogSkillCoefData()
+	local logData = {}
+	
+	logData.event = "SkillCoef::Start"
+	logData.numSkills = uespLog.SkillCoefAbilityCount
+	logData.numPoints = uespLog.SkillCoefDataPointCount
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
+	for name, abilityData in pairs(uespLog.SkillCoefAbilityData) do
+		uespLog.LogSkillCoefDataSkill(name, abilityData)
+	end
+	
+	logData.event = "SkillCoef::End"
+	uespLog.AppendDataToLog("all", logData)
+end
+
+
+function uespLog.LogSkillCoefDataSkill(skillName, abilityData)
+	local logData = {}
+	
+	if (not abilityData.isValid or abilityData.result == nil or #(abilityData.result) == 0) then
+		return
+	end
+	
+	logData.event = "SkillCoef"
+	logData.desc = abilityData.newDesc
+	logData.numVars = abilityData.numVars
+	logData.name = skillName
+	logData.abilityId = abilityData.id
+	
+	for i,result in ipairs(abilityData.result) do
+		local doesVary = abilityData.numbersVary[i]
+		local a  = string.format("%.5f", result.a)
+		local b  = string.format("%.5f", result.b)
+		local c  = string.format("%.5f", result.c)
+		local R2 = string.format("%.5f", result.R2)
+		local index = abilityData.numbersIndex[i]
+		
+		if (doesVary) then
+			logData['a'..tostring(index)] = a
+			logData['b'..tostring(index)] = b
+			logData['c'..tostring(index)] = c
+			logData['R'..tostring(index)] = R2
+		end
+	end	
+	
+	uespLog.AppendDataToLog("all", logData)
+end
 
 
 function uespLog.CaptureSkillCoefDataWykkyd(setPrefix, startIndex, endIndex)
 
+	if (uespLog.SkillCoef_CaptureWykkyd_IsWorking) then
+		return false
+	end
+	
 	if (setPrefix == nil or setPrefix == "" or startIndex == nil or endIndex == nil) then
 		uespLog.Msg("Error: Missing required parameters! Command format is:")
 		uespLog.Msg(".     /usc savewyk [prefix] [start] [end]")
@@ -105,6 +159,7 @@ function uespLog.CaptureSkillCoefDataWykkyd(setPrefix, startIndex, endIndex)
 	
 	uespLog.Msg("Starting skill data capture using Wykkyd's sets "..tostring(startSet).."..."..tostring(endSet))
 	
+	uespLog.SkillCoef_CaptureWykkyd_IsWorking = true
 	uespLog.CaptureNextSkillCoefDataWykkyd_LoadSet()
 
 	return true
@@ -113,10 +168,15 @@ end
 
 function uespLog.CaptureNextSkillCoefDataWykkyd_LoadSet()
 
+	if (not uespLog.SkillCoef_CaptureWykkyd_IsWorking) then
+		return
+	end
+
 	if (uespLog.SkillCoef_CaptureWykkyd_CurrentIndex > uespLog.SkillCoef_CaptureWykkyd_EndIndex) then
 		local startSet = uespLog.SkillCoef_CaptureWykkyd_Prefix .. tostring(uespLog.SkillCoef_CaptureWykkyd_StartIndex)
 		local endSet = uespLog.SkillCoef_CaptureWykkyd_Prefix .. tostring(uespLog.SkillCoef_CaptureWykkyd_EndIndex)
 		uespLog.Msg("Finished skill data capture using Wykkyd's sets "..tostring(startSet).."..."..tostring(endSet))
+		uespLog.SkillCoef_CaptureWykkyd_IsWorking = false
 		return
 	end
 	
@@ -154,13 +214,12 @@ function uespLog.ShowSkillCoef(skillName)
 		return false
 	end
 	
-	
 	if (not coefData.isValid or coefData.result == nil) then
 		uespLog.Msg("Coefficient data for skill '"..tostring(skillName).."' is not valid!")
 		return false
 	end
 	
-	uespLog.Msg("Skill '"..tostring(skillName).."' has coefficient data for "..tostring(coefData.numVars).." variable(s):")
+	uespLog.Msg("Skill '"..tostring(skillName).." ("..tostring(coefData.id)..")' has coefficient data for "..tostring(coefData.numVars).." variable(s):")
 	
 	for i,result in ipairs(coefData.result) do
 		local doesVary = coefData.numbersVary[i]
@@ -184,6 +243,8 @@ end
 function uespLog.ClearSkillCoefData()
 	uespLog.SkillCoefData = {}
 	uespLog.SkillCoefAbilityData = {}
+	uespLog.SkillCoefAbilityCount = 0
+	uespLog.SkillCoefDataPointCount = 0
 end
 
 
@@ -230,6 +291,7 @@ function uespLog.CaptureSkillCoefData()
 	end
 	
 	uespLog.DebugMsg(".     Saved data for "..tostring(skillCount).." character skills!")
+	uespLog.SkillCoefDataPointCount = uespLog.SkillCoefDataPointCount + 1
 	return true
 end
 
@@ -263,6 +325,7 @@ function uespLog.SaveSkillCoefData(abilityId)
 			["numbersVary"] = {},
 			["numbersIndex"] = {},
 		}
+		uespLog.SkillCoefAbilityCount = uespLog.SkillCoefAbilityCount + 1
 	end
 	
 	local i = #(uespLog.SkillCoefData[name])
@@ -317,6 +380,7 @@ function uespLog.ComputeSkillCoef()
 	end
 	
 	uespLog.ReplaceSkillDescriptions()
+	uespLog.LogSkillCoefData()
 	return true
 end
 
@@ -407,6 +471,11 @@ function uespLog.ComputeSkillCoefSkill(name, skillsData)
 			local result = uespLog.SkillCoefComputeMatrixMultAB(coefData.Ainv, B)
 			result.R2 = uespLog.SkillCoefComputeR2(result, skillsData, abilityData, i)
 			table.insert(coefData.result, result)
+			
+			if (not uespLog.isFinite(result.a) or not uespLog.isFinite(result.b) or not uespLog.isFinite(result.c) or not uespLog.isFinite(result.R2)) then
+				coefData.isValid = false
+			end
+			
 		else
 			table.insert(coefData.result, { ['a']=0, ['b']=0, ['c']=skillsData[1].numbers[i], ['R2']=1 } )
 		end
@@ -652,5 +721,8 @@ function uespLog.ReplaceSkillDescriptionAbility(abilityData)
 end
 
 
+function uespLog.isFinite(number)
+	return number > -math.huge and number < math.huge 
+end
 
 

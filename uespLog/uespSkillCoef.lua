@@ -381,6 +381,11 @@ end
 function uespLog.ComputeSkillCoef()
 	uespLog.ParseSkillCoefData()
 	
+	if (uespLog.SkillCoefDataPointCount < 3) then
+		uespLog.Msg("Error: You need a minimum of 3 data points to compute skill coefficients.")
+		return false
+	end
+	
 	for name, skillsData in pairs(uespLog.SkillCoefData) do
 	
 		if (uespLog.CheckSkillCoef(name, skillsData)) then

@@ -25,5 +25,6 @@ uespLog.lua
 uespLogTradeData.lua
 uespLogUI.lua
 uespLogCharData.lua
+uespSkillCoef.lua
 uespLog.xml
 uespdescription.lua

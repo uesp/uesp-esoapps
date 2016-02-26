@@ -8645,8 +8645,10 @@ SLASH_COMMANDS["/ulb"] = SLASH_COMMANDS["/uesplorebook"]
 
 function uespLog.SplitCommands(cmd)
 	local cmds = {}
+	
 	for word in cmd:gmatch("%S+") do table.insert(cmds, word) end
-	return cmds
+	
+	return cmds, (cmds[1] or ""):lower()
 end
 
 
@@ -8705,6 +8707,28 @@ function uespLog.implode(tab, delim)
 		
         output = output .. tostring(v)
 		isFirst = false
+    end
+	
+    return output
+end
+
+
+function uespLog.implodeStart(tab, delim, startIndex)
+	local output = ""
+	local isFirst = true
+	local strDelim = tostring(delim)
+	
+    for i, v in ipairs(tab) do
+	
+		if (i >= startIndex) then
+		
+			if (not isFirst) then
+				output = output .. strDelim
+			end
+			
+			output = output .. tostring(v)
+			isFirst = false
+		end
     end
 	
     return output

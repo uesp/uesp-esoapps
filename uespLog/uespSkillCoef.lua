@@ -23,7 +23,7 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 	
 	if (cmd1 == "save") then
 		result = uespLog.CaptureSkillCoefData()
-		
+
 		if (result) then
 			uespLog.Msg("Successfully captured skill data for current character/equipment.")
 		else
@@ -67,7 +67,8 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		uespLog.Msg(".     /usc ...                      Short form")
 		uespLog.Msg(".     /usc save                 Save current skill data")
 		uespLog.Msg(".     /usc calc                  Calculate coefficients using saved data")
-		uespLog.Msg(".     /usc coef [name]      Shows the coefficients for the given skill")
+		uespLog.Msg(".     /usc coef [name]      Shows the coefficients for the given skill name")
+		uespLog.Msg(".     /usc coef [id]         Shows the coefficients for the given skill ID")
 		uespLog.Msg(".     /usc status               Current status of saved skill data")
 		uespLog.Msg(".     /usc clear                 Resets the saved skill data")
 		uespLog.Msg(".     /usc savewyk [prefix] [start] [end]  Saves skill data using Wykkyd's Outfitter. For example: '/usc savewyk Test 1 9' would try to load the sets 'Test1'...'Test10' and save the skill data for each of them.")
@@ -80,14 +81,38 @@ SLASH_COMMANDS["/usc"] = SLASH_COMMANDS["/uespskillcoef"]
 
 function uespLog.LogSkillCoefData()
 	local logData = {}
+	local rowData = {}
+	
+	uespLog.ClearSavedVarSection("tempData")
+	
+	table.insert(rowData, "Skill Name")
+	table.insert(rowData, "ID")
+	table.insert(rowData, "NumVars")
+	table.insert(rowData, "Description")
+	table.insert(rowData, "a1")
+	table.insert(rowData, "b1")
+	table.insert(rowData, "c1")
+	table.insert(rowData, "R1")
+	table.insert(rowData, "a2")
+	table.insert(rowData, "b2")
+	table.insert(rowData, "c2")
+	table.insert(rowData, "R2")
+	table.insert(rowData, "a3")
+	table.insert(rowData, "b3")
+	table.insert(rowData, "c3")
+	table.insert(rowData, "R3")
+	
+	local data = uespLog.savedVars.tempData.data
+	data[#data+1] = uespLog.implode(rowData, ", ")
 	
 	logData.event = "SkillCoef::Start"
 	logData.numSkills = uespLog.SkillCoefAbilityCount
 	logData.numPoints = uespLog.SkillCoefDataPointCount
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
-	for name, abilityData in pairs(uespLog.SkillCoefAbilityData) do
-		uespLog.LogSkillCoefDataSkill(name, abilityData)
+	for abilityId, abilityData in pairs(uespLog.SkillCoefAbilityData) do
+		uespLog.LogSkillCoefDataSkill(abilityData)
+		uespLog.LogSkillCoefDataSkillCsv(abilityData)
 	end
 	
 	logData.event = "SkillCoef::End"
@@ -95,7 +120,7 @@ function uespLog.LogSkillCoefData()
 end
 
 
-function uespLog.LogSkillCoefDataSkill(skillName, abilityData)
+function uespLog.LogSkillCoefDataSkill(abilityData)
 	local logData = {}
 	
 	if (not abilityData.isValid or abilityData.result == nil or #(abilityData.result) == 0) then
@@ -105,7 +130,7 @@ function uespLog.LogSkillCoefDataSkill(skillName, abilityData)
 	logData.event = "SkillCoef"
 	logData.desc = abilityData.newDesc
 	logData.numVars = abilityData.numVars
-	logData.name = skillName
+	logData.name = abilityData.name
 	logData.abilityId = abilityData.id
 	
 	for i,result in ipairs(abilityData.result) do
@@ -125,6 +150,39 @@ function uespLog.LogSkillCoefDataSkill(skillName, abilityData)
 	end	
 	
 	uespLog.AppendDataToLog("all", logData)
+end
+
+
+function uespLog.LogSkillCoefDataSkillCsv(abilityData)
+	local rowData = {}
+	
+	if (not abilityData.isValid or abilityData.result == nil or #(abilityData.result) == 0) then
+		return
+	end
+	
+	table.insert(rowData, "'"..abilityData.name.."'")
+	table.insert(rowData, abilityData.id)
+	table.insert(rowData, abilityData.numVars)
+	table.insert(rowData, "'"..abilityData.newDesc.."'")
+	
+	for i,result in ipairs(abilityData.result) do
+		local doesVary = abilityData.numbersVary[i]
+		local a  = string.format("%.5f", result.a)
+		local b  = string.format("%.5f", result.b)
+		local c  = string.format("%.5f", result.c)
+		local R2 = string.format("%.5f", result.R2)
+		local index = abilityData.numbersIndex[i]
+		
+		if (doesVary) then
+			table.insert(rowData, a)
+			table.insert(rowData, b)
+			table.insert(rowData, c)
+			table.insert(rowData, R2)
+		end
+	end	
+	
+	local data = uespLog.savedVars.tempData.data
+	data[#data+1] = uespLog.implode(rowData, ", ")
 end
 
 
@@ -211,25 +269,31 @@ function uespLog.CaptureNextSkillCoefDataWykkyd_SaveData()
 end
 	
 
-function uespLog.ShowSkillCoef(skillName)
+function uespLog.ShowSkillCoef(name)
+	local abilityId = tonumber(name)
+	local coefData = nil
 
-	if (skillName == nil or skillName == "") then
+	if (name == nil or name == "") then
 		return false
 	end
 	
-	local coefData = uespLog.SkillCoefAbilityData[skillName]
+	if (abilityId ~= nil) then
+		coefData = uespLog.SkillCoefAbilityData[abilityId]
+	else
+		coefData = uespLog.FindSkillAbilityData(name)
+	end
 	
 	if (coefData == nil) then
-		uespLog.Msg("Skill name '"..tostring(skillName).."' does not exist in coefficient data!")
+		uespLog.Msg("Skill #"..tostring(name).." does not exist in coefficient data!")
 		return false
 	end
 	
 	if (not coefData.isValid or coefData.result == nil) then
-		uespLog.Msg("Coefficient data for skill '"..tostring(skillName).."' is not valid!")
+		uespLog.Msg("Coefficient data for skill #"..tostring(name).." is not valid!")
 		return false
 	end
 	
-	uespLog.Msg("Skill '"..tostring(skillName).." ("..tostring(coefData.id)..")' has coefficient data for "..tostring(coefData.numVars).." variable(s):")
+	uespLog.Msg("Skill '"..tostring(coefData.name).." ("..tostring(coefData.id)..")' has coefficient data for "..tostring(coefData.numVars).." variable(s):")
 	
 	for i,result in ipairs(coefData.result) do
 		local doesVary = coefData.numbersVary[i]
@@ -247,6 +311,18 @@ function uespLog.ShowSkillCoef(skillName)
 	uespLog.Msg(tostring(coefData.newDesc))
 	
 	return true
+end
+
+
+function uespLog.FindSkillAbilityData(name)
+
+	for abilityId, abilityData in pairs(uespLog.SkillCoefAbilityData) do
+		if (abilityData.name == name) then
+			return abilityData
+		end
+	end
+	
+	return nil
 end
 
 
@@ -319,12 +395,12 @@ function uespLog.SaveSkillCoefData(abilityId)
 		return false
 	end
 	
-	if (uespLog.SkillCoefData[name] == nil) then
-		uespLog.SkillCoefData[name] = {}
+	if (uespLog.SkillCoefData[abilityId] == nil) then
+		uespLog.SkillCoefData[abilityId] = {}
 	end
 	
-	if (uespLog.SkillCoefAbilityData[name] == nil) then
-		uespLog.SkillCoefAbilityData[name] = 
+	if (uespLog.SkillCoefAbilityData[abilityId] == nil) then
+		uespLog.SkillCoefAbilityData[abilityId] = 
 		{
 			["name"] = name,
 			["id"]   = abilityId,
@@ -338,9 +414,9 @@ function uespLog.SaveSkillCoefData(abilityId)
 		uespLog.SkillCoefAbilityCount = uespLog.SkillCoefAbilityCount + 1
 	end
 	
-	local i = #(uespLog.SkillCoefData[name])
+	local i = #(uespLog.SkillCoefData[abilityId])
 	
-	uespLog.SkillCoefData[name][i+1] = 
+	uespLog.SkillCoefData[abilityId][i+1] = 
 	{
 		["mag"]  = GetPlayerStat(STAT_MAGICKA_MAX),
 		["sta"]  = GetPlayerStat(STAT_STAMINA_MAX),
@@ -355,15 +431,15 @@ end
 
 function uespLog.ParseSkillCoefData()
 
-	for name, skillsData in pairs(uespLog.SkillCoefData) do
-		uespLog.ParseSkillCoefDataSkill(name, skillsData)
+	for abilityId, skillsData in pairs(uespLog.SkillCoefData) do
+		uespLog.ParseSkillCoefDataSkill(abilityId, skillsData)
 	end
 	
 	return true
 end
 
 
-function uespLog.ParseSkillCoefDataSkill(name, skillsData)
+function uespLog.ParseSkillCoefDataSkill(abilityId, skillsData)
 
 	for i,data in ipairs(skillsData) do
 		local iter = string.gmatch(data['desc'], "%d+\[.]?%d*")
@@ -386,10 +462,10 @@ function uespLog.ComputeSkillCoef()
 		return false
 	end
 	
-	for name, skillsData in pairs(uespLog.SkillCoefData) do
+	for abilityId, skillsData in pairs(uespLog.SkillCoefData) do
 	
-		if (uespLog.CheckSkillCoef(name, skillsData)) then
-			uespLog.ComputeSkillCoefSkill(name, skillsData)
+		if (uespLog.CheckSkillCoef(abilityId, skillsData)) then
+			uespLog.ComputeSkillCoefSkill(abilityId, skillsData)
 		end
 		
 	end
@@ -400,9 +476,9 @@ function uespLog.ComputeSkillCoef()
 end
 
 
-function uespLog.CheckSkillCoef(name, skillsData)
+function uespLog.CheckSkillCoef(abilityId, skillsData)
 	local numbersCheck = {}
-	local abilityData = uespLog.SkillCoefAbilityData[name]
+	local abilityData = uespLog.SkillCoefAbilityData[abilityId]
 	
 	abilityData.numVars = 0
 	abilityData.numbersVary = {}
@@ -441,7 +517,7 @@ function uespLog.CheckSkillCoef(name, skillsData)
 end
 
 
-function uespLog.ComputeSkillCoefSkill(name, skillsData)
+function uespLog.ComputeSkillCoefSkill(abilityId, skillsData)
     -- z = ax + by + c
 	-- x = Mag/Sta
 	-- y = SD/WD
@@ -449,7 +525,7 @@ function uespLog.ComputeSkillCoefSkill(name, skillsData)
 	-- X = a, b, c
 	-- A X = B
 	-- X = Ainv B	
-	local abilityData = uespLog.SkillCoefAbilityData[name]
+	local abilityData = uespLog.SkillCoefAbilityData[abilityId]
 	
 	abilityData.data = {}
 	abilityData.numPoints = #skillsData
@@ -712,7 +788,7 @@ end
 
 function uespLog.ReplaceSkillDescriptions()
 	
-	for name, abilityData in pairs(uespLog.SkillCoefAbilityData) do
+	for abilityId, abilityData in pairs(uespLog.SkillCoefAbilityData) do
 		uespLog.ReplaceSkillDescriptionAbility(abilityData)
 	end
 	

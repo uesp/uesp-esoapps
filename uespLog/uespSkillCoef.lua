@@ -44,6 +44,11 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		uespLog.ShowSkillCoef(skillName)
 	elseif (cmd1 == "status") then
 		uespLog.Msg("There are "..tostring(uespLog.SkillCoefAbilityCount).." skills with "..tostring(uespLog.SkillCoefDataPointCount).." data points for calculating skill coefficients.")
+		
+		if (uespLog.SkillCoef_CaptureWykkyd_IsWorking) then
+			local setName = uespLog.SkillCoef_CaptureWykkyd_Prefix .. uespLog.SkillCoef_CaptureWykkyd_CurrentIndex
+			uespLog.Msg(".     Currently saving skill data for Wykkyd's set "..tostring(setName))
+		end
 	elseif (cmd1 == "clear" or cmd1 == "reset") then
 		uespLog.ClearSkillCoefData()
 	elseif (cmd1 == "savewyk") then
@@ -188,6 +193,11 @@ end
 
 
 function uespLog.CaptureNextSkillCoefDataWykkyd_SaveData()
+
+	if (not uespLog.SkillCoef_CaptureWykkyd_IsWorking) then
+		return
+	end
+	
 	local setName = tostring(uespLog.SkillCoef_CaptureWykkyd_Prefix) .. tostring(uespLog.SkillCoef_CaptureWykkyd_CurrentIndex)
 
 	if (uespLog.CaptureSkillCoefData()) then

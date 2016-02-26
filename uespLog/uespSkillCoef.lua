@@ -144,10 +144,10 @@ function uespLog.LogSkillCoefDataSkill(abilityData)
 	
 	for i,result in ipairs(abilityData.result) do
 		local doesVary = abilityData.numbersVary[i]
-		local a  = string.format("%.5f", result.a)
-		local b  = string.format("%.5f", result.b)
-		local c  = string.format("%.5f", result.c)
-		local R2 = string.format("%.5f", result.R2)
+		local a  = string.format("%.7f", result.a)
+		local b  = string.format("%.7f", result.b)
+		local c  = string.format("%.7f", result.c)
+		local R2 = string.format("%.7f", result.R2)
 		local index = abilityData.numbersIndex[i]
 		
 		if (doesVary) then
@@ -176,10 +176,10 @@ function uespLog.LogSkillCoefDataSkillCsv(abilityData)
 	
 	for i,result in ipairs(abilityData.result) do
 		local doesVary = abilityData.numbersVary[i]
-		local a  = string.format("%.5f", result.a)
-		local b  = string.format("%.5f", result.b)
-		local c  = string.format("%.5f", result.c)
-		local R2 = string.format("%.5f", result.R2)
+		local a  = string.format("%.7f", result.a)
+		local b  = string.format("%.7f", result.b)
+		local c  = string.format("%.7f", result.c)
+		local R2 = string.format("%.7f", result.R2)
 		local index = abilityData.numbersIndex[i]
 		
 		if (doesVary) then

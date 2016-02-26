@@ -7,7 +7,9 @@
 uespLog.SkillCoefData = {}
 uespLog.SkillCoefAbilityData = {}
 uespLog.SkillCoefAbilityCount = 0
+uespLog.SkillCoefNumValidCoefCount = 0
 uespLog.SkillCoefDataPointCount = 0
+uespLog.SkillCoefDataIsCalculated = false
 
 uespLog.SkillCoef_CaptureWykkyd_Prefix = "SkillCoef"
 uespLog.SkillCoef_CaptureWykkyd_StartIndex = 1
@@ -43,7 +45,14 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		local skillName = uespLog.implodeStart(cmds, " ", 2)
 		uespLog.ShowSkillCoef(skillName)
 	elseif (cmd1 == "status") then
+		local calcStatus = "not "
+		
+		if (uespLog.SkillCoefDataIsCalculated) then
+			calcStatus = ""
+		end
+		
 		uespLog.Msg("There are "..tostring(uespLog.SkillCoefAbilityCount).." skills with "..tostring(uespLog.SkillCoefDataPointCount).." data points for calculating skill coefficients.")
+		uespLog.Msg("Skill data is "..calcStatus.."calculated with "..tostring(uespLog.SkillCoefNumValidCoefCount).." skill variables with valid coefficients.")
 		
 		if (uespLog.SkillCoef_CaptureWykkyd_IsWorking) then
 			local setName = uespLog.SkillCoef_CaptureWykkyd_Prefix .. uespLog.SkillCoef_CaptureWykkyd_CurrentIndex
@@ -331,6 +340,8 @@ function uespLog.ClearSkillCoefData()
 	uespLog.SkillCoefAbilityData = {}
 	uespLog.SkillCoefAbilityCount = 0
 	uespLog.SkillCoefDataPointCount = 0
+	uespLog.SkillCoefNumValidCoefCount = 0
+	uespLog.SkillCoefDataIsCalculated = false
 end
 
 
@@ -472,6 +483,7 @@ function uespLog.ComputeSkillCoef()
 	
 	uespLog.ReplaceSkillDescriptions()
 	uespLog.LogSkillCoefData()
+	uespLog.SkillCoefDataIsCalculated = true
 	return true
 end
 
@@ -565,6 +577,8 @@ function uespLog.ComputeSkillCoefSkill(abilityId, skillsData)
 			
 			if (not uespLog.isFinite(result.a) or not uespLog.isFinite(result.b) or not uespLog.isFinite(result.c) or not uespLog.isFinite(result.R2)) then
 				coefData.isValid = false
+			else
+				uespLog.SkillCoefNumValidCoefCount = uespLog.SkillCoefNumValidCoefCount + 1
 			end
 			
 		else

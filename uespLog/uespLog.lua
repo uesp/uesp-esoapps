@@ -3129,6 +3129,8 @@ function uespLog.OnQuestAdvanced (eventCode, journalIndex, questName, isPushed, 
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
 	uespLog.DebugLogMsg("Quest advanced "..questName)
+	
+	uespLog.CheckQuestItems(journalIndex, questName)
 end
 
 
@@ -8943,7 +8945,8 @@ function uespLog.CheckQuestItems(journalIndex, questName)
 	local numTools = GetQuestToolCount(journalIndex)
 	local stepIndex
 	local condIndex
-	local loggedItemLinks = {}
+	
+	uespLog.DebugExtraMsg("Checking quest items for quest "..tostring(questName).." ("..tostring(journalIndex)..")")
 		
 	for stepIndex = 1, numSteps do
 		local numConditions = GetJournalQuestNumConditions(journalIndex, stepIndex)
@@ -8951,9 +8954,8 @@ function uespLog.CheckQuestItems(journalIndex, questName)
 		for condIndex = 1, numConditions do
 			local itemLink = GetQuestItemLink(journalIndex, stepIndex, condIndex)
 			
-			if (itemLink ~= "" and not loggedItemLinks[itemLink]) then
+			if (itemLink ~= "") then
 				uespLog.LogQuestItemLink(journalIndex, stepIndex, condIndex, questName)
-				loggedItemLinks[itemLink] = true
 			end
 		end
 	end
@@ -8961,9 +8963,8 @@ function uespLog.CheckQuestItems(journalIndex, questName)
 	for toolIndex = 1, numTools do
 		local itemLink = GetQuestToolLink(journalIndex, toolIndex)
 		
-		if (itemLink ~= "" and not loggedItemLinks[itemLink]) then
+		if (itemLink ~= "") then
 			uespLog.LogQuestToolItemLink(journalIndex, toolIndex, questName)
-			loggedItemLinks[itemLink] = true
 		end
 	end
 

@@ -358,7 +358,7 @@
 --			- Added the "/uespskillpoints" or "/usp" that shows the total number of skill points used and
 --			  acquired on the character.
 --			- Quest item links are now logged (this is currently the only way to get information about quest items).
---			- Removed the "Quest conversation updated" log message from normal output.
+--			- Removed the "Quest conversation updated" and "Updated conversation" log messages from normal output.
 --
 --		***BETA: Skill Coefficients***
 --			- Added basic skill coefficient mining with "/uespskillcoef". The equation for the base skill tooltip is
@@ -2479,7 +2479,7 @@ function uespLog.OnConversationUpdated (eventCode, conversationBodyText, convers
 
 	local logData = { }
 	
-	uespLog.DebugMsg("UESP::Updated conversation START...")
+	uespLog.DebugExtraMsg("UESP::Updated conversation START...")
 
 	logData.event = "ConversationUpdated"
 	logData.bodyText = conversationBodyText
@@ -2496,7 +2496,7 @@ function uespLog.OnConversationUpdated (eventCode, conversationBodyText, convers
 		uespLog.AppendDataToLog("all", logData)
 	end
 	
-	uespLog.DebugMsg("UESP::Updated conversation...")
+	uespLog.DebugExtraMsg("UESP::Updated conversation...")
 	
 	uespLog.lastConversationOption.Text = ""
 	uespLog.lastConversationOption.Type = ""

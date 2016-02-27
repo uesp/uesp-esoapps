@@ -172,6 +172,7 @@ function uespLog.CreateBankData ()
 	
 	bankData.IsBank = 1
 	bankData.Size = GetBagSize(BAG_BANK)
+	bankData.UsedSize = GetNumBagUsedSlots(BAG_BANK)
 	bankData.TimeStamp = GetTimeStamp()
 	bankData.Gold = GetBankedMoney()
 	bankData.Telvar = GetBankedCurrencyAmount(CURT_TELVAR_STONES)

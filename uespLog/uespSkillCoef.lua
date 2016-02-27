@@ -80,7 +80,8 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		uespLog.Msg(".     /usc coef [id]         Shows the coefficients for the given skill ID")
 		uespLog.Msg(".     /usc status               Current status of saved skill data")
 		uespLog.Msg(".     /usc clear                 Resets the saved skill data")
-		uespLog.Msg(".     /usc savewyk [prefix] [start] [end]  Saves skill data using Wykkyd's Outfitter. For example: '/usc savewyk Test 1 9' would try to load the sets 'Test1'...'Test10' and save the skill data for each of them.")
+		uespLog.Msg(".     /usc savewyk [prefix] [start] [end]  Saves skill data using Wykkyd's Outfitter. For example: '/usc savewyk Test 1 9' would try to load the sets 'Test1'...'Test9' and save the skill data for each of them.")
+		uespLog.Msg(".     /usc stop                  Stops a Wykkyd item set save in progress")
 	end
 
 end

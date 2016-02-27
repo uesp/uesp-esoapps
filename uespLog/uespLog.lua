@@ -360,6 +360,81 @@
 --			- Quest item links are now logged (this is currently the only way to get information about quest items).
 --			- Removed the "Quest conversation updated" log message from normal output.
 --
+--		***BETA: Skill Coefficients***
+--			- Added basic skill coefficient mining with "/uespskillcoef". The equation for the base skill tooltip is
+--					BaseTooltip = A * Stat + B * Power + C
+--			  where "Stat" is Magicka/Stamina and Power is Spell/Weapon Damage. The A/B/C parameters are not exposed
+--			  in the game's API so must be calculated indirectly. The usual way to calculate these parameters
+--			  is to record several different Tooltip/Stat/Power value combinations and do a "best fit" calculation.
+--			  The "/uespskillcoef" command encapsulates all the math so all you have to do is provide several
+--			  different Stat/Power combinations and "/uespskillcoef" will return the A/B/C parameters along with
+--			  an "R" parameter (R-squared) indicating how accurate the fit is. An R value of "1" indicates a perfect
+--			  fit with lower values indicates a worse fit.
+--			   
+--			  The /uespsavecoef (or /usc) command has the following parameters:
+--						/usc save          	Save current skill data for the character. Note that only purchased skills
+--											will be saved. All 3 versions of each skill will be saved ((original and two morphs).
+--											Note that logging out or "/reloadui" will clear the saved skill data.
+--						/usc calc          	Calculate coefficients using previously saved skill data and store
+--											coefficient data in the log. The "tempData" section of the saved
+--											variables will also contain a CSV version of the coefficient data.
+--						/usc coef [name]   	Shows the coefficients for the given skill name.
+--						/usc coef [id]     	Shows the coefficients for the given skill ID.
+--						/usc status        	Current status of saved skill data.
+--						/usc clear         	Resets the saved skill data. Note that logging out or "/reloadui" will
+--											also clear the saved skill data.
+--						/usc savewyk [prefix] [start] [end]  
+--											Saves skill data using Wykkyd's Outfitter add-on. 
+--													ex: /usc savewyk Test 1 9
+--											would try to load the sets 'Test1'...'Test9' and save the skill data
+--											for each of them.
+--						/usc stop           Stops a Wykkyd item set save in progress.
+--
+--			   The quality of the skill coefficients depend on the number and variety of stat/power combinations
+--			   saved with "/usc save". A minimum of 3 saved sets are needed but in general you want many more.
+--			   Ideally you want to vary all stats (Stamina, Magicka, Spell Damage, Weapon Damage) as much as
+--			   possible to get more accurate results.
+--
+--			   The general procedure to record/calculate skill coefficients is:
+--					1. Equip/unequip items
+--					2. Run "/usc save"
+--					3. Repeat 1. & 2. for 10 or more different stat combinations
+--					4. Run "/usc calc"
+--					5. Run "/reloadui" or logout to update the saved variables
+--					6. Upload the saved variable file or copy/paste the coefficient data from the "tempData" section.
+--	
+--			  Uploaded and parsed skill coefficient data can be found at http://esolog.uesp.net/viewSkillCoef.php		   
+--
+--		***BETA: Offline Character Data***
+--			- Expanding on the recent "Build Data" uespLog now has the option to automatically record more character
+--			  data in order to view it offline. By default this feature is disabled. It can be enabled by the command:
+--						/uespchardata on   		(or	/ucd on)
+--			  When enabled character data will be saved whenever logging out, quitting, UI reloads, and every time
+--			  you zone (minimum period of 1 minute between zone saves). Once uploaded the characters can be viewed
+--			  at: http://esochars.uesp.net 
+--
+--						/ucd							Short command name
+--						/uespchardata [on/off]          Turn automatic saving on/off
+--						/uespchardata save              Manually save the character data
+--						/uespchardata password [text]   Change the character data password
+--						/uespchardata password clear    Set no password
+--	
+--			  PASSWORDS: You can and should set a character data password with the command:
+--						/uespchardata password [text]
+--			  By default there is no password which means anyone can potentially upload and overwrite your character 
+--			  data. If a password is set then only uploads with that password will be permitted. You can clear a
+--			  set password with "/uespchardata password clear".
+--
+--			  Data saved by the offline character data system includes:
+--					* All skills/abilities/champion points and character stats
+--					* All characters on account (you must login with each character to save it)
+--					* Equipped items
+--					* Character and bank inventory
+--					* View combined account wide inventory of all characters + bank
+--					* Crafting motifs learned
+--					* Crafting traits researched
+--					* Current status of crafting research (automatically updates research finish date/time)
+--
 
 
 --	GLOBAL DEFINITIONS

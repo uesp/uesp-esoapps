@@ -373,7 +373,7 @@
 --			   
 --			  The /uespsavecoef (or /usc) command has the following parameters:
 --						/usc save          	Save current skill data for the character. Note that only purchased skills
---											will be saved. All 3 versions of each skill will be saved ((original and two morphs).
+--											will be saved. All 3 versions of each skill will be saved (original and two morphs).
 --											Note that logging out or "/reloadui" will clear the saved skill data.
 --						/usc calc          	Calculate coefficients using previously saved skill data and store
 --											coefficient data in the log. The "tempData" section of the saved

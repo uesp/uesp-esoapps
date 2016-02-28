@@ -8717,7 +8717,7 @@ end
 
 
 function uespLog.EventLoreBookLearnedSkillExperience(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, skillType, skillIndex, rank, previousXP, currentXP)
-	uespLog.DebugMsg("LoreBookSkillExp Learned: "..tostring(guildReputationIndex))
+	uespLog.DebugExtraMsg("LoreBookSkillExp Learned: "..tostring(guildReputationIndex))
 	return uespLog.origLoreBookLearnedSkillExpFunction(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, skillType, skillIndex, rank, previousXP, currentXP)
 end
 

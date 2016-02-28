@@ -425,7 +425,7 @@ function uespLog.OnZoneChanged(eventCode, zoneName, subZoneName, newSubzone, zon
 	
 	local diffTime = GetTimeStamp() - uespLog.charDataLastSaveTimestamp
 	
-	if (uespLog.GetAutoSaveCharData() and diffTime > uespLog.CHARDATA_MINTIMESTAMP_DIFF) then
+	if (uespLog.GetAutoSaveCharData() and uespLog.GetAutoSaveZoneCharData() and diffTime > uespLog.CHARDATA_MINTIMESTAMP_DIFF) then
 		uespLog.SaveCharData()
 	end
 end

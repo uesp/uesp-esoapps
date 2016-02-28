@@ -410,14 +410,18 @@
 --			  data in order to view it offline. By default this feature is disabled. It can be enabled by the command:
 --						/uespchardata on   		(or	/ucd on)
 --			  When enabled character data will be saved whenever logging out, quitting, UI reloads, and every time
---			  you zone (minimum period of 1 minute between zone saves). Once uploaded the characters can be viewed
---			  at: http://esochars.uesp.net 
+--			  you zone (minimum period of 1 minute between zone saves). There may be a noticeable delay or pause when
+--			  saving character data on zoning on some machines. You can turn this feature off by the command:
+--						/uespchardata zonesave off
 --
---						/ucd							Short command name
---						/uespchardata [on/off]          Turn automatic saving on/off
---						/uespchardata save              Manually save the character data
---						/uespchardata password [text]   Change the character data password
---						/uespchardata password clear    Set no password
+--			  Once uploaded the characters can be viewed at: http://esochars.uesp.net 
+--
+--						/ucd							  Short command name
+--						/uespchardata [on/off]            Turn automatic saving on/off (default off)
+--						/uespchardata save                Manually save the character data
+--						/uespchardata zonesave [on/off]   Turn automatic saving when zoning on/off (default off)
+--						/uespchardata password [text]     Change the character data password
+--						/uespchardata password clear      Set no password
 --	
 --			  PASSWORDS: You can and should set a character data password with the command:
 --						/uespchardata password [text]
@@ -914,6 +918,7 @@ uespLog.DEFAULT_SETTINGS =
 		},
 		["loreBookMsg"] = true,
 		["autoSaveCharData"] = false,
+		["autoSaveZoneCharData"] = false,
 		["charDataPassword"] = "",
 		["charDataOldPassword"] = "",
 	}
@@ -971,6 +976,30 @@ function uespLog.SetAutoSaveCharData(flag)
 	end
 	
 	uespLog.savedVars.settings.data.autoSaveCharData = flag
+end
+
+
+function uespLog.GetAutoSaveZoneCharData()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.autoSaveZoneCharData == nil) then
+		uespLog.savedVars.settings.data.autoSaveZoneCharData = uespLog.DEFAULT_SETTINGS.autoSaveZoneCharData
+	end
+	
+	return uespLog.savedVars.settings.data.autoSaveZoneCharData
+end
+
+
+function uespLog.SetAutoSaveZoneCharData(flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	uespLog.savedVars.settings.data.autoSaveZoneCharData = flag
 end
 
 
@@ -8687,6 +8716,16 @@ SLASH_COMMANDS["/uespchardata"] = function (cmd)
 	elseif (cmd == 'off') then
 		uespLog.SetAutoSaveCharData(false)
 		uespLog.Msg("UESP::Set auto saving of character data to: "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
+	elseif (cmd == 'zonesave') then
+		cmd2 = string.lower(cmds[2] or "")
+		
+		if (cmd2 == 'on') then
+			uespLog.SetAutoSaveZoneCharData(true)
+		elseif (cmd2 == 'off') then
+			uespLog.SetAutoSaveZoneCharData(false)
+		end
+		
+		uespLog.Msg("UESP::Auto zone saving of character data is "..uespLog.BoolToOnOff(uespLog.GetAutoSaveZoneCharData()) )
 	elseif (cmd == 'password') then
 		uespLog.UpdateCharDataPassword(cmds[2], cmds[3])
 	elseif (cmd == 'save') then
@@ -8699,11 +8738,13 @@ SLASH_COMMANDS["/uespchardata"] = function (cmd)
 		
 	else
 		uespLog.Msg("UESP::Turns on/off the automatic saving of character data. Use the format:")
-		uespLog.Msg(".     /uespchardata [on/off]                   Turn automatic saving on/off")
-		uespLog.Msg(".     /uespchardata save                      Manually save the character data")
-		uespLog.Msg(".     /uespchardata password [text]     Change the character data password")
-		uespLog.Msg(".     /uespchardata password clear    Set no password")
-		uespLog.Msg(".     Automatic saving is currently "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
+		uespLog.Msg(".     /uespchardata [on/off]                     Turn automatic saving on/off")
+		uespLog.Msg(".     /uespchardata save                        Manually save the character data")
+		uespLog.Msg(".     /uespchardata zonesave [on/off]    Turn automatic zone saving on/off")
+		uespLog.Msg(".     /uespchardata password [text]       Change the character data password")
+		uespLog.Msg(".     /uespchardata password clear      Set no password")
+		uespLog.Msg(".          Automatic saving is currently "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
+		uespLog.Msg(".          Automatic saving when zoning is "..uespLog.BoolToOnOff(uespLog.GetAutoSaveZoneCharData()) )
 	end
 		
 end

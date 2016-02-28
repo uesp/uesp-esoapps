@@ -665,6 +665,8 @@ uespLog.lastMoneyGameTime = 0
 uespLog.lastItemLink = ""
 uespLog.lastItemLinks = { }
 uespLog.lastItemLinkUsed = ""
+uespLog.lastItemLinkUsed_BagId = -1
+uespLog.lastItemLinkUsed_SlotIndex = -1
 
 uespLog.researchColor = "00ffff"
 uespLog.timeColor = "00ffff"
@@ -3679,15 +3681,25 @@ function uespLog.OnCraftCompleted (eventCode, craftSkill)
 end
 
 
--- ITEM_SOUND_CATEGORY_FOOTLOCKER
 function uespLog.OnInventoryItemUsed (eventCode, itemSoundCategory)
+	uespLog.OnUseItem(eventCode, uespLog.lastItemLinkUsed_BagId, uespLog.lastItemLinkUsed_SlotIndex, uespLog.lastItemLinkUsed, itemSoundCategory)
+	uespLog.DebugExtraMsg("UESP::OnInventoryItemUsed sound="..tostring(itemSoundCategory))
+end
+
+
+-- Custom event function 
+function uespLog.OnUseItem(eventCode, bagId, slotIndex, itemLink, itemSoundCategory)
 	local logData = { }
+	local itemType = GetItemLinkItemType(itemLink) --ITEMTYPE_CONTAINER
+	
+	uespLog.DebugExtraMsg("UESP::OnUseItem "..tostring(itemLink).."("..tostring(bagId)..","..tostring(slotIndex)..") sound="..tostring(itemSoundCategory))
 
 	if (itemSoundCategory == ITEM_SOUND_CATEGORY_FOOTLOCKER) then
 		logData.event = "OpenFootLocker"
 		logData.sound = itemSoundCategory
+		logData.itemLink = itemLink
 		uespLog.AppendDataToLog("all", logData)
-		uespLog.DebugLogMsg("Footlocker opened")
+		uespLog.DebugLogMsg("Footlocker "..tostring(itemLink).." opened.")
 		
 		uespLog.lastTargetData.action = "opened"
 		local x, y, z, zone = uespLog.GetUnitPosition(unitTag)
@@ -3696,11 +3708,10 @@ function uespLog.OnInventoryItemUsed (eventCode, itemSoundCategory)
 		uespLog.lastTargetData.y = y
 		uespLog.lastTargetData.zone = zone
 		uespLog.lastTargetData.name = "footlocker"
-		
-		return
+	elseif (bagId == BAG_BACKPACK and itemLink ~= nil) then
+		uespLog.OnEatDrinkItem(bagId, slotIndex, itemLink)
 	end
 	
-	uespLog.DebugExtraMsg("UESP::OnInventoryItemUsed sound="..tostring(itemSoundCategory))
 end
 
 
@@ -3715,9 +3726,9 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 		return
 	end
 	
-	if (updateReason == 0 and itemSoundCategory >= 18 and itemSoundCategory <= 19 and not isNewItem) then
-		uespLog.OnEatDrinkItem(bagId, slotIndex, isNewItem, itemSoundCategory, updateReason)
-		return
+	if (updateReason == 0 and itemSoundCategory >= 18 and itemSoundCategory <= 19 and not isNewItem and bagId == BAG_BACKPACK) then
+		--uespLog.OnEatDrinkItem(bagId, slotIndex, isNewItem, itemSoundCategory, updateReason)
+		--return
 	end
 	
 	if (not isNewItem) then
@@ -8894,6 +8905,8 @@ function uespLog.ZO_InventorySlot_DoPrimaryAction(inventorySlot)
 	end
 	
 	uespLog.lastItemLinkUsed = ""
+	uespLog.lastItemLinkUsed_BagId = -1
+	uespLog.lastItemLinkUsed_SlotIndex = -1
 	
 	if (inventorySlot ~= nil) then
 		local bagId = inventorySlot.bagId
@@ -8902,6 +8915,8 @@ function uespLog.ZO_InventorySlot_DoPrimaryAction(inventorySlot)
 		if (bagId ~= nil and slotIndex ~= nil) then
 			local itemLink = GetItemLink(bagId, slotIndex)
 			uespLog.lastItemLinkUsed = itemLink
+			uespLog.lastItemLinkUsed_BagId = bagId
+			uespLog.lastItemLinkUsed_SlotIndex = slotIndex
 		end
 
 	end
@@ -9018,3 +9033,4 @@ function uespLog.LogQuestToolItemLink(journalIndex, toolIndex, questName)
 	itemLink = GetQuestToolLink(journalIndex, toolIndex, LINK_STYLE_BRACKETS)
 	uespLog.DebugMsg("UESP::Logged quest tool item link "..tostring(itemLink))
 end
+

@@ -431,36 +431,22 @@ function uespLog.OnZoneChanged(eventCode, zoneName, subZoneName, newSubzone, zon
 end
 
 
-function uespLog.OnEatDrinkItem(bagId, slotIndex, isNewItem, itemSoundCategory, updateReason)
-	local itemName = GetItemName(bagId, slotIndex)
-	local itemLink = GetItemLink(bagId, slotIndex)
+function uespLog.OnEatDrinkItem(bagId, slotIndex, itemLink)
+	local itemName = GetItemLinkName(itemLink)
 	local itemTypeString = "unknown"
 	local hasAbility, abilityHeader, abilityDescription, cooldown, hasScaling, minLevel, maxLevel, isVeteranRank = GetItemLinkOnUseAbilityInfo(itemLink)
 	local reqLevel = GetItemLinkRequiredLevel(itemLink)
 	local reqVetRank = GetItemLinkRequiredVeteranRank(itemLink)
 	local itemType = GetItemLinkItemType(itemLink)
-	
-		-- Fix the issue of using the last food/drink and having no itemLink left when queried
-	if (itemName == "" and uespLog.lastItemLinkUsed ~= "") then
-		itemLink = uespLog.lastItemLinkUsed
-		itemName = GetItemLinkName(itemLink)
-		hasAbility, abilityHeader, abilityDescription, cooldown, hasScaling, minLevel, maxLevel, isVeteranRank = GetItemLinkOnUseAbilityInfo(itemLink)
-		reqLevel = GetItemLinkRequiredLevel(itemLink)
-		reqVetRank = GetItemLinkRequiredVeteranRank(itemLink)
-		itemType = GetItemLinkItemType(itemLink)
+
+	if (itemName == "" or itemLink == "") then
+		return
 	end
 		
 	if (itemType == 4) then
 		itemTypeString = "Food"
 	elseif (itemType == 12) then
 		itemTypeString = "Drink"
-	elseif (itemName == "") then
-		itemName = ""
-		itemLink = ""
-		itemTypeString = ""
-		abilityDescription = ""
-		reqLevel = 0
-		reqVetRank = 0
 	else
 		return
 	end
@@ -474,7 +460,7 @@ function uespLog.OnEatDrinkItem(bagId, slotIndex, isNewItem, itemSoundCategory, 
 	
 	uespLog.savedVars.charInfo.data.lastFoodEaten = uespLog.charDataLastFoodEaten
 	
-	uespLog.DebugExtraMsg("UESP::You ate/drank "..tostring(itemLink)..", sound "..tostring(itemSoundCategory) )
+	uespLog.DebugMsg("UESP::You ate/drank "..tostring(itemLink) )
 end
 
 

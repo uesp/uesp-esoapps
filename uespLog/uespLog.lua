@@ -366,7 +366,7 @@
 --			- Fixed bug where menu settings were not being displayed the first time you open the add-on's settings menu.
 --
 --		***BETA: Skill Coefficients***
---			- Added basic skill coefficient mining with "/uespskillcoef". The equation for the base skill tooltip is
+--			- Added basic skill coefficient mining with "/uespskillcoef" or "/usc". The equation for the base skill tooltip is
 --					BaseTooltip = A * Stat + B * Power + C
 --			  where "Stat" is Magicka/Stamina and Power is Spell/Weapon Damage. The A/B/C parameters are not exposed
 --			  in the game's API so must be calculated indirectly. The usual way to calculate these parameters

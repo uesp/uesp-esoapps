@@ -7593,7 +7593,15 @@ SLASH_COMMANDS["/uespreset"] = function (cmd)
 		uespLog.SetTotalInspiration(0)
 		uespLog.Msg("UESP::Reset crafting inspiration total")
 	else
-		uespLog.Msg("UESP::Parameter expected...use one of: all, log, globals, achievements, inspiration")
+		uespLog.Msg("UESP::Expected command format is one of")
+		uespLog.Msg(".       /uespreset log                         Collected log information")
+		uespLog.Msg(".       /uespreset builddata               Saved build data")
+		uespLog.Msg(".       /uespreset chardata                Character data")
+		uespLog.Msg(".       /uespreset temp                      Temporary data")
+		uespLog.Msg(".       /uespreset globals                  Mined globals data")
+		uespLog.Msg(".       /uespreset achievements       Mined achievement data")
+		uespLog.Msg(".       /uespreset inspiration             Set crafting inspiration to 0")
+		uespLog.Msg(".       /uespreset all                          All saved data")		
 	end
 
 end

@@ -7,38 +7,31 @@
 }	]]
 
 
-local widgetVersion = 5
+local widgetVersion = 6
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("description", widgetVersion) then return end
 
 local wm = WINDOW_MANAGER
 local tinsert = table.insert
 
-
 local function UpdateValue(control)
 	if control.title then
 		control.title:SetText(control.data.title)
 	end
-	
-	if (control.data.getFunc) then
-		control.data.text = control.data.getFunc()
-		control.desc:SetText(control.data.text)
-	else
-		control.desc:SetText(control.data.text)
-	end
+	control.desc:SetText(control.data.text)
 end
 
-
+local MIN_HEIGHT = 26
 function LAMCreateControl.description(parent, descriptionData, controlName)
-	local control = wm:CreateControl(controlName or descriptionData.reference, parent.scroll or parent, CT_CONTROL)
+	local control = LAM.util.CreateBaseControl(parent, descriptionData, controlName)
+	local isHalfWidth = control.isHalfWidth
+	local width = control:GetWidth()
 	control:SetResizeToFitDescendents(true)
-	local isHalfWidth = descriptionData.width == "half"
+
 	if isHalfWidth then
-		control:SetDimensionConstraints(250, 55, 250, 100)
-		control:SetDimensions(250, 55)
+		control:SetDimensionConstraints(width / 2, MIN_HEIGHT, width / 2, MIN_HEIGHT * 4)
 	else
-		control:SetDimensionConstraints(510, 40, 510, 100)
-		control:SetDimensions(510, 30)
+		control:SetDimensionConstraints(width, MIN_HEIGHT, width, MIN_HEIGHT * 4)
 	end
 
 	control.desc = wm:CreateControl(nil, control, CT_LABEL)
@@ -46,12 +39,12 @@ function LAMCreateControl.description(parent, descriptionData, controlName)
 	desc:SetVerticalAlignment(TEXT_ALIGN_TOP)
 	desc:SetFont("ZoFontGame")
 	desc:SetText(descriptionData.text)
-	desc:SetWidth(isHalfWidth and 250 or 510)
+	desc:SetWidth(isHalfWidth and width / 2 or width)
 
 	if descriptionData.title then
 		control.title = wm:CreateControl(nil, control, CT_LABEL)
 		local title = control.title
-		title:SetWidth(isHalfWidth and 250 or 510)
+		title:SetWidth(isHalfWidth and width / 2 or width)
 		title:SetAnchor(TOPLEFT, control, TOPLEFT)
 		title:SetFont("ZoFontWinH4")
 		title:SetText(descriptionData.title)
@@ -59,9 +52,6 @@ function LAMCreateControl.description(parent, descriptionData, controlName)
 	else
 		desc:SetAnchor(TOPLEFT)
 	end
-
-	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
-	control.data = descriptionData
 
 	control.UpdateValue = UpdateValue
 

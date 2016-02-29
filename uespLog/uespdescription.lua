@@ -12,7 +12,6 @@ local tinsert = table.insert
 
 
 local function UpdateValue(control)
-	uespLog.DebugMsg("UpdateValue "..tostring(control)..", "..tostring(control.data.getFunc))
 
 	if (control.title) then
 		control.title:SetText(control.data.title)
@@ -32,8 +31,6 @@ function LAMCreateControl.uespdescription(parent, descriptionData, controlName)
 	local control = wm:CreateControl(controlName or descriptionData.reference, parent.scroll or parent, CT_CONTROL)
 	control:SetResizeToFitDescendents(true)
 	local isHalfWidth = descriptionData.width == "half"
-	
-	uespLog.DebugMsg("LAMCreateControl.uespdescription")
 	
 	if isHalfWidth then
 		control:SetDimensionConstraints(250, 55, 250, 100)

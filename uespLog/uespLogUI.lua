@@ -438,8 +438,6 @@ function uespLog.GetSettingsStatisticText()
 	OutputText = OutputText .. "     Camera Heading = " .. tostring(camHeadingStr) .. " degrees\n"
 	OutputText = OutputText .. "     Game _VERSION = "  .. version .. "\n"
 	OutputText = OutputText .. "     Game API = " .. tostring(apiVersion) .. "\n"
-		
-	uespLog.DebugMsg("GetSettingsStatisticText called")
 	
 	return OutputText
 end
@@ -464,8 +462,6 @@ function uespLog.GetSettingsTimeText()
 	OutputText = OutputText .. "     Game Time Real Offset = " .. tostring(uespLog.GAMETIME_REALSECONDS_OFFSET) .. " secs\n"
 	OutputText = OutputText .. "     Game Time Day Offset = " .. tostring(uespLog.GAMETIME_DAY_OFFSET) .. " days\n"
 	
-	uespLog.DebugMsg("GetSettingsTimeText called")
-
 	return OutputText
 end
 
@@ -516,8 +512,6 @@ function uespLog.GetSettingsResearchInfoCraftText(craftingType)
 		OutputText = OutputText .. "     " .. tostring(TradeskillName) .. " has " .. tostring(slotsOpen) .. " research slots available.\n"
 	end
 	
-	uespLog.DebugMsg("GetSettingsResearchInfoCraftText called")
-
 	return OutputText
 end
 
@@ -540,8 +534,6 @@ function uespLog.GetSettingsCraftInfoText()
 	
 	OutputText = OutputText .. "     " .. tostring(uespLog.GetTotalInspiration()) .. " crafting inspiration since the last reset\n"
 	
-	uespLog.DebugMsg("GetSettingsCraftInfoText called")
-
 	return OutputText
 end
 
@@ -627,8 +619,6 @@ function uespLog.GetCharInfoText()
 	OutputText = OutputText .. "     " .. uespLog.GetPowerStatText(POWERTYPE_FINESSE, "Finesse") .. "\n"
 	OutputText = OutputText .. "     " .. uespLog.GetPowerStatText(POWERTYPE_WEREWOLF, "Werewolf") .. "\n"
 	OutputText = OutputText .. "     " .. uespLog.GetPowerStatText(POWERTYPE_MOUNT_STAMINA, "Mount Stamina") .. "\n"
-	
-	uespLog.DebugMsg("GetCharInfoText called")
-	
+		
 	return OutputText
 end

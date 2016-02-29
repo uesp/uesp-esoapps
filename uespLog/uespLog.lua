@@ -1673,6 +1673,10 @@ function uespLog.Initialize( self, addOnName )
 	
 	if (uespLog.savedVars["charInfo"].data.actionBar ~= nil) then
 		uespLog.charData_ActionBarData = uespLog.savedVars["charInfo"].data.actionBar 
+		
+		if (uespLog.charData_ActionBarData[3] == nil) then
+			uespLog.charData_ActionBarData[3] = {}
+		end
 	end
 	
 	if (uespLog.savedVars.settings.data.charDataPassword == nil) then

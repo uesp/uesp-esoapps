@@ -858,6 +858,8 @@ uespLog.mineItemPotionDataEffectIndex = 0
 uespLog.MINEITEM_POTION_MAXEFFECTINDEX = 24
 uespLog.MINEITEM_POTION_ITEMID = 54339
 uespLog.MINEITEM_POTION_MAGICITEMID = 1234567
+uespLog.MINEITEM_ENCHANT_ITEMID = 55679
+uespLog.MINEITEM_ENCHANT_ENCHANTID = 26841
 
 uespLog.DEFAULT_DATA = 
 {
@@ -6748,6 +6750,77 @@ function uespLog.MineItemIterate (itemId)
 end
 
 
+function uespLog.MineEnchantCharges()
+	local i, value
+	local enchantData = { }
+	
+	enchantData[1] = {
+			[1] = "IntLevel",
+			[2] = "IntType",
+			[3] = "Level",
+			[4] = "Quality",
+			[5] = "NumCharges",
+			[6] = "MaxCharges",
+			[7] = "WeaponPower",
+		}
+
+	for i, value in ipairs(uespLog.MINEITEM_LEVELS) do
+		local levelStart = value[1]
+		local levelEnd = value[2]
+		local qualityStart = value[3]
+		local qualityEnd = value[4]
+		local comment = value[5]
+		
+		for level = levelStart, levelEnd do
+			for quality = qualityStart, qualityEnd do
+				
+				itemLink = uespLog.MakeItemLinkEx( { 
+						itemId = uespLog.MINEITEM_ENCHANT_ITEMID, 
+						level = level, 
+						quality = quality, 
+						enchantId = uespLog.MINEITEM_ENCHANT_ENCHANTID,
+						enchantLevel = level,
+						enchantQuality = quality,
+					} )
+				
+				if (uespLog.IsValidItemLink(itemLink)) then
+					local maxCharges = GetItemLinkMaxEnchantCharges(itemLink)
+					local numCharges = GetItemLinkNumEnchantCharges(itemLink)
+					local hasCharges = DoesItemLinkHaveEnchantCharges(itemLink)
+					local realQuality = GetItemLinkQuality(itemLink)
+					local realLevel = GetItemLinkRequiredLevel(itemLink)
+					local realVetRank = GetItemLinkRequiredVeteranRank(itemLink)
+					local weaponPower = GetItemLinkWeaponPower(itemLink)
+					
+					if (realVetRank ~= nil and realVetRank > 0) then
+						realLevel = realVetRank + 50
+					end
+					
+					enchantData[#enchantData + 1] = 
+					{ 
+						[1] = level,
+						[2] = quality,
+						[3] = realLevel,
+						[4] = realQuality,
+						[5] = numCharges,
+						[6] = maxCharges,
+						[7] = weaponPower,
+					}
+				end
+			end
+		end
+	end
+	
+	local data = uespLog.savedVars.tempData.data
+	
+	for i,row in ipairs(enchantData) do
+		data[#data+1] = uespLog.implodeStart(row, ", ")
+	end
+	
+	uespLog.Msg("UESP::Logged "..tostring(#enchantData).." item enchantment charge data to tempData section.")
+end
+
+
 function uespLog.MineItemIteratePotionData (effectIndex)
 	local i, value
 	local level, quality
@@ -7136,7 +7209,7 @@ function uespLog.MineItemsQualityMapLogItem(itemLink, intLevel, intSubtype, extr
 	local level = 0
 	
 	if (reqVetLevel ~= nil and reqVetLevel > 0) then
-		level = reqVetLevel + 49
+		level = reqVetLevel + 50
 	elseif (reqLevel ~= nil and reqLevel > 0) then
 		level = reqLevel
 	end
@@ -7375,6 +7448,9 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		uespLog.MineItemsQualityMap(1)
 		uespLog.MineItemsQualityMap(50)
 		return
+	elseif (command == "enchantmap") then
+		uespLog.MineEnchantCharges()
+		return
 	elseif (command == "idcheck") then
 		uespLog.MineItemsIdCheck(cmds[2])
 		return
@@ -7419,6 +7495,7 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems stop")
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems autostart [startId]")
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems qualitymap")
+		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems enchantmap")
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems subtype [subType]")
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems idcheck [note]")
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems quick [on/off]")
@@ -7500,7 +7577,7 @@ SLASH_COMMANDS["/uespreset"] = function (cmd)
 	elseif (cmd == "log") then
 		uespLog.ClearSavedVarSection("all")
 		uespLog.Msg("UESP::Reset regular logged data")
-	elseif (cmd == "temp") then
+	elseif (cmd == "temp" or cmd == "tempdata") then
 		uespLog.ClearSavedVarSection("tempData")
 		uespLog.Msg("UESP::Reset temporary logged data")
 	elseif (cmd == "globals") then
@@ -8837,6 +8914,10 @@ function uespLog.implode(tab, delim)
 	local isFirst = true
 	local strDelim = tostring(delim)
 	
+	if (type(tab) ~= "table") then
+		return tostring(tab)
+	end
+	
     for _, v in pairs(tab) do
 	
 		if (not isFirst) then
@@ -8855,6 +8936,8 @@ function uespLog.implodeStart(tab, delim, startIndex)
 	local output = ""
 	local isFirst = true
 	local strDelim = tostring(delim)
+	
+	startIndex = startIndex or 0
 	
     for i, v in ipairs(tab) do
 	

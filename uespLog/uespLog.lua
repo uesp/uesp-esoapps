@@ -383,8 +383,8 @@
 --						/usc calc          	Calculate coefficients using previously saved skill data and store
 --											coefficient data in the log. The "tempData" section of the saved
 --											variables will also contain a CSV version of the coefficient data.
---						/usc coef [name]   	Shows the coefficients for the given skill name.
---						/usc coef [id]     	Shows the coefficients for the given skill ID.
+--						/usc coef [name]   	Shows the calculated coefficients for the given skill name.
+--						/usc coef [id]     	Shows the calculated coefficients for the given skill ID.
 --						/usc status        	Current status of saved skill data.
 --						/usc clear         	Resets the saved skill data. Note that logging out or "/reloadui" will
 --											also clear the saved skill data.

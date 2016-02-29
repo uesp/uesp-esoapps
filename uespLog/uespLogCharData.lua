@@ -70,7 +70,8 @@ uespLog.CHARDATA_POWER = {
 
 uespLog.charData_ActionBarData = { 
 	[1] = { },
-	[2] = { }
+	[2] = { },
+	[3] = { }, -- Overload
 }
 
 
@@ -295,9 +296,17 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	charData.BattleLevel = GetUnitBattleLevel("player")
 	charData.BattleVeteranRank = GetUnitVetBattleLevel("player")
 	charData.BuildType = uespLog.GetCharDataBuildType()
-	charData.ActiveAbilityBar = GetActiveWeaponPairInfo()
 	charData.SecondsPlayed = GetSecondsPlayed()
 	charData.Latency = GetLatency()
+	
+	charData.ActiveWeaponBar = GetActiveWeaponPairInfo()
+	charData.ActiveAbilityBar = charData.ActiveWeaponBar
+	charData.OverloadState = 0
+	
+	if (uespLog.IsInOverloadState()) then
+		charData.ActiveAbilityBar = 3
+		charData.OverloadState = 1
+	end
 	
 	charData.Alliance = GetAllianceName(GetUnitAlliance("player"))
 	charData.AllianceRank = GetUnitAvARank("player")
@@ -725,7 +734,7 @@ function uespLog.CreateCharDataActionBar()
 	
 	uespLog.SaveActionBarForCharData()
 	
-	for j = 1, 2 do
+	for j = 1, 3 do
 		for i = 3, 8 do
 			slots[i + (j-1)*100] = uespLog.charData_ActionBarData[j][i]
 		end
@@ -757,6 +766,10 @@ function uespLog.SaveActionBarForCharData()
 	
 	if (weaponPairIndex < 1 or weaponPairIndex > 2) then
 		return false
+	end
+	
+	if (uespLog.IsInOverloadState()) then
+		weaponPairIndex = 3
 	end
 	
 	uespLog.charData_ActionBarData[weaponPairIndex] = { }
@@ -1183,3 +1196,22 @@ function uespLog.ShowCharDataPassword()
 end
 
 
+function uespLog.IsInOverloadState()
+	local playerClass = GetUnitClass('player')
+	local numBuffs = GetNumBuffs("player")
+	local i
+	
+	if (playerClass ~= "Sorcerer") then
+		return false
+	end
+	
+	for i = 1, numBuffs do
+		local buffName = GetUnitBuffInfo("player", i)
+	
+		if (buffName == "Power Overload" or buffName == "Overload" or buffName == "Energy Overload") then
+			return true
+		end
+	end
+	
+	return false
+end

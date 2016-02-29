@@ -735,8 +735,10 @@ function uespLog.CreateCharDataActionBar()
 	uespLog.SaveActionBarForCharData()
 	
 	for j = 1, 3 do
-		for i = 3, 8 do
-			slots[i + (j-1)*100] = uespLog.charData_ActionBarData[j][i]
+		if (uespLog.charData_ActionBarData[j] ~= nil) then
+			for i = 3, 8 do
+				slots[i + (j-1)*100] = uespLog.charData_ActionBarData[j][i]
+			end
 		end
 	end
 	

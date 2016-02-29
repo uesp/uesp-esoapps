@@ -408,7 +408,8 @@
 --					5. Run "/reloadui" or logout to update the saved variables
 --					6. Upload the saved variable file or copy/paste the coefficient data from the "tempData" section.
 --	
---			  Uploaded and parsed skill coefficient data can be found at http://esolog.uesp.net/viewSkillCoef.php		   
+--			  Uploaded and parsed skill coefficient data can be found at http://esolog.uesp.net/viewSkillCoef.php		
+--			  or in the mined skills database at http://esoitem.uesp.net/viewlog.php?record=minedSkills   
 --
 --		***BETA: Offline Character Data***
 --			- Expanding on the recent "Build Data" uespLog now has the option to automatically record more character

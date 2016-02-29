@@ -359,6 +359,9 @@
 --			  acquired on the character.
 --			- Quest item links are now logged (this is currently the only way to get information about quest items).
 --			- Removed the "Quest conversation updated" and "Updated conversation" log messages from normal output.
+--			- Changed default of data logging (/uesplog on/off) to false to prevent collection of data and increasing 
+--			  the sized of the saved variable file for people not interested in collecting data. This only affects new
+--			  installations. Use "/uesplog on" to ensure data collection is enabled.
 --
 --		***BETA: Skill Coefficients***
 --			- Added basic skill coefficient mining with "/uespskillcoef". The equation for the base skill tooltip is
@@ -891,7 +894,7 @@ uespLog.DEFAULT_SETTINGS =
 	data = {
 		["debug"] = false,
 		["debugExtra"] = false,
-		["logData"] = true,
+		["logData"] = false,
 		["color"] = true,
 		["totalInspiration"] = 0,
 		["craft"] = true,

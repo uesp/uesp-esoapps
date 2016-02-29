@@ -7,15 +7,14 @@
 }	]]
 
 
-local widgetVersion = 5
-local LAM = LibStub("LibAddonMenu-2.0")
-LAM:RegisterWidget("uespdescription", widgetVersion)
-
 local wm = WINDOW_MANAGER
 local tinsert = table.insert
 
+
 local function UpdateValue(control)
-	if control.title then
+	uespLog.DebugMsg("UpdateValue "..tostring(control)..", "..tostring(control.data.getFunc))
+
+	if (control.title) then
 		control.title:SetText(control.data.title)
 	end
 	
@@ -25,12 +24,17 @@ local function UpdateValue(control)
 	else
 		control.desc:SetText(control.data.text)
 	end
+	
 end
+
 
 function LAMCreateControl.uespdescription(parent, descriptionData, controlName)
 	local control = wm:CreateControl(controlName or descriptionData.reference, parent.scroll or parent, CT_CONTROL)
 	control:SetResizeToFitDescendents(true)
 	local isHalfWidth = descriptionData.width == "half"
+	
+	uespLog.DebugMsg("LAMCreateControl.uespdescription")
+	
 	if isHalfWidth then
 		control:SetDimensionConstraints(250, 55, 250, 100)
 		control:SetDimensions(250, 55)
@@ -60,13 +64,11 @@ function LAMCreateControl.uespdescription(parent, descriptionData, controlName)
 
 	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
 	control.data = descriptionData
-
 	control.UpdateValue = UpdateValue
-
+	
 	if control.panel.data.registerForRefresh or control.panel.data.registerForDefaults then	--if our parent window wants to refresh controls, then add this to the list
 		tinsert(control.panel.controlsToRefresh, control)
 	end
 
 	return control
-
 end

@@ -28,7 +28,7 @@ uespLog.optionControlsData = { }
 
 
 function uespLog.InitSettingsMenu()
-	LAM2:RegisterWidget("uespdescription", 5)
+	LAM2:RegisterWidget("uespdescription", 6)
 	uespLog.InitOptionControlsData()
 
 	LAM2:RegisterAddonPanel(uespLog.SETTINGS_MENU_NAME, uespLog.settingsPanelData)
@@ -157,7 +157,7 @@ function uespLog.InitOptionControlsData()
 	uespLog.optionControlsData:insert({
 		type = "uespdescription",
 		title = "",
-		text = "",
+		text = uespLog.GetSettingsCraftInfoText(),
 		getFunc = function() return uespLog.GetSettingsCraftInfoText() end,
 	})
 	
@@ -193,7 +193,7 @@ function uespLog.InitOptionControlsData()
 	uespLog.optionControlsData:insert({
 		type = "uespdescription",
 		title = "",
-		text = "",
+		text = uespLog.GetSettingsStatisticText(),
 		getFunc = function() return uespLog.GetSettingsStatisticText() end,
 	})
 	
@@ -217,7 +217,7 @@ function uespLog.InitOptionControlsData()
 	uespLog.optionControlsData:insert({
 		type = "uespdescription",
 		title = "",
-		text = "",
+		text =  uespLog.GetSettingsTimeText(),
 		getFunc = function() return uespLog.GetSettingsTimeText() end,
 	})
 	
@@ -241,7 +241,7 @@ function uespLog.InitOptionControlsData()
 	uespLog.optionControlsData:insert({
 		type = "uespdescription",
 		title = "",
-		text = "",
+		text = uespLog.GetCharInfoText(),
 		getFunc = function() return uespLog.GetCharInfoText() end,
 	})
 	
@@ -378,6 +378,27 @@ function uespLog.InitOptionControlsData()
 		tooltip = "Clear the achievement data log\n     /uespreset achievements",
 		func = function() SLASH_COMMANDS["/uespreset"]("globals") end
 	})
+	
+	uespLog.optionControlsData:insert({
+		type = "button",
+		name = "Reset Character Data",
+		tooltip = "Clear the saved character data currently in memory\n     /uespreset chardata",
+		func = function() SLASH_COMMANDS["/uespreset"]("chardata") end
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "button",
+		name = "Reset Build Data",
+		tooltip = "Clear the saved build data currently in memory\n     /uespreset builddata",
+		func = function() SLASH_COMMANDS["/uespreset"]("builddata") end
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "button",
+		name = "Reset Temp Data",
+		tooltip = "Clear the temporary ata currently in memory\n     /uespreset temp",
+		func = function() SLASH_COMMANDS["/uespreset"]("temp") end
+	})
 
 	uespLog.optionControlsData:insert({
 		type = "button",
@@ -417,6 +438,8 @@ function uespLog.GetSettingsStatisticText()
 	OutputText = OutputText .. "     Camera Heading = " .. tostring(camHeadingStr) .. " degrees\n"
 	OutputText = OutputText .. "     Game _VERSION = "  .. version .. "\n"
 	OutputText = OutputText .. "     Game API = " .. tostring(apiVersion) .. "\n"
+		
+	uespLog.DebugMsg("GetSettingsStatisticText called")
 	
 	return OutputText
 end
@@ -440,6 +463,8 @@ function uespLog.GetSettingsTimeText()
 	OutputText = OutputText .. "     Game Time Day Length = " .. tostring(uespLog.DEFAULT_REALSECONDSPERGAMEDAY) .. " secs\n"
 	OutputText = OutputText .. "     Game Time Real Offset = " .. tostring(uespLog.GAMETIME_REALSECONDS_OFFSET) .. " secs\n"
 	OutputText = OutputText .. "     Game Time Day Offset = " .. tostring(uespLog.GAMETIME_DAY_OFFSET) .. " days\n"
+	
+	uespLog.DebugMsg("GetSettingsTimeText called")
 
 	return OutputText
 end
@@ -490,6 +515,8 @@ function uespLog.GetSettingsResearchInfoCraftText(craftingType)
 		local slotsOpen = maxSimultaneousResearch - researchCount
 		OutputText = OutputText .. "     " .. tostring(TradeskillName) .. " has " .. tostring(slotsOpen) .. " research slots available.\n"
 	end
+	
+	uespLog.DebugMsg("GetSettingsResearchInfoCraftText called")
 
 	return OutputText
 end
@@ -512,6 +539,8 @@ function uespLog.GetSettingsCraftInfoText()
 	OutputText = OutputText .. "     " .. tostring(wwTraitsKnown) .. " / " .. tostring(wwTraits) .. " WoodWorking traits known\n"
 	
 	OutputText = OutputText .. "     " .. tostring(uespLog.GetTotalInspiration()) .. " crafting inspiration since the last reset\n"
+	
+	uespLog.DebugMsg("GetSettingsCraftInfoText called")
 
 	return OutputText
 end
@@ -528,7 +557,7 @@ function uespLog.GetStatText (statType, statName)
 	else
 		OutputText = tostring(statName)..": "..tostring(currentStat).." ("..tostring(noCapStat).." with cap of ".. tostring(softCap)..")"
 	end
-	
+		
 	return OutputText
 end
 
@@ -598,6 +627,8 @@ function uespLog.GetCharInfoText()
 	OutputText = OutputText .. "     " .. uespLog.GetPowerStatText(POWERTYPE_FINESSE, "Finesse") .. "\n"
 	OutputText = OutputText .. "     " .. uespLog.GetPowerStatText(POWERTYPE_WEREWOLF, "Werewolf") .. "\n"
 	OutputText = OutputText .. "     " .. uespLog.GetPowerStatText(POWERTYPE_MOUNT_STAMINA, "Mount Stamina") .. "\n"
+	
+	uespLog.DebugMsg("GetCharInfoText called")
 	
 	return OutputText
 end

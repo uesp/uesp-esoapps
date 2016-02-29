@@ -362,6 +362,7 @@
 --			- Changed default of data logging (/uesplog on/off) to false to prevent collection of data and increasing 
 --			  the sized of the saved variable file for people not interested in collecting data. This only affects new
 --			  installations. Use "/uesplog on" to ensure data collection is enabled.
+--			- Fixed bug where menu settings were not being displayed the first time you open the add-on's settings menu.
 --
 --		***BETA: Skill Coefficients***
 --			- Added basic skill coefficient mining with "/uespskillcoef". The equation for the base skill tooltip is

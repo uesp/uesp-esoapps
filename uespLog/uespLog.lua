@@ -415,17 +415,13 @@
 --			- Expanding on the recent "Build Data" uespLog now has the option to automatically record more character
 --			  data in order to view it offline. By default this feature is disabled. It can be enabled by the command:
 --						/uespchardata on   		(or	/ucd on)
---			  When enabled character data will be saved whenever logging out, quitting, UI reloads, and every time
---			  you zone (minimum period of 1 minute between zone saves). There may be a noticeable delay or pause when
---			  saving character data on zoning on some machines. You can turn this feature off by the command:
---						/uespchardata zonesave off
+--			  When enabled character data will be saved whenever logging out, quitting or UI reloads.
 --
 --			  Once uploaded the characters can be viewed at: http://esochars.uesp.net 
 --
 --						/ucd							  Short command name
 --						/uespchardata [on/off]            Turn automatic saving on/off (default off)
 --						/uespchardata save                Manually save the character data
---						/uespchardata zonesave [on/off]   Turn automatic saving when zoning on/off (default off)
 --						/uespchardata password [text]     Change the character data password
 --						/uespchardata password clear      Set no password
 --	
@@ -8835,7 +8831,6 @@ SLASH_COMMANDS["/uespchardata"] = function (cmd)
 		uespLog.Msg("UESP::Turns on/off the automatic saving of character data. Use the format:")
 		uespLog.Msg(".     /uespchardata [on/off]                     Turn automatic saving on/off")
 		uespLog.Msg(".     /uespchardata save                        Manually save the character data")
-		uespLog.Msg(".     /uespchardata zonesave [on/off]    Turn automatic zone saving on/off")
 		uespLog.Msg(".     /uespchardata password [text]       Change the character data password")
 		uespLog.Msg(".     /uespchardata password clear      Set no password")
 		uespLog.Msg(".          Automatic saving is currently "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )

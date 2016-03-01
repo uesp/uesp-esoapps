@@ -2268,6 +2268,7 @@ function uespLog.ShowItemInfo (itemLink)
 	local resultItemLink = GetItemLinkRecipeResultItemLink(itemLink)
 	local refinedItemLink = GetItemLinkRefinedMaterialItemLink(itemLink)
 	local materialLevelDescription = GetItemLinkMaterialLevelDescription(itemLink)
+	local researchIndex = uespLog.CheckIsItemLinkResearchable(itemLink)
 	
 	local flagString = ""
 	local levelString = ""
@@ -2424,6 +2425,8 @@ function uespLog.ShowItemInfo (itemLink)
 	if (flavourText ~= "") then
 		uespLog.MsgColor(uespLog.itemColor, ".    Description: "..tostring(flavourText))
 	end
+	
+	--uespLog.MsgColor(uespLog.itemColor, ".    Research Index: "..tostring(researchIndex))
 	
 end
 

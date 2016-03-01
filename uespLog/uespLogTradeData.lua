@@ -20,15 +20,15 @@ uespLog.TRADE_INTRICATE_COLOR = { 0, 1, 1 }
 uespLog.TRADE_STYLE_COLOR = { 1, 0.75, 0.25 }
 uespLog.TRADE_PRICE_COLOR = { 1.0, 1.0, 0.5 }
 
-uespLog.ORNATE_TRAIT_INDEX = 20
-uespLog.INTRICATE_TRAIT_INDEX = 21
+uespLog.ORNATE_TRAIT_INDEX = 20  --10, 19
+uespLog.INTRICATE_TRAIT_INDEX = 21 --9, 20
 
 uespLog.TRADE_UNKNOWN_TEXTURE = "uespLog\\images\\unknown.dds"
 uespLog.TRADE_KNOWN_TEXTURE = "uespLog\\images\\known.dds"
-uespLog.TRADE_ORNATE_TEXTURE = "/esoui/art/tradinghouse/tradinghouse_sell_tabicon_disabled.dds"
-uespLog.TRADE_INTRICATE_TEXTURE = "/esoui/art/progression/progression_indexicon_guilds_up.dds"
---uespLog.TRADE_ORNATE_TEXTURE = "uespLog\\images\\ornate.dds"
---uespLog.TRADE_INTRICATE_TEXTURE = "uespLog\\images\\intricate.dds"
+--uespLog.TRADE_ORNATE_TEXTURE = "/esoui/art/tradinghouse/tradinghouse_sell_tabicon_disabled.dds"   -- No longer exist?
+--uespLog.TRADE_INTRICATE_TEXTURE = "/esoui/art/progression/progression_indexicon_guilds_up.dds"
+uespLog.TRADE_ORNATE_TEXTURE = "uespLog\\images\\ornate.dds"
+uespLog.TRADE_INTRICATE_TEXTURE = "uespLog\\images\\intricate.dds"
 
 uespLog.STYLE_ICON_UNKNOWN = "uespLog\\images\\unknown.dds"
 

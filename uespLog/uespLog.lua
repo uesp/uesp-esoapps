@@ -417,6 +417,11 @@
 --						/uespchardata on   		(or	/ucd on)
 --			  When enabled character data will be saved whenever logging out, quitting or UI reloads.
 --
+--			  Character data uploading can be done the same way as build data:
+--				1. On Windows use the included uespLogMonitor program to automatically upload data.
+--				2. Use the http://esolog.uesp.net/submit.php form to manually upload all log, build, and character data.
+--				3. Use the http://esochars.uesp.net/submit.php form to manually upload build and character data.
+--
 --			  Once uploaded the characters can be viewed at: http://esochars.uesp.net 
 --
 --						/ucd							  Short command name

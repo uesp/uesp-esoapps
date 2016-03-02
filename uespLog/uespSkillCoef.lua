@@ -41,7 +41,7 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 			uespLog.Msg("Error: Failed to calculate skill coefficients!")
 		end
 		
-	elseif (cmd1 == "coef") then
+	elseif (cmd1 == "coef" or cmd1 == "show") then
 		local skillName = uespLog.implodeStart(cmds, " ", 2)
 		uespLog.ShowSkillCoef(skillName)
 	elseif (cmd1 == "status") then
@@ -111,6 +111,14 @@ function uespLog.LogSkillCoefData()
 	table.insert(rowData, "b3")
 	table.insert(rowData, "c3")
 	table.insert(rowData, "R3")
+	table.insert(rowData, "a4")
+	table.insert(rowData, "b4")
+	table.insert(rowData, "c4")
+	table.insert(rowData, "R4")
+	table.insert(rowData, "a5")
+	table.insert(rowData, "b5")
+	table.insert(rowData, "c5")
+	table.insert(rowData, "R5")
 	
 	local data = uespLog.savedVars.tempData.data
 	data[#data+1] = uespLog.implode(rowData, ", ")
@@ -303,7 +311,19 @@ function uespLog.ShowSkillCoef(name)
 		return false
 	end
 	
-	uespLog.Msg("Skill '"..tostring(coefData.name).." ("..tostring(coefData.id)..")' has coefficient data for "..tostring(coefData.numVars).." variable(s):")
+	local rank = ""
+	
+	if (coefData.rank == 1) then
+		rank = " I"
+	elseif (coefData.rank == 2) then
+		rank = " II"
+	elseif (coefData.rank == 3) then
+		rank = " III"
+	elseif (coefData.rank == 4) then
+		rank = " IV"
+	end
+	
+	uespLog.Msg("Skill '"..tostring(coefData.name)..rank.." ("..tostring(coefData.id)..")' has coefficient data for "..tostring(coefData.numVars).." variable(s):")
 	
 	for i,result in ipairs(coefData.result) do
 		local doesVary = coefData.numbersVary[i]
@@ -314,12 +334,12 @@ function uespLog.ShowSkillCoef(name)
 		local index = coefData.numbersIndex[i]
 		
 		if (doesVary) then
-			uespLog.Msg(".     $"..tostring(index)..": "..a..", "..b..", "..c..", "..R2)
+			--uespLog.Msg(".     $"..tostring(index)..": "..a..", "..b..", "..c..", "..R2)
+			uespLog.Msg(".     $"..tostring(index)..": "..a..", "..b..", "..c..", "..R2.."  ("..tostring(result.min).."-"..tostring(result.max)..")")
 		end
 	end	
 	
 	uespLog.Msg(tostring(coefData.newDesc))
-	
 	return true
 end
 
@@ -376,12 +396,12 @@ function uespLog.CaptureSkillCoefData()
 					ability3 = GetAbilityProgressionAbilityId(progressionIndex, 0, 4)
 					ability4 = GetAbilityProgressionAbilityId(progressionIndex, 1, 4)
 					ability5 = GetAbilityProgressionAbilityId(progressionIndex, 2, 4)
-					uespLog.SaveSkillCoefData(ability3)
-					uespLog.SaveSkillCoefData(ability4)
-					uespLog.SaveSkillCoefData(ability5)
+					uespLog.SaveSkillCoefData(ability3, 4)
+					uespLog.SaveSkillCoefData(ability4, 4)
+					uespLog.SaveSkillCoefData(ability5, 4)
 				else
-					uespLog.SaveSkillCoefData(ability1)
-					uespLog.SaveSkillCoefData(ability2)
+					uespLog.SaveSkillCoefData(ability1, rank)
+					uespLog.SaveSkillCoefData(ability2, rank)
 				end
 		
 			end
@@ -394,7 +414,7 @@ function uespLog.CaptureSkillCoefData()
 end
 
 
-function uespLog.SaveSkillCoefData(abilityId)
+function uespLog.SaveSkillCoefData(abilityId, rank)
 	local name = GetAbilityName(abilityId)
 	local description = GetAbilityDescription(abilityId)
 	local cost, mechanic = GetAbilityCost(abilityId)
@@ -415,6 +435,7 @@ function uespLog.SaveSkillCoefData(abilityId)
 		uespLog.SkillCoefAbilityData[abilityId] = 
 		{
 			["name"] = name,
+			["rank"] = rank,
 			["id"]   = abilityId,
 			["desc"] = description,
 			["type"] = mechanic,
@@ -535,7 +556,7 @@ function uespLog.ComputeSkillCoefSkill(abilityId, skillsData)
 	-- x = Mag/Sta
 	-- y = SD/WD
 	-- z = Tooltip value
-	-- X = a, b, c
+	-- X = [ a, b, c ]
 	-- A X = B
 	-- X = Ainv B	
 	local abilityData = uespLog.SkillCoefAbilityData[abilityId]
@@ -574,6 +595,7 @@ function uespLog.ComputeSkillCoefSkill(abilityId, skillsData)
 		
 			local result = uespLog.SkillCoefComputeMatrixMultAB(coefData.Ainv, B)
 			result.R2 = uespLog.SkillCoefComputeR2(result, skillsData, abilityData, i)
+			result.min, result.max, result.avg = uespLog.SkillCoefComputeMinMaxAvgNumbers(skillsData, i)
 			table.insert(coefData.result, result)
 			
 			if (not uespLog.isFinite(result.a) or not uespLog.isFinite(result.b) or not uespLog.isFinite(result.c) or not uespLog.isFinite(result.R2)) then
@@ -583,7 +605,8 @@ function uespLog.ComputeSkillCoefSkill(abilityId, skillsData)
 			end
 			
 		else
-			table.insert(coefData.result, { ['a']=0, ['b']=0, ['c']=skillsData[1].numbers[i], ['R2']=1 } )
+			local value = skillsData[1].numbers[i]
+			table.insert(coefData.result, { ['a']=0, ['b']=0, ['c']=value, ['R2']=1, ['min']=value, ['max']=value, ['avg']=value } )
 		end
 		
 	end
@@ -693,6 +716,37 @@ function uespLog.SkillCoefComputeAMatrix(skillsData, abilityData)
 	end
 	
 	return A
+end
+
+
+function uespLog.SkillCoefComputeMinMaxAvgNumbers(skillsData, numberIndex)
+	local minValue = 0
+	local maxValue = 0
+	local sum = 0
+	
+	if (#skillsData < 1) then
+		return minValue, maxValue, sum
+	end
+	
+	minValue = skillsData[1].numbers[numberIndex]
+	maxValue = minValue
+	sum = minValue
+	
+	for i = 2, #skillsData do
+		skill = skillsData[i]
+		value = skill.numbers[numberIndex]
+		sum = sum + minValue
+		
+		if (minValue > value) then
+			minValue = value
+		end
+		
+		if (maxValue < value) then
+			maxValue = value
+		end
+	end
+	
+	return minValue, maxValue, sum / #skillsData
 end
 
 

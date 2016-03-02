@@ -1100,7 +1100,9 @@ function uespLog.GetCharDataResearchTraits(craftingType)
 			researchData[varName] = "No traits known"
 		else
 			local knownString = uespLog.implode(knownTraits, ", ")
+			local unknownString = uespLog.implode(unknownTraits, ", ")
 			researchData[varName] = knownString .. " ("..tostring(knownTraitCount).."/"..tostring(totalTraits)..")"
+			researchData[varName..":Unknown"] = unknownString .. " ("..tostring(unknownTraitCount).."/"..tostring(totalTraits)..")"
 		end
 		
 		researchData[varName..":Known"] = knownTraitCount

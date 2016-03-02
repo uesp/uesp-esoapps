@@ -26,6 +26,15 @@ uespLog.SKILLCOEF_CHECK_INDEX = 2
 uespLog.SKILLCOEF_CHECK_VALUE = 300
 
 
+uespLog.SKILLCOEF_MECHANIC_NAMES = {
+	[POWERTYPE_ULTIMATE] = "Ultimate",
+	[POWERTYPE_HEALTH] = "Health",
+	[POWERTYPE_MAGICKA] = "Magicka",
+	[POWERTYPE_STAMINA] = "Stamina",
+	[uespLog.UESP_POWERTYPE_SOULTETHER] = "Ultimate (ignore WD)",
+}
+
+
 -- Some skills have different mechanics that what the game data says
 uespLog.SKILLCOEF_SPECIALTYPES = {
 
@@ -276,26 +285,32 @@ function uespLog.LogSkillCoefData()
 	table.insert(rowData, "NumVars")
 	table.insert(rowData, "Mechanic")
 	table.insert(rowData, "Description")
+	table.insert(rowData, "mech1")
 	table.insert(rowData, "a1")
 	table.insert(rowData, "b1")
 	table.insert(rowData, "c1")
 	table.insert(rowData, "R1")
+	table.insert(rowData, "mech2")
 	table.insert(rowData, "a2")
 	table.insert(rowData, "b2")
 	table.insert(rowData, "c2")
 	table.insert(rowData, "R2")
+	table.insert(rowData, "mech3")
 	table.insert(rowData, "a3")
 	table.insert(rowData, "b3")
 	table.insert(rowData, "c3")
 	table.insert(rowData, "R3")
+	table.insert(rowData, "mech4")
 	table.insert(rowData, "a4")
 	table.insert(rowData, "b4")
 	table.insert(rowData, "c4")
 	table.insert(rowData, "R4")
+	table.insert(rowData, "mech5")
 	table.insert(rowData, "a5")
 	table.insert(rowData, "b5")
 	table.insert(rowData, "c5")
 	table.insert(rowData, "R5")
+	table.insert(rowData, "mech6")
 	table.insert(rowData, "a6")
 	table.insert(rowData, "b6")
 	table.insert(rowData, "c6")
@@ -347,6 +362,7 @@ function uespLog.LogSkillCoefDataSkill(abilityData)
 			logData['c'..tostring(index)] = c
 			logData['R'..tostring(index)] = R2
 			logData['avg'..tostring(index)] = avg
+			logData['type'..tostring(index)] = result.type
 		end
 	end	
 	
@@ -376,6 +392,7 @@ function uespLog.LogSkillCoefDataSkillCsv(abilityData)
 		local index = abilityData.numbersIndex[i]
 		
 		if (doesVary) then
+			table.insert(rowData, result.type)
 			table.insert(rowData, a)
 			table.insert(rowData, b)
 			table.insert(rowData, c)
@@ -570,9 +587,10 @@ function uespLog.ShowSkillCoef(name)
 		local c  = string.format("%.5f", result.c)
 		local R2 = string.format("%.5f", result.R2)
 		local index = coefData.numbersIndex[i]
+		local typeName = uespLog.GetSkillMechanicName(result.type)
 		
 		if (doesVary) then
-			uespLog.Msg(".     $"..tostring(index)..": "..a..", "..b..", "..c..", "..R2.."  ("..tostring(result.min).."-"..tostring(result.max)..")")
+			uespLog.Msg(".     $"..tostring(index)..": "..a..", "..b..", "..c..", "..R2.."  ("..typeName..", values "..tostring(result.min).."-"..tostring(result.max)..")")
 		end
 	end	
 	
@@ -858,6 +876,7 @@ function uespLog.ComputeSkillCoefSkill(abilityId, skillsData)
 	coefData.result = {}
 	
 	for i = 1, numberCount do
+		local numberType = uespLog.GetSkillCoefNumberMechanic(abilityData, i)
 	
 		if (abilityData.numbersVary[i]) then
 			local A = uespLog.SkillCoefComputeAMatrix(skillsData, abilityData, i)
@@ -873,6 +892,7 @@ function uespLog.ComputeSkillCoefSkill(abilityId, skillsData)
 				local result = uespLog.SkillCoefComputeMatrixMultAB(Ainv, B)
 				result.R2 = uespLog.SkillCoefComputeR2(result, skillsData, abilityData, i)
 				result.min, result.max, result.avg = uespLog.SkillCoefComputeMinMaxAvgNumbers(skillsData, i)
+				result.type = numberType
 				table.insert(coefData.result, result)
 				
 				if (not uespLog.isFinite(result.a) or not uespLog.isFinite(result.b) or not uespLog.isFinite(result.c) or not uespLog.isFinite(result.R2)) then
@@ -887,7 +907,7 @@ function uespLog.ComputeSkillCoefSkill(abilityId, skillsData)
 			
 		else
 			local value = skillsData[1].numbers[i]
-			table.insert(coefData.result, { ['a']=0, ['b']=0, ['c']=value, ['R2']=1, ['min']=value, ['max']=value, ['avg']=value } )
+			table.insert(coefData.result, { ['a']=0, ['b']=0, ['c']=value, ['R2']=1, ['min']=value, ['max']=value, ['avg']=value, ['type']=numberType } )
 		end
 		
 	end
@@ -899,9 +919,7 @@ function uespLog.ComputeSkillCoefSkill(abilityId, skillsData)
 end
 
 
-function uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
-	local x = skill.mag
-	local y = skill.sd
+function uespLog.GetSkillCoefNumberMechanic(abilityData, numberIndex)
 	local mechanic = abilityData.type
 	local specialTypes = uespLog.SKILLCOEF_SPECIALTYPES[abilityData.id]
 	
@@ -917,6 +935,15 @@ function uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 			mechanic = specialTypes
 		end
 	end
+	
+	return mechanic	
+end
+
+
+function uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
+	local x = skill.mag
+	local y = skill.sd
+	local mechanic = uespLog.GetSkillCoefNumberMechanic(abilityData, numberIndex)
 			
 	if (mechanic == uespLog.UESP_POWERTYPE_SOULTETHER) then
 		x = math.max(skill.mag, skill.sta)
@@ -929,7 +956,7 @@ function uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 		y = skill.wd
 	elseif (mechanic == POWERTYPE_HEALTH) then
 		x = skill.hea
-		y = 1
+		y = 0
 	end
 	
 	return x, y
@@ -980,9 +1007,15 @@ end
 function uespLog.SkillCoefComputeMatrixMultAB(A, B)
 	local result = {}
 	
-	result.a = A[11] * B[1] + A[12] * B[2] + A[13] * B[3]
-	result.b = A[21] * B[1] + A[22] * B[2] + A[23] * B[3]
-	result.c = A[31] * B[1] + A[32] * B[2] + A[33] * B[3]
+	if (A.size == 2) then
+		result.a = A[11] * B[1] + A[13] * B[3]
+		result.b = 0
+		result.c = A[31] * B[1] + A[33] * B[3]
+	else
+		result.a = A[11] * B[1] + A[12] * B[2] + A[13] * B[3]
+		result.b = A[21] * B[1] + A[22] * B[2] + A[23] * B[3]
+		result.c = A[31] * B[1] + A[32] * B[2] + A[33] * B[3]
+	end
 	
 	return result
 end
@@ -1006,6 +1039,7 @@ function uespLog.SkillCoefComputeAMatrix(skillsData, abilityData, numberIndex)
 	A[31] = 0
 	A[32] = 0
 	A[33] = 0
+	A['size'] = 3
 	
 	for i,skill in ipairs(skillsData) do
 		x, y = uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
@@ -1019,6 +1053,10 @@ function uespLog.SkillCoefComputeAMatrix(skillsData, abilityData, numberIndex)
 		A[31] = A[31] + x
 		A[32] = A[32] + y
 		A[33] = A[33] + 1
+	end
+	
+	if (A[12] == 0 and A[21] == 0 and A[22] == 0 and A[23] == 0 and A[32] == 0) then
+		A['size'] = 2
 	end
 	
 	return A
@@ -1085,6 +1123,7 @@ function uespLog.SkillCoefComputeAMatrixInv(A)
 	local Ainv = {}
 		
 	if (det == 0) then
+		Ainv['size'] = A['size']
 		Ainv[11] = 0
 		Ainv[12] = 0
 		Ainv[13] = 0
@@ -1098,16 +1137,29 @@ function uespLog.SkillCoefComputeAMatrixInv(A)
 		return Ainv, false
 	end
 	
-	Ainv[11] = (A[22]*A[33] - A[32]*A[23]) / Adet
-	Ainv[12] = (A[13]*A[32] - A[33]*A[12]) / Adet
-	Ainv[13] = (A[12]*A[23] - A[22]*A[13]) / Adet
-	Ainv[21] = (A[23]*A[31] - A[33]*A[21]) / Adet
-	Ainv[22] = (A[11]*A[33] - A[31]*A[13]) / Adet
-	Ainv[23] = (A[13]*A[21] - A[23]*A[11]) / Adet
-	Ainv[31] = (A[21]*A[32] - A[31]*A[22]) / Adet
-	Ainv[32] = (A[12]*A[31] - A[32]*A[11]) / Adet
-	Ainv[33] = (A[11]*A[22] - A[21]*A[12]) / Adet
+	if (A.size == 2) then
+		Ainv[11] = A[33] / Adet
+		Ainv[12] = 0
+		Ainv[13] = -A[13] / Adet
+		Ainv[21] = 0
+		Ainv[22] = 0
+		Ainv[23] = 0
+		Ainv[31] = -A[31] / Adet
+		Ainv[32] = 0
+		Ainv[33] = A[11] / Adet
+	else
+		Ainv[11] = (A[22]*A[33] - A[32]*A[23]) / Adet
+		Ainv[12] = (A[13]*A[32] - A[33]*A[12]) / Adet
+		Ainv[13] = (A[12]*A[23] - A[22]*A[13]) / Adet
+		Ainv[21] = (A[23]*A[31] - A[33]*A[21]) / Adet
+		Ainv[22] = (A[11]*A[33] - A[31]*A[13]) / Adet
+		Ainv[23] = (A[13]*A[21] - A[23]*A[11]) / Adet
+		Ainv[31] = (A[21]*A[32] - A[31]*A[22]) / Adet
+		Ainv[32] = (A[12]*A[31] - A[32]*A[11]) / Adet
+		Ainv[33] = (A[11]*A[22] - A[21]*A[12]) / Adet
+	end
 	
+	Ainv['size'] = A['size']
 	return Ainv, true
 end	
 
@@ -1115,7 +1167,11 @@ end
 function uespLog.SkillCoefComputeAMatrixDet(A)
 	local Adet = 0
 	
-	Adet = A[11]*A[22]*A[33] + A[12]*A[23]*A[31] + A[13]*A[21]*A[32] - A[31]*A[22]*A[13] - A[32]*A[23]*A[11] - A[33]*A[21]*A[12]
+	if (A.size == 2) then
+		Adet = A[11]*A[33] - A[31]*A[13]
+	else
+		Adet = A[11]*A[22]*A[33] + A[12]*A[23]*A[31] + A[13]*A[21]*A[32] - A[31]*A[22]*A[13] - A[32]*A[23]*A[11] - A[33]*A[21]*A[12]
+	end
 	
 	return Adet
 end
@@ -1186,3 +1242,12 @@ function uespLog.isFinite(number)
 end
 
 
+function uespLog.GetSkillMechanicName(mechanic)
+	local name = uespLog.SKILLCOEF_MECHANIC_NAMES[mechanic]
+	
+	if (name == nil) then
+		name = tostring(mechanic)
+	end
+	
+	return name
+end

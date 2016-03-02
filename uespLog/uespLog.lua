@@ -400,13 +400,17 @@
 --			   Ideally you want to vary all stats (Stamina, Magicka, Spell Damage, Weapon Damage) as much as
 --			   possible to get more accurate results.
 --
---			   The general procedure to record/calculate skill coefficients is:
---					1. Equip/unequip items
---					2. Run "/usc save"
---					3. Repeat 1. & 2. for 10 or more different stat combinations
---					4. Run "/usc calc"
---					5. Run "/reloadui" or logout to update the saved variables
---					6. Upload the saved variable file or copy/paste the coefficient data from the "tempData" section.
+--			   The general procedure to accurately record/calculate skill coefficients is:
+--					 1. Reset all Champion Points
+--					 2. Reset all skills
+--					 3. Purchase the base rank of all active skills/ultimates (not passives)
+--					 4. Remove all skills from both ability bars
+--					 5. Equip/unequip items
+--					 6. Run "/usc save"
+--					 7. Repeat 5. & 6. for 10 or more different stat combinations (magicka, stamina, spell/weapon damage)
+--					 8. Run "/usc calc"
+--					 9. Run "/reloadui" or logout to update the saved variables
+--					10. Upload the saved variable file or copy/paste the coefficient data from the "tempData" section.
 --	
 --			  Uploaded and parsed skill coefficient data can be found at http://esolog.uesp.net/viewSkillCoef.php		
 --			  or in the mined skills database at http://esoitem.uesp.net/viewlog.php?record=minedSkills   

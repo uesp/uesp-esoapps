@@ -157,6 +157,7 @@ function uespLog.LogSkillCoefDataSkill(abilityData)
 		local b  = string.format("%.7f", result.b)
 		local c  = string.format("%.7f", result.c)
 		local R2 = string.format("%.7f", result.R2)
+		local avg = string.format("%.7f", result.avg)
 		local index = abilityData.numbersIndex[i]
 		
 		if (doesVary) then
@@ -164,6 +165,7 @@ function uespLog.LogSkillCoefDataSkill(abilityData)
 			logData['b'..tostring(index)] = b
 			logData['c'..tostring(index)] = c
 			logData['R'..tostring(index)] = R2
+			logData['avg'..tostring(index)] = avg
 		end
 	end	
 	

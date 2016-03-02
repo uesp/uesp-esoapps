@@ -60,6 +60,7 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		end
 	elseif (cmd1 == "clear" or cmd1 == "reset") then
 		uespLog.ClearSkillCoefData()
+		uespLog.Msg("Cleared all skill coefficient data.")
 	elseif (cmd1 == "savewyk") then
 		uespLog.CaptureSkillCoefDataWykkyd(cmds[2], cmds[3], cmds[4])
 	elseif (cmd1 == "stop" or cmd1 == "end" or cmd1 == "abort") then
@@ -394,18 +395,21 @@ function uespLog.CaptureSkillCoefData()
 				local ability4 = -1
 				local ability5 = -1
 				
-				if (progressionIndex ~= nil and progressionIndex > 0) then
-					ability3 = GetAbilityProgressionAbilityId(progressionIndex, 0, 4)
-					ability4 = GetAbilityProgressionAbilityId(progressionIndex, 1, 4)
-					ability5 = GetAbilityProgressionAbilityId(progressionIndex, 2, 4)
-					uespLog.SaveSkillCoefData(ability3, 4)
-					uespLog.SaveSkillCoefData(ability4, 4)
-					uespLog.SaveSkillCoefData(ability5, 4)
-				else
-					uespLog.SaveSkillCoefData(ability1, rank)
-					uespLog.SaveSkillCoefData(ability2, rank)
+				if (not passive) then
+				
+					if (progressionIndex ~= nil and progressionIndex > 0) then
+						ability3 = GetAbilityProgressionAbilityId(progressionIndex, 0, 4)
+						ability4 = GetAbilityProgressionAbilityId(progressionIndex, 1, 4)
+						ability5 = GetAbilityProgressionAbilityId(progressionIndex, 2, 4)
+						uespLog.SaveSkillCoefData(ability3, 4)
+						uespLog.SaveSkillCoefData(ability4, 4)
+						uespLog.SaveSkillCoefData(ability5, 4)
+					else
+						uespLog.SaveSkillCoefData(ability1, rank)
+						uespLog.SaveSkillCoefData(ability2, rank)
+					end
 				end
-		
+			
 			end
 		end
 	end

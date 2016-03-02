@@ -1071,6 +1071,7 @@ function uespLog.GetCharDataResearchTraits(craftingType)
 		local totalTraits = 0
 		local knownTraitCount = 0
 		local unknownTraitCount = 0
+		local researchTrait = ""
 		
 		for traitIndex = 1, numTraits do
 			local duration, timeRemainingSecs = GetSmithingResearchLineTraitTimes(craftingType, researchLineIndex, traitIndex)
@@ -1082,6 +1083,7 @@ function uespLog.GetCharDataResearchTraits(craftingType)
 				knownTraits[traitIndex] = traitName
 				knownTraitCount = knownTraitCount + 1
 			elseif (duration ~= nil ) then  -- Being researched
+				researchTrait = "["..traitName.."]"
 				knownTraits[traitIndex] = "["..traitName.."]"
 				unknownTraitCount = unknownTraitCount + 1
 			else
@@ -1100,7 +1102,7 @@ function uespLog.GetCharDataResearchTraits(craftingType)
 			researchData[varName] = "No traits known"
 		else
 			local knownString = uespLog.implode(knownTraits, ", ")
-			local unknownString = uespLog.implode(unknownTraits, ", ")
+			local unknownString = uespLog.implode(unknownTraits, ", ") .. " " .. researchTrait
 			researchData[varName] = knownString .. " ("..tostring(knownTraitCount).."/"..tostring(totalTraits)..")"
 			researchData[varName..":Unknown"] = unknownString .. " ("..tostring(unknownTraitCount).."/"..tostring(totalTraits)..")"
 		end

@@ -8,6 +8,7 @@ uespLog.SkillCoefData = {}
 uespLog.SkillCoefAbilityData = {}
 uespLog.SkillCoefAbilityCount = 0
 uespLog.SkillCoefNumValidCoefCount = 0
+uespLog.SkillCoefNumBadCoefCount = 0
 uespLog.SkillCoefDataPointCount = 0
 uespLog.SkillCoefDataIsCalculated = false
 
@@ -16,7 +17,170 @@ uespLog.SkillCoef_CaptureWykkyd_StartIndex = 1
 uespLog.SkillCoef_CaptureWykkyd_IsWorking = false
 uespLog.SkillCoef_CaptureWykkyd_EndIndex = 5
 uespLog.SkillCoef_CaptureWykkyd_CurrentIndex = 5
-uespLog.SkillCoef_CaptureWykkyd_TimeDelayLoadSet = 5000
+uespLog.SkillCoef_CaptureWykkyd_TimeDelayLoadSet = 10000   -- Takes a while for skill data to 'settle' when using Wykkyd to change complete sets
+
+uespLog.UESP_POWERTYPE_SOULTETHER = -1234
+
+uespLog.SKILLCOEF_CHECK_ABILITYID = 28302
+uespLog.SKILLCOEF_CHECK_INDEX = 2
+uespLog.SKILLCOEF_CHECK_VALUE = 300
+
+
+-- Some skills have different mechanics that what the game data says
+uespLog.SKILLCOEF_SPECIALTYPES = {
+
+	-- NightBlade Grim Focus/Merciless Resolve/Relentless Focus
+	-- Game mechanic says Magicka but main damage seems to work like an ultimate
+	[61919] = POWERTYPE_ULTIMATE,
+	[62111] = POWERTYPE_ULTIMATE,
+	[62114] = POWERTYPE_ULTIMATE,
+	[62117] = POWERTYPE_ULTIMATE,
+	
+	[61927] = POWERTYPE_ULTIMATE,
+	[62099] = POWERTYPE_ULTIMATE,
+	[62103] = POWERTYPE_ULTIMATE,
+	[62107] = POWERTYPE_ULTIMATE,
+	
+	[61902] = POWERTYPE_ULTIMATE,
+	[62090] = POWERTYPE_ULTIMATE,
+	[64176] = POWERTYPE_ULTIMATE,
+	[62096] = POWERTYPE_ULTIMATE,
+	
+	-- NightBlade Soul Shred/Soul Tether/Soul Siphon
+	-- The health stealing portion seems to always use Spell Damage
+	[25091] = { [3] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	[36154] = { [3] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	[36160] = { [3] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	[36166] = { [3] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	
+	[35508] = { [6] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	[36172] = { [6] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	[36179] = { [6] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	[36186] = { [6] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	
+	[35460] = { [5] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	[36193] = { [5] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	[36200] = { [5] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	[36207] = { [5] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	
+	
+	-- 1H+Shield Absorb Magic
+	-- Is a stamina ability but scales off of health
+	[38317] = POWERTYPE_HEALTH,
+	[41370] = POWERTYPE_HEALTH,
+	[41375] = POWERTYPE_HEALTH,
+	[41380] = POWERTYPE_HEALTH,
+	
+	-- Mages Guild Equilibrium/Spell Symmetry/Balance
+	-- Are magicka abilities but scale off of health
+	[31642] = POWERTYPE_HEALTH,
+	[42247] = POWERTYPE_HEALTH,
+	[42249] = POWERTYPE_HEALTH,
+	[42251] = POWERTYPE_HEALTH,
+	
+	[40445] = POWERTYPE_HEALTH,
+	[42253] = POWERTYPE_HEALTH,
+	[42258] = POWERTYPE_HEALTH,
+	[42263] = POWERTYPE_HEALTH,
+	
+	[40441] = POWERTYPE_HEALTH,
+	[42268] = POWERTYPE_HEALTH,
+	[42273] = POWERTYPE_HEALTH,
+	[42278] = POWERTYPE_HEALTH,
+	
+	-- Undaunted Inner Fire/Inner Rage/Inner Beast
+	-- Numbers 4/6 seem to work like ultimates
+	[39475] = { [4] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
+	[43353] = { [4] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
+	[43358] = { [4] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
+	[43363] = { [4] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
+
+	[42060] = { [4] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
+	[43383] = { [4] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
+	[43388] = { [4] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
+	[43393] = { [4] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
+
+	[42056] = { [4] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
+	[43368] = { [4] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
+	[43373] = { [4] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
+	[43378] = { [4] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
+	
+	-- Undaunted Necrotic Orn/Mystic Orb/Energy Orb
+	-- Number 2 acts like an ultimate
+	[39298] = { [2] = POWERTYPE_ULTIMATE },
+	[43400] = { [2] = POWERTYPE_ULTIMATE },
+	[43403] = { [2] = POWERTYPE_ULTIMATE },
+	[43406] = { [2] = POWERTYPE_ULTIMATE },
+	
+	[42028] = { [2] = POWERTYPE_ULTIMATE },
+	[43409] = { [2] = POWERTYPE_ULTIMATE },
+	[43412] = { [2] = POWERTYPE_ULTIMATE },
+	[43415] = { [2] = POWERTYPE_ULTIMATE },
+	
+	[42038] = { [2] = POWERTYPE_ULTIMATE },
+	[43439] = { [2] = POWERTYPE_ULTIMATE },
+	[43443] = { [2] = POWERTYPE_ULTIMATE },
+	[43447] = { [2] = POWERTYPE_ULTIMATE },
+	
+	-- Undaunted Trapping Webs/Tangling Webs/Shadow Silk	
+	-- Number 4 acts like an ultimate
+	[39425] = { [4] = POWERTYPE_ULTIMATE },
+	[43533] = { [4] = POWERTYPE_ULTIMATE },
+	[43537] = { [4] = POWERTYPE_ULTIMATE },
+	[43541] = { [4] = POWERTYPE_ULTIMATE },
+	
+	[42012] = { [4] = POWERTYPE_ULTIMATE },
+	[43469] = { [4] = POWERTYPE_ULTIMATE },
+	[43473] = { [4] = POWERTYPE_ULTIMATE },
+	[43477] = { [4] = POWERTYPE_ULTIMATE },
+	
+	[41990] = { [4] = POWERTYPE_ULTIMATE },
+	[43481] = { [4] = POWERTYPE_ULTIMATE },
+	[43485] = { [4] = POWERTYPE_ULTIMATE },
+	[43489] = { [4] = POWERTYPE_ULTIMATE },
+	
+	-- 1H & Shield Shielded Assault	
+	-- Number 3 is based on health
+	[38401] = { [3] = POWERTYPE_HEALTH },
+	[41518] = { [3] = POWERTYPE_HEALTH },
+	[41522] = { [3] = POWERTYPE_HEALTH },
+	[41526] = { [3] = POWERTYPE_HEALTH },
+	
+	-- Fighters Guild Silver Shards
+	-- Its a stamina ability but number 5 scales on health
+	[40300] = { [5] = POWERTYPE_HEALTH },
+	[42659] = { [5] = POWERTYPE_HEALTH },
+	[42665] = { [5] = POWERTYPE_HEALTH },
+	[42671] = { [5] = POWERTYPE_HEALTH },
+
+	-- Fighters Guild Silver Leash/Silver Bolts
+	-- Its a stamina ability but number 4 scales on health
+	[40336] = { [4] = POWERTYPE_HEALTH },
+	[42677] = { [4] = POWERTYPE_HEALTH },
+	[42687] = { [4] = POWERTYPE_HEALTH },
+	[42696] = { [4] = POWERTYPE_HEALTH },
+	
+	[35721] = { [4] = POWERTYPE_HEALTH },
+	[42647] = { [4] = POWERTYPE_HEALTH },
+	[42651] = { [4] = POWERTYPE_HEALTH },
+	[42655] = { [4] = POWERTYPE_HEALTH },
+	
+	-- Alliance Support Replenishing Barrier	
+	-- Although it's an ultimate the 3rd number seems to be only based off of magic
+	[40239] = { [3] = POWERTYPE_MAGICKA },
+	[46616] = { [3] = POWERTYPE_MAGICKA },
+	[46619] = { [3] = POWERTYPE_MAGICKA },
+	[46622] = { [3] = POWERTYPE_MAGICKA },
+	
+	
+	-- Harness Magicka
+	-- Deep Slash?
+	-- Executioner	39957
+	-- Reverse Slice	39942
+	-- Passives?
+	-- Health Based?	
+	
+}
 
 
 SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
@@ -24,6 +188,12 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 	local result
 	
 	if (cmd1 == "save") then
+	
+		if (not uespLog.IsSafetoSaveSkillCoef()) then
+			uespLog.Msg("Error: Can't save skill data. Wait a few more seconds and try again.")
+			return false
+		end
+		
 		result = uespLog.CaptureSkillCoefData()
 
 		if (result) then
@@ -36,7 +206,8 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		result = uespLog.ComputeSkillCoef()
 		
 		if (result) then
-			uespLog.Msg("Successfully calculated skill coefficients.")
+			uespLog.Msg("Skill data calculated! Found "..tostring(uespLog.SkillCoefNumValidCoefCount).." skill variables with valid coefficients.")
+			uespLog.Msg(".       Failed to compute coefficients for "..tostring(uespLog.SkillCoefNumBadCoefCount).." skill variables.")
 		else
 			uespLog.Msg("Error: Failed to calculate skill coefficients!")
 		end
@@ -44,6 +215,9 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 	elseif (cmd1 == "coef" or cmd1 == "show") then
 		local skillName = uespLog.implodeStart(cmds, " ", 2)
 		uespLog.ShowSkillCoef(skillName)
+	elseif (cmd1 == "savetemp") then
+		local skillName = uespLog.implodeStart(cmds, " ", 2)
+		uespLog.SaveTempSkillCoef(skillName)
 	elseif (cmd1 == "status") then
 		local calcStatus = "not "
 		
@@ -53,6 +227,7 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		
 		uespLog.Msg("There are "..tostring(uespLog.SkillCoefAbilityCount).." skills with "..tostring(uespLog.SkillCoefDataPointCount).." data points for calculating skill coefficients.")
 		uespLog.Msg("Skill data is "..calcStatus.."calculated with "..tostring(uespLog.SkillCoefNumValidCoefCount).." skill variables with valid coefficients.")
+		uespLog.Msg(".       Failed to compute coefficients for "..tostring(uespLog.SkillCoefNumBadCoefCount).." skill variables.")
 		
 		if (uespLog.SkillCoef_CaptureWykkyd_IsWorking) then
 			local setName = uespLog.SkillCoef_CaptureWykkyd_Prefix .. uespLog.SkillCoef_CaptureWykkyd_CurrentIndex
@@ -99,6 +274,7 @@ function uespLog.LogSkillCoefData()
 	table.insert(rowData, "Skill Name")
 	table.insert(rowData, "ID")
 	table.insert(rowData, "NumVars")
+	table.insert(rowData, "Mechanic")
 	table.insert(rowData, "Description")
 	table.insert(rowData, "a1")
 	table.insert(rowData, "b1")
@@ -120,6 +296,10 @@ function uespLog.LogSkillCoefData()
 	table.insert(rowData, "b5")
 	table.insert(rowData, "c5")
 	table.insert(rowData, "R5")
+	table.insert(rowData, "a6")
+	table.insert(rowData, "b6")
+	table.insert(rowData, "c6")
+	table.insert(rowData, "R6")
 	
 	local data = uespLog.savedVars.tempData.data
 	data[#data+1] = uespLog.implode(rowData, ", ")
@@ -184,6 +364,7 @@ function uespLog.LogSkillCoefDataSkillCsv(abilityData)
 	table.insert(rowData, "'"..abilityData.name.."'")
 	table.insert(rowData, abilityData.id)
 	table.insert(rowData, abilityData.numVars)
+	table.insert(rowData, abilityData.type)
 	table.insert(rowData, "'"..abilityData.newDesc.."'")
 	
 	for i,result in ipairs(abilityData.result) do
@@ -277,6 +458,12 @@ function uespLog.CaptureNextSkillCoefDataWykkyd_SaveData()
 		return
 	end
 	
+	if (not uespLog.IsSafetoSaveSkillCoef()) then
+		uespLog.Msg("Error: Can't save skill data. Waiting a few more seconds and trying again...")
+		zo_callLater(uespLog.CaptureNextSkillCoefDataWykkyd_SaveData, uespLog.SkillCoef_CaptureWykkyd_TimeDelayLoadSet/2)
+		return false
+	end
+	
 	local setName = tostring(uespLog.SkillCoef_CaptureWykkyd_Prefix) .. tostring(uespLog.SkillCoef_CaptureWykkyd_CurrentIndex)
 
 	if (uespLog.CaptureSkillCoefData()) then
@@ -288,6 +475,53 @@ function uespLog.CaptureNextSkillCoefDataWykkyd_SaveData()
 	uespLog.SkillCoef_CaptureWykkyd_CurrentIndex = uespLog.SkillCoef_CaptureWykkyd_CurrentIndex + 1
 	uespLog.CaptureNextSkillCoefDataWykkyd_LoadSet()
 end
+
+
+function uespLog.SaveTempSkillCoef(name)
+	local abilityId = tonumber(name)
+	local coefData = nil
+	local skillData = nil
+	
+	if (name == nil or name == "") then
+		uespLog.Msg("Missing required skill name or abilityId!")
+		return false
+	end
+	
+	if (abilityId ~= nil) then
+		coefData = uespLog.SkillCoefAbilityData[abilityId]
+		skillData = uespLog.SkillCoefData[abilityId]
+	else
+		coefData, skillData, abilityId = uespLog.FindSkillAbilityData(name)
+	end
+	
+	if (coefData == nil or skillData == nil) then
+		uespLog.Msg("Skill "..tostring(name).." does not exist in coefficient data!")
+		return false
+	end
+	
+	local tempData = uespLog.savedVars.tempData.data
+	tempData[#tempData+1] = "Raw Skill Coefficient Data for "..tostring(coefData.name).." ("..tostring(abilityId).."), "..tostring(#skillData).." data points"
+		
+	for i, data in ipairs(skillData) do
+		local rowData = {}
+		
+		table.insert(rowData, data.mag)
+		table.insert(rowData, data.sta)
+		table.insert(rowData, data.hea)
+		table.insert(rowData, data.sd)
+		table.insert(rowData, data.wd)
+		table.insert(rowData, "'"..data.desc.."'")
+		
+		for j, number in ipairs(data.numbers) do
+			table.insert(rowData, number)
+		end
+				
+		tempData[#tempData+1] = uespLog.implode(rowData, ", ")
+	end
+	
+	uespLog.Msg("Saved raw skill coefficient data for "..tostring(coefData.name).." ("..tostring(abilityId).."), "..tostring(#skillData).." data points")
+	return true
+end
 	
 
 function uespLog.ShowSkillCoef(name)
@@ -295,22 +529,23 @@ function uespLog.ShowSkillCoef(name)
 	local coefData = nil
 
 	if (name == nil or name == "") then
+		uespLog.Msg("Missing required skill name or abilityId!")
 		return false
 	end
 	
 	if (abilityId ~= nil) then
 		coefData = uespLog.SkillCoefAbilityData[abilityId]
 	else
-		coefData = uespLog.FindSkillAbilityData(name)
+		coefData, _, abilityId = uespLog.FindSkillAbilityData(name)
 	end
 	
 	if (coefData == nil) then
-		uespLog.Msg("Skill #"..tostring(name).." does not exist in coefficient data!")
+		uespLog.Msg("Skill "..tostring(name).." does not exist in coefficient data!")
 		return false
 	end
 	
 	if (not coefData.isValid or coefData.result == nil) then
-		uespLog.Msg("Coefficient data for skill #"..tostring(name).." is not valid!")
+		uespLog.Msg("Coefficient data for skill "..tostring(name).." is not valid!")
 		return false
 	end
 	
@@ -337,7 +572,6 @@ function uespLog.ShowSkillCoef(name)
 		local index = coefData.numbersIndex[i]
 		
 		if (doesVary) then
-			--uespLog.Msg(".     $"..tostring(index)..": "..a..", "..b..", "..c..", "..R2)
 			uespLog.Msg(".     $"..tostring(index)..": "..a..", "..b..", "..c..", "..R2.."  ("..tostring(result.min).."-"..tostring(result.max)..")")
 		end
 	end	
@@ -348,14 +582,15 @@ end
 
 
 function uespLog.FindSkillAbilityData(name)
-
+	name = string.lower(name)
+	
 	for abilityId, abilityData in pairs(uespLog.SkillCoefAbilityData) do
-		if (abilityData.name == name) then
-			return abilityData
+		if (string.lower(abilityData.name) == name) then
+			return abilityData, uespLog.SkillCoefData[abilityId], abilityId
 		end
 	end
 	
-	return nil
+	return nil, nil, nil
 end
 
 
@@ -365,6 +600,7 @@ function uespLog.ClearSkillCoefData()
 	uespLog.SkillCoefAbilityCount = 0
 	uespLog.SkillCoefDataPointCount = 0
 	uespLog.SkillCoefNumValidCoefCount = 0
+	uespLog.SkillCoefNumBadCoefCount = 0
 	uespLog.SkillCoefDataIsCalculated = false
 end
 
@@ -419,6 +655,37 @@ function uespLog.CaptureSkillCoefData()
 end
 
 
+-- After equipping/unequipping items it can take several seconds until skill values 'reset'.
+-- To check if the skill values have reset properly we check the value of a known skill to
+-- see if it matches the expected value.
+function uespLog.IsSafetoSaveSkillCoef()
+	local description = GetAbilityDescription(uespLog.SKILLCOEF_CHECK_ABILITYID)
+	 
+	if (description == nil or description == "") then
+		return true
+	end
+	
+	local iter = string.gmatch(description, "%d+[.]?%d*")
+	local i = 1
+		
+	for number in iter do
+	
+		if (i == uespLog.SKILLCOEF_CHECK_INDEX) then
+			local value = tonumber(number)
+			
+			if (value ~= uespLog.SKILLCOEF_CHECK_VALUE) then
+				uespLog.DebugExtraMsg("Error: Skill value of "..tostring(value).." does not match expected value of "..tostring(uespLog.SKILLCOEF_CHECK_VALUE).."!")
+				return false
+			end
+		end
+		
+		i = i + 1
+	end		
+	
+	return true
+end
+
+
 function uespLog.SaveSkillCoefData(abilityId, rank)
 	local name = GetAbilityName(abilityId)
 	local description = GetAbilityDescription(abilityId)
@@ -441,6 +708,7 @@ function uespLog.SaveSkillCoefData(abilityId, rank)
 		{
 			["name"] = name,
 			["rank"] = rank,
+			["cost"] = cost,
 			["id"]   = abilityId,
 			["desc"] = description,
 			["type"] = mechanic,
@@ -458,8 +726,9 @@ function uespLog.SaveSkillCoefData(abilityId, rank)
 	{
 		["mag"]  = GetPlayerStat(STAT_MAGICKA_MAX),
 		["sta"]  = GetPlayerStat(STAT_STAMINA_MAX),
+		["hea"]  = GetPlayerStat(STAT_HEALTH_MAX),
 		["sd"] 	 = GetPlayerStat(STAT_SPELL_POWER),
-		["wd"]   = GetPlayerStat(STAT_WEAPON_POWER),
+		["wd"]   = GetPlayerStat(STAT_POWER),
 		["desc"] = description,
 	}
 	
@@ -480,7 +749,7 @@ end
 function uespLog.ParseSkillCoefDataSkill(abilityId, skillsData)
 
 	for i,data in ipairs(skillsData) do
-		local iter = string.gmatch(data['desc'], "%d+\[.]?%d*")
+		local iter = string.gmatch(data['desc'], "%d+[.]?%d*")
 		data['numbers'] = {}
 		
 		for number in iter do
@@ -580,33 +849,40 @@ function uespLog.ComputeSkillCoefSkill(abilityId, skillsData)
 	end
 	
 	local coefData = {}
-	coefData.A = uespLog.SkillCoefComputeAMatrix(skillsData, abilityData)
-	coefData.Ainv, coefData.isValid = uespLog.SkillCoefComputeAMatrixInv(coefData.A)
+	local allInvalid = true
+	coefData.A = {}
+	coefData.Ainv = {}
+	coefData.isValid = true
+	coefData.AisValid = { }
 	coefData.B = {}
 	coefData.result = {}
-	
-	if (not coefData.isValid) then
-		abilityData.data = coefData
-		abilityData.result = coefData.result
-		abilityData.isValid = coefData.isValid
-		return false
-	end
 	
 	for i = 1, numberCount do
 	
 		if (abilityData.numbersVary[i]) then
+			local A = uespLog.SkillCoefComputeAMatrix(skillsData, abilityData, i)
+			local Ainv, AisValid = uespLog.SkillCoefComputeAMatrixInv(A)
 			local B = uespLog.SkillCoefComputeBMatrix(skillsData, abilityData, i)
-			table.insert(coefData.B, B)
-		
-			local result = uespLog.SkillCoefComputeMatrixMultAB(coefData.Ainv, B)
-			result.R2 = uespLog.SkillCoefComputeR2(result, skillsData, abilityData, i)
-			result.min, result.max, result.avg = uespLog.SkillCoefComputeMinMaxAvgNumbers(skillsData, i)
-			table.insert(coefData.result, result)
 			
-			if (not uespLog.isFinite(result.a) or not uespLog.isFinite(result.b) or not uespLog.isFinite(result.c) or not uespLog.isFinite(result.R2)) then
-				coefData.isValid = false
+			table.insert(coefData.A, A)
+			table.insert(coefData.Ainv, Ainv)
+			table.insert(coefData.AisValid, AisValid)
+			table.insert(coefData.B, B)
+			
+			if (AisValid) then
+				local result = uespLog.SkillCoefComputeMatrixMultAB(Ainv, B)
+				result.R2 = uespLog.SkillCoefComputeR2(result, skillsData, abilityData, i)
+				result.min, result.max, result.avg = uespLog.SkillCoefComputeMinMaxAvgNumbers(skillsData, i)
+				table.insert(coefData.result, result)
+				
+				if (not uespLog.isFinite(result.a) or not uespLog.isFinite(result.b) or not uespLog.isFinite(result.c) or not uespLog.isFinite(result.R2)) then
+					uespLog.SkillCoefNumBadCoefCount = uespLog.SkillCoefNumBadCoefCount + 1
+				else
+					allInvalid = false
+					uespLog.SkillCoefNumValidCoefCount = uespLog.SkillCoefNumValidCoefCount + 1
+				end
 			else
-				uespLog.SkillCoefNumValidCoefCount = uespLog.SkillCoefNumValidCoefCount + 1
+				table.insert(coefData.result, { } )
 			end
 			
 		else
@@ -618,8 +894,45 @@ function uespLog.ComputeSkillCoefSkill(abilityId, skillsData)
 	
 	abilityData.data = coefData
 	abilityData.result = coefData.result
-	abilityData.isValid = coefData.isValid
+	abilityData.isValid = not allInvalid
 	return true
+end
+
+
+function uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
+	local x = skill.mag
+	local y = skill.sd
+	local mechanic = abilityData.type
+	local specialTypes = uespLog.SKILLCOEF_SPECIALTYPES[abilityData.id]
+	
+	if (specialTypes ~= nil) then
+	
+		if (type(specialTypes) == "table") then
+		
+			if (specialTypes[numberIndex] ~= nil) then
+				mechanic = specialTypes[numberIndex]
+			end
+			
+		else
+			mechanic = specialTypes
+		end
+	end
+			
+	if (mechanic == uespLog.UESP_POWERTYPE_SOULTETHER) then
+		x = math.max(skill.mag, skill.sta)
+		y = skill.sd
+	elseif (mechanic == POWERTYPE_ULTIMATE) then
+		x = math.max(skill.mag, skill.sta)
+		y = math.max(skill.sd, skill.wd)
+	elseif (mechanic == POWERTYPE_STAMINA) then
+		x = skill.sta
+		y = skill.wd
+	elseif (mechanic == POWERTYPE_HEALTH) then
+		x = skill.hea
+		y = 1
+	end
+	
+	return x, y
 end
 
 
@@ -643,15 +956,9 @@ function uespLog.SkillCoefComputeR2(coef, skillsData, abilityData, numberIndex)
 	
 	averageZ = averageZ / count
 	
-	for i,skill in ipairs(skillsData) do
-		x = skill.mag
-		y = skill.sd
-		
-		if (abilityData.type == POWERTYPE_STAMINA or (abilityData.type == POWERTYPE_ULTIMATE and skill.sta > skill.mag)) then
-			x = skill.sta
-			y = skill.wd
-		end
-		
+	for i, skill in ipairs(skillsData) do
+		x, y = uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
+				
 		local z = skill.numbers[numberIndex]
 		local f = x * coef.a + y * coef.b + coef.c
 		local e = z - f
@@ -681,7 +988,7 @@ function uespLog.SkillCoefComputeMatrixMultAB(A, B)
 end
 
 
-function uespLog.SkillCoefComputeAMatrix(skillsData, abilityData)
+function uespLog.SkillCoefComputeAMatrix(skillsData, abilityData, numberIndex)
 	-- A =  sum_i x[i]*x[i],    sum_i x[i]*y[i],    sum_i x[i]
 	--		sum_i x[i]*y[i],    sum_i y[i]*y[i],    sum_i y[i]
 	--		sum_i x[i],         sum_i y[i],         sum_i 1
@@ -701,13 +1008,7 @@ function uespLog.SkillCoefComputeAMatrix(skillsData, abilityData)
 	A[33] = 0
 	
 	for i,skill in ipairs(skillsData) do
-		x = skill.mag
-		y = skill.sd
-		
-		if (abilityData.type == POWERTYPE_STAMINA or (abilityData.type == POWERTYPE_ULTIMATE and skill.sta > skill.mag)) then
-			x = skill.sta
-			y = skill.wd
-		end
+		x, y = uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 		
 		A[11] = A[11] + x*x
 		A[12] = A[12] + x*y
@@ -766,15 +1067,9 @@ function uespLog.SkillCoefComputeBMatrix(skillsData, abilityData, numberIndex)
 	B[2] = 0
 	B[3] = 0
 	
-	for i,skill in ipairs(skillsData) do
-		x = skill.mag
-		y = skill.sd
+	for i, skill in ipairs(skillsData) do
 		z = skill.numbers[numberIndex]
-		
-		if (abilityData.type == POWERTYPE_STAMINA or (abilityData.type == POWERTYPE_ULTIMATE and skill.sta > skill.mag)) then
-			x = skill.sta
-			y = skill.wd
-		end
+		x, y = uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 		
 		B[1] = B[1] + x*z
 		B[2] = B[2] + y*z
@@ -872,7 +1167,7 @@ end
 function uespLog.ReplaceSkillDescriptionAbility(abilityData)
 	local i = 0
     
-	local newDesc = string.gsub(abilityData.desc, "%d+\[.]?%d*", function (number)
+	local newDesc = string.gsub(abilityData.desc, "%d+[.]?%d*", function (number)
 		i = i + 1
 	
 		if (abilityData.numbersVary[i]) then

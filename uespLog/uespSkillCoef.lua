@@ -386,8 +386,6 @@ function uespLog.CaptureSkillCoefData()
 			local numSkillAbilities = GetNumSkillAbilities(skillType, skillIndex)
 					
 			for abilityIndex = 1, numSkillAbilities do
-				skillCount = skillCount + 1
-				
 				local name, _, rank, passive, ultimate, purchase, progressionIndex = GetSkillAbilityInfo(skillType, skillIndex, abilityIndex)
 				local ability1 = GetSkillAbilityId(skillType, skillIndex, abilityIndex, false)
 				local ability2 = GetSkillAbilityId(skillType, skillIndex, abilityIndex, true)
@@ -396,6 +394,7 @@ function uespLog.CaptureSkillCoefData()
 				local ability5 = -1
 				
 				if (not passive) then
+					skillCount = skillCount + 1
 				
 					if (progressionIndex ~= nil and progressionIndex > 0) then
 						ability3 = GetAbilityProgressionAbilityId(progressionIndex, 0, 4)

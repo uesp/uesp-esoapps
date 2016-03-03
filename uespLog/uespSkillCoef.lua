@@ -225,59 +225,80 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 
 	-- Dual Wield Twin Blade and Blunt	
 	[30893] = { [2] = POWERTYPE_STAMINA, [6] = uespLog.UESP_POWERTYPE_WEAPONDAGGER },
+	[45482] = { [2] = POWERTYPE_STAMINA, [6] = uespLog.UESP_POWERTYPE_WEAPONDAGGER },
 	
 	-- Light Armor Spell Warding	
 	[29663] = { [1] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
-
+	[45559] = { [1] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	
 	-- Light Armor Evocation	
 	[29639] = { [2] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	[45548] = { [2] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	[45549] = { [2] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
 	
 	-- Light Armor Recovery	
 	[29665] = { [2] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	[45557] = { [2] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
 	
 	-- Medium Armor Dexterity	
 	[29743] = { [1] = uespLog.UESP_POWERTYPE_MEDIUMARMOR},
+	[45563] = { [1] = uespLog.UESP_POWERTYPE_MEDIUMARMOR},
+	[45564] = { [1] = uespLog.UESP_POWERTYPE_MEDIUMARMOR},
 	
 	-- Medium Armor Improved Sneak	
 	[29738] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR, [4] = uespLog.UESP_POWERTYPE_MEDIUMARMOR  },
+	[45567] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR, [4] = uespLog.UESP_POWERTYPE_MEDIUMARMOR  },
 	
 	-- Medium Armor Athletics	
 	[29742] = { [3] = uespLog.UESP_POWERTYPE_MEDIUMARMOR },
+	[45574] = { [3] = uespLog.UESP_POWERTYPE_MEDIUMARMOR },
 	
 	-- Medium Armor Wind Walker	
 	[29687] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR, [4] = uespLog.UESP_POWERTYPE_MEDIUMARMOR  },
+	[45565] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR, [4] = uespLog.UESP_POWERTYPE_MEDIUMARMOR  },
 		
 	-- Heavy Armor Resolve
 	[29825] = { [1] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[45531] = { [1] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[45533] = { [1] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
 		
 	-- Heavy Armor Constitution
 	[29769] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR, [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[45526] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR, [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
 		
 	-- Heavy Armor Juggernaut
 	-- Note that skill output is truncated to integer values so fit accuracy may be low
 	[29804] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[45546] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
 	
 	-- Heavy Armor Rapid Mending
 	-- Note that skill output is truncated to integer values so fit accuracy may be low
 	[29791] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[45529] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
 	
-	-- Undaunted Undaunted Mettle
-	[55366] = { [2] = uespLog.UESP_POWERTYPE_ARMORTYPE },	
-
 	-- Nightblade Shadow Barrier	
-	[18866] = { [3] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[18866] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR, [3] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[45071] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR, [3] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
 	
 	-- Soul Magic Soul Shatter
 	[39266] = { [2] = POWERTYPE_HEALTH},
+	[45583] = { [2] = POWERTYPE_HEALTH},
+	
+	-- Undaunted Undaunted Mettle
+	[55366] = { [2] = uespLog.UESP_POWERTYPE_ARMORTYPE },	
+	[55386] = { [2] = uespLog.UESP_POWERTYPE_ARMORTYPE },	
 	
 	-- Undaunted Undaunted Command
 	[55584] = { [2] = POWERTYPE_HEALTH, [3] = POWERTYPE_STAMINA, [4] = POWERTYPE_MAGICKA },
+	[55676] = { [2] = POWERTYPE_HEALTH, [3] = POWERTYPE_STAMINA, [4] = POWERTYPE_MAGICKA },
 	
 	-- Destruction Tri Focus
 	[30948] = { [2] = POWERTYPE_HEALTH },
+	[45500] = { [2] = POWERTYPE_HEALTH },	
 	
 	-- Two Handed Heavy Weapons
 	[29375] = { [3] = POWERTYPE_STAMINA },
+	[45430] = { [3] = POWERTYPE_STAMINA },
 	
 }
 
@@ -460,7 +481,14 @@ function uespLog.LogSkillCoefDataSkill(abilityData)
 	logData.desc = abilityData.newDesc
 	logData.numVars = abilityData.numVars
 	logData.name = abilityData.name
+	logData.passive = 0
+	logData.cost = abilityData.cost
+	logData.rank = abilityData.rank
 	logData.abilityId = abilityData.id
+				
+	if (abilityData.passive) then
+		logData.passive = 1
+	end
 	
 	for i,result in ipairs(abilityData.result) do
 		local doesVary = abilityData.numbersVary[i]
@@ -785,11 +813,16 @@ function uespLog.CaptureSkillCoefData()
 					
 			for abilityIndex = 1, numSkillAbilities do
 				local name, _, rank, passive, ultimate, purchase, progressionIndex = GetSkillAbilityInfo(skillType, skillIndex, abilityIndex)
+				local level, maxLevel = GetSkillAbilityUpgradeInfo(skillType, skillIndex, abilityIndex)
 				local ability1 = GetSkillAbilityId(skillType, skillIndex, abilityIndex, false)
 				local ability2 = GetSkillAbilityId(skillType, skillIndex, abilityIndex, true)
 				local ability3 = -1
 				local ability4 = -1
 				local ability5 = -1
+				
+				if (level == 0 or level == nil) then 
+					level = 1
+				end
 				
 				skillCount = skillCount + 1
 			
@@ -797,12 +830,12 @@ function uespLog.CaptureSkillCoefData()
 					ability3 = GetAbilityProgressionAbilityId(progressionIndex, 0, 4)
 					ability4 = GetAbilityProgressionAbilityId(progressionIndex, 1, 4)
 					ability5 = GetAbilityProgressionAbilityId(progressionIndex, 2, 4)
-					uespLog.SaveSkillCoefData(ability3, 4)
-					uespLog.SaveSkillCoefData(ability4, 4)
-					uespLog.SaveSkillCoefData(ability5, 4)
+					uespLog.SaveSkillCoefData(ability3, 4, passive)
+					uespLog.SaveSkillCoefData(ability4, 4, passive)
+					uespLog.SaveSkillCoefData(ability5, 4, passive)
 				else
-					uespLog.SaveSkillCoefData(ability1, rank)
-					uespLog.SaveSkillCoefData(ability2, rank)
+					uespLog.SaveSkillCoefData(ability1, level, passive)
+					uespLog.SaveSkillCoefData(ability2, level + 1, passive)
 				end
 			
 			end
@@ -846,7 +879,7 @@ function uespLog.IsSafetoSaveSkillCoef()
 end
 
 
-function uespLog.SaveSkillCoefData(abilityId, rank)
+function uespLog.SaveSkillCoefData(abilityId, rank, passive)
 	local name = GetAbilityName(abilityId)
 	local description = GetAbilityDescription(abilityId)
 	local cost, mechanic = GetAbilityCost(abilityId)
@@ -868,6 +901,7 @@ function uespLog.SaveSkillCoefData(abilityId, rank)
 		{
 			["name"] = name,
 			["rank"] = rank,
+			["passive"] = passive,
 			["cost"] = cost,
 			["id"]   = abilityId,
 			["desc"] = description,

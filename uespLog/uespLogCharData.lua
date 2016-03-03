@@ -449,7 +449,7 @@ function uespLog.OnZoneChanged(eventCode, zoneName, subZoneName, newSubzone, zon
 end
 
 
-function uespLog.OnEatDrinkItem(bagId, slotIndex, itemLink)
+function uespLog.OnEatDrinkItem(itemLink)
 	local itemName = GetItemLinkName(itemLink)
 	local itemTypeString = "unknown"
 	local hasAbility, abilityHeader, abilityDescription, cooldown, hasScaling, minLevel, maxLevel, isVeteranRank = GetItemLinkOnUseAbilityInfo(itemLink)

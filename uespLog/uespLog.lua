@@ -364,6 +364,7 @@
 --			  the sized of the saved variable file for people not interested in collecting data. This only affects new
 --			  installations. Use "/uesplog on" to ensure data collection is enabled.
 --			- Fixed bug where menu settings were not being displayed the first time you open the add-on's settings menu.
+--			- Handle eating food/drink from the quickslot bar.
 --
 --		***BETA: Skill Coefficients***
 --			- Added basic skill coefficient mining with "/uespskillcoef" or "/usc". The equation for the base skill tooltip is
@@ -1808,6 +1809,8 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_JUSTICE_GOLD_REMOVED, uespLog.OnGoldRemoved)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_JUSTICE_ITEM_PICKPOCKETED, uespLog.OnItemPickpocketed)
 	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOT_ABILITY_USED, uespLog.OnActionSlotAbilityUsed)
+	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ARTIFACT_CONTROL_STATE, uespLog.OnArtifactControlState)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CAPTURE_AREA_STATUS, uespLog.OnCaptureAreaStatus)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CORONATE_EMPEROR_NOTIFICATION, uespLog.OnCoronateEmpererNotification)
@@ -1820,6 +1823,9 @@ function uespLog.Initialize( self, addOnName )
 	
 	uespLog.Old_ZO_InventorySlot_DoPrimaryAction = ZO_InventorySlot_DoPrimaryAction
 	ZO_InventorySlot_DoPrimaryAction = uespLog.ZO_InventorySlot_DoPrimaryAction
+	
+	uespLog.Old_ActionButton_HandleRelease = ActionButton.HandleRelease
+	ActionButton.HandleRelease = uespLog.ActionButton_HandleRelease
 	
 	uespLog.Old_Quit = Quit
 	uespLog.Old_Logout = Logout
@@ -3733,8 +3739,13 @@ end
 
 
 function uespLog.OnInventoryItemUsed (eventCode, itemSoundCategory)
+
 	uespLog.OnUseItem(eventCode, uespLog.lastItemLinkUsed_BagId, uespLog.lastItemLinkUsed_SlotIndex, uespLog.lastItemLinkUsed, itemSoundCategory)
 	uespLog.DebugExtraMsg("UESP::OnInventoryItemUsed sound="..tostring(itemSoundCategory))
+	
+	uespLog.lastItemLinkUsed = ""
+	uespLog.lastItemLinkUsed_BagId = -1
+	uespLog.lastItemLinkUsed_SlotIndex = -1
 end
 
 
@@ -3743,7 +3754,7 @@ function uespLog.OnUseItem(eventCode, bagId, slotIndex, itemLink, itemSoundCateg
 	local logData = { }
 	local itemType = GetItemLinkItemType(itemLink) --ITEMTYPE_CONTAINER
 	
-	uespLog.DebugExtraMsg("UESP::OnUseItem "..tostring(itemLink).."("..tostring(bagId)..","..tostring(slotIndex)..") sound="..tostring(itemSoundCategory))
+	uespLog.DebugExtraMsg("UESP::OnUseItem "..tostring(itemLink).."("..tostring(bagId)..","..tostring(slotIndex)..") sound="..tostring(itemSoundCategory)..", type="..tostring(itemType))
 
 	if (itemSoundCategory == ITEM_SOUND_CATEGORY_FOOTLOCKER) then
 		logData.event = "OpenFootLocker"
@@ -3759,8 +3770,8 @@ function uespLog.OnUseItem(eventCode, bagId, slotIndex, itemLink, itemSoundCateg
 		uespLog.lastTargetData.y = y
 		uespLog.lastTargetData.zone = zone
 		uespLog.lastTargetData.name = "footlocker"
-	elseif (bagId == BAG_BACKPACK and itemLink ~= nil) then
-		uespLog.OnEatDrinkItem(bagId, slotIndex, itemLink)
+	elseif (bagId == BAG_BACKPACK and itemLink ~= nil and (itemType == ITEMTYPE_FOOD or itemType == ITEMTYPE_DRINK)) then
+		uespLog.OnEatDrinkItem(itemLink)
 	end
 	
 end
@@ -3775,11 +3786,6 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 	if (updateReason == INVENTORY_UPDATE_REASON_DURABILITY_CHANGE) then
 		--uespLog.DebugExtraMsg("UESP::Skipping inventory slot update for "..itemName..", reason "..tostring(updateReason)..", sound "..tostring(itemSoundCategory))
 		return
-	end
-	
-	if (updateReason == 0 and itemSoundCategory >= 18 and itemSoundCategory <= 19 and not isNewItem and bagId == BAG_BACKPACK) then
-		--uespLog.OnEatDrinkItem(bagId, slotIndex, isNewItem, itemSoundCategory, updateReason)
-		--return
 	end
 	
 	if (not isNewItem) then
@@ -9076,6 +9082,33 @@ function uespLog.ZO_InventorySlot_DoPrimaryAction(inventorySlot)
 end
 
 
+function uespLog.ActionButton_HandleRelease(self)
+	local slotNum = self:GetSlot() or 0
+	local buttonType  = self:GetButtonType()
+	local slotType = GetSlotType(slotNum)
+	
+		-- Check for quickslot actions
+	if (slotType == ABILITY_SLOT_TYPE_QUICKSLOT) then
+		uespLog.OnQuickSlotUsed(slotNum)
+	end
+	
+	uespLog.DebugExtraMsg("uespLog.ActionButton_HandleRelease "..tostring(slotNum)..", "..tostring(buttonType))
+	
+	return uespLog.Old_ActionButton_HandleRelease(self)
+end
+
+
+function uespLog.OnQuickSlotUsed(slotNum)
+	local itemLink = GetSlotItemLink(slotNum)
+	local itemType = GetItemLinkItemType(itemLink)
+	
+	if (itemType == ITEMTYPE_FOOD or itemType == ITEMTYPE_DRINK) then
+		uespLog.OnEatDrinkItem(itemLink)
+	end
+	
+end
+
+
 function uespLog.Quit()
 	uespLog.OnLogoutAutoSaveCharData()
 	
@@ -9185,3 +9218,7 @@ function uespLog.LogQuestToolItemLink(journalIndex, toolIndex, questName)
 	uespLog.DebugMsg("UESP::Logged quest tool item link "..tostring(itemLink))
 end
 
+
+function uespLog.OnActionSlotAbilityUsed(event, slotIndex)
+	uespLog.DebugExtraMsg("OnActionSlotAbilityUsed::"..tostring(slotIndex))
+end

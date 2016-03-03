@@ -308,6 +308,15 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 		charData.OverloadState = 1
 	end
 	
+	charData.LightArmorCount = uespLog.CountEquippedArmor(ARMORTYPE_LIGHT)
+	charData.MediumArmorCount = uespLog.CountEquippedArmor(ARMORTYPE_MEDIUM)
+	charData.HeavyArmorCount = uespLog.CountEquippedArmor(ARMORTYPE_HEAVY)
+	charData.ArmorTypeCount = uespLog.CountEquippedArmorTypes()
+	charData.DaggerWeaponCount = uespLog.CountEquippedWeapons(WEAPONTYPE_DAGGER)
+	charData.SwordWeaponCount = uespLog.CountEquippedWeapons(WEAPONTYPE_SWORD)
+	charData.MaceWeaponCount = uespLog.CountEquippedWeapons(WEAPONTYPE_HAMMER)
+	charData.AxeWeaponCount = uespLog.CountEquippedWeapons(WEAPONTYPE_AXE)
+	
 	charData.Alliance = GetAllianceName(GetUnitAlliance("player"))
 	charData.AllianceRank = GetUnitAvARank("player")
 	charData.AlliancePoints = GetAlliancePoints()

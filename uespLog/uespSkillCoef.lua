@@ -951,11 +951,28 @@ end
 
 
 function uespLog.CountEquippedWeapons(weaponType)
+	-- Bar 1: 4/5
+    -- Bar 2: 20/21
 	local numItems = GetBagSize(BAG_WORN)
 	local weaponCount = 0
+	local activeBar = GetActiveWeaponPairInfo()
 	
-	for i = 0, numItems do
-		if (weaponType == GetItemWeaponType(BAG_WORN, i)) then
+	if (activeBar == 1) then
+	
+		if (weaponType == GetItemWeaponType(BAG_WORN, 4)) then
+			weaponCount = weaponCount + 1
+		end
+		
+		if (weaponType == GetItemWeaponType(BAG_WORN, 5)) then
+			weaponCount = weaponCount + 1
+		end
+	else
+	
+		if (weaponType == GetItemWeaponType(BAG_WORN, 20)) then
+			weaponCount = weaponCount + 1
+		end
+		
+		if (weaponType == GetItemWeaponType(BAG_WORN, 21)) then
 			weaponCount = weaponCount + 1
 		end
 	end

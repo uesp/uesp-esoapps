@@ -191,6 +191,126 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[42651] = { [4] = POWERTYPE_HEALTH },
 	[42655] = { [4] = POWERTYPE_HEALTH },
 	
+	-- Templar Repentance
+	[26821] = { [2] = POWERTYPE_ULTIMATE, [3] = POWERTYPE_ULTIMATE },
+	[27036] = { [2] = POWERTYPE_ULTIMATE, [3] = POWERTYPE_ULTIMATE },
+	[27040] = { [2] = POWERTYPE_ULTIMATE, [3] = POWERTYPE_ULTIMATE },
+	[27043] = { [2] = POWERTYPE_ULTIMATE, [3] = POWERTYPE_ULTIMATE },
+	
+	-- Templar Cleansing Ritual
+	[22265] = { [4] = POWERTYPE_ULTIMATE },
+	[27243] = { [4] = POWERTYPE_ULTIMATE },
+	[27249] = { [4] = POWERTYPE_ULTIMATE },
+	[27255] = { [4] = POWERTYPE_ULTIMATE },
+	
+	-- Templar Purifying Ritual
+	[22259] = { [5] = POWERTYPE_ULTIMATE },
+	[27261] = { [5] = POWERTYPE_ULTIMATE },
+	[27269	] = { [5] = POWERTYPE_ULTIMATE },
+	[27275] = { [5] = POWERTYPE_ULTIMATE },
+	
+	-- Templar Extended Ritual
+	[22262] = { [4] = POWERTYPE_ULTIMATE },
+	[27281] = { [4] = POWERTYPE_ULTIMATE },
+	[27288] = { [4] = POWERTYPE_ULTIMATE },
+	[27295] = { [4] = POWERTYPE_ULTIMATE },
+	
+	-- Sorcerer Lightning Splash
+	[23182] = { [3] = POWERTYPE_ULTIMATE },
+	[30259] = { [3] = POWERTYPE_ULTIMATE },
+	[30264] = { [3] = POWERTYPE_ULTIMATE },
+	[30269] = { [3] = POWERTYPE_ULTIMATE },
+	
+	-- Sorcerer Liquid Lightning
+	[23200] = { [3] = POWERTYPE_ULTIMATE },
+	[30274] = { [3] = POWERTYPE_ULTIMATE },
+	[30280] = { [3] = POWERTYPE_ULTIMATE },
+	[30286] = { [3] = POWERTYPE_ULTIMATE },
+	
+	-- Sorcerer Lightning Flood
+	[23205] = { [3] = POWERTYPE_ULTIMATE },
+	[30292] = { [3] = POWERTYPE_ULTIMATE },
+	[30297] = { [3] = POWERTYPE_ULTIMATE },
+	[30302] = { [3] = POWERTYPE_ULTIMATE },
+	
+	-- Dragonknight Obsidian Shield	
+	[29071] = { [1] = POWERTYPE_HEALTH },
+	[33862] = { [1] = POWERTYPE_HEALTH },
+	[33864] = { [1] = POWERTYPE_HEALTH },
+	[33866] = { [1] = POWERTYPE_HEALTH },
+	
+	-- Dragonknight Igneous Shield	
+	[29224] = { [1] = POWERTYPE_HEALTH },
+	[33868] = { [1] = POWERTYPE_HEALTH },
+	[33870] = { [1] = POWERTYPE_HEALTH },
+	[33872] = { [1] = POWERTYPE_HEALTH },
+	
+	-- Dragonknight Fragmented Shield	
+	[32673] = { [1] = POWERTYPE_HEALTH },
+	[33875] = { [1] = POWERTYPE_HEALTH },
+	[33878] = { [1] = POWERTYPE_HEALTH },
+	[33881] = { [1] = POWERTYPE_HEALTH },
+	
+	-- Dragonknight Flames of Oblivion
+	[32853] = { [2] = POWERTYPE_ULTIMATE },
+	[34066] = { [2] = POWERTYPE_ULTIMATE },
+	[34073] = { [2] = POWERTYPE_ULTIMATE },
+	[34080] = { [2] = POWERTYPE_ULTIMATE },
+	
+	-- Dragonknight Standard
+	[28988] = { [3] = POWERTYPE_HEALTH },
+	[33955] = { [3] = POWERTYPE_HEALTH },
+	[33959] = { [3] = POWERTYPE_HEALTH },
+	[33963] = { [3] = POWERTYPE_HEALTH },
+	
+	-- Dragonknight Standard of Might	
+	[32947] = { [5] = POWERTYPE_HEALTH },
+	[34009] = { [5] = POWERTYPE_HEALTH },
+	[34015] = { [5] = POWERTYPE_HEALTH },
+	[34021] = { [5] = POWERTYPE_HEALTH },
+	
+	-- Dragonknight Shifting Standard	
+	[32958] = { [3] = POWERTYPE_HEALTH },	
+	[33967] = { [3] = POWERTYPE_HEALTH },
+	[33977] = { [3] = POWERTYPE_HEALTH },
+	[33987] = { [3] = POWERTYPE_HEALTH },
+	
+	-- Dragonknight Choking Talons	
+	[20251] = { [3] = POWERTYPE_ULTIMATE },
+	[32127] = { [3] = POWERTYPE_ULTIMATE },
+	[32131] = { [3] = POWERTYPE_ULTIMATE },
+	[32135] = { [3] = POWERTYPE_ULTIMATE },
+	
+	-- Dragonknight Dark Talons	
+	[20245] = { [5] = POWERTYPE_ULTIMATE },
+	[32105] = { [5] = POWERTYPE_ULTIMATE },
+	[32108] = { [5] = POWERTYPE_ULTIMATE },
+	[32111] = { [5] = POWERTYPE_ULTIMATE },
+	
+	-- Dragonknight Burning Talons	
+	[20252] = { [5] = POWERTYPE_ULTIMATE },
+	[32114] = { [5] = POWERTYPE_ULTIMATE },
+	[32119] = { [5] = POWERTYPE_ULTIMATE },
+	[32123] = { [5] = POWERTYPE_ULTIMATE },
+	
+	-- Werewolf Werewolf Transformation
+	[32455] = { [2] = POWERTYPE_STAMINA },
+	[42356] = { [2] = POWERTYPE_STAMINA },
+	[42357] = { [2] = POWERTYPE_STAMINA },
+	[42358] = { [2] = POWERTYPE_STAMINA },
+	
+	-- Werewolf Werewolf Berserker
+	[39076] = { [2] = POWERTYPE_STAMINA },
+	[42377] = { [2] = POWERTYPE_STAMINA },
+	[42378] = { [2] = POWERTYPE_STAMINA },
+	[42379] = { [2] = POWERTYPE_STAMINA },
+
+	-- Werewolf Pack Leader
+	[39075] = { [2] = POWERTYPE_STAMINA },
+	[42365] = { [2] = POWERTYPE_STAMINA },
+	[42366] = { [2] = POWERTYPE_STAMINA },
+	[42367] = { [2] = POWERTYPE_STAMINA },
+	
 	-- Alliance Support Replenishing Barrier	
 	-- Although it's an ultimate the 3rd number seems to be only based off of magic
 	[40239] = { [3] = POWERTYPE_MAGICKA },
@@ -300,6 +420,14 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[29375] = { [3] = POWERTYPE_STAMINA },
 	[45430] = { [3] = POWERTYPE_STAMINA },
 	
+	-- Sorcerer Disintegrate
+	[31422] = { [2] = POWERTYPE_ULTIMATE },
+	[45192] = { [2] = POWERTYPE_ULTIMATE },
+	
+	-- Templar Burning Light	
+	[31718] = { [2] = POWERTYPE_ULTIMATE },
+	[44730] = { [2] = POWERTYPE_ULTIMATE },
+		
 }
 
 
@@ -417,9 +545,10 @@ function uespLog.LogSkillCoefData()
 	
 	table.insert(rowData, "Skill Name")
 	table.insert(rowData, "ID")
-	table.insert(rowData, "NumVars")
+	table.insert(rowData, "Level")
 	table.insert(rowData, "Mechanic")
 	table.insert(rowData, "Cost")
+	table.insert(rowData, "NumVars")
 	table.insert(rowData, "Description")
 	table.insert(rowData, "mech1")
 	table.insert(rowData, "a1")
@@ -522,9 +651,10 @@ function uespLog.LogSkillCoefDataSkillCsv(abilityData)
 	
 	table.insert(rowData, "'"..abilityData.name.."'")
 	table.insert(rowData, abilityData.id)
-	table.insert(rowData, abilityData.numVars)
+	table.insert(rowData, abilityData.rank)
 	table.insert(rowData, abilityData.type)
 	table.insert(rowData, abilityData.cost)
+	table.insert(rowData, abilityData.numVars)
 	table.insert(rowData, "'"..abilityData.newDesc.."'")
 	
 	for i,result in ipairs(abilityData.result) do
@@ -731,18 +861,7 @@ function uespLog.ShowSkillCoef(name)
 		return false
 	end
 	
-	local rank = ""
-	
-	if (coefData.rank == 1) then
-		rank = " I"
-	elseif (coefData.rank == 2) then
-		rank = " II"
-	elseif (coefData.rank == 3) then
-		rank = " III"
-	elseif (coefData.rank == 4) then
-		rank = " IV"
-	end
-	
+	local rank = tostring(coefData.rank)
 	uespLog.Msg("Skill '"..tostring(coefData.name)..rank.." ("..tostring(coefData.id)..")' has coefficient data for "..tostring(coefData.numVars).." variable(s):")
 	
 	for i,result in ipairs(coefData.result) do

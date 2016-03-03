@@ -6,6 +6,7 @@
 
 uespLog.SkillCoefData = {}
 uespLog.SkillCoefAbilityData = {}
+uespLog.SkillCoefBadData = {}
 uespLog.SkillCoefAbilityCount = 0
 uespLog.SkillCoefNumValidCoefCount = 0
 uespLog.SkillCoefNumBadCoefCount = 0
@@ -19,7 +20,18 @@ uespLog.SkillCoef_CaptureWykkyd_EndIndex = 5
 uespLog.SkillCoef_CaptureWykkyd_CurrentIndex = 5
 uespLog.SkillCoef_CaptureWykkyd_TimeDelayLoadSet = 10000   -- Takes a while for skill data to 'settle' when using Wykkyd to change complete sets
 
-uespLog.UESP_POWERTYPE_SOULTETHER = -1234
+uespLog.SkillCoefArmorCountLA = 0
+uespLog.SkillCoefArmorCountMA = 0
+uespLog.SkillCoefArmorCountHA = 0
+uespLog.SkillCoefWeaponCountDagger = 0
+uespLog.SkillCoefArmorTypeCount = 0
+
+uespLog.UESP_POWERTYPE_SOULTETHER    = -50
+uespLog.UESP_POWERTYPE_LIGHTARMOR    = -51
+uespLog.UESP_POWERTYPE_MEDIUMARMOR   = -52
+uespLog.UESP_POWERTYPE_HEAVYARMOR    = -53
+uespLog.UESP_POWERTYPE_WEAPONDAGGER  = -54
+uespLog.UESP_POWERTYPE_ARMORTYPE     = -55
 
 uespLog.SKILLCOEF_CHECK_ABILITYID = 28302
 uespLog.SKILLCOEF_CHECK_INDEX = 2
@@ -32,6 +44,11 @@ uespLog.SKILLCOEF_MECHANIC_NAMES = {
 	[POWERTYPE_MAGICKA] = "Magicka",
 	[POWERTYPE_STAMINA] = "Stamina",
 	[uespLog.UESP_POWERTYPE_SOULTETHER] = "Ultimate (ignore WD)",
+	[uespLog.UESP_POWERTYPE_LIGHTARMOR] = "Light Armor",
+	[uespLog.UESP_POWERTYPE_MEDIUMARMOR] = "Medium Armor",
+	[uespLog.UESP_POWERTYPE_HEAVYARMOR] = "Heavy Armor",
+	[uespLog.UESP_POWERTYPE_WEAPONDAGGER] = "Daggers",
+	[uespLog.UESP_POWERTYPE_ARMORTYPE] = "Armor Types",
 }
 
 
@@ -181,13 +198,86 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[46619] = { [3] = POWERTYPE_MAGICKA },
 	[46622] = { [3] = POWERTYPE_MAGICKA },
 	
+	-- Light Armor Dampen Magic
+	[39186] = { [4] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	[41109] = { [4] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	[41111] = { [4] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	[41113] = { [4] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
 	
-	-- Harness Magicka
-	-- Deep Slash?
-	-- Executioner	39957
-	-- Reverse Slice	39942
-	-- Passives?
-	-- Health Based?	
+	-- Light Armor Harness Magicka
+	[39182] = { [5] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	[41115] = { [5] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	[41118] = { [5] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	[41121] = { [5] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	
+	--Heavy Armor Immovable Brute/Unstoppable
+	[39205] = { [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[41085] = { [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[41088] = { [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[41091] = { [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	
+	[39197] = { [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[41097] = { [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[41100] = { [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[41103] = { [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	
+-- Passives 
+
+	-- Dual Wield Twin Blade and Blunt	
+	[30893] = { [2] = POWERTYPE_STAMINA, [6] = uespLog.UESP_POWERTYPE_WEAPONDAGGER },
+	
+	-- Light Armor Spell Warding	
+	[29663] = { [1] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+
+	-- Light Armor Evocation	
+	[29639] = { [2] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	
+	-- Light Armor Recovery	
+	[29665] = { [2] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	
+	-- Medium Armor Dexterity	
+	[29743] = { [1] = uespLog.UESP_POWERTYPE_MEDIUMARMOR},
+	
+	-- Medium Armor Improved Sneak	
+	[29738] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR, [4] = uespLog.UESP_POWERTYPE_MEDIUMARMOR  },
+	
+	-- Medium Armor Athletics	
+	[29742] = { [3] = uespLog.UESP_POWERTYPE_MEDIUMARMOR },
+	
+	-- Medium Armor Wind Walker	
+	[29687] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR, [4] = uespLog.UESP_POWERTYPE_MEDIUMARMOR  },
+		
+	-- Heavy Armor Resolve
+	[29825] = { [1] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+		
+	-- Heavy Armor Constitution
+	[29769] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR, [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+		
+	-- Heavy Armor Juggernaut
+	-- Note that skill output is truncated to integer values so fit accuracy may be low
+	[29804] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	
+	-- Heavy Armor Rapid Mending
+	-- Note that skill output is truncated to integer values so fit accuracy may be low
+	[29791] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	
+	-- Undaunted Undaunted Mettle
+	[55366] = { [2] = uespLog.UESP_POWERTYPE_ARMORTYPE },	
+
+	-- Nightblade Shadow Barrier	
+	[18866] = { [3] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	
+	-- Soul Magic Soul Shatter
+	[39266] = { [2] = POWERTYPE_HEALTH},
+	
+	-- Undaunted Undaunted Command
+	[55584] = { [2] = POWERTYPE_HEALTH, [3] = POWERTYPE_STAMINA, [4] = POWERTYPE_MAGICKA },
+	
+	-- Destruction Tri Focus
+	[30948] = { [2] = POWERTYPE_HEALTH },
+	
+	-- Two Handed Heavy Weapons
+	[29375] = { [3] = POWERTYPE_STAMINA },
 	
 }
 
@@ -245,6 +335,8 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 	elseif (cmd1 == "clear" or cmd1 == "reset") then
 		uespLog.ClearSkillCoefData()
 		uespLog.Msg("Cleared all skill coefficient data.")
+	elseif (cmd1 == "listbad" or cmd1 == "showbad") then
+		uespLog.ShowSkillCoefBadData()
 	elseif (cmd1 == "savewyk") then
 		uespLog.CaptureSkillCoefDataWykkyd(cmds[2], cmds[3], cmds[4])
 	elseif (cmd1 == "stop" or cmd1 == "end" or cmd1 == "abort") then
@@ -274,6 +366,28 @@ end
 SLASH_COMMANDS["/usc"] = SLASH_COMMANDS["/uespskillcoef"]
 
 
+function uespLog.ShowSkillCoefBadData()
+
+	if (uespLog.SkillCoefNumBadCoefCount == 0) then
+		uespLog.Msg("No bad skill coefficient data found!")
+		return
+	end
+	
+	uespLog.Msg("Found "..tostring(#uespLog.SkillCoefBadData).." bad coefficient data...")
+	
+	for i,badSkill in ipairs(uespLog.SkillCoefBadData) do
+		local abilityData = uespLog.SkillCoefAbilityData[badSkill.id]
+		
+		if (abilityData == nil) then
+			uespLog.Msg(".      "..tostring(i)..": Unknown abilityId "..tostring(badSkill.id).."!")
+		else
+			uespLog.Msg(".      "..tostring(i)..": "..tostring(abilityData.name).." ("..tostring(badSkill.id)..") number #"..tostring(badSkill.numberIndex))
+		end
+	end
+
+end
+
+
 function uespLog.LogSkillCoefData()
 	local logData = {}
 	local rowData = {}
@@ -284,6 +398,7 @@ function uespLog.LogSkillCoefData()
 	table.insert(rowData, "ID")
 	table.insert(rowData, "NumVars")
 	table.insert(rowData, "Mechanic")
+	table.insert(rowData, "Cost")
 	table.insert(rowData, "Description")
 	table.insert(rowData, "mech1")
 	table.insert(rowData, "a1")
@@ -381,6 +496,7 @@ function uespLog.LogSkillCoefDataSkillCsv(abilityData)
 	table.insert(rowData, abilityData.id)
 	table.insert(rowData, abilityData.numVars)
 	table.insert(rowData, abilityData.type)
+	table.insert(rowData, abilityData.cost)
 	table.insert(rowData, "'"..abilityData.newDesc.."'")
 	
 	for i,result in ipairs(abilityData.result) do
@@ -518,6 +634,24 @@ function uespLog.SaveTempSkillCoef(name)
 	
 	local tempData = uespLog.savedVars.tempData.data
 	tempData[#tempData+1] = "Raw Skill Coefficient Data for "..tostring(coefData.name).." ("..tostring(abilityId).."), "..tostring(#skillData).." data points"
+	local headerData = {}
+	
+	table.insert(headerData, "Magic")
+	table.insert(headerData, "Stamina")
+	table.insert(headerData, "Health")
+	table.insert(headerData, "SpellDmg")
+	table.insert(headerData, "WeaponDmg")
+	table.insert(headerData, "Light")
+	table.insert(headerData, "Medium")
+	table.insert(headerData, "Heavy")
+	table.insert(headerData, "Description")
+	table.insert(headerData, "Value1")
+	table.insert(headerData, "Value2")
+	table.insert(headerData, "Value3")
+	table.insert(headerData, "Value4")
+	table.insert(headerData, "Value5")
+	table.insert(headerData, "Value6")
+	tempData[#tempData+1] = uespLog.implode(headerData, ", ")
 		
 	for i, data in ipairs(skillData) do
 		local rowData = {}
@@ -527,6 +661,9 @@ function uespLog.SaveTempSkillCoef(name)
 		table.insert(rowData, data.hea)
 		table.insert(rowData, data.sd)
 		table.insert(rowData, data.wd)
+		table.insert(rowData, data.la)
+		table.insert(rowData, data.ma)
+		table.insert(rowData, data.ha)
 		table.insert(rowData, "'"..data.desc.."'")
 		
 		for j, number in ipairs(data.numbers) do
@@ -619,6 +756,7 @@ function uespLog.ClearSkillCoefData()
 	uespLog.SkillCoefDataPointCount = 0
 	uespLog.SkillCoefNumValidCoefCount = 0
 	uespLog.SkillCoefNumBadCoefCount = 0
+	uespLog.SkillCoefBadData = {}
 	uespLog.SkillCoefDataIsCalculated = false
 end
 
@@ -631,6 +769,12 @@ function uespLog.CaptureSkillCoefData()
 	local skillCount = 0
 		
 	uespLog.DebugLogMsg("Saving current skill data for character...")
+	
+	uespLog.SkillCoefArmorCountLA = uespLog.CountEquippedArmor(ARMORTYPE_LIGHT)
+	uespLog.SkillCoefArmorCountMA = uespLog.CountEquippedArmor(ARMORTYPE_MEDIUM)
+	uespLog.SkillCoefArmorCountHA = uespLog.CountEquippedArmor(ARMORTYPE_HEAVY)
+	uespLog.SkillCoefArmorTypeCount = uespLog.CountEquippedArmorTypes()
+	uespLog.SkillCoefWeaponCountDagger = uespLog.CountEquippedWeapons(WEAPONTYPE_DAGGER)
 
 	for skillType = 1, numSkillTypes do
 		local numSkillLines = GetNumSkillLines(skillType)
@@ -647,20 +791,18 @@ function uespLog.CaptureSkillCoefData()
 				local ability4 = -1
 				local ability5 = -1
 				
-				if (not passive) then
-					skillCount = skillCount + 1
-				
-					if (progressionIndex ~= nil and progressionIndex > 0) then
-						ability3 = GetAbilityProgressionAbilityId(progressionIndex, 0, 4)
-						ability4 = GetAbilityProgressionAbilityId(progressionIndex, 1, 4)
-						ability5 = GetAbilityProgressionAbilityId(progressionIndex, 2, 4)
-						uespLog.SaveSkillCoefData(ability3, 4)
-						uespLog.SaveSkillCoefData(ability4, 4)
-						uespLog.SaveSkillCoefData(ability5, 4)
-					else
-						uespLog.SaveSkillCoefData(ability1, rank)
-						uespLog.SaveSkillCoefData(ability2, rank)
-					end
+				skillCount = skillCount + 1
+			
+				if (progressionIndex ~= nil and progressionIndex > 0) then
+					ability3 = GetAbilityProgressionAbilityId(progressionIndex, 0, 4)
+					ability4 = GetAbilityProgressionAbilityId(progressionIndex, 1, 4)
+					ability5 = GetAbilityProgressionAbilityId(progressionIndex, 2, 4)
+					uespLog.SaveSkillCoefData(ability3, 4)
+					uespLog.SaveSkillCoefData(ability4, 4)
+					uespLog.SaveSkillCoefData(ability5, 4)
+				else
+					uespLog.SaveSkillCoefData(ability1, rank)
+					uespLog.SaveSkillCoefData(ability2, rank)
 				end
 			
 			end
@@ -747,10 +889,78 @@ function uespLog.SaveSkillCoefData(abilityId, rank)
 		["hea"]  = GetPlayerStat(STAT_HEALTH_MAX),
 		["sd"] 	 = GetPlayerStat(STAT_SPELL_POWER),
 		["wd"]   = GetPlayerStat(STAT_POWER),
+		["la"]   = uespLog.SkillCoefArmorCountLA,
+		["ma"]   = uespLog.SkillCoefArmorCountMA,
+		["ha"]   = uespLog.SkillCoefArmorCountHA,
+		["dagger"] = uespLog.SkillCoefWeaponCountDagger,
+		["armortypes"] = uespLog.SkillCoefArmorTypeCount,
 		["desc"] = description,
 	}
 	
 	return true
+end
+
+
+function uespLog.CountEquippedArmor(armorType)
+	local numItems = GetBagSize(BAG_WORN)
+	local armorCount = 0
+	
+	for i = 0, numItems do
+		if (armorType == GetItemArmorType(BAG_WORN, i)) then
+			armorCount = armorCount + 1
+		end
+	end
+		
+	return armorCount
+end
+
+
+function uespLog.CountEquippedArmorTypes()
+	local numItems = GetBagSize(BAG_WORN)
+	local laCount = 0
+	local maCount = 0
+	local haCount = 0
+	local armorCount = 0
+	
+	for i = 0, numItems do
+		armorType = GetItemArmorType(BAG_WORN, i)
+		
+		if (armorType == ARMORTYPE_LIGHT) then
+			laCount = laCount + 1
+		elseif (armorType == ARMORTYPE_MEDIUM) then
+			maCount = maCount + 1			
+		elseif (armorType == ARMORTYPE_HEAVY) then
+			haCount = haCount + 1			
+		end
+	end
+	
+	if (laCount > 0) then
+		armorCount = armorCount + 1
+	end
+	
+	if (maCount > 0) then
+		armorCount = armorCount + 1
+	end
+	
+	if (haCount > 0) then
+		armorCount = armorCount + 1
+	end	
+		
+	return armorCount
+end
+
+
+function uespLog.CountEquippedWeapons(weaponType)
+	local numItems = GetBagSize(BAG_WORN)
+	local weaponCount = 0
+	
+	for i = 0, numItems do
+		if (weaponType == GetItemWeaponType(BAG_WORN, i)) then
+			weaponCount = weaponCount + 1
+		end
+	end
+		
+	return weaponCount
 end
 
 
@@ -897,6 +1107,7 @@ function uespLog.ComputeSkillCoefSkill(abilityId, skillsData)
 				
 				if (not uespLog.isFinite(result.a) or not uespLog.isFinite(result.b) or not uespLog.isFinite(result.c) or not uespLog.isFinite(result.R2)) then
 					uespLog.SkillCoefNumBadCoefCount = uespLog.SkillCoefNumBadCoefCount + 1
+					table.insert(uespLog.SkillCoefBadData, { ['id'] = abilityId, ['numberIndex'] = i } )
 				else
 					allInvalid = false
 					uespLog.SkillCoefNumValidCoefCount = uespLog.SkillCoefNumValidCoefCount + 1
@@ -948,6 +1159,21 @@ function uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 	if (mechanic == uespLog.UESP_POWERTYPE_SOULTETHER) then
 		x = math.max(skill.mag, skill.sta)
 		y = skill.sd
+	elseif (mechanic == uespLog.UESP_POWERTYPE_LIGHTARMOR) then
+		x = skill.la
+		y = 0
+	elseif (mechanic == uespLog.UESP_POWERTYPE_MEDIUMARMOR) then
+		x = skill.ma
+		y = 0
+	elseif (mechanic == uespLog.UESP_POWERTYPE_HEAVYARMOR) then
+		x = skill.ha
+		y = 0		
+	elseif (mechanic == uespLog.UESP_POWERTYPE_ARMORTYPE) then
+		x = skill.armortypes
+		y = 0		
+	elseif (mechanic == uespLog.UESP_POWERTYPE_WEAPONDAGGER) then
+		x = skill.dagger
+		y = 0		
 	elseif (mechanic == POWERTYPE_ULTIMATE) then
 		x = math.max(skill.mag, skill.sta)
 		y = math.max(skill.sd, skill.wd)

@@ -3772,15 +3772,16 @@ function uespLog.OnUseItem(eventCode, bagId, slotIndex, itemLink, itemSoundCateg
 		uespLog.lastTargetData.y = y
 		uespLog.lastTargetData.zone = zone
 		uespLog.lastTargetData.name = "footlocker"
-		returun true
+		return true
 	elseif (bagId == BAG_BACKPACK and itemLink ~= nil and (itemType == ITEMTYPE_FOOD or itemType == ITEMTYPE_DRINK)) then
 		uespLog.OnEatDrinkItem(itemLink)
-		returun true
+		return true
 	end
 	
 	local itemName = GetItemLinkName(itemLink)
+	local itemId = uespLog.GetItemLinkID(itemLink)
 	
-	if (string.lower(itemName) == "merethic restorative resin") then
+	if (itemId == 69434 or string.lower(itemName) == "merethic restorative resin") then
 		uespLog.UsedMerethicResin = true
 	end
 	

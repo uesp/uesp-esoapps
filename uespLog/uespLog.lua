@@ -365,6 +365,7 @@
 --			  installations. Use "/uesplog on" to ensure data collection is enabled.
 --			- Fixed bug where menu settings were not being displayed the first time you open the add-on's settings menu.
 --			- Handle eating food/drink from the quickslot bar.
+--			- Beta: Show log message when creating a glass motif chapter.
 --
 --		***BETA: Skill Coefficients***
 --			- Added basic skill coefficient mining with "/uespskillcoef" or "/usc". The equation for the base skill tooltip is

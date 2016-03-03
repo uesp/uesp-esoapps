@@ -515,6 +515,8 @@ uespLog.dumpTableTable = { }
 uespLog.countGlobal = 0
 uespLog.countGlobalError = 0
 
+uespLog.UsedMerethicResin = false
+
 uespLog.origLoreBookLearnedFunction = nil
 uespLog.origLoreBookLearnedSkillExpFunction = nil
 
@@ -3770,8 +3772,16 @@ function uespLog.OnUseItem(eventCode, bagId, slotIndex, itemLink, itemSoundCateg
 		uespLog.lastTargetData.y = y
 		uespLog.lastTargetData.zone = zone
 		uespLog.lastTargetData.name = "footlocker"
+		returun true
 	elseif (bagId == BAG_BACKPACK and itemLink ~= nil and (itemType == ITEMTYPE_FOOD or itemType == ITEMTYPE_DRINK)) then
 		uespLog.OnEatDrinkItem(itemLink)
+		returun true
+	end
+	
+	local itemName = GetItemLinkName(itemLink)
+	
+	if (string.lower(itemName) == "merethic restorative resin") then
+		uespLog.UsedMerethicResin = true
 	end
 	
 end
@@ -3779,6 +3789,7 @@ end
 
 function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, itemSoundCategory, updateReason)
 	local itemName = GetItemName(bagId, slotIndex)
+	local itemLink = GetItemLink(bagId, slotIndex, LINK_STYLE_BRACKETS)
 	
 	uespLog.DebugExtraMsg("UESP::Inventory slot("..tostring(bagId)..","..tostring(slotIndex)..") update for "..itemName..", isNew "..tostring(isNewItem)..", reason "..tostring(updateReason)..", sound "..tostring(itemSoundCategory))
 
@@ -3791,6 +3802,16 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 	if (not isNewItem) then
 		uespLog.DebugExtraMsg("UESP::Skipping inventory slot update for "..itemName..", old, reason "..tostring(updateReason)..", sound "..tostring(itemSoundCategory))
 		return
+	end
+	
+		-- Update creation of glass motif chapter
+	if (uespLog.UsedMerethicResin) then
+	
+		if (string.find(string.lower(itemName), "glass") ~= nil) then
+			uespLog.MsgColor(uespLog.itemColor, "Used a Merethic Resin to create "..tostring(itemLink).."!")
+		end
+		
+		uespLog.UsedMerethicResin = false
 	end
 		
 	local result = uespLog.LogInventoryItem(bagId, slotIndex, "SlotUpdate")

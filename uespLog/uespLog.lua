@@ -398,12 +398,13 @@
 --			   The quality of the skill coefficients depend on the number and variety of stat/power combinations
 --			   saved with "/usc save". A minimum of 3 saved sets are needed but in general you want many more.
 --			   Ideally you want to vary all stats (Stamina, Magicka, Spell Damage, Weapon Damage) as much as
---			   possible to get more accurate results.
+--			   possible to get more accurate results. To capture more data also vary things like armor types
+--			   and weapon types as much as possible.
 --
 --			   The general procedure to accurately record/calculate skill coefficients is:
 --					 1. Reset all champion points.
 --					 2. Reset all skills.
---					 3. Purchase the base rank of all active skills/ultimates (not passives).
+--					 3. Purchase the base rank of all passives.
 --					 4. Remove all skills from both ability bars.
 --					 5. Equip/unequip items to change stats.
 --					 6. Wait at least 5 seconds after changing equipment to let the game correctly update the skill values.

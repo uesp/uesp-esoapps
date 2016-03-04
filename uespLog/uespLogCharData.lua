@@ -536,7 +536,8 @@ function uespLog.CreateCharDataBuffs()
 		local buffName, timeStarted, timeEnding, buffSlot, stackCount, iconFilename, buffType, effectType, abilityType, statusEffectType, abilityId, canClickOff = GetUnitBuffInfo("player", i)
 	
 		if (abilityId > 0) then
-			buffs[#buffs + 1] = { ["name"] = buffName, ["id"] = abilityId, ["icon"] = iconFilename }
+			local desc = GetAbilityDescription(abilityId)
+			buffs[#buffs + 1] = { ["name"] = buffName, ["id"] = abilityId, ["icon"] = iconFilename, ["desc"] = desc }
 		end
 		
 		if (string.find(buffName, "Vampirism") ~= nil) then 

@@ -9,6 +9,8 @@ uespLog.equippedRowClicked = nil
 uespLog.lastPopupLink = nil
 uespLog.isStableInteract = false
 
+
+uespLog.TRADE_NORMALTEXT_COLOR = { 0.77, 0.77, 0.62 }
 uespLog.TRADE_NORMAL_COLOR = { 1, 1, 1 }
 uespLog.TRADE_FINE_COLOR = { 0.18, 0.78, 0.02 }
 uespLog.TRADE_SUPERIOR_COLOR = { 0.23, 0.55, 1 }
@@ -461,6 +463,7 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 	local itemType = GetItemLinkItemType(itemLink)
 	local equipType = GetItemLinkEquipType(itemLink)
 	local itemText = ""
+	local fontName = "ZoFontWinH5"
 	
 	if (itemStyleIcon ~= nil and (itemType == 1 or itemType == 2) and (equipType ~= 12 and equipType ~= 2) and uespLog.IsCraftStyleDisplay()) then
 		color1, color2, color3 = unpack(uespLog.TRADE_STYLE_COLOR)
@@ -503,6 +506,33 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 				iconColor = uespLog.TRADE_UNKNOWN_COLOR
 			end
 		end
+		
+		-- Enchanting Potency Runestone
+	elseif (itemType == 51) then
+		local glyphMinLevel, glyphMaxLevel, glyphMinVetLevel, glyphMaxVetLevel = GetItemLinkGlyphMinMaxLevels(itemLink)
+		local minString = ""
+		local maxString = ""
+		
+		if (glyphMinLevel ~= nil) then
+			minString = "level "..tostring(glyphMinLevel)
+		elseif (glyphMinVetLevel ~= nil) then
+			minString = "|t32:32:EsoUI/Art/UnitFrames/target_veteranRank_icon.dds|trank "..tostring(glyphMinVetLevel)
+		end
+		
+		if (glyphMaxLevel ~= nil) then
+			maxString = "level "..tostring(glyphMaxLevel)
+		elseif (glyphMaxVetLevel ~= nil) then
+			maxString = "|t32:32:EsoUI/Art/UnitFrames/target_veteranRank_icon.dds|trank "..tostring(glyphMaxVetLevel)
+		end
+		
+		if (minString == maxString) then
+			itemText = "Used to create glyphs of "..maxString.."."
+		else
+			itemText = "Used to create glyphs of "..minString.." to "..maxString.."."
+		end
+		
+		iconColor = uespLog.TRADE_NORMALTEXT_COLOR
+		fontName = "ZoFontGame"
 	end
 
 	local isResearchable = uespLog.CheckIsItemLinkResearchable(itemLink)
@@ -533,10 +563,10 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 		color1, color2, color3 = unpack(iconColor)	
 		
 		if (not addedBlankLine) then
-			ThisToolTip:AddLine("", "ZoFontWinH5", color1, color2, color3, BOTTOM, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_CENTER)
+			ThisToolTip:AddLine("", fontName, color1, color2, color3, BOTTOM, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_CENTER)
 		end
 		
-		ThisToolTip:AddLine(itemText, "ZoFontWinH5", color1, color2, color3, BOTTOM, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_CENTER)
+		ThisToolTip:AddLine(itemText, fontName, color1, color2, color3, BOTTOM, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_CENTER)
 	end
 
 	return true
@@ -1670,5 +1700,6 @@ function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
 	end
 	
 end
+
 
 

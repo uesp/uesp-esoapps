@@ -366,6 +366,7 @@
 --			- Fixed bug where menu settings were not being displayed the first time you open the add-on's settings menu.
 --			- Handle eating food/drink from the quickslot bar.
 --			- Beta: Show log message when creating a glass motif chapter.
+--			- Resulting glyph levels will be shown in Enchanting Potency Runestone tooltips.
 --
 --		***BETA: Skill Coefficients***
 --			- Added basic skill coefficient mining with "/uespskillcoef" or "/usc". The equation for the base skill tooltip is

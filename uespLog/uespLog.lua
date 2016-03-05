@@ -2711,7 +2711,7 @@ function uespLog.OnSkillRankUpdate (eventCode, skillType, skillIndex, rank)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 		 
-	uespLog.DebugLogMsg("Skill rank update for "..name)
+	uespLog.DebugLogMsg(tostring(name).." raised to rank "..tostring(rank).."!")
 end
 
 
@@ -5690,11 +5690,11 @@ function uespLog.CreateItemLinkLog (itemLink)
 		logData.minGlyphLevel = glyphMinLevel
 		logData.maxGlyphLevel = glyphMaxLevel
 	elseif (glyphMinVetLevel ~= nil and glyphMaxVetLevel ~= nil) then
-		logData.minGlyphLevel = glyphMinVetLevel + 49
-		logData.maxGlyphLevel = glyphMaxVetLevel + 49
+		logData.minGlyphLevel = glyphMinVetLevel + 50
+		logData.maxGlyphLevel = glyphMaxVetLevel + 50
 	elseif (glyphMinLevel ~= nil and glyphMaxVetLevel ~= nil) then
 		logData.minGlyphLevel = glyphMinLevel
-		logData.maxGlyphLevel = glyphMaxVetLevel + 49
+		logData.maxGlyphLevel = glyphMaxVetLevel + 50
 	end
 	
 	local traitAbilityCount = 0

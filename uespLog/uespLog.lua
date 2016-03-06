@@ -8878,7 +8878,7 @@ SLASH_COMMANDS["/uespchardata"] = function (cmd)
 		uespLog.Msg(".     /uespchardata password [text]       Change the character data password")
 		uespLog.Msg(".     /uespchardata password clear      Set no password")
 		uespLog.Msg(".          Automatic saving is currently "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
-		uespLog.Msg(".          Automatic saving when zoning is "..uespLog.BoolToOnOff(uespLog.GetAutoSaveZoneCharData()) )
+		--uespLog.Msg(".          Automatic saving when zoning is "..uespLog.BoolToOnOff(uespLog.GetAutoSaveZoneCharData()) )
 	end
 		
 end

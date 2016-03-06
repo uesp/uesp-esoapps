@@ -327,7 +327,7 @@
 --
 --				Submit bugs and feature requests to @Reorx in game or at http://www.uesp.net/wiki/UESPWiki_talk:EsoCharData		
 --					
---		- v0.60 - 4 March 2016
+--		- v0.60 - 7 March 2016
 --			- Added the "/uespsavebuild screenshot"	(or "/usb ss") command to take a nicely
 --			  framed screenshot of your character.
 --			- The set count of equipped items is now saved with the "/uespsavebuild" command.
@@ -461,7 +461,7 @@
 uespLog = { }
 
 uespLog.version = "0.60"
-uespLog.releaseDate = "4 March 2016"
+uespLog.releaseDate = "7 March 2016"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

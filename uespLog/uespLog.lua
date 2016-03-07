@@ -328,6 +328,7 @@
 --				Submit bugs and feature requests to @Reorx in game or at http://www.uesp.net/wiki/UESPWiki_talk:EsoCharData		
 --					
 --		- v0.60 - 7 March 2016
+-- 		    - REQUIRED UPDATE: uespLogMonitor updated to v0.30 to include the character data upload.
 --			- Added the "/uespsavebuild screenshot"	(or "/usb ss") command to take a nicely
 --			  framed screenshot of your character.
 --			- The set count of equipped items is now saved with the "/uespsavebuild" command.

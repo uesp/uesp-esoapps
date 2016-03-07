@@ -88,8 +88,7 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[36193] = { [5] = uespLog.UESP_POWERTYPE_SOULTETHER },
 	[36200] = { [5] = uespLog.UESP_POWERTYPE_SOULTETHER },
 	[36207] = { [5] = uespLog.UESP_POWERTYPE_SOULTETHER },
-	
-	
+		
 	-- 1H+Shield Absorb Magic
 	-- Is a stamina ability but scales off of health
 	[38317] = POWERTYPE_HEALTH,
@@ -206,7 +205,7 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	-- Templar Purifying Ritual
 	[22259] = { [5] = POWERTYPE_ULTIMATE },
 	[27261] = { [5] = POWERTYPE_ULTIMATE },
-	[27269	] = { [5] = POWERTYPE_ULTIMATE },
+	[27269] = { [5] = POWERTYPE_ULTIMATE },
 	[27275] = { [5] = POWERTYPE_ULTIMATE },
 	
 	-- Templar Extended Ritual

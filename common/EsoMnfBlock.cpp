@@ -67,6 +67,11 @@ namespace eso {
 	
 	bool CMnfBlock::ReadData (CBaseFile &File)
 	{
+		if (!HasData())
+		{
+			PrintLog("Skipping empty MNF data block at 0x%llX...", File.Tell());
+			return true;
+		}
 
 		for (size_t i = 0; i < m_DataCount; ++i)
 		{
@@ -151,6 +156,11 @@ namespace eso {
 
 	bool CMnfBlock3::ReadData (CBaseFile &File)
 	{
+		if (!HasData())
+		{
+			PrintLog("Skipping empty MNF data block at 0x%llX...", File.Tell());
+			return true;
+		}
 
 		for (size_t i = 0; i < m_DataCount; ++i)
 		{

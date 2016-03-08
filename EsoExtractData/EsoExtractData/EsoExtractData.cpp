@@ -85,6 +85,9 @@
  *		- Added support for the 1.9 update on PTS (Thieves Guild DLC) for finding the ZOSFT in the
  *		  ESO.MNF file. File index for the ZOSFT was changed from 0xFFFFF to 0xFFFFFF.
  *
+ * v0.28 -- 8 March 2016
+ *		- Fixed a crash when extracting Game.Mnf data from the Thieves Guild DLC release.
+ *
  */
 
 
@@ -1585,7 +1588,7 @@ cmdparamdef_t g_Cmds[] =
 };
 
 const char g_AppDescription[] = "\
-ExportMnf v0.27 is a simple command line application to load and export files\n\
+ExportMnf v0.28 is a simple command line application to load and export files\n\
 from ESO's MNF and DAT files. Created by Daveh (dave@uesp.net).\n\
 \n\
 WARNING: This app is in early development and is fragile. User discretion is\n\

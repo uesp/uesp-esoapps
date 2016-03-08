@@ -456,6 +456,10 @@
 --					* Crafting traits researched
 --					* Current status of crafting research (automatically updates research finish date/time)
 --
+--		- v0.61 -- 
+--			- Adjusted log message when selling multiples of something.
+--			- Char/build data tracks the 6 new styles.
+--
 
 
 --	GLOBAL DEFINITIONS
@@ -2754,7 +2758,11 @@ function uespLog.OnSellReceipt (eventCode, itemLink, itemQuantity, money)
 
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugLogMsgColor(uespLog.itemColor, "Sold "..niceLink.." for "..tostring(money).."gp")
+	if (itemQuantity == 1) then
+		uespLog.DebugLogMsgColor(uespLog.itemColor, "Sold "..niceLink.." for "..tostring(money).."gp")
+	else
+		uespLog.DebugLogMsgColor(uespLog.itemColor, "Sold "..niceLink.." (x"..tostring(itemQuantity)..") for "..tostring(money).."gp")
+	end
 end
 
 

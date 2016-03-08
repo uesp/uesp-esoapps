@@ -68,6 +68,38 @@ uespLog.CHARDATA_POWER = {
 }
 
 
+uespLog.CHARDATA_CRAFTSTYLE_NAMES = {
+	[1] = 'Altmer',
+	[2] = 'Dunmer',
+	[3] = 'Bosmer',
+	[4] = 'Nord',
+	[5] = 'Breton',
+	[6] = 'Redguard',
+	[7] = 'Khajiit',
+	[8] = 'Orc',
+	[9] = 'Argonian',
+	[10] = 'Imperial',
+	[11] = 'Ancient Elf',
+	[12] = 'Barbaric',
+	[13] = 'Primal',
+	[14] = 'Daedric',
+	[15] = 'Dwemer',
+	[16] = 'Glass',
+	[17] = 'Xivkyn',
+	[18] = 'Akaviri',
+	[19] = 'Mercenary',
+	[20] = 'Yokudan',
+	[21] = 'Ancient Orc',
+	[22] = 'Outlaw',
+	[23] = 'Trinimac',
+	[24] = 'Malacath',
+	[25] = 'Daggerfall',
+	[26] = 'Aldmeri',
+	[27] = 'Ebonheart',
+	[28] = 'Soul Shriven',
+}
+
+
 uespLog.charData_ActionBarData = { 
 	[1] = { },
 	[2] = { },
@@ -385,31 +417,6 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 end
 
 
-uespLog.CHARDATA_CRAFTSTYLE_NAMES = {
-	[1] = 'Altmer',
-	[2] = 'Dunmer',
-	[3] = 'Bosmer',
-	[4] = 'Nord',
-	[5] = 'Breton',
-	[6] = 'Redguard',
-	[7] = 'Khajiit',
-	[8] = 'Orc',
-	[9] = 'Argonian',
-	[10] = 'Imperial',
-	[11] = 'Ancient Elf',
-	[12] = 'Barbaric',
-	[13] = 'Primal',
-	[14] = 'Daedric',
-	[15] = 'Dwemer',
-	[16] = 'Glass',
-	[17] = 'Xivkyn',
-	[18] = 'Akaviri',
-	[19] = 'Mercenary',
-	[20] = 'Yokudan',
-	[21] = 'Ancient Orc',
-}
-
-
 function uespLog.CreateCharDataCrafting()
 	local crafting = {}
 	
@@ -589,7 +596,7 @@ function uespLog.CreateCharDataSkills()
 	local skillType
 	local skillIndex
 	local abilityIndex
-	local totalSkillPoints = -8   -- To account for crafting passives given by default
+	local totalSkillPoints = 0
 	
 	for skillType = 1, numSkillTypes do
 		local numSkillLines = GetNumSkillLines(skillType)
@@ -991,7 +998,7 @@ function uespLog.GetSkillPointsUsed()
 	local skillType
 	local skillIndex
 	local abilityIndex
-	local totalSkillPoints = -8			 -- To account for crafting passives given by default
+	local totalSkillPoints = 0
 	
 	for skillType = 1, numSkillTypes do
 		local numSkillLines = GetNumSkillLines(skillType)

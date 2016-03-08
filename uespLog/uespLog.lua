@@ -459,6 +459,10 @@
 --		- v0.61 -- 
 --			- Adjusted log message when selling multiples of something.
 --			- Char/build data tracks the 6 new styles.
+--			- Added the "/uesptreasuretimer list" command to show timer durations as well as timers currently
+--			  in progress. Timers shown in this list will persist through logins and /reloadui but the timer
+--			  log notice will not.
+--			- Fixed "/uesptreasuretimer thieves trove [duration]" to work.
 --
 
 
@@ -3308,8 +3312,47 @@ function uespLog.OnTreasureLooted (targetName)
 	zo_callLater(	function()
 						uespLog.MsgColor(uespLog.itemColor, "A "..tostring(targetName).." was looted "..tostring(duration).." sec ago.")
 					end, duration*1000)
+					
+	uespLog.AddTreasureTimer(targetName, duration)
 	
 	uespLog.DebugLogMsgColor(uespLog.itemColor, "Created "..tostring(duration).." sec timer for "..tostring(targetName).." just looted.")
+end
+
+
+function uespLog.AddTreasureTimer(targetName, duration)
+	local timers = uespLog.savedVars.charInfo.data.treasureTimers
+	local timestamp = GetTimeStamp()
+	
+	if (timers == nil) then
+		uespLog.savedVars.charInfo.data.treasureTimers = { }
+		timers = uespLog.savedVars.charInfo.data.treasureTimers
+	end
+		
+	timers[#timers + 1] = { ["name"] = targetName, ["duration"] = duration, ["timestamp"] = timestamp, ["endTime"] = timestamp + duration }
+	uespLog.CheckTreasureTimers()
+end
+
+
+function uespLog.CheckTreasureTimers()
+	local newTimers = {}
+	local timers = uespLog.savedVars.charInfo.data.treasureTimers
+	local currentTimestamp = GetTimeStamp()
+	
+	if (timers == nil) then
+		uespLog.savedVars.charInfo.data.treasureTimers = { }
+		timers = uespLog.savedVars.charInfo.data.treasureTimers
+	end
+	
+	for i, timer in pairs(timers) do
+	
+		if (timer.endTime > currentTimestamp) then
+			newTimers[#newTimers + 1] = timer
+		end
+		
+	end	
+	
+	uespLog.savedVars.charInfo.data.treasureTimers = newTimers
+	return uespLog.savedVars.charInfo.data.treasureTimers
 end
 
 
@@ -4399,6 +4442,7 @@ function uespLog.ShowTreasureTimerHelp()
 	uespLog.Msg("Expected one of the command formats:")
 	uespLog.Msg(".      /uesptreasuretimer [on/off]")
 	uespLog.Msg(".      /uesptreasuretimer [name] [duration]")
+	uespLog.Msg(".      /uesptreasuretimer list")
 		
 	if (uespLog.IsTreasureTimerEnabled()) then
 		uespLog.Msg("Treasure timer is currently enabled.")
@@ -4433,14 +4477,14 @@ end
 
 SLASH_COMMANDS["/uesptreasuretimer"] = function (cmd)
 	cmdWords = {}
-	for word in cmd:gmatch("%S+") do table.insert(cmdWords, word) end
+	for word in cmd:gmatch("%S+") do table.insert(cmdWords, string.lower(word)) end
 	
 	if (#cmdWords < 1) then
 		uespLog.ShowTreasureTimerHelp()
 		return
 	end
 	
-	firstCmd = string.lower(cmdWords[1])
+	firstCmd = cmdWords[1]
 	
 	if (firstCmd == "on") then
 		uespLog.SetTreasureTimerEnabled(true)
@@ -4448,9 +4492,11 @@ SLASH_COMMANDS["/uesptreasuretimer"] = function (cmd)
 	elseif (firstCmd == "off") then
 		uespLog.SetTreasureTimerEnabled(false)
 		uespLog.Msg("Treasure timer is now disabled.")
+	elseif (firstCmd == "list" or firstCmd == "show") then
+		uespLog.ShowTreasureTimers()
 	elseif (firstCmd ~= "") then
 	
-		if (firstCmd == "heavy") then
+		if (firstCmd == "heavy" or firstCmd == "thieves") then
 			cmdWords[1] = cmdWords[1].." "..cmdWords[2]
 			cmdWords[2] = cmdWords[3]
 		end
@@ -4464,6 +4510,33 @@ end
 
 
 SLASH_COMMANDS["/utt"] = SLASH_COMMANDS["/uesptreasuretimer"]
+
+
+function uespLog.ShowTreasureTimers()
+	local timers = uespLog.GetTreasureTimers()
+	
+	uespLog.Msg("Showing all treasure timer durations:")
+	
+	for name, timer in pairs(timers) do
+		uespLog.Msg(".     "..tostring(name).." = "..tostring(timer).." sec")
+	end
+	
+	timers = uespLog.CheckTreasureTimers()
+		
+	if (#timers == 0) then
+		uespLog.Msg("No current treasure timers in progress!")
+		return
+	end
+	
+	uespLog.Msg("Showing current treasure timers in progress:")
+	local timestamp = GetTimeStamp()
+	
+	for i, timer in pairs(timers) do
+		local timeLeft = timer.endTime - timestamp
+		uespLog.Msg(".     "..tostring(i)..") "..tostring(timer.name).." has "..tostring(timeLeft).." sec remaining")
+	end
+	
+end
 
 
 SLASH_COMMANDS["/uesptime"] = function (cmd)

@@ -234,7 +234,7 @@ namespace eso {
 		PrintError("Trying to find and load ZOSFT entry from MNF file!");
 
 		dword ZosftHash = 0;
-		
+				
 		if (!FindZosftHash(ZosftHash))
 		{
 			PrintError("ERROR: Failed to find the ZOSFT entry in the MNF file!");

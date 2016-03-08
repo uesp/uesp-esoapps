@@ -75,6 +75,8 @@ namespace eso {
 
 		mnf_block_data_t* GetData (const size_t Index) { return (Index >= 0 && Index < m_DataCount) ? &m_Data[Index] : nullptr; }
 
+		virtual bool HasData() const { return true;  }
+
 		virtual bool Read (CBaseFile &File, const bool ReadBlockID = true);
 
 		bool SaveBlock (const size_t Index, const char* pFilename);
@@ -116,6 +118,8 @@ namespace eso {
 		virtual void Destroy();
 
 		mnf_block3_header_t& GetHeader (void) { return m_Header; }
+
+		virtual bool HasData() const { return m_Header.RecordCount1a != 0 || m_Header.RecordCount1b != 0 || m_Header.RecordCount23 != 0; }
 
 	};
 

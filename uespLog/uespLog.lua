@@ -463,13 +463,14 @@
 --			  in progress. Timers shown in this list will persist through logins and /reloadui but the timer
 --			  log notice will not.
 --			- Fixed "/uesptreasuretimer thieves trove [duration]" to work.
+--			- Updated some item style labels with new values.
 --
 
 
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "0.60"
+uespLog.version = "0.61"
 uespLog.releaseDate = "7 March 2016"
 uespLog.DATA_VERSION = 3
 
@@ -2888,7 +2889,7 @@ uespLog.ITEMSTYLES = {
 	[8]  = "Bosmer",
 	[9]  = "Khajiit",
 	[10] = "Unique",
-	[11] = "Aldermi Dominion",
+	[11] = "Thieves Guild",
 	[12] = "Dark Brotherhood",
 	[13] = "Malacath",
 	[14] = "Dwemer",

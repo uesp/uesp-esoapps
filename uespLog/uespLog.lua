@@ -464,6 +464,7 @@
 --			  log notice will not.
 --			- Fixed "/uesptreasuretimer thieves trove [duration]" to work.
 --			- Updated some item style labels with new values.
+--			- Fixed bug that prevented book data from being logged.
 --
 
 
@@ -1774,7 +1775,6 @@ function uespLog.Initialize( self, addOnName )
     EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LORE_BOOK_LEARNED, uespLog.OnLoreBookLearned)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SHOW_BOOK, uespLog.OnShowBook)
 	
-    EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SHOW_BOOK, uespLog.OnShowBook)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SKILL_RANK_UPDATE, uespLog.OnSkillRankUpdate)
 
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CRAFT_COMPLETED, uespLog.OnCraftCompleted)
@@ -2682,11 +2682,6 @@ function uespLog.OnLoreBookAlreadyKnown (eventCode, bookTitle)
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
 	uespLog.DebugLogMsg("Lore book "..bookTitle.." (already known)")
-end
-
-
-function uespLog.OnShowBook (eventCode, bookTitle, body, medium, showTitle)
-	uespLog.DebugExtraMsg("OnShowBook: "..tostring(bookTitle))
 end
 
 
@@ -9327,5 +9322,5 @@ end
 
 
 function uespLog.OnActionSlotAbilityUsed(event, slotIndex)
-	uespLog.DebugExtraMsg("OnActionSlotAbilityUsed::"..tostring(slotIndex))
+	--uespLog.DebugExtraMsg("OnActionSlotAbilityUsed::"..tostring(slotIndex))
 end

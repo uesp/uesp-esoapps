@@ -899,9 +899,13 @@ function uespLog.OnActionSlotAbilitySlotted (eventCode, newAbilitySlotted)
 	uespLog.SaveActionBarForCharData()
 end
 
--- Note: This gets called **alot** (40-50 times) when a mob is killed by certain skills (like Impulse)
+-- Note: This gets called **alot** (40-50 times) when a mob is killed with a Destruction Staff wielded
 function uespLog.OnActionSlotUpdated (eventCode, slotNum)
-	--uespLog.DebugMsg("OnActionSlotUpdated "..tostring(slotNum))
+	--uespLog.DebugMsg("OnActionSlotUpdated "..tostring(slotNum)..":")
+	
+	--local data = uespLog.savedVars.tempData.data
+	--data[#data+1] = "EVENT_ACTION_SLOT_UPDATED "..tostring(slotNum)
+	
 	uespLog.SaveActionBarForCharData()
 end
 

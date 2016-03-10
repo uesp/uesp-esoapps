@@ -465,6 +465,11 @@
 --			- Fixed "/uesptreasuretimer thieves trove [duration]" to work.
 --			- Updated some item style labels with new values.
 --			- Fixed bug that prevented book data from being logged.
+--			- CRITICAL: Fixed bug that was causing extreme lag when killing things with a Destruction Staff (and
+--			  Two-Handed/Bow to a lesser extent). Root cause was due to the EVENT_ACTION_SLOT_UPDATED event being
+--			  called 40-50 times at once when you kill a mob with a Destruction Staff equipped. The event was triggering 
+--			  the saving of action bar data which caused the lag when done +40 times in the same frame. Action bar
+--			  saving is now only done at most once every 5 seconds.
 --
 
 
@@ -472,7 +477,7 @@
 uespLog = { }
 
 uespLog.version = "0.61"
-uespLog.releaseDate = "7 March 2016"
+uespLog.releaseDate = "10 March 2016"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

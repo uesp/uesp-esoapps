@@ -2,6 +2,11 @@
 -- 
 -- 
 
+	-- Only save action bars at most every X seconds
+uespLog.SAVEACTIONBAR_MINDELTATIME = 5
+uespLog.LastSavedActionBar_TimeStamp = 0
+uespLog.LastSavedActionBar_WeaponPair = 0
+
 
 uespLog.CHARDATA_STATS = {
 	[1] = "AttackPower",
@@ -778,12 +783,6 @@ function uespLog.GetCombatMechanicText(id)
 	
 	return text
 end
-
-
-	-- Only save action bars at most every X seconds
-uespLog.SAVEACTIONBAR_MINDELTATIME = 10
-uespLog.LastSavedActionBar_TimeStamp = 0
-uespLog.LastSavedActionBar_WeaponPair = 0
 
 
 function uespLog.SaveActionBarForCharData()

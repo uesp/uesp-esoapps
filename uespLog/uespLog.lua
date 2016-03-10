@@ -456,7 +456,7 @@
 --					* Crafting traits researched
 --					* Current status of crafting research (automatically updates research finish date/time)
 --
---		- v0.61 -- 
+--		- v0.61 -- 10 March 2016
 --			- Adjusted log message when selling multiples of something.
 --			- Char/build data tracks the 6 new styles.
 --			- Added the "/uesptreasuretimer list" command to show timer durations as well as timers currently
@@ -471,12 +471,25 @@
 --			  the saving of action bar data which caused the lag when done +40 times in the same frame. Action bar
 --			  saving is now only done at most once every 5 seconds.
 --
+--		- v0.62 -- ? March 2016
+--			- Slash commands that don't start with "/uesp..." are checked to see if they exist before they are
+--			  set. This prevents them from interfering with any other add-on that might happen to use them.
+--			- Added the "/rl" chat command as a short form for "/reloadui".
+--			- Added the "/afk", "/away" and "/back" chat commands for setting the player status (seen in guild).
+--					/afk							Toggles AFK state on/off (away/online)
+--					/afx [on/off]					Turns AFK state on and off (away/online)
+--					/afx [away|online|dnd|offline] 	Sets player status to a specific state
+--					/afx status						Shows the current player status
+--					/away							Turns state to "Away"
+--					/back							Turns state to "Online"
+--			- Fixed logging of Thieves Troves.
+--
 
 
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "0.61"
+uespLog.version = "0.62"
 uespLog.releaseDate = "10 March 2016"
 uespLog.DATA_VERSION = 3
 
@@ -1904,13 +1917,52 @@ function uespLog.Initialize( self, addOnName )
 	MAIL_INBOX.Delete = uespLog.NotifyDeleteMailAdded 
 	MAIL_INBOX:RefreshData()
 	
+	uespLog.SetupSlashCommands()
+	
 	zo_callLater(uespLog.InitTradeData, 500) 
 	zo_callLater(uespLog.outputInitMessage, 4000)
 	zo_callLater(uespLog.InitCharData, 500)
 end
 
+
 	--	Hook initialization onto the ADD_ON_LOADED event  
 EVENT_MANAGER:RegisterForEvent("uespLog" , EVENT_ADD_ON_LOADED, uespLog.Initialize)
+
+
+function uespLog.SetupSlashCommands()
+	uespLog.SetSlashCommand("/uci", SLASH_COMMANDS["/uespcharinfo"])
+	uespLog.SetSlashCommand("/loc", uespLog.LocateCommand)
+	uespLog.SetSlashCommand("/ud", SLASH_COMMANDS["/uespd"])
+	uespLog.SetSlashCommand("/ue", SLASH_COMMANDS["/uespenl"])
+	uespLog.SetSlashCommand("/umi", SLASH_COMMANDS["/uespmineitems"])
+	uespLog.SetSlashCommand("/uti", SLASH_COMMANDS["/uesptargetinfo"])
+	uespLog.SetSlashCommand("/uri", SLASH_COMMANDS["/uespresearch"])
+	uespLog.SetSlashCommand("/ucl", SLASH_COMMANDS["/uespcomparelink"])
+	uespLog.SetSlashCommand("/ume", SLASH_COMMANDS["/uespmakeenchant"])
+	uespLog.SetSlashCommand("/uml", SLASH_COMMANDS["/uespmakelink"])
+	uespLog.SetSlashCommand("/upf", uespLog.ShowPvpFights)
+	uespLog.SetSlashCommand("/ucd", SLASH_COMMANDS["/uespchardata"])
+	uespLog.SetSlashCommand("/ulb", SLASH_COMMANDS["/uesplorebook"])
+	uespLog.SetSlashCommand("/uqi", SLASH_COMMANDS["/uespquestitem"])
+	uespLog.SetSlashCommand("/utt", SLASH_COMMANDS["/uesptreasuretimer"])
+	uespLog.SetSlashCommand("/usb", uespLog.Command_SaveBuildData)
+	uespLog.SetSlashCommand("/usp", SLASH_COMMANDS["/uespskillpoints"])
+	uespLog.SetSlashCommand("/rl", SLASH_COMMANDS["/reloadui"])
+	uespLog.SetSlashCommand("/afk", uespLog.AfkCommand)
+	uespLog.SetSlashCommand("/away", uespLog.AwayCommand)
+	uespLog.SetSlashCommand("/back", uespLog.BackCommand)
+end
+
+
+function uespLog.SetSlashCommand(cmd, func)
+
+	if (SLASH_COMMANDS[cmd] ~= nil) then
+		return false
+	end
+	
+	SLASH_COMMANDS[cmd] = func
+	return true
+end
 
 
 function uespLog.InitAutoMining ()
@@ -4298,15 +4350,15 @@ function uespLog.OnUpdate ()
 	
 		if (name == "Safebox") then
 			uespLog.OnFoundTreasure("Safebox")
+		elseif (name == "Thieves Trove") then
+			uespLog.OnFoundTreasure("Thieves Trove")
 		end
 		
 	elseif (interactionType == INTERACTION_NONE and action == uespLog.ACTION_SEARCH) then
 	
 		if (name == "Heavy Sack") then
 			uespLog.OnFoundTreasure("Heavy Sack")
-		elseif (name == "Thieves Trove") then
-			uespLog.OnFoundTreasure("Thieves Trove")
-		end
+		end		
 	
     elseif (action == uespLog.ACTION_FISH) then
 		uespLog.OnFoundFish()
@@ -4510,9 +4562,6 @@ SLASH_COMMANDS["/uesptreasuretimer"] = function (cmd)
 end
 
 
-SLASH_COMMANDS["/utt"] = SLASH_COMMANDS["/uesptreasuretimer"]
-
-
 function uespLog.ShowTreasureTimers()
 	local timers = uespLog.GetTreasureTimers()
 	
@@ -4607,18 +4656,12 @@ SLASH_COMMANDS["/uespd"] = function(cmd)
 end
 
 
-SLASH_COMMANDS["/ud"] = SLASH_COMMANDS["/uespd"]
-
-
 SLASH_COMMANDS["/uespenl"] = function (cmd)
 	local enl = GetEnlightenedPool()
 	local mult = GetEnlightenedMultiplier()
 
 	uespLog.MsgColor(uespLog.xpColor, "UESP::You have "..tostring(enl).." enlightenment at a x"..tostring(mult).." bonus.")
 end
-
-
-SLASH_COMMANDS["/ue"] = SLASH_COMMANDS["/uespenl"]
 
 
 function uespLog.DisplayPowerStat (statType, statName)
@@ -4716,10 +4759,8 @@ SLASH_COMMANDS["/uespcharinfo"] = function (cmd)
 	--uespLog.Msg("UESP::Armor Soft Cap = ".. tostring(armorSC))
 end
 
-SLASH_COMMANDS["/uci"] = SLASH_COMMANDS["/uespcharinfo"]
 
-
-SLASH_COMMANDS["/loc"] = function (cmd)
+function uespLog.LocateCommand(cmd)
 	local Msg = "Position"
 	local logData = { }
 	local posData = uespLog.GetPlayerPositionData()
@@ -7683,9 +7724,6 @@ function uespLog.ClearRootSavedVar()
 end
 
 
-SLASH_COMMANDS["/umi"] = SLASH_COMMANDS["/uespmineitems"]
-
-
 SLASH_COMMANDS["/uespreset"] = function (cmd)
 	cmd = cmd:lower()
 	
@@ -7734,11 +7772,6 @@ end
 
 
 SLASH_COMMANDS["/uesptargetinfo"] = function (cmd)
-	uespLog.ShowTargetInfo()
-end
-
-
-SLASH_COMMANDS["/uti"] = function (cmd)
 	uespLog.ShowTargetInfo()
 end
 
@@ -7866,9 +7899,6 @@ SLASH_COMMANDS["/uespresearch"] = function (cmd)
 	uespLog.ShowResearchInfo(CRAFTING_TYPE_BLACKSMITHING)
 	uespLog.ShowResearchInfo(CRAFTING_TYPE_WOODWORKING)
 end
-
-
-SLASH_COMMANDS["/uri"] = SLASH_COMMANDS["/uespresearch"]
 
 
 uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
@@ -8388,8 +8418,6 @@ SLASH_COMMANDS["/uespcomparelink"] = function (cmd)
 	d(resultDiff)
 end
 
-SLASH_COMMANDS["/ucl"] = SLASH_COMMANDS["/uespcomparelink"]
-
 
 SLASH_COMMANDS["/uespmakelink"] = function (cmd)
 	local cmds = { }
@@ -8422,8 +8450,6 @@ SLASH_COMMANDS["/uespmakelink"] = function (cmd)
 	ZO_PopupTooltip_SetLink(itemLink)
 end
 
-SLASH_COMMANDS["/uml"] = SLASH_COMMANDS["/uespmakelink"]
-
 
 SLASH_COMMANDS["/uespmakeenchant"] = function (cmd)
 	local cmds = { }
@@ -8440,8 +8466,6 @@ SLASH_COMMANDS["/uespmakeenchant"] = function (cmd)
 	
 	ZO_PopupTooltip_SetLink(itemLink)
 end
-
-SLASH_COMMANDS["/ume"] = SLASH_COMMANDS["/uespmakeenchant"]
 
 
 SLASH_COMMANDS["/uesptestdump"] = function(cmd)
@@ -8896,9 +8920,6 @@ function uespLog.ShowPvpFights()
 end
 
 
-SLASH_COMMANDS["/upf"] = uespLog.ShowPvpFights
-
-
 SLASH_COMMANDS["/uesplorebook"] = function (cmd)
 	cmd = string.lower(cmd)
 	
@@ -8967,9 +8988,6 @@ SLASH_COMMANDS["/uespchardata"] = function (cmd)
 end
 
 
-SLASH_COMMANDS["/ucd"] = SLASH_COMMANDS["/uespchardata"]
-
-
 function uespLog.EventLoreBookLearned(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, isMaxRank)
 	uespLog.DebugExtraMsg("LoreBook Learned: "..tostring(guildReputationIndex)..", MaxRank: "..tostring(isMaxRank))
 	
@@ -8989,9 +9007,6 @@ function uespLog.EventLoreBookLearnedSkillExperience(categoryIndex, collectionIn
 	uespLog.DebugExtraMsg("LoreBookSkillExp Learned: "..tostring(guildReputationIndex))
 	return uespLog.origLoreBookLearnedSkillExpFunction(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, skillType, skillIndex, rank, previousXP, currentXP)
 end
-
-
-SLASH_COMMANDS["/ulb"] = SLASH_COMMANDS["/uesplorebook"]
 
 
 function uespLog.SplitCommands(cmd)
@@ -9021,9 +9036,6 @@ SLASH_COMMANDS["/uespquestitem"] = function(cmd)
 	uespLog.Msg("UESP::.    Desc = ".. tostring(GetItemLinkFlavorText(questItemLink)))
 	
 end
-
-
-SLASH_COMMANDS["/uqi"] = SLASH_COMMANDS["/uespquestitem"]
 
 
 SLASH_COMMANDS["/uesptrait"] = function(cmd)
@@ -9328,4 +9340,49 @@ end
 
 function uespLog.OnActionSlotAbilityUsed(event, slotIndex)
 	--uespLog.DebugExtraMsg("OnActionSlotAbilityUsed::"..tostring(slotIndex))
+end
+
+
+function uespLog.GetPlayerStatusString(status)
+	return GetString(SI_PLAYERSTATUS1 + tonumber(status) - 1) or "Unknown"
+end
+
+
+function uespLog.AfkCommand(cmd)
+	local status = GetPlayerStatus()
+	cmd = string.lower(cmd or "")
+	
+	if (cmd == "on") then
+		SelectPlayerStatus(PLAYER_STATUS_AWAY)
+	elseif (cmd == "off") then
+		SelectPlayerStatus(PLAYER_STATUS_ONLINE)
+	elseif (cmd == "status" or cmd == "show") then
+		-- Do nothing
+	elseif (cmd == "away") then
+		SelectPlayerStatus(PLAYER_STATUS_AWAY)
+	elseif (cmd == "online") then
+		SelectPlayerStatus(PLAYER_STATUS_ONLINE)
+	elseif (cmd == "dnd" or cmd == "do not disturb" or cmd == "donotdisturb") then
+		SelectPlayerStatus(PLAYER_STATUS_DO_NOT_DISTURB)
+	elseif (cmd == "offline") then
+		SelectPlayerStatus(PLAYER_STATUS_OFFLINE)
+	elseif (status == PLAYER_STATUS_ONLINE) then
+		SelectPlayerStatus(PLAYER_STATUS_AWAY)
+	else
+		SelectPlayerStatus(PLAYER_STATUS_ONLINE)
+	end
+	
+	status = GetPlayerStatus()
+	local statusMsg = uespLog.GetPlayerStatusString(status)
+	uespLog.Msg("Player status is now "..statusMsg)
+end
+
+
+function uespLog.AwayCommand(cmd)
+	uespLog.AfkCommand("away")
+end
+
+
+function uespLog.BackCommand(cmd)
+	uespLog.AfkCommand("online")
 end

@@ -1193,7 +1193,6 @@ end
 
 
 SLASH_COMMANDS["/uespsavebuild"] = uespLog.Command_SaveBuildData
-SLASH_COMMANDS["/usb"] = uespLog.Command_SaveBuildData
 
 
 SLASH_COMMANDS["/uespskillpoints"] = function (cmd)
@@ -1203,9 +1202,6 @@ SLASH_COMMANDS["/uespskillpoints"] = function (cmd)
 	
 	uespLog.Msg("You have used "..tostring(skillPointsUsed).." skill points, "..tostring(skillPointsUnused).." unused skill points and "..tostring(skyShards).." skyshards.")
 end
-
-
-SLASH_COMMANDS["/usp"] = SLASH_COMMANDS["/uespskillpoints"]
 
 
 function uespLog.UpdateCharDataPassword(password1, password2)

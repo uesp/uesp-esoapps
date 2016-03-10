@@ -780,8 +780,15 @@ function uespLog.GetCombatMechanicText(id)
 end
 
 
+	-- Only save action bars at most every X seconds
+uespLog.SAVEACTIONBAR_MINDELTATIME = 10
+uespLog.LastSavedActionBar_TimeStamp = 0
+uespLog.LastSavedActionBar_WeaponPair = 0
+
+
 function uespLog.SaveActionBarForCharData()
 	local weaponPairIndex, isLocked = GetActiveWeaponPairInfo()
+	local timestamp = GetTimeStamp()
 	
 	if (weaponPairIndex < 1 or weaponPairIndex > 2) then
 		return false
@@ -790,6 +797,13 @@ function uespLog.SaveActionBarForCharData()
 	if (uespLog.IsInOverloadState()) then
 		weaponPairIndex = 3
 	end
+	
+	if (uespLog.LastSavedActionBar_WeaponPair == weaponPairIndex and timestamp - uespLog.LastSavedActionBar_TimeStamp >= uespLog.SAVEACTIONBAR_MINDELTATIME) then
+		return false
+	end
+	
+	uespLog.LastSavedActionBar_WeaponPair = weaponPairIndex
+	uespLog.LastSavedActionBar_TimeStamp = timestamp
 	
 	uespLog.charData_ActionBarData[weaponPairIndex] = { }
 	
@@ -885,7 +899,7 @@ function uespLog.OnActionSlotAbilitySlotted (eventCode, newAbilitySlotted)
 	uespLog.SaveActionBarForCharData()
 end
 
-
+-- Note: This gets called **alot** (40-50 times) when a mob is killed by certain skills (like Impulse)
 function uespLog.OnActionSlotUpdated (eventCode, slotNum)
 	--uespLog.DebugMsg("OnActionSlotUpdated "..tostring(slotNum))
 	uespLog.SaveActionBarForCharData()

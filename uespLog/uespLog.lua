@@ -483,6 +483,8 @@
 --					/away							Turns state to "Away"
 --					/back							Turns state to "Online"
 --			- Fixed logging of Thieves Troves.
+--			- Added "/uespmineitems reloaddelay [seconds]" command for adjusting the minimum reload delay when
+--			  auto mining items.
 --
 
 
@@ -886,7 +888,7 @@ uespLog.mineItemsEnabled = false
 uespLog.MINEITEMS_AUTOSTOP_LOGCOUNT = 50000
 uespLog.mineItemAutoReload = false
 uespLog.mineItemLastReloadTimeMS = GetGameTimeMilliseconds()
-uespLog.MINEITEM_AUTORELOAD_DELTATIMEMS = 120000
+uespLog.MINEITEM_AUTORELOAD_DELTATIMEMS = 260000  -- Default value, use uespLog.minedItemReloadDelay instead
 uespLog.mineItemAutoRestart = false
 uespLog.mineItemAutoRestartOutputEnd = false
 uespLog.MINEITEM_AUTO_MAXITEMID = 100000
@@ -901,6 +903,7 @@ uespLog.IdCheckRangeIdStart = -1
 uespLog.IdCheckValidCount = 0
 uespLog.IdCheckTotalCount = 0
 uespLog.mineItemPotionData = false
+uespLog.mineItemReloadDelay = uespLog.MINEITEM_AUTORELOAD_DELTATIMEMS
 uespLog.mineItemPotionDataEffectIndex = 0
 uespLog.MINEITEM_POTION_MAXEFFECTINDEX = 24
 uespLog.MINEITEM_POTION_ITEMID = 54339
@@ -955,7 +958,8 @@ uespLog.DEFAULT_SETTINGS =
 		["mineItemsEnabled"] = false,
 		["mineItemOnlySubType"] = -1,
 		["mineItemOnlyLevel"] = -1,
-		["mineItemPoitionData"] = false,
+		["mineItemPotionData"] = false,
+		["mineItemReloadDelay"] = uespLog.MINEITEM_AUTORELOAD_DELTATIMEMS,
 		["isAutoMiningItems"] = false,
 		["pvpUpdate"] = false,
 		["enabledTreasureTimers"] = false,
@@ -1742,6 +1746,7 @@ function uespLog.Initialize( self, addOnName )
 	uespLog.mineItemOnlySubType = uespLog.savedVars.settings.data.mineItemOnlySubType or uespLog.mineItemOnlySubType
 	uespLog.mineItemOnlyLevel = uespLog.savedVars.settings.data.mineItemOnlyLevel or uespLog.mineItemOnlyLevel
 	uespLog.mineItemPotionData = uespLog.savedVars.settings.data.mineItemPotionData or uespLog.mineItemPotionData
+	uespLog.mineItemReloadDelay = uespLog.savedVars.settings.data.mineItemReloadDelay or uespLog.mineItemReloadDelay
 	uespLog.pvpUpdate = uespLog.savedVars.settings.data.pvpUpdate or uespLog.pvpUpdate
 	uespLog.mineItemLastReloadTimeMS = GetGameTimeMilliseconds()
 	
@@ -3916,7 +3921,7 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 	if (uespLog.UsedMerethicResin) then
 	
 		if (string.find(string.lower(itemName), "glass") ~= nil) then
-			uespLog.MsgColor(uespLog.itemColor, "Used a Merethic Resin to create "..tostring(itemLink).."!")
+			uespLog.MsgColor(uespLog.itemColor, "You used a Merethic Resin to create "..tostring(itemLink).."!")
 		end
 		
 		uespLog.UsedMerethicResin = false
@@ -7136,7 +7141,7 @@ function uespLog.MineItemsAutoLoop ()
 				uespLog.mineItemAutoRestartOutputEnd = true
 			end
 			
-			local reloadTime = uespLog.mineItemLastReloadTimeMS + uespLog.MINEITEM_AUTORELOAD_DELTATIMEMS - GetGameTimeMilliseconds()
+			local reloadTime = uespLog.mineItemLastReloadTimeMS + uespLog.mineItemReloadDelay - GetGameTimeMilliseconds()
 
 			if (uespLog.mineItemAutoReload and reloadTime <= 0) then
 				uespLog.MsgColor(uespLog.mineColor, "UESP::Item mining auto reloading UI....")
@@ -7345,6 +7350,8 @@ end
 
 
 function uespLog.MineItemsAutoStatus ()
+
+	uespLog.MsgColor(uespLog.mineColor, "UESP::Minimum reload delay when auto mining is "..tostring(uespLog.mineItemReloadDelay/1000).." sec")
 	
 	if (uespLog.isAutoMiningItems) then
 		uespLog.MsgColor(uespLog.mineColor, "UESP::Currently auto-mining items.")
@@ -7545,6 +7552,21 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		end
 		
 		uespLog.MineItemsAutoStart()
+		return
+	elseif (command == "reloaddelay" or command == "delay") then
+		local delay = tonumber(cmds[2]) or -1
+		
+		if (delay <= 0) then
+			uespLog.MsgColor(uespLog.mineColor, "UESP::Expecting a delay in seconds greater than zero!")
+			uespLog.MsgColor(uespLog.mineColor, ".            /uespmineitems reloaddelay [seconds]")
+			uespLog.MsgColor(uespLog.mineColor, "UESP::Current reload delay is "..tostring(uespLog.mineItemReloadDelay/1000).." sec")
+			return
+		end
+		
+		uespLog.savedVars.settings.data.mineItemReloadDelay = delay * 1000
+		uespLog.mineItemReloadDelay = delay * 1000
+		
+		uespLog.MsgColor(uespLog.mineColor, "UESP::Set reload delay when auto mining items to "..tostring(delay).." sec")
 		return
 	elseif (command == "count") then
 		uespLog.MineItemsCount()

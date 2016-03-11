@@ -485,7 +485,9 @@
 --			- Fixed logging of Thieves Troves.
 --			- Added "/uespmineitems reloaddelay [seconds]" command for adjusting the minimum reload delay when
 --			  auto mining items.
---			- Shortened the output from "/uespstyle"
+--			- Shortened the output from "/uespstyle". Added the "/uespstyle long [style]" command to format
+--			  output in the long format.
+--			
 --
 
 
@@ -8185,14 +8187,17 @@ end
 
 
 SLASH_COMMANDS["/uespstyle"] = function (cmd)
-	local lCmd = cmd:lower()
+	local cmds, firstCmd = uespLog.SplitCommands(cmd)
 	
 	if (cmd == "") then
-		uespLog.MsgColor(uespLog.craftColor, "UESP::Shows which chapters of an item style you know.")
-		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle [stylename]      Shows which chapters of the style you know")
-		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle list             Lists all styles valid for the command")
-	elseif (lCmd == "liststyles" or lCmd == "list") then
+		uespLog.MsgColor(uespLog.craftColor, "UESP::Shows which chapters of the item style you know.")
+		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle [stylename]            Shows which chapters you know")
+		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle long [stylename]    Shows chapters in old long format")
+		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle list                          Lists all valid styles")
+	elseif (firstCmd == "liststyles" or firstCmd == "list") then
 		uespLog.ListValidStyles()
+	elseif (firstCmd == "long") then
+		uespLog.ShowStyles(uespLog.implodeOrder(cmds, " ", 2), true)
 	else
 		uespLog.ShowStyles(cmd)
 	end	

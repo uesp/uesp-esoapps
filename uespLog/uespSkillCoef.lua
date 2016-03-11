@@ -460,10 +460,10 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		end
 		
 	elseif (cmd1 == "coef" or cmd1 == "show") then
-		local skillName = uespLog.implodeStart(cmds, " ", 2)
+		local skillName = uespLog.implodeOrder(cmds, " ", 2)
 		uespLog.ShowSkillCoef(skillName)
 	elseif (cmd1 == "savetemp") then
-		local skillName = uespLog.implodeStart(cmds, " ", 2)
+		local skillName = uespLog.implodeOrder(cmds, " ", 2)
 		uespLog.SaveTempSkillCoef(skillName)
 	elseif (cmd1 == "status") then
 		local calcStatus = "not "

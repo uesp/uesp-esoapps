@@ -485,6 +485,7 @@
 --			- Fixed logging of Thieves Troves.
 --			- Added "/uespmineitems reloaddelay [seconds]" command for adjusting the minimum reload delay when
 --			  auto mining items.
+--			- Shortened the output from "/uespstyle"
 --
 
 
@@ -6989,7 +6990,7 @@ function uespLog.MineEnchantCharges()
 	local data = uespLog.savedVars.tempData.data
 	
 	for i,row in ipairs(enchantData) do
-		data[#data+1] = uespLog.implodeStart(row, ", ")
+		data[#data+1] = uespLog.implodeOrder(row, ", ")
 	end
 	
 	uespLog.Msg("UESP::Logged "..tostring(#enchantData).." item enchantment charge data to tempData section.")
@@ -8099,6 +8100,90 @@ function uespLog.titleCaseString(str)
 end
 
 
+function uespLog.ShowStyles(styleName, showLong)
+	local known = uespLog.GetStyleKnown(styleName)
+	local niceName = uespLog.titleCaseString(styleName)
+	
+	showLong = showLong or false
+	
+	if (known == nil) then
+		uespLog.MsgColor(uespLog.craftColor, "Error: Unknown item style '"..tostring(styleName).."'!")
+		uespLog.MsgColor(uespLog.craftColor, ".                Use '/uespstyle list' to show valid styles.")
+		return false
+	elseif (type(known) == "table") then
+		local knownPieces = {}
+		local unknownPieces = {}
+		local totalPieces = 14
+	
+		for i = 1,totalPieces do
+			local chapterName = tostring(uespLog.CRAFTMOTIF_CHAPTERNAME[i])
+			local knownString = "UNKNOWN"
+			
+			if (known[i]) then
+				knownString = "known"
+				table.insert(knownPieces, chapterName)
+			else
+				table.insert(unknownPieces, chapterName)
+			end
+			
+			if (showLong) then
+				uespLog.MsgColor(uespLog.craftColor, niceName.." style Chapter "..tostring(i)..", "..chapterName.." is "..knownString)
+			end
+		end
+		
+		if (not showLong) then
+			local knownString   = uespLog.implodeOrder(knownPieces, ", ")
+			local unknownString = uespLog.implodeOrder(unknownPieces, ", ")
+			uespLog.MsgColor(uespLog.craftColor, niceName.." style known pieces ("..tostring(#knownPieces).."): "..knownString)
+			uespLog.MsgColor(uespLog.craftColor, niceName.." style UNKNOWN pieces ("..tostring(#unknownPieces).."): "..unknownString)
+
+			uespLog.MsgColor(uespLog.craftColor, "You know "..tostring(#knownPieces).."/"..tostring(totalPieces).." of the "..niceName.." style chapters.")
+		end
+		
+	elseif (known) then
+		uespLog.MsgColor(uespLog.craftColor, niceName.." style is known for all pieces (14/14)")
+	else
+		uespLog.MsgColor(uespLog.craftColor, niceName.." style is UNKNOWN for all pieces (0/14)")
+	end
+	
+	return true
+end
+
+
+function uespLog.ListValidStyles()
+	local orderedNames = {}
+	local j = 1
+	local output = ""
+	
+	uespLog.MsgColor(uespLog.craftColor, "UESP:Valid style names for /uespstyle are:")
+
+	for k in pairs(uespLog.CRAFTSTYLENAME_TO_MOTIFID) do
+		table.insert(orderedNames, k)
+	end
+
+	table.sort(orderedNames)
+	
+	for i = 1, #orderedNames do
+		local niceName = uespLog.titleCaseString(orderedNames[i])
+		
+		output = output .. niceName .. string.rep(" ", 20 - #niceName/1.5)
+		j = j + 1
+					
+		if (j >= 4) then
+			j = 1
+			uespLog.MsgColor(uespLog.craftColor, ".     "..output)
+			output = ""
+		end
+
+	end
+	
+	if (output ~= "") then
+		uespLog.MsgColor(uespLog.craftColor, ".     "..output)
+	end
+	
+end
+
+
 SLASH_COMMANDS["/uespstyle"] = function (cmd)
 	local lCmd = cmd:lower()
 	
@@ -8106,63 +8191,11 @@ SLASH_COMMANDS["/uespstyle"] = function (cmd)
 		uespLog.MsgColor(uespLog.craftColor, "UESP::Shows which chapters of an item style you know.")
 		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle [stylename]      Shows which chapters of the style you know")
 		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle list             Lists all styles valid for the command")
-		return
 	elseif (lCmd == "liststyles" or lCmd == "list") then
-		local orderedNames = {}
-		local j = 1
-		local output = ""
-		
-		uespLog.MsgColor(uespLog.craftColor, "UESP:Valid style names for /uespstyle are:")
-
-		for k in pairs(uespLog.CRAFTSTYLENAME_TO_MOTIFID) do
-			table.insert(orderedNames, k)
-		end
-
-		table.sort(orderedNames)
-		
-		for i = 1, #orderedNames do
-			local niceName = uespLog.titleCaseString(orderedNames[i])
-			
-			output = output .. niceName .. string.rep(" ", 20 - #niceName/1.5)
-			j = j + 1
-						
-			if (j >= 4) then
-				j = 1
-				uespLog.MsgColor(uespLog.craftColor, ".     "..output)
-				output = ""
-			end
-
-		end
-		
-		if (output ~= "") then
-			uespLog.MsgColor(uespLog.craftColor, ".     "..output)
-		end
-	
-		return
-	end
-	
-	local known = uespLog.GetStyleKnown(cmd)
-	local niceName = uespLog.titleCaseString(cmd)
-	
-	if (known == nil) then
-		uespLog.MsgColor(uespLog.craftColor, "Error: Invalid item style '"..tostring(cmd).."'!")
-	elseif (type(known) == "table") then
-	
-		for i = 1,14 do
-			local chapterName = tostring(uespLog.CRAFTMOTIF_CHAPTERNAME[i])
-			
-			if (known[i]) then
-				uespLog.MsgColor(uespLog.craftColor, niceName.." style Chapter "..tostring(i)..", "..chapterName.." is known")
-			else
-				uespLog.MsgColor(uespLog.craftColor, niceName.." style Chapter "..tostring(i)..", "..chapterName.." is UNKNOWN")
-			end
-		end
-		
-	elseif (known) then
-		uespLog.MsgColor(uespLog.craftColor, niceName.." style is known for all pieces")
+		uespLog.ListValidStyles()
 	else
-		uespLog.MsgColor(uespLog.craftColor, niceName.." style is UNKNOWN for all pieces")
-	end
+		uespLog.ShowStyles(cmd)
+	end	
 	
 end
 
@@ -9102,7 +9135,7 @@ function uespLog.implode(tab, delim)
 end
 
 
-function uespLog.implodeStart(tab, delim, startIndex)
+function uespLog.implodeOrder(tab, delim, startIndex)
 	local output = ""
 	local isFirst = true
 	local strDelim = tostring(delim)

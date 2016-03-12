@@ -855,6 +855,8 @@ function uespLog.SaveActionBarForCharData()
 	end
 	
 	uespLog.savedVars.charInfo.data.actionBar = uespLog.charData_ActionBarData	
+	
+	uespLog.DebugExtraMsg("UESP::***Current action bar saved***")
 end
 
 

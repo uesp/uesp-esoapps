@@ -471,7 +471,7 @@
 --			  the saving of action bar data which caused the lag when done +40 times in the same frame. Action bar
 --			  saving is now only done at most once every 5 seconds.
 --
---		- v0.62 -- ? March 2016
+--		- v0.62 -- 12 March 2016
 --			- Slash commands that don't start with "/uesp..." are checked to see if they exist before they are
 --			  set. This prevents them from interfering with any other add-on that might happen to use them.
 --			- Added the "/rl" chat command as a short form for "/reloadui".
@@ -487,6 +487,8 @@
 --			  auto mining items.
 --			- Shortened the output from "/uespstyle". Added the "/uespstyle long [style]" command to format
 --			  output in the long format.
+--			- Another fix to try and eliminate the little bit of lag that some people experience when killing
+--			  mobs with a Destruction Staff equipped.
 --			
 --
 
@@ -495,7 +497,7 @@
 uespLog = { }
 
 uespLog.version = "0.62"
-uespLog.releaseDate = "10 March 2016"
+uespLog.releaseDate = "12 March 2016"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -1809,9 +1811,11 @@ function uespLog.Initialize( self, addOnName )
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOTS_FULL_UPDATE, uespLog.OnActionSlotsFullUpdate)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOT_ABILITY_SLOTTED, uespLog.OnActionSlotAbilitySlotted)	
-	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOT_UPDATED, uespLog.OnActionSlotUpdated)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTIVE_QUICKSLOT_CHANGED, uespLog.OnActiveQuickSlotChanged)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTIVE_WEAPON_PAIR_CHANGED, uespLog.OnActiveWeaponPairChanged)	
+	
+		-- Note: This event is called up to 40-50 time for each kill with some weapons (Destruction Staff)
+	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOT_UPDATED, uespLog.OnActionSlotUpdated)	
 	
 	ZO_InteractWindow:UnregisterForEvent(EVENT_CHATTER_BEGIN)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CONVERSATION_UPDATED, uespLog.OnConversationUpdated)
@@ -9446,3 +9450,112 @@ end
 function uespLog.BackCommand(cmd)
 	uespLog.AfkCommand("online")
 end
+
+
+uespLog.speedMeasure = false
+uespLog.speedMeasureDeltaTime = 1
+uespLog.speedLastX = nil
+uespLog.speedLastY = nil
+uespLog.speedLastZone = nil
+uespLog.speedLastTimestamp = nil
+uespLog.speedFirstTimestamp = nil
+uespLog.speedTotalDelta = 0
+uespLog.speedMagicFactor = 1000000
+
+
+function uespLog.SpeedCommand(cmd)
+	local cmds, firstCmd = uespLog.SplitCommands(cmd)
+	
+	if (firstCmd == "on") then
+		uespLog.SpeedMeasureEnable()
+	elseif (firstCmd == "off") then
+		uespLog.SpeedMeasureDisable()
+	elseif (uespLog.speedMeasure) then
+		uespLog.Msg("UESP::Speed measurement is on.")
+	else
+		uespLog.Msg("UESP::Speed measurement is off.")
+	end
+	
+end
+
+
+function uespLog.SpeedMeasureEnable()
+
+	if (uespLog.speedMeasure) then
+		uespLog.Msg("UESP::Speed measurement is already on!")
+		return
+	end
+		
+	uespLog.speedMeasure = true
+	uespLog.Msg("UESP::Turned speed measurements on...")
+	uespLog.RecordSpeedParameters()
+	zo_callLater(uespLog.SpeedMeasureCallback, uespLog.speedMeasureDeltaTime*1000)
+end
+
+
+function uespLog.SpeedMeasureCallback()
+
+	if (not uespLog.speedMeasure) then
+		return
+	end
+	
+	local speed = uespLog.RecordSpeedParameters() * uespLog.speedMagicFactor
+	local avgSpeed = uespLog.speedTotalDelta / (uespLog.speedLastTimestamp - uespLog.speedFirstTimestamp) * uespLog.speedMagicFactor
+	
+	if (speed ~= nil) then
+		uespLog.Msg("Speed: "..string.format("%.2f", speed).." u/s (average = "..string.format("%.2f", avgSpeed).." u/s)")
+	end
+	
+	zo_callLater(uespLog.SpeedMeasureCallback, uespLog.speedMeasureDeltaTime*1000)
+end
+
+
+function uespLog.SpeedMeasureDisable()
+
+	if (not uespLog.speedMeasure) then
+		uespLog.Msg("UESP::Speed measurement is already off!")
+		return
+	end
+	
+	uespLog.speedMeasure = false
+	uespLog.speedLastX = nil
+	uespLog.speedLastY = nil
+	uespLog.speedLastZone = nil
+	uespLog.speedLastTimestamp = nil
+	uespLog.speedFirstTimestamp = nil
+	uespLog.speedTotalTime = 0
+	uespLog.speedTotalDelta = 0
+	
+	uespLog.Msg("UESP::Turned speed measurements off...")
+end
+
+
+function uespLog.RecordSpeedParameters()
+	local x, y, heading, zone = GetMapPlayerPosition("player")
+	local timestamp = GetGameTimeMilliseconds()
+	local speed = nil
+	
+	if (uespLog.speedLastX ~= nil and uespLog.speedLastY ~= nil and uespLog.speedLastZone == zone and uespLog.speedLastTimestamp ~= nil) then
+		local deltaX = x - uespLog.speedLastX
+		local deltaY = y - uespLog.speedLastY
+		local deltaPos = math.sqrt(deltaX*deltaX + deltaY*deltaY)
+		local deltaTime = timestamp - uespLog.speedLastTimestamp 
+		
+		speed = deltaPos / deltaTime
+		uespLog.speedTotalDelta = uespLog.speedTotalDelta + deltaPos
+	end	
+	
+	if (uespLog.speedFirstTimestamp == nil) then
+		uespLog.speedFirstTimestamp = timestamp
+	end
+	
+	uespLog.speedLastX = x
+	uespLog.speedLastY = y
+	uespLog.speedLastZone = zone
+	uespLog.speedLastTimestamp = timestamp
+	
+	return speed
+end
+
+
+SLASH_COMMANDS["/uespspeed"] = uespLog.SpeedCommand

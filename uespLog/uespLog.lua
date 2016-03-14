@@ -490,13 +490,15 @@
 --			- Another fix to try and eliminate the little bit of lag that some people experience when killing
 --			  mobs with a Destruction Staff equipped.
 --			
+--		- v0.63 -- ? March 2016
+--
 --
 
 
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "0.62"
+uespLog.version = "0.63"
 uespLog.releaseDate = "12 March 2016"
 uespLog.DATA_VERSION = 3
 

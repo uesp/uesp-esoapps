@@ -28,5 +28,6 @@ uespLogCharData.lua
 uespSkillCoef.lua
 uespLog.xml
 uespdescription.lua
+uespLogDaily.lua
 uespLogPerformanceMeter.lua
 uespLogPerformanceMeter.xml

@@ -492,7 +492,6 @@
 --			
 --		- v0.63 -- ? March 2016
 --
---
 
 
 --	GLOBAL DEFINITIONS
@@ -925,7 +924,9 @@ uespLog.DEFAULT_DATA =
 
 uespLog.DEFAULT_CHARINFO = 
 {
-	data = {}
+	data = {
+		["dailyQuestData"] = {},
+	}
 }
 
 uespLog.DEFAULT_BUILDDATA = 
@@ -2848,6 +2849,8 @@ function uespLog.OnQuestAdded (eventCode, journalIndex, questName, objectiveName
 	uespLog.DebugLogMsg("Quest added "..questName.."::"..objectiveName)
 	
 	uespLog.CheckQuestItems(journalIndex, questName)
+	
+	uespLog.DailyQuestOnQuestStart(questName, journalIndex)
 end
 
 
@@ -2863,6 +2866,8 @@ function uespLog.OnQuestRemoved (eventCode, isCompleted, questIndex, questName, 
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 
 	uespLog.DebugLogMsg("Quest removed "..questName)
+	
+	uespLog.DailyQuestOnQuestComplete(questName, questIndex, isCompleted)
 end
 
 

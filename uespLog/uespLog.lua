@@ -491,6 +491,8 @@
 --			  mobs with a Destruction Staff equipped.
 --			
 --		- v0.63 -- ? March 2016
+--			- Fixed "Show Item Info" menu item when smithing an item.
+--
 --
 
 
@@ -2061,7 +2063,9 @@ end
 
 function uespLog.SmithingCreationOnTooltipMouseUp(control, button, upInside)
 	if upInside and button == 2 then
-		local link = ZO_LinkHandler_CreateChatLink(GetSmithingPatternResultLink, SMITHING.creationPanel:GetAllCraftingParameters())
+		local patternIndex, materialIndex, materialQuantity, styleIndex, traitIndex, _ = SMITHING.creationPanel:GetAllCraftingParameters()
+		local link = ZO_LinkHandler_CreateChatLink(GetSmithingPatternResultLink, patternIndex, materialIndex, materialQuantity, styleIndex, traitIndex)
+		
 		if link ~= "" then
 			ClearMenu()
 

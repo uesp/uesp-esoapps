@@ -50,7 +50,7 @@ uespLog.DAILY_QUESTS =
 			["maxCount"] = 1,
 			["quests"] = 
 			{
-				"Retrieve Spyglass",
+				"Thrall Cove",
 				"Memories of Youth",
 			},
 		},

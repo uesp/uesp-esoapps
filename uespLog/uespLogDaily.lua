@@ -38,6 +38,7 @@ uespLog.DAILY_QUESTS =
 			["maxCount"] = 1,
 			["quests"] = 
 			{
+				"Heist: Deadhollow Halls",
 				"Heist: Glittering Grotto",
 				"Heist: The Hideaway",
 				"Heist: Underground Sepulcher",

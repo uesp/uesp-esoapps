@@ -54,6 +54,7 @@ uespLog.DAILY_QUESTS =
 				"Thrall Cove",
 				"Memories of Youth",
 				"The Sailor's Pipe",
+				"The Lost Pearls",
 			},
 		},
 	},

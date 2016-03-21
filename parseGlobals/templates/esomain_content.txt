@@ -14,4 +14,5 @@
 	<li><a href="globaldupfuncs.txt">Global Duplicate Functions</a> -- The ${globalDupFuncCount} global functions that point to the same function object.</li>
 	<li><a href="missingfuncs.txt">Missing Function Definitions</a> --  ${missingFuncCount} functions that are missing a source code definition.</li>
 	<li><a href="unusedfunc.txt">Unused Functions</a> --  ${unusedFuncCount} functions that are not used in any Lua source file.</li>
+	<li><a href="apidiff.txt">API Changes</a> -- Removed and added global functions from the previous API version.</li>
 </ul>

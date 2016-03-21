@@ -32,6 +32,14 @@ Current ESO data is available at:
      to extract the Game.Mnf/Dat ESO files
    - Edit EsoParseData.py to reference the global txt file and the "esoui" directory
      from the extracted Game.Mnf data. Modify the output path in the same file if desired.
-   - Run EsoParseData.py.
+   - Make sure your OS is using a case-sensitive file system. On Windows this involves settting
+   
+		HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel\obcaseinsensitive
+	
+	 to "0" and rebooting. Use CygWin to permit case sensitive files by editting /etc/fstab with
+	 "posix=1" in the drive options like:
+	       C:   /cygdrive/c ntfs     binary,posix=1,user,auto   0 0
+   - Modify "EsoParseData.py" to point to the relevant input and output files/paths.
+   - Run "EsoParseData.py".
    - If everything works you'll get a bunch of status output and no errors.
    - Test load the new content.

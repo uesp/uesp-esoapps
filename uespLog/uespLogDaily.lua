@@ -688,7 +688,7 @@ function uespLog.DailyQuestOnQuestStart(questName, journalIndex)
 	--uespLog.DebugMsg("DailyQuestOnQuestStart for "..tostring(questName)..", "..tostring(journalIndex))
 	
 	if (not uespLog.IsDailyQuest(questName)) then
-		uespLog.DebugMsg(".    Not a daily quest!")
+		--uespLog.DebugMsg(".    Not a daily quest!")
 		return false
 	end
 	
@@ -715,7 +715,7 @@ function uespLog.DailyQuestOnQuestComplete(questName, journalIndex, isComplete)
 	--uespLog.DebugMsg("DailyQuestOnQuestComplete for "..tostring(questName)..", "..tostring(journalIndex)..", "..tostring(isComplete))
 	
 	if (not uespLog.IsDailyQuest(questName)) then
-		uespLog.DebugMsg(".    Not a daily quest!")
+		--uespLog.DebugMsg(".    Not a daily quest!")
 		return false
 	end
 	

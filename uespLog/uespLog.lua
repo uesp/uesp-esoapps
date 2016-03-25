@@ -5122,7 +5122,7 @@ function uespLog.DumpSkillTypes(note, classOnly, raceOnly, passiveOnly)
 				
 				if (logData.passive) then
 					if (logData.level == nil) then 
-						if (purchase) then
+						if (logData.purchase) then
 							logData.level = 1
 						else
 							logData.level = 0 

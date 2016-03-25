@@ -9606,7 +9606,7 @@ end
 SLASH_COMMANDS["/uespspeed"] = uespLog.SpeedCommand
 
 
-function uespLog.BuyPassives(putPointInNextUpgrade)
+function uespLog.BuyPassives(putPointInNextUpgrade, charOnly)
 	local numSkillTypes = GetNumSkillTypes()
 	local skillType
 	local skillIndex
@@ -9623,6 +9623,10 @@ function uespLog.BuyPassives(putPointInNextUpgrade)
 		for skillIndex = 1, numSkillLines do
 			local numSkillAbilities = GetNumSkillAbilities(skillType, skillIndex)
 			local _, currentRank = GetSkillLineInfo(skillType, skillIndex)
+			
+			if (charOnly and not (skillType == 1 or skillType == 7)) then
+				break
+			end
 			
 			for abilityIndex = 1, numSkillAbilities do
 				local _, _, earnedRank, passive, _, purchase, progressionIndex = GetSkillAbilityInfo(skillType, skillIndex, abilityIndex)
@@ -9694,17 +9698,33 @@ function uespLog.BuyPassiveCommand(cmd)
 	
 	if (firstCmd == "all") then
 		uespLog.Msg("Buying 1 rank in all passives previously purchased...")
-		uespLog.BuyPassives(true)
+		uespLog.BuyPassives(true, false)
+		return true
 	elseif (firstCmd == "first") then
 		uespLog.Msg("Buying first rank in all unpurchased passives...")
-		uespLog.BuyPassives(false)
-	else
-		uespLog.MsgColor(uespLog.warningColor, "Warning: This command purchases one rank of all passives. It is only used to help dump all skill data on the PTS.")
-		uespLog.MsgColor(uespLog.warningColor, "If you really want to run it use the following format:")
-		uespLog.MsgColor(uespLog.warningColor, ".     /uespbuypassive first    Buy first rank in all passives")
-		uespLog.MsgColor(uespLog.warningColor, ".     /uespbuypassive all      Buy next rank in all passives")
+		uespLog.BuyPassives(false, false)
+		return true
+	elseif (firstCmd == "char" or firstCmd == "character") then
+		local secondCmd = string.lower(cmds[2])
+		
+		if (secondCmd == "all") then
+			uespLog.Msg("Buying 1 rank in character passives previously purchased...")
+			uespLog.BuyPassives(true, true)
+			return true
+		elseif (secondCmd == "first") then
+			uespLog.Msg("Buying first rank in unpurchased character passives...")
+			uespLog.BuyPassives(false, true)
+			return true
+		end
+		
 	end
 	
+	uespLog.MsgColor(uespLog.warningColor, "Warning: This command purchases one rank of all passives. It is only used to help dump all skill data on the PTS.")
+	uespLog.MsgColor(uespLog.warningColor, "If you really want to run it use the following format:")
+	uespLog.MsgColor(uespLog.warningColor, ".     /uespbuypassive first           Buy first rank in all passives")
+	uespLog.MsgColor(uespLog.warningColor, ".     /uespbuypassive all             Buy next rank in all passives")
+	uespLog.MsgColor(uespLog.warningColor, ".     /uespbuypassive char first   Buy first rank in all character passives")
+	uespLog.MsgColor(uespLog.warningColor, ".     /uespbuypassive char all     Buy next rank in all character passives")
 end
 
 SLASH_COMMANDS["/uespbuypassive"] = uespLog.BuyPassiveCommand

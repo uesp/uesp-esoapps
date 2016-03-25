@@ -5301,7 +5301,7 @@ function uespLog.DumpSkill(abilityId)
 	local angleDistance = GetAbilityAngleDistance(abilityId)
 	local duration = GetAbilityDuration(abilityId)
 	local cost, mechanic = GetAbilityCost(abilityId)
-	local descHeader = GetAbilityDescriptionHeader(abilityId)
+	local descHeader = tostring(GetAbilityDescriptionHeader(abilityId))
 	local description = GetAbilityDescription(abilityId)
 	local upgradeLines = uespLog.FormatSkillUpgradeLines(GetAbilityUpgradeLines(abilityId))
 	local effectLines = uespLog.FormatSkillEffectLines(GetAbilityNewEffectLines(abilityId))
@@ -5322,7 +5322,13 @@ function uespLog.DumpSkill(abilityId)
 	logData.duration = duration
 	logData.cost = cost
 	logData.mechanic = mechanic
-	logData.desc = tostring(descHeader) .. tostring(description)
+	
+	if (descHeader ~= "") then
+		logData.desc = descHeader .."\n".. tostring(description)
+	else
+		logData.desc = tostring(description)
+	end
+	
 	logData.icon = GetAbilityIcon(abilityId)
 	
 	if (upgradeLines and upgradeLines ~= "") then logData.upgradeLines = upgradeLines end

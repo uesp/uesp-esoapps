@@ -618,8 +618,13 @@ function uespLog.CreateCharDataSkills()
 				local skillName = tostring(skillTypeName)..":"..tostring(skillLineName)..":"..tostring(name)
 				local abilityId = GetSkillAbilityId(skillType, skillIndex, abilityIndex, false)
 				local description = GetAbilityDescription(abilityId)
+				local descHeader = tostring(GetAbilityDescriptionHeader(abilityId))
 				local currentUpgradeLevel, maxUpgradeLevel = GetSkillAbilityUpgradeInfo(skillType, skillIndex, abilityIndex)
 				local skillType = "skill"
+				
+				if (descHeader ~= "") then
+					description = descHeader .. "\n" .. description
+				end
 				
 				if (ultimate) then
 					skillType = "ultimate"
@@ -811,6 +816,7 @@ function uespLog.SaveActionBarForCharData()
 		local id = GetSlotBoundId(i)
 		local name = GetSlotName(i)
 		local description = GetAbilityDescription(id)
+		local descHeader = tostring(GetAbilityDescriptionHeader(id))
 		local channeled, castTime, channelTime = GetAbilityCastInfo(id)
 		local minRange, maxRange = GetAbilityRange(id)
 		local radius = GetAbilityRadius(id)
@@ -821,6 +827,10 @@ function uespLog.SaveActionBarForCharData()
 		local costStr = tostring(cost) .. ' ' .. uespLog.GetCombatMechanicText(mechanic)
 		local rangeStr = ""
 		local areaStr = ""
+		
+		if (descHeader ~= "") then
+			description = descHeader .. "\n" .. description
+		end
 		
 		if (not channeled) then
 			channelTime = 0

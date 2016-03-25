@@ -507,6 +507,7 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		uespLog.Msg(".     /usc clear                 Resets the saved skill data")
 		uespLog.Msg(".     /usc savewyk [prefix] [start] [end]  Saves skill data using Wykkyd's Outfitter. For example: '/usc savewyk Test 1 9' would try to load the sets 'Test1'...'Test9' and save the skill data for each of them.")
 		uespLog.Msg(".     /usc stop                  Stops a Wykkyd item set save in progress")
+		uespLog.Msg(".     /usc showbad              Lists all any coefficients that are 'bad'")
 	end
 
 end
@@ -945,12 +946,20 @@ function uespLog.CaptureSkillCoefData()
 				skillCount = skillCount + 1
 			
 				if (progressionIndex ~= nil and progressionIndex > 0) then
-					ability3 = GetAbilityProgressionAbilityId(progressionIndex, 0, 4)
-					ability4 = GetAbilityProgressionAbilityId(progressionIndex, 1, 4)
-					ability5 = GetAbilityProgressionAbilityId(progressionIndex, 2, 4)
-					uespLog.SaveSkillCoefData(ability3, 4, passive)
-					uespLog.SaveSkillCoefData(ability4, 4, passive)
-					uespLog.SaveSkillCoefData(ability5, 4, passive)
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 1), 1, passive)
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 2), 2, passive)
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 3), 3, passive)
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 4), 4, passive)
+					
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 1), 1, passive)
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 2), 2, passive)
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 3), 3, passive)
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 4), 4, passive)
+					
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 1), 1, passive)
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 2), 2, passive)
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 3), 3, passive)
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 4), 4, passive)
 				else
 					uespLog.SaveSkillCoefData(ability1, level, passive)
 					uespLog.SaveSkillCoefData(ability2, level + 1, passive)

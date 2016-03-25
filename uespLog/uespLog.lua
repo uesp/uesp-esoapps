@@ -4973,6 +4973,9 @@ function uespLog.DumpSkills(opt1, opt2)
 		uespLog.DumpSkillTypes(opt2, false, true)
 		uespLog.DumpLearnedAbilities(opt2)
 		return true
+	elseif (opt1 == "passive" or opt1 == "passives") then
+		uespLog.DumpSkillTypes(opt2, false, false, true)
+		return true
 	else
 		uespLog.Msg("Expected format:")
 		uespLog.Msg(".     /uespdump skills [basic/progression/abilities/character/race/class/learned/types/all] [note]")
@@ -4987,7 +4990,7 @@ function uespLog.GetSkillTypeName(skillType)
 end
 
 
-function uespLog.DumpSkillTypes(note, classOnly, raceOnly)
+function uespLog.DumpSkillTypes(note, classOnly, raceOnly, passiveOnly)
 	local logData = { }
 	local count = 0
 	local numSkillTypes = GetNumSkillTypes()
@@ -5000,6 +5003,7 @@ function uespLog.DumpSkillTypes(note, classOnly, raceOnly)
 	
 	classOnly = classOnly or false
 	raceOnly = raceOnly or false
+	passiveOnly = passiveOnly or false
 	uespLog.DebugLogMsg("Logging abilities by skill types for current character...")
 	
 	if (classOnly) then
@@ -5016,6 +5020,10 @@ function uespLog.DumpSkillTypes(note, classOnly, raceOnly)
 		startSkill = 7
 		endSkill = 7
 		uespLog.DebugLogMsg(".     Logging only race abilities...")
+	end
+	
+	if (passiveOnly) then
+		uespLog.DebugLogMsg(".     Logging only passive abilities...")
 	end
 	
 	logData.event = "skillDump::StartType"
@@ -5082,8 +5090,7 @@ function uespLog.DumpSkillTypes(note, classOnly, raceOnly)
 			
 			for abilityIndex = 1, numSkillAbilities do
 				local progressionIndex
-				count = count + 1
-				
+								
 				logData = { }
 				logData.event = "skillAbility"
 				logData.skillType = skillType
@@ -5100,9 +5107,38 @@ function uespLog.DumpSkillTypes(note, classOnly, raceOnly)
 				logData.abilityId1 = GetSkillAbilityId(skillType, skillIndex, abilityIndex, false)
 				logData.abilityId2 = GetSkillAbilityId(skillType, skillIndex, abilityIndex, true)
 				logData.level, logData.maxLevel = GetSkillAbilityUpgradeInfo(skillType, skillIndex, abilityIndex)
-				if (logData.level == nil) then logData.level = 1 end
-				if (logData.maxLevel == nil) then logData.maxLevel = 1 end
-				uespLog.AppendDataToLog("all", logData)
+				
+				local _, _, nextEarnedRank = GetSkillAbilityNextUpgradeInfo(skillType, skillIndex, abilityIndex)
+				
+				if (nextEarnedRank ~= nil) then
+					logData.nextEarnedRank = nextEarnedRank
+				end
+				
+				if (progressionIndex ~= nil) then
+					local name, morph, rank = GetAbilityProgressionInfo(progressionIndex)
+					logData.level = rank
+					logData.maxLevel = 4
+				end
+				
+				if (logData.passive) then
+					if (logData.level == nil) then 
+						if (purchase) then
+							logData.level = 1
+						else
+							logData.level = 0 
+						end
+					end
+					if (logData.maxLevel == nil) then logData.maxLevel = 1 end				
+				else
+					if (logData.level == nil) then logData.level = -1 end
+					if (logData.maxLevel == nil) then logData.maxLevel = -1 end				
+				end
+				
+				if (not passiveOnly or (logData.passive and passiveOnly)) then
+					uespLog.AppendDataToLog("all", logData)
+					count = count + 1
+				end
+				
 			end
 		end
 		
@@ -5177,41 +5213,39 @@ function uespLog.DumpSkillsProgression(note, classOnly)
 	logData.note = note
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 
-	for progressionIndex = 1, 1000 do
+	for progressionIndex = 1, 300 do
 		local name, morph, rank = GetAbilityProgressionInfo(progressionIndex)
 		
-		if (name == "" or morph < 0 or rank < 0) then
-			break
+		if (name ~= "" and morph >= 0 and rank >= 0) then
+			logData = { }
+			logData.event = "skillProgression"
+			logData.name = name
+			logData.index = progressionIndex
+			
+				-- NOTE: The abilityIndex# returned by this function doesn't appear to be correct
+			logData.name0, logData.texture0, logData.abilityIndex0 = GetAbilityProgressionAbilityInfo(progressionIndex, 0, 1)
+			logData.name1, logData.texture1, logData.abilityIndex1 = GetAbilityProgressionAbilityInfo(progressionIndex, 1, 1)
+			logData.name2, logData.texture2, logData.abilityIndex2 = GetAbilityProgressionAbilityInfo(progressionIndex, 2, 1)
+			
+				-- NOTE: This function doesn't seem to return the correct values
+			logData.skillType, logData.skillIndex, logData.abilityIndex = GetSkillAbilityIndicesFromProgressionIndex(progressionIndex)
+			
+			logData.id01 = GetAbilityProgressionAbilityId(progressionIndex, 0, 1)
+			logData.id02 = GetAbilityProgressionAbilityId(progressionIndex, 0, 2)
+			logData.id03 = GetAbilityProgressionAbilityId(progressionIndex, 0, 3)
+			logData.id04 = GetAbilityProgressionAbilityId(progressionIndex, 0, 4)
+			logData.id11 = GetAbilityProgressionAbilityId(progressionIndex, 1, 1)
+			logData.id12 = GetAbilityProgressionAbilityId(progressionIndex, 1, 2)
+			logData.id13 = GetAbilityProgressionAbilityId(progressionIndex, 1, 3)
+			logData.id14 = GetAbilityProgressionAbilityId(progressionIndex, 1, 4)
+			logData.id21 = GetAbilityProgressionAbilityId(progressionIndex, 2, 1)
+			logData.id22 = GetAbilityProgressionAbilityId(progressionIndex, 2, 2)
+			logData.id23 = GetAbilityProgressionAbilityId(progressionIndex, 2, 3)
+			logData.id24 = GetAbilityProgressionAbilityId(progressionIndex, 2, 4)
+			
+			uespLog.AppendDataToLog("all", logData)
+			count = count + 1
 		end
-				
-		logData = { }
-		logData.event = "skillProgression"
-		logData.name = name
-		logData.index = progressionIndex
-		
-			-- NOTE: The abilityIndex# returned by this function doesn't appear to be correct
-		logData.name0, logData.texture0, logData.abilityIndex0 = GetAbilityProgressionAbilityInfo(progressionIndex, 0, 1)
-		logData.name1, logData.texture1, logData.abilityIndex1 = GetAbilityProgressionAbilityInfo(progressionIndex, 1, 1)
-		logData.name2, logData.texture2, logData.abilityIndex2 = GetAbilityProgressionAbilityInfo(progressionIndex, 2, 1)
-		
-			-- NOTE: This function doesn't seem to return the correct values
-		logData.skillType, logData.skillIndex, logData.abilityIndex = GetSkillAbilityIndicesFromProgressionIndex(progressionIndex)
-		
-		logData.id01 = GetAbilityProgressionAbilityId(progressionIndex, 0, 1)
-		logData.id02 = GetAbilityProgressionAbilityId(progressionIndex, 0, 2)
-		logData.id03 = GetAbilityProgressionAbilityId(progressionIndex, 0, 3)
-		logData.id04 = GetAbilityProgressionAbilityId(progressionIndex, 0, 4)
-		logData.id11 = GetAbilityProgressionAbilityId(progressionIndex, 1, 1)
-		logData.id12 = GetAbilityProgressionAbilityId(progressionIndex, 1, 2)
-		logData.id13 = GetAbilityProgressionAbilityId(progressionIndex, 1, 3)
-		logData.id14 = GetAbilityProgressionAbilityId(progressionIndex, 1, 4)
-		logData.id21 = GetAbilityProgressionAbilityId(progressionIndex, 2, 1)
-		logData.id22 = GetAbilityProgressionAbilityId(progressionIndex, 2, 2)
-		logData.id23 = GetAbilityProgressionAbilityId(progressionIndex, 2, 3)
-		logData.id24 = GetAbilityProgressionAbilityId(progressionIndex, 2, 4)
-		
-		uespLog.AppendDataToLog("all", logData)
-		count = count + 1
 	end
 	
 	uespLog.DebugMsg(".     Found "..tostring(count).." skill progressions!")
@@ -9570,3 +9604,107 @@ end
 
 
 SLASH_COMMANDS["/uespspeed"] = uespLog.SpeedCommand
+
+
+function uespLog.BuyPassives(putPointInNextUpgrade)
+	local numSkillTypes = GetNumSkillTypes()
+	local skillType
+	local skillIndex
+	local abilityIndex
+	local purchaseCount = 0
+	local nextTimeDelay = 10
+	local timeDelayStep = 100
+	
+	EVENT_MANAGER:UnregisterForEvent("uespLog", EVENT_SKILL_POINTS_CHANGED)
+	
+	for skillType = 1, numSkillTypes do
+		local numSkillLines = GetNumSkillLines(skillType)
+		
+		for skillIndex = 1, numSkillLines do
+			local numSkillAbilities = GetNumSkillAbilities(skillType, skillIndex)
+			local _, currentRank = GetSkillLineInfo(skillType, skillIndex)
+			
+			for abilityIndex = 1, numSkillAbilities do
+				local _, _, earnedRank, passive, _, purchase, progressionIndex = GetSkillAbilityInfo(skillType, skillIndex, abilityIndex)
+				local level, maxLevel = GetSkillAbilityUpgradeInfo(skillType, skillIndex, abilityIndex)
+				local _, _, nextEarnedRank = GetSkillAbilityNextUpgradeInfo(skillType, skillIndex, abilityIndex)
+				
+				if (passive) then
+				
+					if (GetAvailableSkillPoints() <= 0) then
+						break
+					end
+				
+					if (level == nil) then 
+						if (purchase) then
+							level = 1
+						else
+							level = 0 
+						end
+					end
+					
+					if (maxLevel == nil) then maxLevel = 1 end
+					
+					if (nextEarnedRank == nil) then
+						nextEarnedRank = earnedRank
+					end
+					
+					if (level < maxLevel and nextEarnedRank <= currentRank) then
+						if (putPointInNextUpgrade and level >= 1) then
+							zo_callLater(function() PutPointIntoSkillAbility(skillType, skillIndex, abilityIndex, putPointInNextUpgrade) end, nextTimeDelay)
+							nextTimeDelay = nextTimeDelay + timeDelayStep
+							purchaseCount = purchaseCount + 1
+						elseif (not  putPointInNextUpgrade and level < 1) then
+							zo_callLater(function() PutPointIntoSkillAbility(skillType, skillIndex, abilityIndex, putPointInNextUpgrade) end, nextTimeDelay)
+							nextTimeDelay = nextTimeDelay + timeDelayStep
+							purchaseCount = purchaseCount + 1
+						end
+					end
+				end
+				
+			end
+			
+			if (GetAvailableSkillPoints() <= 0) then
+				break
+			end
+		end
+		
+		if (GetAvailableSkillPoints() <= 0) then
+			break
+		end
+	end
+	
+	if (GetAvailableSkillPoints() <= 0) then
+		uespLog.Msg(".       No more skill points available!")
+	end
+	
+	if (purchaseCount > 0) then
+		zo_callLater(function() uespLog.Msg("Finished purchasing "..purchaseCount.." skills...") end, nextTimeDelay)
+		uespLog.Msg("Purchased "..purchaseCount.." passive ranks (wait for message to proceed)!")
+	else
+		uespLog.Msg("Purchased 0 passive ranks!")
+	end
+		
+	zo_callLater(function () EVENT_MANAGER:RegisterForEvent("uespLog", EVENT_SKILL_POINTS_CHANGED, uespLog.OnSkillPointsChanged) end, nextTimeDelay + 1000)
+end
+
+
+function uespLog.BuyPassiveCommand(cmd)
+	local cmds, firstCmd = uespLog.SplitCommands(cmd)
+	
+	if (firstCmd == "all") then
+		uespLog.Msg("Buying 1 rank in all passives previously purchased...")
+		uespLog.BuyPassives(true)
+	elseif (firstCmd == "first") then
+		uespLog.Msg("Buying first rank in all unpurchased passives...")
+		uespLog.BuyPassives(false)
+	else
+		uespLog.MsgColor(uespLog.warningColor, "Warning: This command purchases one rank of all passives. It is only used to help dump all skill data on the PTS.")
+		uespLog.MsgColor(uespLog.warningColor, "If you really want to run it use the following format:")
+		uespLog.MsgColor(uespLog.warningColor, ".     /uespbuypassive first    Buy first rank in all passives")
+		uespLog.MsgColor(uespLog.warningColor, ".     /uespbuypassive all      Buy next rank in all passives")
+	end
+	
+end
+
+SLASH_COMMANDS["/uespbuypassive"] = uespLog.BuyPassiveCommand

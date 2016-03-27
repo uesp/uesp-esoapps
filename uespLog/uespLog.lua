@@ -492,6 +492,8 @@
 --			
 --		- v0.63 -- ? March 2016
 --			- Fixed "Show Item Info" menu item when smithing an item.
+--			- Updated clock/moon phases to be more accurate and match the lore date given by other addons.
+--			- Improved skill data logging.
 --
 --
 
@@ -598,10 +600,9 @@ uespLog.savedVars = {}
 	-- 21000 / 3600 / 0
 	-- 17280 / 9000 / 0
 	-- 21000 / 4475 / 207360
-	--
-uespLog.GAMETIME_REALSECONDS_OFFSET = 6471		-- in real seconds
-uespLog.GAMETIME_DAY_OFFSET = 0.37				-- in game time days
-uespLog.DEFAULT_GAMETIME_OFFSET = 1396083600
+uespLog.DEFAULT_GAMETIME_OFFSET = 1396569600 		-- Offset to make in-game date 1st Morning Star
+uespLog.DEFAULT_GAMETIME_OFFSET_EXTRA = -1909707 	-- Extra offset to make in-game date on launch day 4th Rain's Hand,
+uespLog.GAMETIME_WEEKDAY_OFFSET = 5					-- Weekday offset to make launch dat Fredas
 uespLog.DEFAULT_GAMETIME_YEAROFFSET = 582
 
 uespLog.DEFAULT_REALSECONDSPERGAMEDAY = 20955
@@ -610,8 +611,8 @@ uespLog.DEFAULT_REALSECONDSPERGAMEHOUR = uespLog.DEFAULT_REALSECONDSPERGAMEDAY /
 uespLog.DEFAULT_REALSECONDSPERGAMEMINUTE = uespLog.DEFAULT_REALSECONDSPERGAMEHOUR / 60
 uespLog.DEFAULT_REALSECONDSPERGAMESECOND = uespLog.DEFAULT_REALSECONDSPERGAMEMINUTE / 60
 
-uespLog.DEFAULT_MOONPHASESTARTTIME = 1396083600 - 207360 - 180000
-uespLog.DEFAULT_MOONPHASETIME = 100 * 3600
+uespLog.DEFAULT_MOONPHASETIME = 30 * uespLog.DEFAULT_REALSECONDSPERGAMEDAY
+uespLog.DEFAULT_MOONPHASESTARTTIME = 1435838770 + uespLog.DEFAULT_MOONPHASETIME/2
 
 uespLog.TES_MONTHS = {
 	"Morning Star",
@@ -4465,12 +4466,13 @@ end
 function uespLog.getGameTimeStr(inputTimestamp, includeDetails)
 	local timeStamp = inputTimestamp or GetTimeStamp()
 
-	local offsetTime = timeStamp - (uespLog.DEFAULT_GAMETIME_OFFSET - uespLog.GAMETIME_REALSECONDS_OFFSET) - uespLog.GAMETIME_DAY_OFFSET * uespLog.DEFAULT_REALSECONDSPERGAMEDAY
+	local offsetTime = timeStamp - uespLog.DEFAULT_GAMETIME_OFFSET - uespLog.DEFAULT_GAMETIME_OFFSET_EXTRA
+	
 	local gameDayTime = offsetTime % uespLog.DEFAULT_REALSECONDSPERGAMEDAY
 	local year = math.floor(offsetTime / uespLog.DEFAULT_REALSECONDSPERGAMEYEAR) + uespLog.DEFAULT_GAMETIME_YEAROFFSET
 	local yearDay = math.floor((offsetTime % uespLog.DEFAULT_REALSECONDSPERGAMEYEAR) / uespLog.DEFAULT_REALSECONDSPERGAMEDAY)
 	local day, month = uespLog.getDayOfMonth(yearDay)
-	local weekDay = math.floor((offsetTime / uespLog.DEFAULT_REALSECONDSPERGAMEDAY) % 7) + 1
+	local weekDay = math.floor(((offsetTime / uespLog.DEFAULT_REALSECONDSPERGAMEDAY) + uespLog.GAMETIME_WEEKDAY_OFFSET) % 7) + 1
 	local monthStr = uespLog.TES_MONTHS[month]
 	local weekDayStr = uespLog.TES_WEEKS[weekDay]
 	local hour = math.floor((gameDayTime / uespLog.DEFAULT_REALSECONDSPERGAMEHOUR) % 24)
@@ -4510,7 +4512,7 @@ function uespLog.ShowTime (inputTimestamp)
 	uespLog.MsgColor(uespLog.timeColor, "UESP::timeStamp = " .. tostring(timeStamp))
 	uespLog.MsgColor(uespLog.timeColor, "UESP::timeStamp Date = " .. timeStampFmt)
 	uespLog.MsgColor(uespLog.timeColor, "UESP::_VERSION = " ..version..",  API = "..tostring(apiVersion))	
-	uespLog.DebugExtraMsg(uespLog.timeColor, "UESP::timeStampStr = " .. timeStampStr)
+	uespLog.DebugExtraMsg("UESP::timeStampStr = " .. timeStampStr)
 end
 
 
@@ -4640,32 +4642,6 @@ SLASH_COMMANDS["/uesptime"] = function (cmd)
 		if (value > 0) then
 			uespLog.DEFAULT_REALSECONDSPERGAMEDAY = value
 			uespLog.MsgColor(uespLog.timeColor, "UESP::Game time day length set to "..tostring(uespLog.DEFAULT_REALSECONDSPERGAMEDAY).." secs")
-		end
-	elseif (cmdWords[1] == "realoffset") then
-	
-		if (cmdWords[2] == nil) then
-			uespLog.MsgColor(uespLog.timeColor, "UESP::Game time real offset is currently "..tostring(uespLog.GAMETIME_REALSECONDS_OFFSET).." secs")
-			return
-		end
-		
-		local value = tonumber(cmdWords[2])
-		
-		if (value ~= nil) then
-			uespLog.GAMETIME_REALSECONDS_OFFSET = value
-			uespLog.MsgColor(uespLog.timeColor, "UESP::Game time real offset set to "..tostring(uespLog.GAMETIME_REALSECONDS_OFFSET).." secs")
-		end
-	elseif (cmdWords[1] == "dayoffset") then
-	
-		if (cmdWords[2] == nil) then
-			uespLog.MsgColor(uespLog.timeColor, "UESP::Game time day offset is currently "..tostring(uespLog.GAMETIME_DAY_OFFSET).." days")
-			return
-		end
-		
-		local value = tonumber(cmdWords[2])
-		
-		if (value ~= nil) then
-			uespLog.GAMETIME_DAY_OFFSET = value
-			uespLog.MsgColor(uespLog.timeColor, "UESP::Game time day offset set to "..tostring(uespLog.GAMETIME_DAY_OFFSET).." days")
 		end
 	else
 		uespLog.ShowTime()
@@ -7962,6 +7938,18 @@ SLASH_COMMANDS["/uesptest"] = function (cmd)
 	-- Moon Phase ~ Full Moon, TimeStamp = 1435838770, LocalTime = 124897, 2 July 2015 08:11
 	-- Moon Phase ~ Full Moon, TimeStamp = 1438352285 (14:20 31 July 2015)
 	-- Moon Phase ~ Slightly Waxing Gibbous past First Quarter (0.3-0.35), TimeStamp = 1440087745 (12:26 20 Aug 2015)
+		
+	uespLog.DebugMsg("Showing Test Time (1425169441)....")
+	uespLog.ShowTime(1425169441)
+	
+	uespLog.DebugMsg("Showing Test Time (1395696240)....")
+	uespLog.ShowTime(1395696240)
+	
+	uespLog.DebugMsg("Showing Test Time (almost new moon, 0.97)....")
+	uespLog.ShowTime(1399083327)
+	
+	uespLog.DebugMsg("Showing Test Time (Wanning Crescent, 0.875)....")
+	uespLog.ShowTime(1399753920)
 
 	uespLog.DebugMsg("Showing Test Time (Full Moon, 0.5)....")
 	uespLog.ShowTime(1435838770)
@@ -7971,6 +7959,13 @@ SLASH_COMMANDS["/uesptest"] = function (cmd)
 	
 	uespLog.DebugMsg("Showing Test Time (Waxing Gibbous Moon, 0.33)....")
 	uespLog.ShowTime(1440087745)	
+	
+	uespLog.DebugMsg("Showing Test Time (Full Moon, 0.5)....")
+	uespLog.ShowTime(1459099163)	
+	
+	--23260393 / 20955 = 1110 = 37
+	--2513515 / 20955 = 119 / 30 = 3.96
+	--60015836 (0.5) / 20955 = 2864 / 30 = 95.456
 end
 
 

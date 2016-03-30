@@ -494,6 +494,7 @@
 --			- Fixed "Show Item Info" menu item when smithing an item.
 --			- Updated clock/moon phases to be more accurate and match the lore date given by other addons.
 --			- Improved skill data logging.
+--			- Tweaked skill message when finding a Skyshard.
 --
 --
 
@@ -3236,10 +3237,6 @@ end
 
 function uespLog.OnSkillPointsChanged (eventCode, pointsBefore, pointsNow, isSkyShard)
 
-	--if (isSkyShard) then
-		--return
-	--end
-
 	local logData = { }
 	
 	logData.event = "SkillPointsChanged"
@@ -3249,7 +3246,13 @@ function uespLog.OnSkillPointsChanged (eventCode, pointsBefore, pointsNow, isSky
 		
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugLogMsg("Skill points changed (".. tostring(logData.points) ..")")
+	if (isSkyShard and pointsBefore == pointsNow) then
+		uespLog.DebugLogMsg("Found Skyshard ("..GetNumSkyShards().." / 3 pieces)")
+	elseif (isSkyShard) then
+		uespLog.DebugLogMsg("Found Skyshard...skill points changed (".. tostring(logData.points) ..")")
+	else
+		uespLog.DebugLogMsg("Skill points changed (".. tostring(logData.points) ..")")
+	end
 end
 
 

@@ -3448,7 +3448,7 @@ function uespLog.OnSkillPointsChanged (eventCode, pointsBefore, pointsNow, isSky
 		uespLog.DebugLogMsg("Skill points lost (".. tostring(logData.points) ..")")
 	elseif (isSkyShard and pointsBefore == pointsNow) then
 		uespLog.DebugLogMsg("Found Skyshard ("..GetNumSkyShards().."/3 pieces)")
-	elseif (isSkyShard) then
+	elseif (isSkyShard and logData.points == 1) then
 		uespLog.DebugLogMsg("Found Skyshard...skill points changed (".. tostring(logData.points) ..")")
 	else
 		uespLog.DebugLogMsg("Skill points added (".. tostring(logData.points) ..")")

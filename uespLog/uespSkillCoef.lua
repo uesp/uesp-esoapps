@@ -488,6 +488,9 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 	elseif (cmd1 == "clear" or cmd1 == "reset") then
 		uespLog.ClearSkillCoefData()
 		uespLog.Msg("Cleared all skill coefficient data.")
+	elseif (cmd1 == "clearsaved" or cmd1 == "resetsaved") then
+		uespLog.ClearSavedSkillCoefData()
+		uespLog.Msg("Cleared any saved skill coefficient statistic data.")
 	elseif (cmd1 == "listbad" or cmd1 == "showbad") then
 		uespLog.ShowSkillCoefBadData()
 	elseif (cmd1 == "listbadfit" or cmd1 == "showbadfit") then
@@ -498,6 +501,8 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		uespLog.SkillCoefAddSkill(cmds[2])
 	elseif (cmd1 == "addcharskills") then
 		uespLog.SkillCoefAddCharSkills()
+	elseif (cmd1 == "addmissing") then
+		uespLog.SkillCoefAddMissingSkills()
 	elseif (cmd1 == "stop" or cmd1 == "end" or cmd1 == "abort") then
 		uespLog.SkillCoef_CaptureWykkyd_CurrentIndex = uespLog.SkillCoef_CaptureWykkyd_EndIndex + 1
 		
@@ -508,22 +513,26 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 	else
 		uespLog.Msg("Saves and calculates coefficients for all skills the character knows. Note that the saved skill data is *not* saved when you /reloadui or logout.")
 		uespLog.Msg("To use use the 'save' command with at least 3 different sets of character stat (spell damage/magicka or weapon damage/stamina) and then use the 'calc' command.")
-		uespLog.Msg(".     /uespsavecoef ...      Normal command form")
-		uespLog.Msg(".     /usc ...                      Short form")
-		uespLog.Msg(".     /usc save                 Save current skill data")
-		uespLog.Msg(".     /usc calc                  Calculate coefficients using saved data")
-		uespLog.Msg(".     /usc coef [name]        Shows the coefficients for the given skill name")
-		uespLog.Msg(".     /usc coef [id]         Shows the coefficients for the given skill ID")
-		uespLog.Msg(".     /usc status               Current status of saved skill data")
-		uespLog.Msg(".     /usc reset                 Resets the saved skill data")
+		uespLog.Msg(".     /uespsavecoef ...       Normal command form")
+		uespLog.Msg(".     /usc ...                       Short form")
+		uespLog.Msg(".     /usc save                   Save current skill data")
+		uespLog.Msg(".     /usc calc                   Calculate coefficients using saved data")
+		uespLog.Msg(".     /usc coef [name]       Shows the coefficients for the given skill name")
+		uespLog.Msg(".     /usc coef [id]             Shows the coefficients for the given skill ID")
+		uespLog.Msg(".     /usc status                 Current status of saved skill data")
+		uespLog.Msg(".     /usc reset                  Resets the saved skill data")
+		uespLog.Msg(".     /usc resetsaved         Clears all saved data points from")
 		uespLog.Msg(".     /usc savewyk [prefix] [start] [end]  Saves skill data using Wykkyd's Outfitter. For example: '/usc savewyk Test 1 9' would try to load the sets 'Test1'...'Test9' and save the skill data for each of them.")
-		uespLog.Msg(".     /usc stop                    Stops a Wykkyd item set save in progress")
-		uespLog.Msg(".     /usc savetemp [name/id]         Saves data for a skill to the tempData section")
-		uespLog.Msg(".     /usc showdata [name/id]         Output raw data for a skill")
-		uespLog.Msg(".     /usc showbad              Lists all any coefficients that are 'bad'")
-		uespLog.Msg(".     /usc showbadfit [R2]          Lists all any coefficients with poor fits")
-		uespLog.Msg(".     /usc addskill [id] [rank]          Adds the given skill to track when saving data")
-		uespLog.Msg(".     /usc addcharskills          Adds all character skills to track when saving data")
+		uespLog.Msg(".     /usc stop                          Stops a Wykkyd item set save in progress")
+		uespLog.Msg(".     /usc savetemp [id]           Saves skill data to the tempData section")
+		uespLog.Msg(".     /usc savetemp [name]")
+		uespLog.Msg(".     /usc showdata [id]           Output raw data for a skill")
+		uespLog.Msg(".     /usc showdata [name]")
+		uespLog.Msg(".     /usc showbad                  Lists all any coefficients that are 'bad'")
+		uespLog.Msg(".     /usc showbadfit [R2]        Lists all any coefficients with poor fits")
+		uespLog.Msg(".     /usc addskill [id] [rank]    Adds the given skill to track when saving")
+		uespLog.Msg(".     /usc addcharskills           Adds all character skills to track when saving")
+		uespLog.Msg(".     /usc addmissing              Adds all currently defined missing skills")
 	end
 
 end
@@ -837,6 +846,25 @@ function uespLog.CaptureNextSkillCoefDataWykkyd_SaveData()
 end
 
 
+function uespLog.SkillCoefAddMissingSkills()
+	local newSkills = 0
+	
+	for k, skillData in ipairs(uespLog.MISSING_SKILL_DATA) do
+		local rank = skillData[1]
+		local abilityId = skillData[2]
+		local learnedLevel = skillData[3]
+		local skillLine = skillData[4]
+		local extraData = {	}
+		
+		local result, isNew = uespLog.InitSkillCoefData(abilityId, rank)
+		if (isNew) then newSkills = newSkills + 1 end
+	end
+	
+	uespLog.Msg("Addded "..newSkills.." missing skills to tracked data!")
+		
+end
+
+
 function uespLog.SkillCoefAddCharSkills()
 	local newSkills = 0
 	local numSkillTypes = GetNumSkillTypes()
@@ -1127,6 +1155,21 @@ function uespLog.FindSkillAbilityData(name)
 	end
 	
 	return nil, nil, nil
+end
+
+
+function uespLog.ClearSavedSkillCoefData()
+
+	uespLog.savedVars.skillCoef.data.coefData = {}
+	uespLog.SkillCoefData = uespLog.savedVars.skillCoef.data.coefData
+	
+	uespLog.SkillCoefSavedIds = {}
+	uespLog.SkillCoefCalcData = {}
+	uespLog.SkillCoefDataPointCount = 0
+	uespLog.SkillCoefNumValidCoefCount = 0
+	uespLog.SkillCoefNumBadCoefCount = 0
+	uespLog.SkillCoefBadData = {}
+	uespLog.SkillCoefDataIsCalculated = false
 end
 
 

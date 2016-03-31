@@ -507,19 +507,24 @@
 --												learn or know the skill.
 --					/usc addcharskills          Adds all skills available to the current character to be tracked
 --												in future calls to "/usc save".
+--					/usc addmissing             Adds all currently defined missing skills from PTS to be tracked in 
+--												future calls to "/usc save".
+--					/usc resetsaved             Clears all saved data points from "/usc save".
 --					/uespreset skillcoef        Same as /usc reset.
 --					/uespcount                  Shows the space taken by skill coefficients.
 --
 --			  As a result of these changes the method to compute skill coefficients on PTS has changed somewhat:
 --					1. Reset all champion points and attributes
---					2. Run: /usc addcharskills
---					3. Purchase one rank of all passives and repeat step 2 up to (MaxRank-1) of all passives
---						3a. If dumping skills run "/uespdump skills passive" in the previous step as well
---					4. Repeat steps 2-3 for all character classes
---					5. Add any missing skills (Emperor, etc...) using: /usc add [id]
---					6. On any v16 character run multiple "/usc save" as usual
---					7. Calc and save coefficients using: /usc calc
+--					2. Run: /usc addmissing
+--					3. Run: /usc addcharskills
+--					4. Purchase one rank of all passives and repeat step 3 up to (MaxRank-1) of all passives
+--						4a. If dumping skills run "/uespdump skills passive" in the previous step as well
+--					5. Repeat steps 3-4 for all character classes
+--					6. Add any missing skills (Emperor, etc...) using: /usc add [id]
+--					7. On any v16 character run multiple "/usc save" as usual
+--					8. Calc and save coefficients using: /usc calc
 --			  This should give you skill coefficients for all skills in one calculation.
+--
 --			- Added the "/uespdump skills missing [note]" command for dumping skills that are missing from
 --			  the current PTS character templates.
 --

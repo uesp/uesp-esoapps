@@ -1175,6 +1175,10 @@ uespLog.MISSING_SKILL_DATA = {
 	{ 3, 1, 39625, 1, "Emperor", 1 },     -- Monarch
 	{ 4, 1, 39647, 1, "Emperor", 1 },     -- Tactician
 	{ 5, 1, 39641, 1, "Emperor", 1 },     -- Emperor
+	{ 1, 1, 74580, 1, "Thieves Guild", 1 },     -- Finders Keepers
+	{ 4, 1, 76451, 4, "Thieves Guild", 1 },     -- Clemency
+	{ 5, 1, 76452, 7, "Thieves Guild", 1 },     -- Timely Escape
+	{ 6, 1, 76453, 10, "Thieves Guild", 1 },     -- Veil of Shadows
 }
 
 function uespLog.BoolToOnOff(flag)

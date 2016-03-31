@@ -1023,6 +1023,151 @@ uespLog.DEFAULT_SETTINGS =
 	}
 }
 
+	-- Skill lines missing from PTS for skill dumps
+	--		rank, abilityId, learnedLevel, skillLine
+uespLog.MISSING_SKILL_DATA = {}
+	{ 1, 63815, 6, "Legerdemain" },     -- Kickback
+	{ 2, 63816, 10, "Legerdemain" },
+	{ 3, 63817, 15, "Legerdemain" },
+	{ 4, 63818, 20, "Legerdemain" },
+	{ 1, 63811, 5, "Legerdemain" },     -- Locksmith
+	{ 2, 63812, 9, "Legerdemain" },
+	{ 3, 63813, 14, "Legerdemain" },
+	{ 4, 63814, 19, "Legerdemain" },
+	{ 1, 63799, 1, "Legerdemain" },     -- Improved Hiding
+	{ 2, 63800, 6, "Legerdemain" },
+	{ 3, 63801, 11, "Legerdemain" },
+	{ 4, 63802, 16, "Legerdemain" },
+	{ 1, 63803, 2, "Legerdemain" },     -- Light Fingers
+	{ 2, 63804, 7, "Legerdemain" },
+	{ 3, 63805, 12, "Legerdemain" },
+	{ 4, 63806, 17, "Legerdemain" },
+	{ 1, 63807, 3, "Legerdemain" },     -- Trafficker
+	{ 2, 63808, 8, "Legerdemain" },
+	{ 3, 63809, 13, "Legerdemain" },
+	{ 4, 63810, 18, "Legerdemain" },
+	{ 1, 44625, 1, "Provisioning" },     -- Recipe Quality
+	{ 2, 44630, 10, "Provisioning" },
+	{ 3, 44631, 35, "Provisioning" },
+	{ 4, 69953, 50, "Provisioning" },
+	{ 1, 44590, 1, "Provisioning" },     -- Recipe Improvement
+	{ 2, 44595, 20, "Provisioning" },
+	{ 3, 44597, 25, "Provisioning" },
+	{ 4, 44598, 30, "Provisioning" },
+	{ 5, 44599, 50, "Provisioning" },
+	{ 6, 44650, 60, "Provisioning" },
+	{ 1, 44602, 3, "Provisioning" },     -- Gourmand
+	{ 2, 44609, 14, "Provisioning" },
+	{ 3, 44610, 43, "Provisioning" },
+	{ 1, 44612, 5, "Provisioning" },     -- Connoisseur
+	{ 2, 44614, 25, "Provisioning" },
+	{ 3, 44615, 47, "Provisioning" },
+	{ 1, 44616, 7, "Provisioning" },     -- Chef
+	{ 2, 44617, 23, "Provisioning" },
+	{ 3, 44619, 33, "Provisioning" },
+	{ 1, 44620, 9, "Provisioning" },     -- Brewer
+	{ 2, 44621, 25, "Provisioning" },
+	{ 3, 44624, 36, "Provisioning" },
+	{ 1, 44634, 28, "Provisioning" },     -- Hireling
+	{ 2, 44640, 38, "Provisioning" },
+	{ 3, 44641, 48, "Provisioning" },
+	{ 1, 32624, 5, "Vampire" },     -- Bat Swarm
+	{ 2, 41918, 5, "Vampire" },
+	{ 3, 41919, 5, "Vampire" },
+	{ 4, 41920, 5, "Vampire" },
+	{ 1, 38932, 5, "Vampire" },     -- Clouding Swarm
+	{ 2, 41924, 5, "Vampire" },
+	{ 3, 41925, 5, "Vampire" },
+	{ 4, 41926, 5, "Vampire" },
+	{ 1, 38931, 5, "Vampire" },     -- Devouring Swarm
+	{ 2, 41933, 5, "Vampire" },
+	{ 3, 41936, 5, "Vampire" },
+	{ 4, 41937, 5, "Vampire" },
+	{ 1, 32893, 1, "Vampire" },     -- Drain Essence
+	{ 2, 41864, 1, "Vampire" },
+	{ 3, 41865, 1, "Vampire" },
+	{ 4, 41866, 1, "Vampire" },
+	{ 1, 38949, 1, "Vampire" },     -- Invigorating Drain
+	{ 2, 41900, 1, "Vampire" },
+	{ 3, 41901, 1, "Vampire" },
+	{ 4, 41902, 1, "Vampire" },
+	{ 1, 38956, 1, "Vampire" },     -- Accelerating Drain
+	{ 2, 41879, 1, "Vampire" },
+	{ 3, 41880, 1, "Vampire" },
+	{ 4, 41881, 1, "Vampire" },
+	{ 1, 32986, 1, "Vampire" },     -- Mist Form
+	{ 2, 41807, 1, "Vampire" },
+	{ 3, 41808, 1, "Vampire" },
+	{ 4, 41809, 1, "Vampire" },
+	{ 1, 38963, 1, "Vampire" },     -- Elusive Mist
+	{ 2, 41813, 1, "Vampire" },
+	{ 3, 41814, 1, "Vampire" },
+	{ 4, 41815, 1, "Vampire" },
+	{ 1, 38965, 1, "Vampire" },     -- Poison Mist
+	{ 2, 41822, 1, "Vampire" },
+	{ 3, 41823, 1, "Vampire" },
+	{ 4, 41824, 1, "Vampire" },
+	{ 1, 42054, 2, "Vampire" },     -- Savage Feeding
+	{ 2, 46045, 4, "Vampire" },
+	{ 1, 33095, 4, "Vampire" },     -- Supernatural Recovery
+	{ 2, 46041, 7, "Vampire" },
+	{ 1, 33091, 6, "Vampire" },     -- Blood Ritual
+	{ 1, 33096, 7, "Vampire" },     -- Undeath
+	{ 2, 46040, 10, "Vampire" },
+	{ 1, 33093, 8, "Vampire" },     -- Unnatural Resistance
+	{ 1, 33090, 9, "Vampire" },     -- Dark Stalker
+	{ 1, 32455, 1, "Werewolf" },     -- Werewolf Transformation
+	{ 2, 42356, 1, "Werewolf" },
+	{ 3, 42357, 1, "Werewolf" },
+	{ 4, 42358, 1, "Werewolf" },
+	{ 1, 39075, 1, "Werewolf" },     -- Pack Leader
+	{ 2, 42365, 1, "Werewolf" },
+	{ 3, 42366, 1, "Werewolf" },
+	{ 4, 42367, 1, "Werewolf" },
+	{ 1, 39076, 1, "Werewolf" },     -- Werewolf Berserker
+	{ 2, 42377, 1, "Werewolf" },
+	{ 3, 42378, 1, "Werewolf" },
+	{ 4, 42379, 1, "Werewolf" },
+	{ 1, 32632, 2, "Werewolf" },     -- Pounce
+	{ 2, 42108, 2, "Werewolf" },
+	{ 3, 42109, 2, "Werewolf" },
+	{ 4, 42110, 2, "Werewolf" },
+	{ 1, 39105, 2, "Werewolf" },     -- Brutal Pounce
+	{ 2, 42117, 2, "Werewolf" },
+	{ 3, 42118, 2, "Werewolf" },
+	{ 4, 42119, 2, "Werewolf" },
+	{ 1, 39104, 2, "Werewolf" },     -- Feral Pounce
+	{ 2, 42126, 2, "Werewolf" },
+	{ 3, 42127, 2, "Werewolf" },
+	{ 4, 42128, 2, "Werewolf" },
+	{ 1, 32633, 5, "Werewolf" },     -- Roar
+	{ 2, 42143, 5, "Werewolf" },
+	{ 3, 42144, 5, "Werewolf" },
+	{ 4, 42145, 5, "Werewolf" },
+	{ 1, 39113, 5, "Werewolf" },     -- Ferocious Roar
+	{ 2, 42155, 5, "Werewolf" },
+	{ 3, 42156, 5, "Werewolf" },
+	{ 4, 42157, 5, "Werewolf" },
+	{ 1, 39114, 5, "Werewolf" },     -- Rousing Roar
+	{ 2, 42177, 5, "Werewolf" },
+	{ 3, 42178, 5, "Werewolf" },
+	{ 4, 42179, 5, "Werewolf" },
+	{ 1, 32634, 5, "Werewolf" },     -- Devour
+	{ 1, 32636, 3, "Werewolf" },     -- Pursuit
+	{ 2, 46142, 7, "Werewolf" },
+	{ 1, 32637, 4, "Werewolf" },     -- Blood Rage
+	{ 2, 46135, 8, "Werewolf" },
+	{ 1, 32639, 6, "Werewolf" },     -- Bloodmoon
+	{ 1, 32638, 6, "Werewolf" },     -- Savage Strength
+	{ 2, 46139, 9, "Werewolf" },
+	{ 1, 32641, 7, "Werewolf" },     -- Call of the Pack
+	{ 2, 46137, 10, "Werewolf" },
+	{ 1, 39644, 1, "Emperor" },     -- Domination
+	{ 1, 39630, 1, "Emperor" },     -- Authority
+	{ 1, 39625, 1, "Emperor" },     -- Monarch
+	{ 1, 39647, 1, "Emperor" },     -- Tactician
+	{ 1, 39641, 1, "Emperor" },     -- Emperor
+}
 
 function uespLog.BoolToOnOff(flag)
 	if (flag) then return "on" end

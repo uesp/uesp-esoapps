@@ -528,6 +528,7 @@
 --
 --			- Added the "/uespdump skills missing [note]" command for dumping skills that are missing from
 --			  the current PTS character templates.
+--			- A warning is display in chat if you use an unknown slash command.
 --
 
 
@@ -2075,6 +2076,12 @@ function uespLog.Initialize( self, addOnName )
 	Quit = uespLog.Quit
 	Logout = uespLog.Logout
 	ReloadUI = uespLog.ReloadUI
+	
+	uespLog.Old_DoCommand = DoCommand
+	DoCommand = uespLog.DoCommand
+	
+	uespLog.Old_ZO_ChatTextEntry_Execute = ZO_ChatTextEntry_Execute
+	ZO_ChatTextEntry_Execute = uespLog.ZO_ChatTextEntry_Execute
 		
 	--EVENT_ARTIFACT_CONTROL_STATE(integer eventCode, string artifactName, integer keepId, string playerName, integer playerAlliance, integer controlEvent, integer controlState, integer campaignId)
 	--EVENT_CAPTURE_AREA_STATUS (integer eventCode, integer keepId, integer objectiveId, integer battlegroundContext, integer capturePoolValue, integer capturePoolMax, integer capturingPlayers, integer contestingPlayers, integer 	owningAlliance)
@@ -9972,3 +9979,56 @@ function uespLog.BuyPassiveCommand(cmd)
 end
 
 SLASH_COMMANDS["/uespbuypassive"] = uespLog.BuyPassiveCommand
+
+
+	-- The native DoCommand() function never appears to be used
+function uespLog.DoCommand(text)
+    local command, arguments = zo_strmatch(text, "^(/%S+)%s?(.*)")
+	
+    ZO_Menu_SetLastCommandWasFromMenu(false)
+	
+    command = zo_strlower(command or "")
+    local fn = SLASH_COMMANDS[command]
+	
+	if (command ~= "" and fn == nil) then
+		uespLog.Msg("Warning: Invalid chat command '"..command.."'!")
+		ExecuteChatCommand(text)
+    elseif (fn) then
+        fn(arguments or "")
+    else
+        ExecuteChatCommand(text)
+    end
+	
+end
+
+
+function uespLog.CheckSlashCommand(text)
+	local command, arguments = zo_strmatch(text, "^(/%S+)%s?(.*)")
+	
+    command = zo_strlower(command or "")
+    local fn = SLASH_COMMANDS[command]
+	
+	if (command ~= "" and fn == nil) then
+		return false, command
+	end
+	
+	return true, command
+end
+
+
+function uespLog.ZO_ChatTextEntry_Execute(control)
+
+    if control.system:IsAutoCompleteOpen() then
+        control.system:CloseAutoComplete()
+    else
+		local text = control.system.textEntry:GetText()
+		local isValid, command = uespLog.CheckSlashCommand(text)
+		
+		if (not isValid) then
+		 	uespLog.Msg("Warning: Invalid chat command '"..command.."'!")
+		end
+		
+        control.system:SubmitTextEntry()
+    end
+	
+end

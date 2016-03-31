@@ -528,7 +528,7 @@
 --
 --			- Added the "/uespdump skills missing [note]" command for dumping skills that are missing from
 --			  the current PTS character templates.
---			- A warning is display in chat if you use an unknown slash command.
+--			- A warning is displayed in chat if you use an unknown slash command.
 --
 
 

@@ -1,12 +1,12 @@
 -- uespLogTradeData.lua -- by Dave Humphrey, dave@uesp.net
 -- Code specific to mining skill coefficients.
 
---/ud uespLog.SkillCoefData['Crystal Shard']
---/ud uespLog.SkillCoefAbilityData['Crystal Shard']
 
 uespLog.SkillCoefData = {}
 uespLog.SkillCoefAbilityData = {}
+uespLog.SkillCoefCalcData = {}
 uespLog.SkillCoefBadData = {}
+uespLog.SkillCoefSavedIds = {}
 uespLog.SkillCoefAbilityCount = 0
 uespLog.SkillCoefNumValidCoefCount = 0
 uespLog.SkillCoefNumBadCoefCount = 0
@@ -18,7 +18,7 @@ uespLog.SkillCoef_CaptureWykkyd_StartIndex = 1
 uespLog.SkillCoef_CaptureWykkyd_IsWorking = false
 uespLog.SkillCoef_CaptureWykkyd_EndIndex = 5
 uespLog.SkillCoef_CaptureWykkyd_CurrentIndex = 5
-uespLog.SkillCoef_CaptureWykkyd_TimeDelayLoadSet = 10000   -- Takes a while for skill data to 'settle' when using Wykkyd to change complete sets
+uespLog.SkillCoef_CaptureWykkyd_TimeDelayLoadSet = 5000   -- Takes a while for skill data to 'settle' sometimes
 
 uespLog.SkillCoefArmorCountLA = 0
 uespLog.SkillCoefArmorCountMA = 0
@@ -36,6 +36,8 @@ uespLog.UESP_POWERTYPE_ARMORTYPE     = -55
 uespLog.SKILLCOEF_CHECK_ABILITYID = 28302
 uespLog.SKILLCOEF_CHECK_INDEX = 2
 uespLog.SKILLCOEF_CHECK_VALUE = 300
+
+uespLog.SKILLCOEF_BADFIT_MINR2 = 0.99
 
 
 uespLog.SKILLCOEF_MECHANIC_NAMES = {
@@ -465,6 +467,9 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 	elseif (cmd1 == "savetemp") then
 		local skillName = uespLog.implodeOrder(cmds, " ", 2)
 		uespLog.SaveTempSkillCoef(skillName)
+	elseif (cmd1 == "showdata") then
+		local skillName = uespLog.implodeOrder(cmds, " ", 2)
+		uespLog.ShowDataSkillCoef(skillName)
 	elseif (cmd1 == "status") then
 		local calcStatus = "not "
 		
@@ -485,8 +490,14 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		uespLog.Msg("Cleared all skill coefficient data.")
 	elseif (cmd1 == "listbad" or cmd1 == "showbad") then
 		uespLog.ShowSkillCoefBadData()
+	elseif (cmd1 == "listbadfit" or cmd1 == "showbadfit") then
+		uespLog.ShowSkillCoefBadFitData(cmds[2])
 	elseif (cmd1 == "savewyk") then
 		uespLog.CaptureSkillCoefDataWykkyd(cmds[2], cmds[3], cmds[4])
+	elseif (cmd1 == "addskill" or cmd1 == "add") then
+		uespLog.SkillCoefAddSkill(cmds[2])
+	elseif (cmd1 == "addcharskills") then
+		uespLog.SkillCoefAddCharSkills()
 	elseif (cmd1 == "stop" or cmd1 == "end" or cmd1 == "abort") then
 		uespLog.SkillCoef_CaptureWykkyd_CurrentIndex = uespLog.SkillCoef_CaptureWykkyd_EndIndex + 1
 		
@@ -501,13 +512,18 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		uespLog.Msg(".     /usc ...                      Short form")
 		uespLog.Msg(".     /usc save                 Save current skill data")
 		uespLog.Msg(".     /usc calc                  Calculate coefficients using saved data")
-		uespLog.Msg(".     /usc coef [name]      Shows the coefficients for the given skill name")
+		uespLog.Msg(".     /usc coef [name]        Shows the coefficients for the given skill name")
 		uespLog.Msg(".     /usc coef [id]         Shows the coefficients for the given skill ID")
 		uespLog.Msg(".     /usc status               Current status of saved skill data")
-		uespLog.Msg(".     /usc clear                 Resets the saved skill data")
+		uespLog.Msg(".     /usc reset                 Resets the saved skill data")
 		uespLog.Msg(".     /usc savewyk [prefix] [start] [end]  Saves skill data using Wykkyd's Outfitter. For example: '/usc savewyk Test 1 9' would try to load the sets 'Test1'...'Test9' and save the skill data for each of them.")
-		uespLog.Msg(".     /usc stop                  Stops a Wykkyd item set save in progress")
+		uespLog.Msg(".     /usc stop                    Stops a Wykkyd item set save in progress")
+		uespLog.Msg(".     /usc savetemp [name/id]         Saves data for a skill to the tempData section")
+		uespLog.Msg(".     /usc showdata [name/id]         Output raw data for a skill")
 		uespLog.Msg(".     /usc showbad              Lists all any coefficients that are 'bad'")
+		uespLog.Msg(".     /usc showbadfit [R2]          Lists all any coefficients with poor fits")
+		uespLog.Msg(".     /usc addskill [id] [rank]          Adds the given skill to track when saving data")
+		uespLog.Msg(".     /usc addcharskills          Adds all character skills to track when saving data")
 	end
 
 end
@@ -534,6 +550,55 @@ function uespLog.ShowSkillCoefBadData()
 		end
 	end
 
+end
+
+
+function uespLog.ShowSkillCoefBadFitData(maxR2)
+	local count = 0
+	local totalCount = 0
+
+	if (maxR2 == nil or maxR2 == "") then
+		maxR2 = uespLog.SKILLCOEF_BADFIT_MINR2
+	else
+		maxR2 = tonumber(maxR2)
+	end
+	
+	uespLog.Msg("Listing all fits with R2 less than "..tostring(maxR2).."...")
+	
+	for id,coefData in pairs(uespLog.SkillCoefAbilityData) do
+		local calcData = uespLog.SkillCoefCalcData[id]
+		local hasOutputName = false
+		
+		if (calcData ~= nil and calcData.isValid) then
+		
+			for i,result in ipairs(calcData.result) do
+				local doesVary = calcData.numbersVary[i]
+								
+				if (doesVary and result.R2 < maxR2) then
+					local a  = string.format("%.7f", result.a)
+					local b  = string.format("%.7f", result.b)
+					local c  = string.format("%.7f", result.c)
+					local R2 = string.format("%.7f", result.R2)
+					local index = calcData.numbersIndex[i]
+					local rank = tostring(coefData.rank)
+					local typeName = uespLog.GetSkillMechanicName(result.type)
+					
+					if (not hasOutputName) then
+						uespLog.Msg(""..tostring(coefData.name).." "..rank.." ("..tostring(coefData.id).."):")
+						hasOutputName = true
+					end
+					
+					count = count + 1
+					totalCount = totalCount + 1
+					uespLog.Msg(".     $"..tostring(index)..": "..a..", "..b..", "..c..", "..R2.."  ("..typeName..")")
+				elseif (doesVary) then
+					totalCount = totalCount + 1
+				end
+			end	
+		end
+	end
+	
+	uespLog.Msg("Found "..count.." of "..totalCount.." variables with poor fits.")
 end
 
 
@@ -590,8 +655,12 @@ function uespLog.LogSkillCoefData()
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
 	for abilityId, abilityData in pairs(uespLog.SkillCoefAbilityData) do
-		uespLog.LogSkillCoefDataSkill(abilityData)
-		uespLog.LogSkillCoefDataSkillCsv(abilityData)
+		local calcData = uespLog.SkillCoefCalcData[abilityId]
+		
+		if (calcData ~= nil) then
+			uespLog.LogSkillCoefDataSkill(abilityData, calcData)
+			uespLog.LogSkillCoefDataSkillCsv(abilityData, calcData)
+		end
 	end
 	
 	logData.event = "SkillCoef::End"
@@ -599,10 +668,10 @@ function uespLog.LogSkillCoefData()
 end
 
 
-function uespLog.LogSkillCoefDataSkill(abilityData)
+function uespLog.LogSkillCoefDataSkill(abilityData, calcData)
 	local logData = {}
 	
-	if (not abilityData.isValid or abilityData.result == nil or #(abilityData.result) == 0) then
+	if (not calcData.isValid or calcData.result == nil or #(calcData.result) == 0) then
 		return
 	end
 	
@@ -619,14 +688,14 @@ function uespLog.LogSkillCoefDataSkill(abilityData)
 		logData.passive = 1
 	end
 	
-	for i,result in ipairs(abilityData.result) do
-		local doesVary = abilityData.numbersVary[i]
+	for i,result in ipairs(calcData.result) do
+		local doesVary = calcData.numbersVary[i]
 		local a  = string.format("%.7f", result.a)
 		local b  = string.format("%.7f", result.b)
 		local c  = string.format("%.7f", result.c)
 		local R2 = string.format("%.7f", result.R2)
 		local avg = string.format("%.7f", result.avg)
-		local index = abilityData.numbersIndex[i]
+		local index = calcData.numbersIndex[i]
 		
 		if (doesVary) then
 			logData['a'..tostring(index)] = a
@@ -642,10 +711,10 @@ function uespLog.LogSkillCoefDataSkill(abilityData)
 end
 
 
-function uespLog.LogSkillCoefDataSkillCsv(abilityData)
+function uespLog.LogSkillCoefDataSkillCsv(abilityData, calcData)
 	local rowData = {}
 	
-	if (not abilityData.isValid or abilityData.result == nil or #(abilityData.result) == 0) then
+	if (not calcData.isValid or calcData.result == nil or #(calcData.result) == 0) then
 		return
 	end
 	
@@ -657,13 +726,13 @@ function uespLog.LogSkillCoefDataSkillCsv(abilityData)
 	table.insert(rowData, abilityData.numVars)
 	table.insert(rowData, "'"..abilityData.newDesc.."'")
 	
-	for i,result in ipairs(abilityData.result) do
-		local doesVary = abilityData.numbersVary[i]
+	for i,result in ipairs(calcData.result) do
+		local doesVary = calcData.numbersVary[i]
 		local a  = string.format("%.7f", result.a)
 		local b  = string.format("%.7f", result.b)
 		local c  = string.format("%.7f", result.c)
 		local R2 = string.format("%.7f", result.R2)
-		local index = abilityData.numbersIndex[i]
+		local index = calcData.numbersIndex[i]
 		
 		if (doesVary) then
 			table.insert(rowData, result.type)
@@ -768,10 +837,109 @@ function uespLog.CaptureNextSkillCoefDataWykkyd_SaveData()
 end
 
 
+function uespLog.SkillCoefAddCharSkills()
+	local newSkills = 0
+	local numSkillTypes = GetNumSkillTypes()
+	local skillType
+	local skillIndex
+	local abilityIndex
+	local result, isNew
+	
+	uespLog.Msg("Adding all available character skills to tracked skill list...")
+	
+	for skillType = 1, numSkillTypes do
+		local numSkillLines = GetNumSkillLines(skillType)
+		local skillTypeName = uespLog.GetSkillTypeName(skillType)
+		
+		for skillIndex = 1, numSkillLines do
+			local numSkillAbilities = GetNumSkillAbilities(skillType, skillIndex)
+					
+			for abilityIndex = 1, numSkillAbilities do
+				local name, _, rank, passive, ultimate, purchase, progressionIndex = GetSkillAbilityInfo(skillType, skillIndex, abilityIndex)
+				local level, maxLevel = GetSkillAbilityUpgradeInfo(skillType, skillIndex, abilityIndex)
+				local ability1 = GetSkillAbilityId(skillType, skillIndex, abilityIndex, false)
+				local ability2 = GetSkillAbilityId(skillType, skillIndex, abilityIndex, true)
+				
+				if (level == 0 or level == nil) then 
+					level = 1
+				end
+				
+				if (progressionIndex ~= nil and progressionIndex > 0) then
+					result, isNew = uespLog.InitSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 1), 1)
+					if (isNew) then newSkills = newSkills + 1 end
+					result, isNew = uespLog.InitSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 2), 2)
+					if (isNew) then newSkills = newSkills + 1 end
+					result, isNew = uespLog.InitSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 3), 3)
+					if (isNew) then newSkills = newSkills + 1 end
+					result, isNew = uespLog.InitSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 4), 4)
+					if (isNew) then newSkills = newSkills + 1 end
+					
+					result, isNew = uespLog.InitSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 1), 1)
+					if (isNew) then newSkills = newSkills + 1 end
+					result, isNew = uespLog.InitSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 2), 2)
+					if (isNew) then newSkills = newSkills + 1 end
+					result, isNew = uespLog.InitSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 3), 3)
+					if (isNew) then newSkills = newSkills + 1 end
+					result, isNew = uespLog.InitSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 4), 4)
+					if (isNew) then newSkills = newSkills + 1 end
+					
+					result, isNew = uespLog.InitSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 1), 1)
+					if (isNew) then newSkills = newSkills + 1 end
+					result, isNew = uespLog.InitSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 2), 2)
+					if (isNew) then newSkills = newSkills + 1 end
+					result, isNew = uespLog.InitSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 3), 3)
+					if (isNew) then newSkills = newSkills + 1 end
+					result, isNew = uespLog.InitSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 4), 4)
+					if (isNew) then newSkills = newSkills + 1 end
+				else
+					result, isNew = uespLog.InitSkillCoefData(ability1, level)
+					if (isNew) then newSkills = newSkills + 1 end
+					result, isNew = uespLog.InitSkillCoefData(ability2, level + 1)
+					if (isNew) then newSkills = newSkills + 1 end
+				end
+			
+			end
+		end
+	end
+	
+	uespLog.Msg("Found "..tostring(newSkills).." new skills to track.")
+end
+
+
+function uespLog.SkillCoefAddSkill(abilityId, rank)
+	local abilityId = tonumber(abilityId)
+	local rank = tonumber(rank) or -1
+	
+	if (abilityId == nil or abilityId == "") then
+		uespLog.Msg("Missing required abilityId!")
+		return false
+	end
+	
+	if (uespLog.SkillCoefAbilityData[abilityId] ~= nil) then
+		uespLog.Msg("Skill "..tostring(abilityId).." is already being tracked...")
+		return true
+	end
+	
+	if (not DoesAbilityExist(abilityId) or GetAbilityName(abilityId) == "") then
+		uespLog.Msg("Error: Skill "..tostring(abilityId).." is not valid!")
+		return false
+	end
+	
+	if (not uespLog.InitSkillCoefData(abilityId, rank)) then
+		uespLog.Msg("Error: Failed to add skill "..tostring(abilityId).." to tracked skill list!")
+		return false
+	end
+	
+	uespLog.Msg("Now tracking skill "..tostring(abilityId).." when saving statistic data!")
+	return true
+end
+
+
 function uespLog.SaveTempSkillCoef(name)
 	local abilityId = tonumber(name)
 	local coefData = nil
 	local skillData = nil
+	local calcData = nil
 	
 	if (name == nil or name == "") then
 		uespLog.Msg("Missing required skill name or abilityId!")
@@ -781,11 +949,12 @@ function uespLog.SaveTempSkillCoef(name)
 	if (abilityId ~= nil) then
 		coefData = uespLog.SkillCoefAbilityData[abilityId]
 		skillData = uespLog.SkillCoefData[abilityId]
+		calcData = uespLog.SkillCoefCalcData[abilityId]
 	else
 		coefData, skillData, abilityId = uespLog.FindSkillAbilityData(name)
 	end
 	
-	if (coefData == nil or skillData == nil) then
+	if (coefData == nil or skillData == nil or calcData == nil) then
 		uespLog.Msg("Skill "..tostring(name).." does not exist in coefficient data!")
 		return false
 	end
@@ -834,11 +1003,74 @@ function uespLog.SaveTempSkillCoef(name)
 	uespLog.Msg("Saved raw skill coefficient data for "..tostring(coefData.name).." ("..tostring(abilityId).."), "..tostring(#skillData).." data points")
 	return true
 end
+
+
+function uespLog.ShowDataSkillCoef(name)
+	local abilityId = tonumber(name)
+	local coefData = nil
+	local skillData = nil
+	local calcData = nil
+	
+	if (name == nil or name == "") then
+		uespLog.Msg("Missing required skill name or abilityId!")
+		return false
+	end
+	
+	if (abilityId ~= nil) then
+		coefData = uespLog.SkillCoefAbilityData[abilityId]
+		skillData = uespLog.SkillCoefData[abilityId]
+		calcData = uespLog.SkillCoefCalcData[abilityId]
+	else
+		coefData, skillData, abilityId = uespLog.FindSkillAbilityData(name)
+	end
+	
+	if (coefData == nil or skillData == nil or calcData == nil) then
+		uespLog.Msg("Skill "..tostring(name).." does not exist in coefficient data!")
+		return false
+	end
+	
+	local tempData = uespLog.savedVars.tempData.data
+	uespLog.Msg("Raw Skill Coefficient Data for "..tostring(coefData.name).." ("..tostring(abilityId).."), "..tostring(#skillData).." data points")
+	local headerData = {}
+	
+	table.insert(headerData, "Mag")
+	table.insert(headerData, "Sta")
+	table.insert(headerData, "Hea")
+	table.insert(headerData, "Spell")
+	table.insert(headerData, "Weap")
+	table.insert(headerData, "LA")
+	table.insert(headerData, "MA")
+	table.insert(headerData, "HA")
+	table.insert(headerData, "Values...")
+	uespLog.Msg(uespLog.implode(headerData, ", "))
+		
+	for i, data in ipairs(skillData) do
+		local rowData = {}
+		
+		table.insert(rowData, data.mag)
+		table.insert(rowData, data.sta)
+		table.insert(rowData, data.hea)
+		table.insert(rowData, data.sd)
+		table.insert(rowData, data.wd)
+		table.insert(rowData, data.la)
+		table.insert(rowData, data.ma)
+		table.insert(rowData, data.ha)
+		
+		for j, number in ipairs(data.numbers) do
+			table.insert(rowData, number)
+		end
+				
+		uespLog.Msg(uespLog.implode(rowData, ", "))
+	end
+	
+	return true
+end
 	
 
 function uespLog.ShowSkillCoef(name)
 	local abilityId = tonumber(name)
 	local coefData = nil
+	local calcData = nil
 
 	if (name == nil or name == "") then
 		uespLog.Msg("Missing required skill name or abilityId!")
@@ -851,26 +1083,28 @@ function uespLog.ShowSkillCoef(name)
 		coefData, _, abilityId = uespLog.FindSkillAbilityData(name)
 	end
 	
-	if (coefData == nil) then
+	calcData = uespLog.SkillCoefCalcData[abilityId]
+	
+	if (coefData == nil or calcData == nil) then
 		uespLog.Msg("Skill "..tostring(name).." does not exist in coefficient data!")
 		return false
 	end
 	
-	if (not coefData.isValid or coefData.result == nil) then
+	if (not calcData.isValid or calcData.result == nil) then
 		uespLog.Msg("Coefficient data for skill "..tostring(name).." is not valid!")
 		return false
 	end
 	
 	local rank = tostring(coefData.rank)
-	uespLog.Msg("Skill '"..tostring(coefData.name)..rank.." ("..tostring(coefData.id)..")' has coefficient data for "..tostring(coefData.numVars).." variable(s):")
+	uespLog.Msg(""..tostring(coefData.name).." "..rank.." ("..tostring(coefData.id)..") has coefficient data for "..tostring(coefData.numVars).." variable(s):")
 	
-	for i,result in ipairs(coefData.result) do
-		local doesVary = coefData.numbersVary[i]
+	for i,result in ipairs(calcData.result) do
+		local doesVary = calcData.numbersVary[i]
 		local a  = string.format("%.5f", result.a)
 		local b  = string.format("%.5f", result.b)
 		local c  = string.format("%.5f", result.c)
 		local R2 = string.format("%.5f", result.R2)
-		local index = coefData.numbersIndex[i]
+		local index = calcData.numbersIndex[i]
 		local typeName = uespLog.GetSkillMechanicName(result.type)
 		
 		if (doesVary) then
@@ -897,8 +1131,15 @@ end
 
 
 function uespLog.ClearSkillCoefData()
-	uespLog.SkillCoefData = {}
-	uespLog.SkillCoefAbilityData = {}
+
+	uespLog.savedVars.skillCoef.data.coefData = {}
+	uespLog.savedVars.skillCoef.data.abilityData = {}
+	
+	uespLog.SkillCoefData = uespLog.savedVars.skillCoef.data.coefData
+	uespLog.SkillCoefAbilityData = uespLog.savedVars.skillCoef.data.abilityData
+	
+	uespLog.SkillCoefSavedIds = {}
+	uespLog.SkillCoefCalcData = {}
 	uespLog.SkillCoefAbilityCount = 0
 	uespLog.SkillCoefDataPointCount = 0
 	uespLog.SkillCoefNumValidCoefCount = 0
@@ -922,6 +1163,8 @@ function uespLog.CaptureSkillCoefData()
 	uespLog.SkillCoefArmorCountHA = uespLog.CountEquippedArmor(ARMORTYPE_HEAVY)
 	uespLog.SkillCoefArmorTypeCount = uespLog.CountEquippedArmorTypes()
 	uespLog.SkillCoefWeaponCountDagger = uespLog.CountEquippedWeapons(WEAPONTYPE_DAGGER)
+	
+	uespLog.SkillCoefSavedIds = {}
 
 	for skillType = 1, numSkillTypes do
 		local numSkillLines = GetNumSkillLines(skillType)
@@ -946,32 +1189,49 @@ function uespLog.CaptureSkillCoefData()
 				skillCount = skillCount + 1
 			
 				if (progressionIndex ~= nil and progressionIndex > 0) then
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 1), 1, passive)
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 2), 2, passive)
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 3), 3, passive)
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 4), 4, passive)
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 1), 1)
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 2), 2)
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 3), 3)
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 4), 4)
 					
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 1), 1, passive)
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 2), 2, passive)
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 3), 3, passive)
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 4), 4, passive)
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 1), 1)
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 2), 2)
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 3), 3)
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 4), 4)
 					
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 1), 1, passive)
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 2), 2, passive)
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 3), 3, passive)
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 4), 4, passive)
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 1), 1)
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 2), 2)
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 3), 3)
+					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 4), 4)
 				else
-					uespLog.SaveSkillCoefData(ability1, level, passive)
-					uespLog.SaveSkillCoefData(ability2, level + 1, passive)
+					uespLog.SaveSkillCoefData(ability1, level)
+					uespLog.SaveSkillCoefData(ability2, level + 1)
 				end
 			
 			end
 		end
 	end
 	
+	skillCount = skillCount + uespLog.CaptureMissingSkillCoefData()
+	
 	uespLog.DebugMsg(".     Saved data for "..tostring(skillCount).." character skills!")
 	uespLog.SkillCoefDataPointCount = uespLog.SkillCoefDataPointCount + 1
 	return true
+end
+
+
+function uespLog.CaptureMissingSkillCoefData()
+	skillCount = 0
+	
+	for abilityId, abilityData in pairs(uespLog.SkillCoefAbilityData) do
+	
+		if (uespLog.SkillCoefData[abilityId] == nil) then
+			uespLog.SaveSkillCoefData(abilityId)
+		end
+		
+	end
+	
+	return skillCount
 end
 
 
@@ -1006,24 +1266,26 @@ function uespLog.IsSafetoSaveSkillCoef()
 end
 
 
-function uespLog.SaveSkillCoefData(abilityId, rank, passive)
+function uespLog.InitSkillCoefData(abilityId, rank)
 	local name = GetAbilityName(abilityId)
 	local description = GetAbilityDescription(abilityId)
-	local cost, mechanic = GetAbilityCost(abilityId)
-
-	--POWERTYPE_MAGICKA == 0
-	--POWERTYPE_STAMINA == 6
-	--POWERTYPE_ULTIMATE == 10
-
+	local isNew = false
+		
 	if (abilityId <= 0 or name == "" or description == "") then
-		return false
+		return false, false
 	end
 	
 	if (uespLog.SkillCoefData[abilityId] == nil) then
 		uespLog.SkillCoefData[abilityId] = {}
 	end
 	
+	local cost, mechanic = GetAbilityCost(abilityId)
+	local passive = IsAbilityPassive(abilityId)
+	rank = rank or -1
+	
 	if (uespLog.SkillCoefAbilityData[abilityId] == nil) then
+		isNew = true
+		
 		uespLog.SkillCoefAbilityData[abilityId] = 
 		{
 			["name"] = name,
@@ -1038,10 +1300,29 @@ function uespLog.SaveSkillCoefData(abilityId, rank, passive)
 			["numbersVary"] = {},
 			["numbersIndex"] = {},
 		}
+		
 		uespLog.SkillCoefAbilityCount = uespLog.SkillCoefAbilityCount + 1
+	elseif (uespLog.SkillCoefAbilityData[abilityId].rank <= 0 and rank > 0) then
+		uespLog.SkillCoefAbilityData[abilityId].rank = rank
+	end
+
+	return true, isNew
+end
+
+
+function uespLog.SaveSkillCoefData(abilityId, rank, passive)
+	--POWERTYPE_MAGICKA == 0
+	--POWERTYPE_STAMINA == 6
+	--POWERTYPE_ULTIMATE == 10
+	
+	if (not uespLog.InitSkillCoefData(abilityId, rank)) then
+		return false
 	end
 	
+	uespLog.SkillCoefSavedIds[abilityId] = true
+	
 	local i = #(uespLog.SkillCoefData[abilityId])
+	local description = GetAbilityDescription(abilityId)
 	
 	uespLog.SkillCoefData[abilityId][i+1] = 
 	{
@@ -1175,6 +1456,8 @@ function uespLog.ComputeSkillCoef()
 		return false
 	end
 	
+	uespLog.SkillCoefNumValidCoefCount = 0
+	
 	for abilityId, skillsData in pairs(uespLog.SkillCoefData) do
 	
 		if (uespLog.CheckSkillCoef(abilityId, skillsData)) then
@@ -1193,10 +1476,17 @@ end
 function uespLog.CheckSkillCoef(abilityId, skillsData)
 	local numbersCheck = {}
 	local abilityData = uespLog.SkillCoefAbilityData[abilityId]
+	local calcData = uespLog.SkillCoefCalcData[abilityId]
+	
+	if (calcData == nil) then
+		uespLog.SkillCoefCalcData[abilityId] = { }
+		calcData = uespLog.SkillCoefCalcData[abilityId]
+	end
 	
 	abilityData.numVars = 0
-	abilityData.numbersVary = {}
-	abilityData.numbersIndex = {}
+	calcData.numVars = 0
+	calcData.numbersVary = {}
+	calcData.numbersIndex = {}
 	
 	if (#skillsData == 0) then
 		return false
@@ -1204,26 +1494,27 @@ function uespLog.CheckSkillCoef(abilityId, skillsData)
 	
 	for i,number in ipairs(skillsData[1].numbers) do
 		table.insert(numbersCheck, number)
-		table.insert(abilityData.numbersVary, false)
+		table.insert(calcData.numbersVary, false)
 	end
 	
 	for i = 2, #skillsData do
 		for j,number in ipairs(skillsData[i].numbers) do
 			if (number ~= numbersCheck[j]) then
-				abilityData.numbersVary[j] = true
+				calcData.numbersVary[j] = true
 			end
 		end
 	end
 	
 	local index = 1
 	
-	for i,number in ipairs(abilityData.numbersVary) do
-		if (abilityData.numbersVary[i]) then
+	for i,number in ipairs(calcData.numbersVary) do
+		if (calcData.numbersVary[i]) then
 			abilityData.numVars = abilityData.numVars + 1
-			table.insert(abilityData.numbersIndex, index)
+			calcData.numVars    = calcData.numVars + 1
+			table.insert(calcData.numbersIndex, index)
 			index = index + 1
 		else
-			table.insert(abilityData.numbersIndex, 0)
+			table.insert(calcData.numbersIndex, 0)
 		end
 	end
 	
@@ -1240,11 +1531,12 @@ function uespLog.ComputeSkillCoefSkill(abilityId, skillsData)
 	-- A X = B
 	-- X = Ainv B	
 	local abilityData = uespLog.SkillCoefAbilityData[abilityId]
+	local calcData = uespLog.SkillCoefCalcData[abilityId]
 	
-	abilityData.data = {}
-	abilityData.numPoints = #skillsData
+	calcData.data = {}
+	calcData.numPoints = #skillsData
 	
-	if (abilityData.numPoints < 3) then
+	if (calcData.numPoints < 3) then
 		return false
 	end
 	
@@ -1266,7 +1558,7 @@ function uespLog.ComputeSkillCoefSkill(abilityId, skillsData)
 	for i = 1, numberCount do
 		local numberType = uespLog.GetSkillCoefNumberMechanic(abilityData, i)
 	
-		if (abilityData.numbersVary[i]) then
+		if (calcData.numbersVary[i]) then
 			local A = uespLog.SkillCoefComputeAMatrix(skillsData, abilityData, i)
 			local Ainv, AisValid = uespLog.SkillCoefComputeAMatrixInv(A)
 			local B = uespLog.SkillCoefComputeBMatrix(skillsData, abilityData, i)
@@ -1301,9 +1593,9 @@ function uespLog.ComputeSkillCoefSkill(abilityId, skillsData)
 		
 	end
 	
-	abilityData.data = coefData
-	abilityData.result = coefData.result
-	abilityData.isValid = not allInvalid
+	calcData.data = coefData
+	calcData.result = coefData.result
+	calcData.isValid = not allInvalid
 	return true
 end
 
@@ -1626,12 +1918,17 @@ end
 
 function uespLog.ReplaceSkillDescriptionAbility(abilityData)
 	local i = 0
+	local calcData = uespLog.SkillCoefCalcData[abilityData.id]
+	
+	if (calcData == nil) then
+		return abilityData.desc
+	end
     
 	local newDesc = string.gsub(abilityData.desc, "%d+[.]?%d*", function (number)
 		i = i + 1
 	
-		if (abilityData.numbersVary[i]) then
-			return "$" .. tostring(abilityData.numbersIndex[i])
+		if (calcData.numbersVary[i]) then
+			return "$" .. tostring(calcData.numbersIndex[i])
 		end
 		
     end)
@@ -1654,4 +1951,24 @@ function uespLog.GetSkillMechanicName(mechanic)
 	end
 	
 	return name
+end
+
+
+function uespLog.UpdateSkillCoefCounts()
+	local lastAbilityId = 0
+	
+	uespLog.SkillCoefAbilityCount = 0
+	uespLog.SkillCoefNumValidCoefCount = 0
+	uespLog.SkillCoefNumBadCoefCount = 0
+	uespLog.SkillCoefDataPointCount = 0
+	
+	for k, v in pairs(uespLog.SkillCoefAbilityData) do
+		uespLog.SkillCoefAbilityCount = uespLog.SkillCoefAbilityCount + 1
+		lastAbilityId = k
+	end
+	
+	if (uespLog.SkillCoefData[lastAbilityId] ~= nil) then
+		uespLog.SkillCoefDataPointCount = #uespLog.SkillCoefData[lastAbilityId]
+	end
+	
 end

@@ -623,7 +623,7 @@ function uespLog.CreateCharDataSkills()
 				local skillType = "skill"
 				
 				if (descHeader ~= "") then
-					description = descHeader .. "\n" .. description
+					description = "|cffffff" .. descHeader .. "|r\n" .. description
 				end
 				
 				if (ultimate) then

@@ -523,6 +523,7 @@
 --					6. Add any missing skills (Emperor, etc...) using: /usc add [id]
 --					7. On any v16 character run multiple "/usc save" as usual
 --					8. Calc and save coefficients using: /usc calc
+--					9. To reset saved parameters but keep the list of tracked skills use "/usc resetsaved"
 --			  This should give you skill coefficients for all skills in one calculation.
 --
 --			- Added the "/uespdump skills missing [note]" command for dumping skills that are missing from

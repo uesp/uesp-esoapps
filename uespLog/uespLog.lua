@@ -520,7 +520,8 @@
 --					6. On any v16 character run multiple "/usc save" as usual
 --					7. Calc and save coefficients using: /usc calc
 --			  This should give you skill coefficients for all skills in one calculation.
---				
+--			- Added the "/uespdump skills missing [note]" command for dumping skills that are missing from
+--			  the current PTS character templates.
 --
 
 

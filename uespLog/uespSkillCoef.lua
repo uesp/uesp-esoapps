@@ -277,22 +277,28 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[33987] = { [3] = POWERTYPE_HEALTH },
 	
 	-- Dragonknight Choking Talons	
-	[20251] = { [3] = POWERTYPE_ULTIMATE },
-	[32127] = { [3] = POWERTYPE_ULTIMATE },
-	[32131] = { [3] = POWERTYPE_ULTIMATE },
-	[32135] = { [3] = POWERTYPE_ULTIMATE },
+	[20251] = { [5] = POWERTYPE_ULTIMATE },
+	[32127] = { [5] = POWERTYPE_ULTIMATE },
+	[32131] = { [5] = POWERTYPE_ULTIMATE },
+	[32135] = { [5] = POWERTYPE_ULTIMATE },
 	
 	-- Dragonknight Dark Talons	
-	[20245] = { [5] = POWERTYPE_ULTIMATE },
-	[32105] = { [5] = POWERTYPE_ULTIMATE },
-	[32108] = { [5] = POWERTYPE_ULTIMATE },
-	[32111] = { [5] = POWERTYPE_ULTIMATE },
+	[20245] = { [3] = POWERTYPE_ULTIMATE },
+	[32105] = { [3] = POWERTYPE_ULTIMATE },
+	[32108] = { [3] = POWERTYPE_ULTIMATE },
+	[32111] = { [3] = POWERTYPE_ULTIMATE },
 	
 	-- Dragonknight Burning Talons	
 	[20252] = { [5] = POWERTYPE_ULTIMATE },
 	[32114] = { [5] = POWERTYPE_ULTIMATE },
 	[32119] = { [5] = POWERTYPE_ULTIMATE },
 	[32123] = { [5] = POWERTYPE_ULTIMATE },
+		
+	-- Vampire Devouring Swarm
+	[38931] = { [3] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	[41933] = { [3] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	[41936] = { [3] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	[41937] = { [3] = uespLog.UESP_POWERTYPE_SOULTETHER },
 	
 	-- Werewolf Werewolf Transformation
 	[32455] = { [2] = POWERTYPE_STAMINA },
@@ -422,13 +428,25 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[45430] = { [3] = POWERTYPE_STAMINA },
 	
 	-- Sorcerer Disintegrate
-	[31422] = { [2] = POWERTYPE_ULTIMATE },
-	[45192] = { [2] = POWERTYPE_ULTIMATE },
+	--[31422] = { [2] = POWERTYPE_ULTIMATE },
+	--[45192] = { [2] = POWERTYPE_ULTIMATE },
+	[31422] = { [2] = POWERTYPE_HEALTH },
+	[45192] = { [2] = POWERTYPE_HEALTH },
 	
 	-- Templar Burning Light	
 	[31718] = { [2] = POWERTYPE_ULTIMATE },
 	[44730] = { [2] = POWERTYPE_ULTIMATE },
-		
+	
+	-- Imperial Red Diamond
+	[36155] = { [2] = POWERTYPE_HEALTH },
+	[45291] = { [2] = POWERTYPE_HEALTH },
+	[45293] = { [2] = POWERTYPE_HEALTH },
+	
+	-- Redguard Adrenaline Rush
+	[36546] = { [1] = POWERTYPE_STAMINA },
+	[45313] = { [1] = POWERTYPE_STAMINA },
+	[45315] = { [1] = POWERTYPE_STAMINA },
+	
 }
 
 
@@ -1198,6 +1216,7 @@ function uespLog.CaptureSkillCoefData()
 	local skillIndex
 	local abilityIndex
 	local skillCount = 0
+	local result
 		
 	uespLog.DebugLogMsg("Saving current skill data for character...")
 	
@@ -1229,26 +1248,40 @@ function uespLog.CaptureSkillCoefData()
 					level = 1
 				end
 				
-				skillCount = skillCount + 1
+				
 			
 				if (progressionIndex ~= nil and progressionIndex > 0) then
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 1), 1)
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 2), 2)
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 3), 3)
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 4), 4)
+					result = uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 1), 1)
+					if (result) then skillCount = skillCount + 1 end
+					result = uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 2), 2)
+					if (result) then skillCount = skillCount + 1 end
+					result = uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 3), 3)
+					if (result) then skillCount = skillCount + 1 end
+					result = uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 4), 4)
+					if (result) then skillCount = skillCount + 1 end
 					
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 1), 1)
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 2), 2)
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 3), 3)
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 4), 4)
+					result = uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 1), 1)
+					if (result) then skillCount = skillCount + 1 end
+					result = uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 2), 2)
+					if (result) then skillCount = skillCount + 1 end
+					result = uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 3), 3)
+					if (result) then skillCount = skillCount + 1 end
+					result = uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 1, 4), 4)
+					if (result) then skillCount = skillCount + 1 end
 					
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 1), 1)
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 2), 2)
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 3), 3)
-					uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 4), 4)
+					result = uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 1), 1)
+					if (result) then skillCount = skillCount + 1 end
+					result = uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 2), 2)
+					if (result) then skillCount = skillCount + 1 end
+					result = uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 3), 3)
+					if (result) then skillCount = skillCount + 1 end
+					result = uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 2, 4), 4)
+					if (result) then skillCount = skillCount + 1 end
 				else
-					uespLog.SaveSkillCoefData(ability1, level)
-					uespLog.SaveSkillCoefData(ability2, level + 1)
+					result = uespLog.SaveSkillCoefData(ability1, level)
+					if (result) then skillCount = skillCount + 1 end
+					result = uespLog.SaveSkillCoefData(ability2, level + 1)
+					if (result) then skillCount = skillCount + 1 end
 				end
 			
 			end
@@ -1257,7 +1290,7 @@ function uespLog.CaptureSkillCoefData()
 	
 	skillCount = skillCount + uespLog.CaptureMissingSkillCoefData()
 	
-	uespLog.DebugMsg(".     Saved data for "..tostring(skillCount).." character skills!")
+	uespLog.DebugMsg(".     Saved data for "..tostring(skillCount).." skills!")
 	uespLog.SkillCoefDataPointCount = uespLog.SkillCoefDataPointCount + 1
 	return true
 end
@@ -1268,8 +1301,9 @@ function uespLog.CaptureMissingSkillCoefData()
 	
 	for abilityId, abilityData in pairs(uespLog.SkillCoefAbilityData) do
 	
-		if (uespLog.SkillCoefData[abilityId] == nil) then
+		if (uespLog.SkillCoefSavedIds[abilityId] == nil) then
 			uespLog.SaveSkillCoefData(abilityId)
+			skillCount = skillCount + 1
 		end
 		
 	end

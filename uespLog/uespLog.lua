@@ -1025,7 +1025,7 @@ uespLog.DEFAULT_SETTINGS =
 
 	-- Skill lines missing from PTS for skill dumps
 	--		rank, abilityId, learnedLevel, skillLine
-uespLog.MISSING_SKILL_DATA = {}
+uespLog.MISSING_SKILL_DATA = {
 	{ 1, 63815, 6, "Legerdemain" },     -- Kickback
 	{ 2, 63816, 10, "Legerdemain" },
 	{ 3, 63817, 15, "Legerdemain" },
@@ -5120,6 +5120,7 @@ function uespLog.DumpSkills(opt1, opt2)
 		uespLog.DumpSkillTypes(opt2)
 		uespLog.DumpSkillsProgression(opt2)
 		uespLog.DumpLearnedAbilities(opt2)
+		uespLog.DumpSkillMissing(opt2)
 		return true
 	elseif (opt1 == "abilities") then
 		uespLog.DumpSkillsStart(opt2)
@@ -5141,12 +5142,51 @@ function uespLog.DumpSkills(opt1, opt2)
 	elseif (opt1 == "passive" or opt1 == "passives") then
 		uespLog.DumpSkillTypes(opt2, false, false, true)
 		return true
+	elseif (opt1 == "missing") then
+		uespLog.DumpSkillMissing(opt2)
+		return true
 	else
 		uespLog.Msg("Expected format:")
-		uespLog.Msg(".     /uespdump skills [basic/progression/abilities/character/race/class/learned/types/all] [note]")
+		uespLog.Msg(".     /uespdump skills [type] [note]")
+		uespLog.Msg(".     [type] is one of basic, progression, abilities, character, race, class, learned, types, all, missing")
 	end
 	
 	return false
+end
+
+
+function uespLog.DumpSkillMissing(note)
+	local count = 0
+	local logData = {}
+	
+	uespLog.Msg("Dumping skills in currently defined missing skill data...")
+	
+	logData.event = "skillDump::StartMissing"
+	logData.apiVersion = GetAPIVersion()
+	logData.note = note
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+
+	for k, skillData in ipairs(uespLog.MISSING_SKILL_DATA) do
+		local rank = skillData[1]
+		local abilityId = skillData[2]
+		local learnedLevel = skillData[3]
+		local skillLine = skillData[4]
+		local extraData = {	}
+		
+		extraData.rank = rank
+		extraData.learnedLevel = learnedLevel
+		extraData.skillLine = skillLine
+		
+		uespLog.DumpSkill(abilityId, extraData)
+		
+		count = count + 1
+	end
+	
+	logData = {}
+	logData.event = "skillDump::EndMissing"
+	uespLog.AppendDataToLog("all", logData)
+	
+	uespLog.Msg("Found and dumped "..count.." missing skills!")
 end
 
 
@@ -5452,7 +5492,7 @@ function uespLog.DumpSkillsStart(note)
 end
 
 
-function uespLog.DumpSkill(abilityId)
+function uespLog.DumpSkill(abilityId, extraData)
 -- GetAbilityInfoByIndex(integer abilityIndex) Returns: string name, string texture, integer rank, integer actionSlotType, boolean passive, boolean showInSpellbook
 -- GetAbilityIdByIndex(integer abilityIndex) Returns: integer abilityId
 -- GetChampionAbilityDescription(integer abilityId, integer numPendingPoints) Returns: string description
@@ -5471,6 +5511,8 @@ function uespLog.DumpSkill(abilityId)
 	local upgradeLines = uespLog.FormatSkillUpgradeLines(GetAbilityUpgradeLines(abilityId))
 	local effectLines = uespLog.FormatSkillEffectLines(GetAbilityNewEffectLines(abilityId))
 	local logData = { }
+	
+	extraData = extraData or {}
 	
 	logData.event = "skill"
 	logData.id = abilityId
@@ -5499,7 +5541,7 @@ function uespLog.DumpSkill(abilityId)
 	if (upgradeLines and upgradeLines ~= "") then logData.upgradeLines = upgradeLines end
 	if (effectLines and effectLines ~= "") then logData.effectLines = effectLines end
 	
-	uespLog.AppendDataToLog("all", logData)
+	uespLog.AppendDataToLog("all", logData, extraData)
 end
 
 

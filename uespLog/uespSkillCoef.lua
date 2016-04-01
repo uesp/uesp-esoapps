@@ -132,7 +132,7 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[43373] = { [4] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
 	[43378] = { [4] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
 	
-	-- Undaunted Necrotic Orn/Mystic Orb/Energy Orb
+	-- Undaunted Necrotic Orb/Mystic Orb/Energy Orb
 	-- Number 2 acts like an ultimate
 	[39298] = { [2] = POWERTYPE_ULTIMATE },
 	[43400] = { [2] = POWERTYPE_ULTIMATE },
@@ -173,15 +173,13 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[41522] = { [3] = POWERTYPE_HEALTH },
 	[41526] = { [3] = POWERTYPE_HEALTH },
 	
-	-- Fighters Guild Silver Shards
-	-- Its a stamina ability but number 5 scales on health
+	-- Fighters Guild Silver Shards/Silver Leash/Silver Bolts
+	-- Its a stamina ability but number 4/5 scales on health
 	[40300] = { [5] = POWERTYPE_HEALTH },
 	[42659] = { [5] = POWERTYPE_HEALTH },
 	[42665] = { [5] = POWERTYPE_HEALTH },
 	[42671] = { [5] = POWERTYPE_HEALTH },
 
-	-- Fighters Guild Silver Leash/Silver Bolts
-	-- Its a stamina ability but number 4 scales on health
 	[40336] = { [4] = POWERTYPE_HEALTH },
 	[42677] = { [4] = POWERTYPE_HEALTH },
 	[42687] = { [4] = POWERTYPE_HEALTH },
@@ -428,8 +426,6 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[45430] = { [3] = POWERTYPE_STAMINA },
 	
 	-- Sorcerer Disintegrate
-	--[31422] = { [2] = POWERTYPE_ULTIMATE },
-	--[45192] = { [2] = POWERTYPE_ULTIMATE },
 	[31422] = { [2] = POWERTYPE_HEALTH },
 	[45192] = { [2] = POWERTYPE_HEALTH },
 	

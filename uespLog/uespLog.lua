@@ -557,6 +557,7 @@ uespLog.ACTION_CUT = "Cut"
 uespLog.ACTION_COLLECT = "Collect"
 uespLog.ACTION_STEALFROM = GetString(SI_GAMECAMERAACTIONTYPE20)
 uespLog.ACTION_STEAL = GetString(SI_GAMECAMERAACTIONTYPE19)
+uespLog.FISHING_HOLE = "Fishing Hole"
 
 uespLog.currentHarvestTarget = nil
 uespLog.lastHarvestTarget = { }
@@ -779,6 +780,7 @@ uespLog.mineColorWarning = "ff9999"
 uespLog.pvpColor = "ff33ff"
 uespLog.errorColor = "ff9999"
 uespLog.warningColor = "ff9999"
+uespLog.fishingColor = "9999ff"
 
 uespLog.currentTargetData = {
 	name = "",
@@ -1030,6 +1032,7 @@ uespLog.DEFAULT_SETTINGS =
 		["autoSaveZoneCharData"] = false,
 		["charDataPassword"] = "",
 		["charDataOldPassword"] = "",
+		["fishing"] = false,
 	}
 }
 
@@ -1186,6 +1189,30 @@ uespLog.MISSING_SKILL_DATA = {
 function uespLog.BoolToOnOff(flag)
 	if (flag) then return "on" end
 	return "off"
+end
+
+
+function uespLog.GetFishingFlag()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.fishing == nil) then
+		uespLog.savedVars.settings.data.fishing = uespLog.DEFAULT_SETTINGS.fishing
+	end
+	
+	return uespLog.savedVars.settings.data.fishing
+end
+
+
+function uespLog.SetFishingFlag(flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	uespLog.savedVars.settings.data.fishing = flag
 end
 
 
@@ -2018,6 +2045,9 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOT_ABILITY_SLOTTED, uespLog.OnActionSlotAbilitySlotted)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTIVE_QUICKSLOT_CHANGED, uespLog.OnActiveQuickSlotChanged)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTIVE_WEAPON_PAIR_CHANGED, uespLog.OnActiveWeaponPairChanged)	
+	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_FISHING_LURE_CLEARED, uespLog.OnFishingLureCleared)	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_FISHING_LURE_SET, uespLog.OnFishingLureSet)	
 	
 		-- Note: This event is called up to 40-50 time for each kill with some weapons (Destruction Staff)
 	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOT_UPDATED, uespLog.OnActionSlotUpdated)	
@@ -4140,6 +4170,14 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 		return
 	end
 	
+	if (itemSoundCategory == ITEM_SOUND_CATEGORY_LURE and bagId == BAG_BACKPACK and not isNewItem) then
+		local action, name = GetGameCameraInteractableActionInfo()
+		
+        if (action == GetString(SI_GAMECAMERAACTIONTYPE17) and name == uespLog.FISHING_HOLE and not SCENE_MANAGER:IsInUIMode()) then
+			uespLog.OnFishingReelInReady(0, itemLink, itemName, bagId, slotIndex)
+		end
+	end
+	
 	if (not isNewItem) then
 		uespLog.DebugExtraMsg("UESP::Skipping inventory slot update for "..itemName..", old, reason "..tostring(updateReason)..", sound "..tostring(itemSoundCategory))
 		return
@@ -4446,10 +4484,9 @@ end
  function uespLog.OnChatMessage (eventCode, messageType, fromName, chatText)
 	--|HFFFFFF:item:45810:1:1:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|hJode|h"
 	
-	--uespLog.DebugMsg("Chat Message "..tostring(messageType))
+	--uespLog.DebugExtraMsg("Chat Message "..tostring(messageType).." from "..tostring(fromName))
 	
 	local numLinks = 0
-	
 	
 	for link in string.gmatch(chatText, "|H.-:item:.-|h.-|h") do
 		numLinks = numLinks + 1
@@ -10099,4 +10136,57 @@ function uespLog.ZO_ChatTextEntry_Execute(control)
     end
 	
 	 uespLog.Old_ZO_ChatTextEntry_Execute(control)
+end
+
+
+function uespLog.FishingCommand(cmd)
+	local cmds, firstCmd = uespLog.SplitCommands(cmd)
+	
+	if (firstCmd == "on") then
+		uespLog.SetFishingFlag(true)
+		uespLog.Msg("Fishing features turned on.")
+	elseif (firstCmd == "off") then
+		uespLog.SetFishingFlag(false)
+		uespLog.Msg("Fishing features turned off.")
+	else
+		uespLog.Msg("Turns fishing related features on/off. Command format is:")
+		uespLog.Msg(".       /uespfish [on|off]")
+		uespLog.Msg(".   Fishing is currently set to "..tostring(uespLog.GetFishingFlag())..".")
+	end
+	
+end
+
+
+SLASH_COMMANDS["/uespfish"] = uespLog.FishingCommand
+
+
+function uespLog.OnFishingLureCleared(eventCode)
+	uespLog.DebugExtraMsg("UESP::OnFishingLureCleared")
+end
+
+
+function uespLog.OnFishingLureSet(eventCode, lureIndex)
+	local name, texture, stack, sellPrice, quality = GetFishingLureInfo(lureIndex)
+
+	uespLog.DebugExtraMsg("UESP::OnFishingLureSet "..tostring(lureIndex)..", "..tostring(name))
+end
+
+
+function uespLog.OnFishingReelInReady(eventCode, itemLink, itemName, bagId, slotIndex)
+	uespLog.DebugExtraMsg("UESP::OnFishingReelInReady "..tostring(itemLink).."")
+
+	if (not uespLog.GetFishingFlag()) then
+		return
+	end
+	
+	local count = GetItemTotalCount(bagId, slotIndex)
+	local msg
+	
+	if (count == 0) then
+		msg = "no more "..tostring(itemLink).." left"
+	else
+		msg = "x"..tostring(count).." "..tostring(itemLink).." left"
+	end
+	
+	uespLog.MsgColor(uespLog.fishingColor, "Fish is ready to reel in NOW..."..msg.."!")
 end

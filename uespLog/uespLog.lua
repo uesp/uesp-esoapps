@@ -528,6 +528,8 @@
 --
 --			- Added the "/uespdump skills missing [note]" command for dumping skills that are missing from
 --			  the current PTS character templates.
+--
+--		Future Version
 --			- A warning is displayed in chat if you use an unknown slash command.
 --
 
@@ -2081,11 +2083,11 @@ function uespLog.Initialize( self, addOnName )
 	Logout = uespLog.Logout
 	ReloadUI = uespLog.ReloadUI
 	
-	uespLog.Old_DoCommand = DoCommand
-	DoCommand = uespLog.DoCommand
+	--uespLog.Old_DoCommand = DoCommand
+	--DoCommand = uespLog.DoCommand
 	
-	uespLog.Old_ZO_ChatTextEntry_Execute = ZO_ChatTextEntry_Execute
-	ZO_ChatTextEntry_Execute = uespLog.ZO_ChatTextEntry_Execute
+	--uespLog.Old_ZO_ChatTextEntry_Execute = ZO_ChatTextEntry_Execute
+	--ZO_ChatTextEntry_Execute = uespLog.ZO_ChatTextEntry_Execute
 		
 	--EVENT_ARTIFACT_CONTROL_STATE(integer eventCode, string artifactName, integer keepId, string playerName, integer playerAlliance, integer controlEvent, integer controlState, integer campaignId)
 	--EVENT_CAPTURE_AREA_STATUS (integer eventCode, integer keepId, integer objectiveId, integer battlegroundContext, integer capturePoolValue, integer capturePoolMax, integer capturingPlayers, integer contestingPlayers, integer 	owningAlliance)
@@ -10084,7 +10086,7 @@ end
 function uespLog.ZO_ChatTextEntry_Execute(control)
 
     if control.system:IsAutoCompleteOpen() then
-        control.system:CloseAutoComplete()
+        --control.system:CloseAutoComplete()
     else
 		local text = control.system.textEntry:GetText()
 		local isValid, command = uespLog.CheckSlashCommand(text)
@@ -10093,7 +10095,8 @@ function uespLog.ZO_ChatTextEntry_Execute(control)
 		 	uespLog.Msg("Warning: Invalid chat command '"..command.."'!")
 		end
 		
-        control.system:SubmitTextEntry()
+        --control.system:SubmitTextEntry()
     end
 	
+	 uespLog.Old_ZO_ChatTextEntry_Execute(control)
 end

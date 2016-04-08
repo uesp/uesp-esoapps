@@ -3617,7 +3617,7 @@ end
 
 
 function uespLog.OnTreasureLooted (targetName)
-	safeName = string.lower(targetName)
+	safeName = string.lower(tostring(targetName))
 	local duration = uespLog.GetTreasureTimers()[safeName]
 
 	if (not uespLog.IsTreasureTimerEnabled() or duration == nil or duration <= 0) then
@@ -3673,15 +3673,15 @@ end
 
 
 function uespLog.OnLootClosed (eventCode)
-	--uespLog.DebugMsg("OnLootClosed::count = "..tostring(GetNumLootItems()))
+	-- uespLog.DebugMsg("OnLootClosed::count = "..tostring(GetNumLootItems()))
 	
 	if (uespLog.lastLootUpdateCount == 0) then
 		uespLog.OnTreasureLooted(uespLog.lastLootTargetName)
 		-- uespLog.DebugMsg("Finished looting "..tostring(uespLog.lastLootTargetName))
 	elseif (uespLog.lastLootUpdateCount > 0) then
-		--uespLog.DebugMsg("Did not finish looting "..tostring(uespLog.lastLootTargetName))
+		-- uespLog.DebugMsg("Did not finish looting "..tostring(uespLog.lastLootTargetName))
 	else
-		--uespLog.DebugMsg("Unknown "..tostring(uespLog.lastLootUpdateCount).."::"..tostring(uespLog.lastLootTargetName))
+		-- uespLog.DebugMsg("Unknown "..tostring(uespLog.lastLootUpdateCount).."::"..tostring(uespLog.lastLootTargetName))
 	end
 	
 	uespLog.lastLootUpdateCount = -1
@@ -3694,16 +3694,18 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 	local posData = uespLog.GetLastTargetData()
 	local msgType = "item"
 	local rcvType = "looted"
-	--local itemText, itemColor, itemData, niceName, niceLink = uespLog.ParseLink(itemLink)
 	local icon, sellPrice, meetsUsageRequirement, equipType, itemStyle = GetItemLinkInfo(itemLink)
 	local itemText, itemColor, itemId, itemLevel, itemData, niceName, niceLink = uespLog.ParseLinkID(itemLink)
 	local itemStyleStr = uespLog.GetItemStyleStr(itemStyle)
 	local lootMsg = ""
 	
-	uespLog.lastLootUpdateCount = GetNumLootItems()
-	uespLog.lastLootTargetName = uespLog.lastTargetData.name
+	if (IsLooting()) then
+		uespLog.lastLootUpdateCount = GetNumLootItems()
+	else
+		uespLog.lastLootUpdateCount = -1
+	end
 	
-	--uespLog.DebugMsg("OnLootGained::count = "..tostring(GetNumLootItems()))
+	uespLog.lastLootTargetName = uespLog.lastTargetData.name
 	
 	if (uespLog.currentHarvestTarget ~= nil) then
 		posData.x = uespLog.currentHarvestTarget.x
@@ -4127,6 +4129,9 @@ function uespLog.OnUseItem(eventCode, bagId, slotIndex, itemLink, itemSoundCateg
 	local itemType = GetItemLinkItemType(itemLink) --ITEMTYPE_CONTAINER
 	
 	uespLog.DebugExtraMsg("UESP::OnUseItem "..tostring(itemLink).."("..tostring(bagId)..","..tostring(slotIndex)..") sound="..tostring(itemSoundCategory)..", type="..tostring(itemType))
+	
+	uespLog.lastItemUsed = itemLink
+	uespLog.lastItemUsedGameTime = GetGameTimeMilliseconds()
 
 	if (itemSoundCategory == ITEM_SOUND_CATEGORY_FOOTLOCKER) then
 		logData.event = "OpenFootLocker"
@@ -4181,6 +4186,10 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 	if (not isNewItem) then
 		uespLog.DebugExtraMsg("UESP::Skipping inventory slot update for "..itemName..", old, reason "..tostring(updateReason)..", sound "..tostring(itemSoundCategory))
 		return
+	end
+	
+	if (itemSoundCategory == ITEM_SOUND_CATEGORY_ANIMAL_COMPONENT and itemLink ~= nil and itemLink ~= "") then
+		uespLog.MsgColor(uespLog.itemColor, "Created "..itemLink.." from "..tostring(uespLog.lastItemUsed).."!")
 	end
 	
 		-- Update creation of glass motif chapter
@@ -6271,7 +6280,9 @@ function uespLog.LogItemLink (itemLink, event, extraData)
 	local logData = uespLog.CreateItemLinkLog(itemLink)
 	logData.event = event
 	
-	if (extraData.magicItemId ~= nil ) then
+	extraData = extraData or {}
+	
+	if (extraData.magicItemId ~= nil) then
 		logData.itemLink = string.gsub(itemLink, tostring(extraData.realItemId), tostring(extraData.magicItemId))
 		extraData.magicItemId = nil
 	end

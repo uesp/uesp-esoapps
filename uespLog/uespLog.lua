@@ -529,8 +529,10 @@
 --			- Added the "/uespdump skills missing [note]" command for dumping skills that are missing from
 --			  the current PTS character templates.
 --
---		Future Version
+--		Future Versions (Work in Progress)
 --			- A warning is displayed in chat if you use an unknown slash command.
+--			- Fishing notifications (turn on with /uespfish on)
+--			- Daily quest tracking (/uespdaily)
 --
 
 

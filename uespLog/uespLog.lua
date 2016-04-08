@@ -4190,7 +4190,7 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 		return
 	end
 	
-	if (itemSoundCategory == ITEM_SOUND_CATEGORY_ANIMAL_COMPONENT and itemLink ~= nil and itemLink ~= "") then
+	if (itemSoundCategory == ITEM_SOUND_CATEGORY_ANIMAL_COMPONENT and itemLink ~= nil and itemLink ~= "" and uespLog.lastItemUsed ~= nil) then
 		uespLog.MsgColor(uespLog.itemColor, "Created "..itemLink.." from "..tostring(uespLog.lastItemUsed).."!")
 	end
 	
@@ -4203,13 +4203,29 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 		
 		uespLog.UsedMerethicResin = false
 	end
-		
-	local result = uespLog.LogInventoryItem(bagId, slotIndex, "SlotUpdate")
 	
-	if (result) then
-		uespLog.DebugExtraMsg("inventory slot update for "..itemName..", reason "..tostring(INVENTORY_UPDATE_REASON_DURABILITY_CHANGE)..", sound "..tostring(itemSoundCategory))
+	if (string.lower(itemName) == "wet gunny sack") then
+		uespLog.DebugMsg("Trying to log gunny sack data...")
+		uespLog.GunnySackCount = 0
+		uespLog.TryLogGunnySack(bagId, slotIndex, "SlotUpdate")
+	else
+		uespLog.LogInventoryItem(bagId, slotIndex, "SlotUpdate")
 	end
 	
+end
+
+
+function uespLog.TryLogGunnySack(bagId, slotIndex, event)
+	uespLog.GunnySackCount = uespLog.GunnySackCount + 1
+	
+	if (uespLog.GunnySackCount > 42) then
+		uespLog.DebugMsg("Finished logging gunny sack data...")
+		return
+	end
+	
+	uespLog.LogInventoryItem_GunnySack(bagId, slotIndex, "SlotUpdate")
+	
+	zo_callLater(function() uespLog.TryLogGunnySack(bagId, slotIndex, event) end, 500)
 end
 
 
@@ -5952,24 +5968,18 @@ end
 
 function uespLog.LogInventoryItem (bagId, slotIndex, event, extraData)
 	local itemLink = GetItemLink(bagId, slotIndex, LINK_STYLE_DEFAULT)
-	local itemName = GetItemName(bagId, slotIndex)
-	--local itemTrait = GetItemTrait(bagId, slotIndex)
-	--local itemType = GetItemType(bagId, slotIndex)
+	local itemName = tostring(GetItemName(bagId, slotIndex))
 	local icon, stack, sellPrice, meetsUsageRequirement, locked, equipType, itemStyle, quality = GetItemInfo(bagId, slotIndex)
-	--local usedInCraftingType, craftItemType, extraInfo1, extraInfo2, extraInfo3 = GetItemCraftingInfo(bagId, slotIndex)
-	local logData = { }
+	local logData = {}
 
-	if (tostring(itemName) == "") then
+	if (itemName == "") then
 		return false
 	end
 		
 	uespLog.lastItemLink = itemLink
 	uespLog.lastItemLinks[itemName] = itemLink
 	
-	if (extraData == nil) then
-		extraData = { }
-	end
-	
+	extraData = extraData or {}
 	extraData.itemStyle = itemStyle
 	extraData.icon = icon
 	extraData.locked = locked
@@ -5978,25 +5988,46 @@ function uespLog.LogInventoryItem (bagId, slotIndex, event, extraData)
 	extraData.slot = slotIndex
 	
 	uespLog.LogItemLink(itemLink, event, extraData)
-	
-	--[[ old log data
-	logData.event = event
-	logData.itemLink = itemLink
-	logData.trait = itemTrait
-	logData.type = itemType
-	logData.icon = icon
-	logData.value = sellPrice
-	logData.locked = locked
-	logData.equipType = equipType
-	logData.itemStyle = itemStyle
-	logData.quality = quality
-	logData.craftType = craftItemType
-	logData.qnt = stack
-	logData.bag = bagId
-	logData.slot = slotIndex
-	
-	uespLog.AppendDataToLog("all", logData, extraData) --]]
+	return true
+end
 
+
+uespLog.GunnySackCount = 0
+
+
+function uespLog.LogInventoryItem_GunnySack(bagId, slotIndex, event, extraData)
+	local itemName = tostring(GetItemName(bagId, slotIndex))
+
+	if (itemName == "") then
+		return false
+	end
+		
+	uespLog.DebugMsg("UESP::Debug GunnySack Count = "..tostring(uespLog.GunnySackCount)..", bagId = "..tostring(bagId)..", slotIndex = "..tostring(slotIndex))
+	
+	if (uespLog.GunnySackCount <= 1) then
+		return true
+	end
+	
+	local itemLink = GetItemLink(bagId, slotIndex, LINK_STYLE_DEFAULT)
+	local icon, stack, sellPrice, meetsUsageRequirement, locked, equipType, itemStyle, quality = GetItemInfo(bagId, slotIndex)
+	local logData = {}
+		
+	uespLog.lastItemLink = itemLink
+	uespLog.lastItemLinks[itemName] = itemLink
+	
+	extraData = extraData or {}
+	extraData.itemStyle = itemStyle
+	extraData.icon = icon
+	extraData.locked = locked
+	extraData.stack = stack
+	extraData.bag = bagId
+	extraData.slot = slotIndex
+	
+	if (uespLog.GunnySackCount <= 2) then
+		return true
+	end
+	
+	uespLog.LogItemLink_GunnySack(itemLink, event, extraData)
 	return true
 end
 
@@ -6277,7 +6308,271 @@ function uespLog.CreateItemLinkLog (itemLink)
 	return logData
 end
 
+
+function uespLog.CreateItemLinkLog_GunnySack (itemLink)
+	local enchantName, enchantDesc
+	local useAbilityName, useAbilityDesc, cooldown
+	local traitText
+	local setName, numSetBonuses
+	local bookTitle
+	local craftSkill
+	local siegeType
+	local hasCharges, hasEnchant, hasUseAbility, hasArmorDecay, isSetItem, isCrafted, isVendorTrash, isUnique, isUniqueEquipped
+	local isConsumable, isRune
+	local flagString = ""
+	local flavourText
+	local logData = { }
 	
+	logData.itemLink = itemLink
+	
+	logData.name = GetItemLinkName(itemLink)
+	if (uespLog.GunnySackCount <= 3) then return {} end
+	logData.type = GetItemLinkItemType(itemLink)
+	if (uespLog.GunnySackCount <= 4) then return {} end
+	logData.icon, _, _, _, logData.itemStyle = GetItemLinkInfo(itemLink)
+	if (uespLog.GunnySackCount <= 5) then return {} end
+	logData.equipType = GetItemLinkEquipType(itemLink)
+	if (uespLog.GunnySackCount <= 6) then return {} end
+	logData.weaponType = GetItemLinkWeaponType(itemLink)
+	if (uespLog.GunnySackCount <= 7) then return {} end
+	logData.armorType = GetItemLinkArmorType(itemLink)
+	if (uespLog.GunnySackCount <= 8) then return {} end
+	logData.weaponPower = GetItemLinkWeaponPower(itemLink)
+	if (uespLog.GunnySackCount <= 9) then return {} end
+	logData.armorRating = GetItemLinkArmorRating(itemLink, false)
+	if (uespLog.GunnySackCount <= 10) then return {} end
+	logData.reqLevel = GetItemLinkRequiredLevel(itemLink)
+	if (uespLog.GunnySackCount <= 11) then return {} end
+	logData.reqVetLevel = GetItemLinkRequiredVeteranRank(itemLink)
+	if (uespLog.GunnySackCount <= 12) then return {} end
+	logData.value = GetItemLinkValue(itemLink, false)
+	if (uespLog.GunnySackCount <= 13) then return {} end
+	logData.condition = GetItemLinkCondition(itemLink)
+	if (uespLog.GunnySackCount <= 14) then return {} end
+	
+	hasArmorDecay = DoesItemLinkHaveArmorDecay(itemLink)
+	if (hasArmorDecay) then flagString = flagString .. "ArmorDecay " end
+	if (uespLog.GunnySackCount <= 15) then return {} end
+	
+	hasCharges = DoesItemLinkHaveEnchantCharges(itemLink)
+	if (uespLog.GunnySackCount <= 16) then return {} end
+	
+	if (hasCharges) then
+		logData.maxCharges = GetItemLinkMaxEnchantCharges(itemLink)
+	end
+	
+	hasEnchant, enchantName, enchantDesc = GetItemLinkEnchantInfo(itemLink)
+	if (uespLog.GunnySackCount <= 17) then return {} end
+	
+	if (hasEnchant) then
+		logData.enchantName = enchantName
+		logData.enchantDesc = enchantDesc
+	end
+	
+	hasUseAbility, useAbilityName, useAbilityDesc, cooldown = GetItemLinkOnUseAbilityInfo(itemLink)
+	if (uespLog.GunnySackCount <= 18) then return {} end
+	
+	if (hasUseAbility) then
+		logData.useAbilityName = useAbilityName
+		logData.useAbilityDesc = useAbilityDesc
+		logData.useCooldown = cooldown
+	end
+	
+	logData.trait, logData.traitDesc = GetItemLinkTraitInfo(itemLink)
+	if (uespLog.GunnySackCount <= 19) then return {} end
+	local isSetItem, setName, numSetBonuses, numSetEquipped, maxSetEquipped = GetItemLinkSetInfo(itemLink)
+	if (uespLog.GunnySackCount <= 20) then return {} end
+	
+	if (logData.traitDesc == "") then
+		logData.traitDesc = nil
+	end
+	
+	if (isSetItem) then
+		logData.setName = setName
+		logData.setBonusCount = numSetBonuses
+		logData.setMaxCount = maxSetEquipped
+		local i
+		
+		for i = 1, numSetBonuses do
+			local setBonusRequired, setBonusDesc = GetItemLinkSetBonusInfo(itemLink, NOT_EQUIPPED, i)
+			logData["setBonus"..tostring(i)] = tostring(setBonusRequired)
+			logData["setDesc"..tostring(i)] = tostring(setBonusDesc)
+		end
+	end
+	
+	flavourText = GetItemLinkFlavorText(itemLink)
+	if (flavourText ~= "") then logData.flavourText = flavourText end
+	if (uespLog.GunnySackCount <= 21) then return {} end
+		
+	isCrafted = IsItemLinkCrafted(itemLink)
+	if (isCrafted) then flagString = flagString .. "Crafted " end
+	if (uespLog.GunnySackCount <= 22) then return {} end
+	
+	isVendorTrash = IsItemLinkVendorTrash(itemLink)
+	if (isVendorTrash) then flagString = flagString .. "Vendor " end
+	if (uespLog.GunnySackCount <= 23) then return {} end
+	
+	siegeType = GetItemLinkSiegeType(itemLink)
+	if (uespLog.GunnySackCount <= 24) then return {} end
+	
+	if (siegeType > 0) then
+		logData.siegeType = siegeType
+		logData.maxSiegeHP = GetItemLinkSiegeMaxHP(itemLink)
+	end
+	
+	logData.quality = GetItemLinkQuality(itemLink)
+	if (uespLog.GunnySackCount <= 25) then return {} end
+	
+	isUnique = IsItemLinkUnique(itemLink)
+	if (isUnique) then flagString = flagString .. "Unique " end
+	if (uespLog.GunnySackCount <= 26) then return {} end
+	
+	isUniqueEquipped = IsItemLinkUniqueEquipped(itemLink)
+	if (isUniqueEquipped) then flagString = flagString .. "UniqueEquipped " end
+	if (uespLog.GunnySackCount <= 27) then return {} end
+	
+	isConsumable = IsItemLinkConsumable(itemLink)
+	if (isConsumable) then flagString = flagString .. "Consumable " end
+	if (uespLog.GunnySackCount <= 28) then return {} end
+	
+	isRune = IsItemLinkEnchantingRune(itemLink)
+	if (uespLog.GunnySackCount <= 29) then return {} end
+			
+	if (isRune) then
+		runeKnown, logData.runeName = GetItemLinkEnchantingRuneName() 
+		logData.runeType = GetItemLinkEnchantingRuneClassification(itemLink)
+		logData.runeRank = GetItemLinkRequiredCraftingSkillRank(itemLink)		
+	end
+	
+	craftSkill = GetItemLinkCraftingSkillType(itemLink)
+	if (uespLog.GunnySackCount <= 30) then return {} end
+	
+	if (craftSkill > 0) then 
+		logData.craftSkill = craftSkill 
+	end
+	
+	requiredQuality = GetItemLinkRecipeQualityRequirement(itemLink)
+	if (uespLog.GunnySackCount <= 31) then return {} end
+	
+	if (requiredQuality > 0) then
+		logData.recipeQuality = requiredQuality
+	end
+	
+	requiredRank = GetItemLinkRecipeRankRequirement(itemLink)
+	if (uespLog.GunnySackCount <= 32) then return {} end
+	
+	if (requiredRank > 0) then
+		logData.recipeRank = requiredRank
+	end
+	
+	resultItemLink = GetItemLinkRecipeResultItemLink(itemLink)
+	if (uespLog.GunnySackCount <= 33) then return {} end
+	
+	if (resultItemLink ~= nil and resultItemLink ~= "") then
+		logData.recipeLink = resultItemLink
+	end
+	
+	refinedItemLink = GetItemLinkRefinedMaterialItemLink(itemLink)
+	if (uespLog.GunnySackCount <= 34) then return {} end
+	
+	if (refinedItemLink ~= nil and refinedItemLink ~= "") then
+		logData.refinedItemLink = refinedItemLink
+	end
+	
+	craftSkillRank = GetItemLinkRequiredCraftingSkillRank(itemLink)
+	if (uespLog.GunnySackCount <= 35) then return {} end
+	
+	if (craftSkillRank ~= nil and requiredRank > 0) then
+		logData.craftSkillRank = craftSkillRank
+	end
+	
+	local numIngredients = GetItemLinkRecipeNumIngredients(itemLink)
+	if (uespLog.GunnySackCount <= 36) then return {} end
+	
+	for i = 1, numIngredients do
+		local ingredientName, numOwned = GetItemLinkRecipeIngredientInfo(itemLink, i)
+		logData["ingrName"..tostring(i)] = ingredientName
+	end
+	
+	--logData.isBound = IsItemLinkBound(itemLink)
+	logData.bindType = GetItemLinkBindType(itemLink)
+	if (uespLog.GunnySackCount <= 37) then return {} end
+
+	local glyphMinLevel, glyphMaxLevel, glyphMinVetLevel, glyphMaxVetLevel = GetItemLinkGlyphMinMaxLevels(itemLink)
+	if (uespLog.GunnySackCount <= 38) then return {} end
+	
+	if (glyphMinLevel ~= nil and glyphMaxLevel ~= nil) then
+		logData.minGlyphLevel = glyphMinLevel
+		logData.maxGlyphLevel = glyphMaxLevel
+	elseif (glyphMinVetLevel ~= nil and glyphMaxVetLevel ~= nil) then
+		logData.minGlyphLevel = glyphMinVetLevel + 50
+		logData.maxGlyphLevel = glyphMaxVetLevel + 50
+	elseif (glyphMinLevel ~= nil and glyphMaxVetLevel ~= nil) then
+		logData.minGlyphLevel = glyphMinLevel
+		logData.maxGlyphLevel = glyphMaxVetLevel + 50
+	end
+	
+	local traitAbilityCount = 0
+	local maxTraits = GetMaxTraits()
+	if (uespLog.GunnySackCount <= 39) then return {} end
+	
+	for i = 1, maxTraits  do
+		local hasTraitAbility, traitAbilityDescription, traitCooldown = GetItemLinkTraitOnUseAbilityInfo(itemLink, i)
+		
+		if (hasTraitAbility) then
+			traitAbilityCount = traitAbilityCount + 1
+			logData["traitAbility" .. tostring(traitAbilityCount) ] = traitAbilityDescription
+			logData["traitCooldown" .. tostring(traitAbilityCount) ] = traitCooldown
+		end
+	end
+
+	local levelsDescription = GetItemLinkMaterialLevelDescription(itemLink)
+	if (uespLog.GunnySackCount <= 40) then return {} end
+	
+	if (levelsDescription ~= nil and levelsDescription ~= "") then
+		logData.matLevelDesc = levelsDescription
+	end
+	
+	bookTitle = GetItemLinkBookTitle(itemLink)
+	if (uespLog.GunnySackCount <= 41) then return {} end
+	--logData.isBookKnown = IsItemLinkBookKnown(itemLink)
+	
+	if (bookTitle ~= "") then
+		logData.bookTitle = bookTitle
+	end
+	
+	--GetItemLinkInfo()
+	--local known, name = GetItemLinkReagentTraitInfo(itemLink, traitIndex) 
+	
+	if (flagString ~= "") then
+		logData.flag = flagString
+	end
+	
+	local tagString = ""
+	
+	if (GetItemLinkNumItemTags ~= nil) then
+		local tagCount = GetItemLinkNumItemTags(itemLink)
+		if (uespLog.GunnySackCount <= 42) then return {} end
+	
+		for i = 1, tagCount do
+			local tagDesc = GetItemLinkItemTagDescription(itemLink, i)
+			
+			if (i > 1) then
+				tagString = tagString .. ", "
+			end
+			
+			tagString = tagString .. tagDesc
+		end
+	end
+	
+	if (tagString ~= "") then
+		logData.tags = tagString
+	end	
+	
+	return logData
+end
+
+
 function uespLog.LogItemLink (itemLink, event, extraData)
 	local logData = uespLog.CreateItemLinkLog(itemLink)
 	logData.event = event
@@ -6291,6 +6586,24 @@ function uespLog.LogItemLink (itemLink, event, extraData)
 	
 	uespLog.AppendDataToLog("all", logData, extraData)
 end
+
+
+function uespLog.LogItemLink_GunnySack (itemLink, event, extraData)
+	local logData = uespLog.CreateItemLinkLog_GunnySack(itemLink)
+	logData.event = event
+	
+	extraData = extraData or {}
+	
+	if (extraData.magicItemId ~= nil) then
+		logData.itemLink = string.gsub(itemLink, tostring(extraData.realItemId), tostring(extraData.magicItemId))
+		extraData.magicItemId = nil
+	end
+	
+	if (logData ~= {}) then
+		uespLog.AppendDataToLog("all", logData, extraData)
+	end
+end
+
 
 
 function uespLog.LogItemLinkShort (itemLink, event, extraData)

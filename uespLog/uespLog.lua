@@ -6327,6 +6327,9 @@ function uespLog.CreateItemLinkLog_GunnySack (itemLink)
 	
 	logData.name = GetItemLinkName(itemLink)
 	if (uespLog.GunnySackCount <= 3) then return {} end
+	
+	local isGunnySack = string.lower(logData.name) == "wet gunny sack"
+	
 	logData.type = GetItemLinkItemType(itemLink)
 	if (uespLog.GunnySackCount <= 4) then return {} end
 	logData.icon, _, _, _, logData.itemStyle = GetItemLinkInfo(itemLink)
@@ -6494,22 +6497,23 @@ function uespLog.CreateItemLinkLog_GunnySack (itemLink)
 		logData["ingrName"..tostring(i)] = ingredientName
 	end
 	
-	--logData.isBound = IsItemLinkBound(itemLink)
 	logData.bindType = GetItemLinkBindType(itemLink)
 	if (uespLog.GunnySackCount <= 37) then return {} end
-
-	local glyphMinLevel, glyphMaxLevel, glyphMinVetLevel, glyphMaxVetLevel = GetItemLinkGlyphMinMaxLevels(itemLink)
-	if (uespLog.GunnySackCount <= 38) then return {} end
 	
-	if (glyphMinLevel ~= nil and glyphMaxLevel ~= nil) then
-		logData.minGlyphLevel = glyphMinLevel
-		logData.maxGlyphLevel = glyphMaxLevel
-	elseif (glyphMinVetLevel ~= nil and glyphMaxVetLevel ~= nil) then
-		logData.minGlyphLevel = glyphMinVetLevel + 50
-		logData.maxGlyphLevel = glyphMaxVetLevel + 50
-	elseif (glyphMinLevel ~= nil and glyphMaxVetLevel ~= nil) then
-		logData.minGlyphLevel = glyphMinLevel
-		logData.maxGlyphLevel = glyphMaxVetLevel + 50
+	if (not isGunnySack) then
+		local glyphMinLevel, glyphMaxLevel, glyphMinVetLevel, glyphMaxVetLevel = GetItemLinkGlyphMinMaxLevels(itemLink)
+		if (uespLog.GunnySackCount <= 38) then return {} end
+		
+		if (glyphMinLevel ~= nil and glyphMaxLevel ~= nil) then
+			logData.minGlyphLevel = glyphMinLevel
+			logData.maxGlyphLevel = glyphMaxLevel
+		elseif (glyphMinVetLevel ~= nil and glyphMaxVetLevel ~= nil) then
+			logData.minGlyphLevel = glyphMinVetLevel + 50
+			logData.maxGlyphLevel = glyphMaxVetLevel + 50
+		elseif (glyphMinLevel ~= nil and glyphMaxVetLevel ~= nil) then
+			logData.minGlyphLevel = glyphMinLevel
+			logData.maxGlyphLevel = glyphMaxVetLevel + 50
+		end
 	end
 	
 	local traitAbilityCount = 0

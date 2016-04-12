@@ -489,6 +489,53 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 }
 
 
+uespLog.OTHER_MISSING_SKILL_DATA = 
+{
+	-- Heavy Attacks
+	15279,
+	15383,
+	16041,
+	16212,
+	16220,
+	16261,
+	16420,
+	16691,
+	18396,
+	18429,
+	29365,
+	32477,
+	55886,
+	60775,
+	60777,
+	60779,
+	60783,
+	60786,
+	60796,
+
+		-- Light Attacks
+	15435,
+	16037,
+	16145,
+	16165,
+	16277,
+	16499,
+	16688,
+	18350,
+	23604,
+	29368,
+	32464,
+	55885,
+	60774,
+	60776,
+	60778,
+	60782,
+	60785,
+	60794,
+	62426,
+	63754,
+}
+
+
 SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 	local cmds, cmd1 = uespLog.SplitCommands(cmd)
 	local result
@@ -907,13 +954,14 @@ function uespLog.SkillCoefAddMissingSkills()
 	local newSkills = 0
 	
 	for k, skillData in ipairs(uespLog.MISSING_SKILL_DATA) do
-		local rank = skillData[1]
 		local abilityId = skillData[2]
-		local learnedLevel = skillData[3]
-		local skillLine = skillData[4]
-		local extraData = {	}
 		
 		local result, isNew = uespLog.InitSkillCoefData(abilityId, rank)
+		if (isNew) then newSkills = newSkills + 1 end
+	end
+	
+	for k, abilityId in ipairs(uespLog.OTHER_MISSING_SKILL_DATA) do
+		local result, isNew = uespLog.InitSkillCoefData(abilityId, 0)
 		if (isNew) then newSkills = newSkills + 1 end
 	end
 	

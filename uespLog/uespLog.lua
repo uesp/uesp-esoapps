@@ -10565,11 +10565,14 @@ function uespLog.DumpChampionPointSkill(disciplineIndex, skillIndex)
 	local logData = {}
 	
 	logData.event = "CP"
+	logData.discIndex = disciplineIndex
+	logData.skillIndex = skillIndex
 	logData.x, logData.y = GetChampionSkillPosition(disciplineIndex, skillIndex)
 	logData.name = GetChampionSkillName(disciplineIndex, skillIndex)
 	logData.unlockLevel = GetChampionSkillUnlockLevel(disciplineIndex, skillIndex)
 	logData.abilityId = GetChampionAbilityId(disciplineIndex, skillIndex)
 	logData.desc = GetChampionAbilityDescription(logData.abilityId, 0)
+	logData.maxDesc = GetChampionAbilityDescription(logData.abilityId, maxPoints)
 	
 	uespLog.AppendDataToLog("all", logData)
 	

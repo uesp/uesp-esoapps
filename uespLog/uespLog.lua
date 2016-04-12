@@ -10569,7 +10569,7 @@ function uespLog.DumpChampionPointSkill(disciplineIndex, skillIndex)
 	logData.name = GetChampionSkillName(disciplineIndex, skillIndex)
 	logData.unlockLevel = GetChampionSkillUnlockLevel(disciplineIndex, skillIndex)
 	logData.abilityId = GetChampionAbilityId(disciplineIndex, skillIndex)
-	logData.desc = GetChampionAbilityDescription(abilityId, 0)
+	logData.desc = GetChampionAbilityDescription(logData.abilityId, 0)
 	
 	uespLog.AppendDataToLog("all", logData)
 	

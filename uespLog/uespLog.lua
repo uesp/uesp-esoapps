@@ -5139,24 +5139,22 @@ end
 
 
 SLASH_COMMANDS["/uespdump"] = function(cmd)
-	local cmds = { }
-	local helpString = "Use one of: recipes, skills, achievements, inventory, globals"
-
-	for i in string.gmatch(cmd, "%S+") do
-		cmds[#cmds + 1] = i
-	end
+	local helpString = "Use one of: recipes, skills, achievements, inventory, globals, cp"
+	local cmds, firstCmd = uespLog.SplitCommands(cmd)
 
 	if (#cmds <= 0) then
 		uespLog.Msg(helpString)
-	elseif (cmds[1] == "recipes") then
+	elseif (firstCmd == "recipes") then
 		uespLog.DumpRecipes()
-	elseif (cmds[1] == "skills") then
+	elseif (firstCmd == "skills") then
 		uespLog.DumpSkills(cmds[2], cmds[3])
-	elseif (cmds[1] == "achievements") then
+	elseif (firstCmd == "achievements") then
 		uespLog.DumpAchievements()
-	elseif (cmds[1] == "inventory") then
+	elseif (firstCmd == "inventory") then
 		uespLog.DumpInventory()
-	elseif (cmds[1] == "globals") then
+	elseif (firstCmd == "cp" or firstCmd == "championpoints") then
+		uespLog.DumpChampionPoints(cmds[2])
+	elseif (firstCmd == "globals") then
 		
 		if (cmds[2] == "end" or cmds[2] == "stop") then
 			uespLog.DumpGlobalsIterateEnd()
@@ -5168,14 +5166,14 @@ SLASH_COMMANDS["/uespdump"] = function(cmd)
 			uespLog.DebugMsg("UESP::Dump globals iterative currently running...")
 		end
 	
-	elseif (cmds[1] == "globalprefix") then
+	elseif (firstCmd == "globalprefix") then
 		local l1, l2, l3 = globalprefixes()
 		uespLog.DumpGlobals(tonumber(cmds[2]), l2)
-	elseif (cmds[1] == "smith") then
+	elseif (firstCmd == "smith") then
 		uespLog.DumpSmithItems(false)
-	elseif (cmds[1] == "smithset") then
+	elseif (firstCmd == "smithset") then
 		uespLog.DumpSmithItems(true)
-	elseif (cmds[1] == "tooltip") then
+	elseif (firstCmd == "tooltip") then
 		uespLog.DumpToolTip()
 	else
 		uespLog.Msg(helpString)
@@ -10519,4 +10517,76 @@ function uespLog.OnFishingReelInReady(eventCode, itemLink, itemName, bagId, slot
 	end
 	
 	uespLog.MsgColor(uespLog.fishingColor, "Fish is ready to reel in NOW..."..msg.."!")
+end
+
+
+function uespLog.DumpChampionPoints(note)
+	local numDisc = GetNumChampionDisciplines()
+	local logData = {}
+	
+	uespLog.Msg("Dumping all champion point data to log...")
+	
+	logData.event = "CP::start"
+	logData.note = note
+	logData.maxPoints = GetMaxPossiblePointsInChampionSkill()
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
+	for disciplineIndex = 1, numDisc do
+		uespLog.DumpChampionPointDiscipine(disciplineIndex)
+	end
+	
+	logData = {}
+	logData.event = "CP::end"
+	uespLog.AppendDataToLog("all", logData)
+end
+
+
+function uespLog.DumpChampionPointDiscipine(disciplineIndex)
+	local logData = {}
+	
+	logData.event = "CP::disc"
+	logData.discIndex = disciplineIndex
+	logData.name = GetChampionDisciplineName(disciplineIndex)
+	logData.desc = GetChampionDisciplineDescription(disciplineIndex)	
+	logData.attr = GetChampionDisciplineAttribute(disciplineIndex)	
+	logData.numSkills = GetNumChampionDisciplineSkills(disciplineIndex)	
+	
+	uespLog.AppendDataToLog("all", logData)
+	
+	for skillIndex = 1, logData.numSkills do
+		uespLog.DumpChampionPointSkill(disciplineIndex, skillIndex)
+	end
+	
+end
+
+
+function uespLog.DumpChampionPointSkill(disciplineIndex, skillIndex)
+	local maxPoints = GetMaxPossiblePointsInChampionSkill()
+	local logData = {}
+	
+	logData.event = "CP"
+	logData.x, logData.y = GetChampionSkillPosition(disciplineIndex, skillIndex)
+	logData.name = GetChampionSkillName(disciplineIndex, skillIndex)
+	logData.unlockLevel = GetChampionSkillUnlockLevel(disciplineIndex, skillIndex)
+	logData.abilityId = GetChampionAbilityId(disciplineIndex, skillIndex)
+	logData.desc = GetChampionAbilityDescription(abilityId, 0)
+	
+	uespLog.AppendDataToLog("all", logData)
+	
+	if (logData.unlockLevel ~= nil) then
+		return
+	end
+	
+	local abilityId = logData.abilityId
+	
+	for i = 0, maxPoints do
+		logData = {}
+		logData.event = "CP::desc"
+		logData.abilityId = abilityId
+		logData.points = i
+		logData.desc = GetChampionAbilityDescription(abilityId, i)
+		
+		uespLog.AppendDataToLog("all", logData)
+	end	
+
 end

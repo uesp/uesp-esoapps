@@ -1155,28 +1155,64 @@ uespLog.MISSING_SKILL_DATA = {
 	{ 2, 10, 42126, 2, "Werewolf", 0 },
 	{ 2, 11, 42127, 2, "Werewolf", 0 },
 	{ 2, 12, 42128, 2, "Werewolf", 0 },
-	{ 3, 1, 32633, 5, "Werewolf", 0 },     -- Roar
-	{ 3, 2, 42143, 5, "Werewolf", 0 },
-	{ 3, 3, 42144, 5, "Werewolf", 0 },
-	{ 3, 4, 42145, 5, "Werewolf", 0 },
-	{ 3, 5, 39113, 5, "Werewolf", 0 },     -- Ferocious Roar
-	{ 3, 6, 42155, 5, "Werewolf", 0 },
-	{ 3, 7, 42156, 5, "Werewolf", 0 },
-	{ 3, 8, 42157, 5, "Werewolf", 0 },
-	{ 3, 9, 39114, 5, "Werewolf", 0 },     -- Rousing Roar
-	{ 3, 10, 42177, 5, "Werewolf", 0 },
-	{ 3, 11, 42178, 5, "Werewolf", 0 },
-	{ 3, 12, 42179, 5, "Werewolf", 0 },
-	{ 4, 1, 32634, 5, "Werewolf", 1 },     -- Devour
-	{ 5, 1, 32636, 3, "Werewolf", 1 },     -- Pursuit
-	{ 5, 2, 46142, 7, "Werewolf", 1 },
-	{ 6, 1, 32637, 4, "Werewolf", 1 },     -- Blood Rage
-	{ 6, 2, 46135, 8, "Werewolf", 1 },
-	{ 7, 1, 32639, 6, "Werewolf", 1 },     -- Bloodmoon
-	{ 8, 1, 32638, 6, "Werewolf", 1 },     -- Savage Strength
-	{ 8, 2, 46139, 9, "Werewolf", 1 },
-	{ 9, 1, 32641, 7, "Werewolf", 1 },     -- Call of the Pack
-	{ 9, 2, 46137, 10, "Werewolf", 1 },
+	{ 3, 1, 58310, 3, "Werewolf", 0 },			-- Hircine's Bounty, 3
+	{ 3, 2, 58314, 3, "Werewolf", 0 },
+	{ 3, 3, 58315, 3, "Werewolf", 0 },
+	{ 3, 4, 58316, 3, "Werewolf", 0 },
+	{ 3, 5, 58317, 3, "Werewolf", 0 },			-- Hircine's Rage
+	{ 3, 6, 58319, 3, "Werewolf", 0 },
+	{ 3, 7, 58321, 3, "Werewolf", 0 },
+	{ 3, 8, 58323, 3, "Werewolf", 0 },
+	{ 3, 9, 58325, 3, "Werewolf", 0 },			-- Hircine's Fortitude
+	{ 3, 10, 58329, 3, "Werewolf", 0 },
+	{ 3, 11, 58332, 3, "Werewolf", 0 },
+	{ 3, 12, 58334, 3, "Werewolf", 0 },
+	{ 4, 1, 32633, 5, "Werewolf", 0 },     -- Roar
+	{ 4, 2, 42143, 5, "Werewolf", 0 },
+	{ 4, 3, 42144, 5, "Werewolf", 0 },
+	{ 4, 4, 42145, 5, "Werewolf", 0 },
+	{ 4, 5, 39113, 5, "Werewolf", 0 },     -- Ferocious Roar
+	{ 4, 6, 42155, 5, "Werewolf", 0 },
+	{ 4, 7, 42156, 5, "Werewolf", 0 },
+	{ 4, 8, 42157, 5, "Werewolf", 0 },
+	{ 4, 9, 39114, 5, "Werewolf", 0 },     -- Rousing Roar
+	{ 4, 10, 42177, 5, "Werewolf", 0 },
+	{ 4, 11, 42178, 5, "Werewolf", 0 },
+	{ 4, 12, 42179, 5, "Werewolf", 0 },
+	{ 5, 1, 58405, 6, "Werewolf", 0 },			-- Piercing Howl
+	{ 5, 2, 58736, 6, "Werewolf", 0 },
+	{ 5, 3, 58738, 6, "Werewolf", 0 },
+	{ 5, 4, 58740, 6, "Werewolf", 0 },
+	{ 5, 5, 58742, 6, "Werewolf", 0 },			-- Howl of Despair
+	{ 5, 6, 58786, 6, "Werewolf", 0 },
+	{ 5, 7, 58790, 6, "Werewolf", 0 },
+	{ 5, 8, 58794, 6, "Werewolf", 0 },
+	{ 5, 9, 58798, 6, "Werewolf", 0 },			-- Howl of Agony
+	{ 5, 10, 58802, 6, "Werewolf", 0 },
+	{ 5, 11, 58805, 6, "Werewolf", 0 },
+	{ 5, 12, 58808, 6, "Werewolf", 0 },
+	{ 6, 1, 58855, 9, "Werewolf", 0 },			-- Infectious Claws
+	{ 6, 2, 58857, 9, "Werewolf", 0 },
+	{ 6, 3, 58859, 9, "Werewolf", 0 },
+	{ 6, 4, 58862, 9, "Werewolf", 0 },
+	{ 6, 5, 58864, 9, "Werewolf", 0 },			-- Claws of Anguish
+	{ 6, 6, 58870, 9, "Werewolf", 0 },
+	{ 6, 7, 58873, 9, "Werewolf", 0 },
+	{ 6, 8, 58876, 9, "Werewolf", 0 },
+	{ 6, 9, 58879, 9, "Werewolf", 0 },			-- Claws of Life
+	{ 6, 10, 58901, 9, "Werewolf", 0 },
+	{ 6, 11, 58904, 9, "Werewolf", 0 },
+	{ 6, 12, 58907, 9, "Werewolf", 0 },
+	{ 7, 1, 32636, 3, "Werewolf", 1 },     -- Pursuit
+	{ 7, 2, 46142, 7, "Werewolf", 1 },
+	{ 8, 1, 32634, 3, "Werewolf", 1 },     -- Devour
+	{ 9, 1, 32637, 4, "Werewolf", 1 },     -- Blood Rage
+	{ 9, 2, 46135, 8, "Werewolf", 1 },
+	{ 10, 1, 32639, 6, "Werewolf", 1 },     -- Bloodmoon
+	{ 11, 1, 32638, 6, "Werewolf", 1 },     -- Savage Strength
+	{ 11, 2, 46139, 9, "Werewolf", 1 },
+	{ 12, 1, 32641, 7, "Werewolf", 1 },     -- Call of the Pack
+	{ 12, 2, 46137, 10, "Werewolf", 1 },
 	{ 1, 1, 39644, 1, "Emperor", 1 },     -- Domination
 	{ 2, 1, 39630, 1, "Emperor", 1 },     -- Authority
 	{ 3, 1, 39625, 1, "Emperor", 1 },     -- Monarch
@@ -2052,7 +2088,7 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_FISHING_LURE_SET, uespLog.OnFishingLureSet)	
 	
 		-- Note: This event is called up to 40-50 time for each kill with some weapons (Destruction Staff)
-	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOT_UPDATED, uespLog.OnActionSlotUpdated)	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOT_UPDATED, uespLog.OnActionSlotUpdated)	
 	
 	ZO_InteractWindow:UnregisterForEvent(EVENT_CHATTER_BEGIN)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CONVERSATION_UPDATED, uespLog.OnConversationUpdated)

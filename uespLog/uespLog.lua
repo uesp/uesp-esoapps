@@ -497,6 +497,7 @@
 --			- Tweaked skill message when finding a Skyshard.
 --			- Many changes to skill coefficients. The saved stat data is now saved account wide when logging out
 --			  so you can save between multiple characters. Calculated coefficients are not saved.
+--			- Fixed crash on OSx clients when catching a Wet Gunny Sack.
 --
 --			  Added several commands to /uespskillcoef (/usc):
 --					/usc showdata [name/id]     Shows raw data for the particular skill

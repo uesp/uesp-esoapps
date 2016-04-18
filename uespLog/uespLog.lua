@@ -498,6 +498,7 @@
 --			- Many changes to skill coefficients. The saved stat data is now saved account wide when logging out
 --			  so you can save between multiple characters. Calculated coefficients are not saved.
 --			- Fixed crash on OSx clients when catching a Wet Gunny Sack.
+--			- Output in "/uespdebug extra" mode displayed in a different color (light gray).
 --
 --			  Added several commands to /uespskillcoef (/usc):
 --					/usc showdata [name/id]     Shows raw data for the particular skill
@@ -770,6 +771,7 @@ uespLog.lastItemLinkUsed = ""
 uespLog.lastItemLinkUsed_BagId = -1
 uespLog.lastItemLinkUsed_SlotIndex = -1
 
+uespLog.debugColor = "999999"
 uespLog.researchColor = "00ffff"
 uespLog.timeColor = "00ffff"
 uespLog.traitColor = "00ffff"
@@ -1686,7 +1688,11 @@ function uespLog.DebugExtraMsg(text)
 			text = text .. " (logging off)"
 		end
 		
-		d(text)
+		if (uespLog.IsColor()) then
+			d("|c" .. uespLog.debugColor .. text .. "|r")
+		else
+			d(text)
+		end
 	end
 end
 

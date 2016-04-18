@@ -4243,7 +4243,7 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 		return
 	end
 	
-	local usedDeltaTime = GetGameTimeMilliseconds() - uespLog.lastItemUsedGameTime
+	local usedDeltaTime = GetGameTimeMilliseconds() - (uespLog.lastItemUsedGameTime or 0)
 	local usedItemType = GetItemLinkItemType(uespLog.lastItemUsed)
 	local itemType = GetItemLinkItemType(itemLink)
 	

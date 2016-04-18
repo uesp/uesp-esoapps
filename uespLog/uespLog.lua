@@ -4237,7 +4237,11 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 		return
 	end
 	
-	if (itemSoundCategory == ITEM_SOUND_CATEGORY_ANIMAL_COMPONENT and itemLink ~= nil and itemLink ~= "" and uespLog.lastItemUsed ~= nil) then
+	local usedDeltaTime = GetGameTimeMilliseconds() - uespLog.lastItemUsedGameTime
+	local usedItemType = GetItemLinkItemType(uespLog.lastItemUsed)
+	local itemType = GetItemLinkItemType(itemLink)
+	
+	if (itemSoundCategory == ITEM_SOUND_CATEGORY_ANIMAL_COMPONENT and usedItemType == ITEMTYPE_FISH and itemType == ITEMTYPE_INGREDIENT and usedDeltaTime < 2000) then
 		uespLog.MsgColor(uespLog.itemColor, "Created "..itemLink.." from "..tostring(uespLog.lastItemUsed).."!")
 	end
 	

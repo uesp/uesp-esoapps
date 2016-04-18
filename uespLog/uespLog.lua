@@ -4247,7 +4247,8 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 	local usedItemType = GetItemLinkItemType(uespLog.lastItemUsed)
 	local itemType = GetItemLinkItemType(itemLink)
 	
-	if (itemSoundCategory == ITEM_SOUND_CATEGORY_ANIMAL_COMPONENT and usedItemType == ITEMTYPE_FISH and itemType == ITEMTYPE_INGREDIENT and usedDeltaTime < 2000) then
+	if (usedItemType == ITEMTYPE_FISH and itemType == ITEMTYPE_INGREDIENT and usedDeltaTime < 2000) then
+		-- if (itemSoundCategory == ITEM_SOUND_CATEGORY_ANIMAL_COMPONENT) then
 		uespLog.MsgColor(uespLog.itemColor, "Created "..itemLink.." from "..tostring(uespLog.lastItemUsed).."!")
 	end
 	

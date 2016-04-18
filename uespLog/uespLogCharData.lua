@@ -912,7 +912,7 @@ end
 
 -- Note: This gets called **alot** (40-50 times) when a mob is killed with a Destruction Staff wielded
 function uespLog.OnActionSlotUpdated (eventCode, slotNum)
-	uespLog.DebugMsg("OnActionSlotUpdated "..tostring(slotNum)..":"..tostring(GetGameTimeMilliseconds()))
+	--uespLog.DebugMsg("OnActionSlotUpdated "..tostring(slotNum)..":"..tostring(GetGameTimeMilliseconds()))
 	
 	--local data = uespLog.savedVars.tempData.data
 	--local timestamp = GetGameTimeMilliseconds()

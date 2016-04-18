@@ -485,7 +485,7 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[60783] = POWERTYPE_STAMINA,
 	[60786] = POWERTYPE_MAGICKA,
 	[60796] = POWERTYPE_MAGICKA,
-	
+		
 }
 
 
@@ -533,6 +533,82 @@ uespLog.OTHER_MISSING_SKILL_DATA =
 	60794,
 	62426,
 	63754,
+	
+		-- Pounce
+	32632,     
+	42108,
+	42109,
+	42110,
+		-- Brutal Pounce
+	39105,     
+	42117,
+	42118,
+	42119,
+		-- Feral Pounce
+	39104,     
+	42126,
+	42127,
+	42128,
+		-- Hircine's Bounty
+	58310,		
+	58314,
+	58315,
+	58316,
+		-- Hircine's Rage
+	58317,		
+	58319,
+	58321,
+	58323,
+		-- Hircine's Fortitude
+	58325,		
+	58329,
+	58332,
+	58334,
+	    -- Roar
+	32633, 
+	42143,
+	42144,
+	42145,
+		-- Ferocious Roar
+	39113,     
+	42155,
+	42156,
+	42157,
+		-- Rousing Roar
+	39114,     
+	42177,
+	42178,
+	42179,
+		-- Piercing Howl
+	58405,		
+	58736,
+	58738,
+	58740,
+		-- Howl of Despair
+	58742,		
+	58786,
+	58790,
+	58794,
+		-- Howl of Agony
+	58798,		
+	58802,
+	58805,
+	58808,
+		-- Infectious Claws
+	58855,		
+	58857,
+	58859,
+	58862,
+		-- Claws of Anguish
+	58864,		
+	58870,
+	58873,
+	58876,
+		-- Claws of Life
+	58879,		
+	58901,
+	58904,
+	58907,
 }
 
 

@@ -1155,15 +1155,15 @@ uespLog.MISSING_SKILL_DATA = {
 	{ 2, 10, 42126, 2, "Werewolf", 0 },
 	{ 2, 11, 42127, 2, "Werewolf", 0 },
 	{ 2, 12, 42128, 2, "Werewolf", 0 },
-	{ 3, 1, 58310, 3, "Werewolf", 0 },			-- Hircine's Bounty, 3
+	{ 3, 1, 58310, 3, "Werewolf", 0 },		-- Hircine's Bounty
 	{ 3, 2, 58314, 3, "Werewolf", 0 },
 	{ 3, 3, 58315, 3, "Werewolf", 0 },
 	{ 3, 4, 58316, 3, "Werewolf", 0 },
-	{ 3, 5, 58317, 3, "Werewolf", 0 },			-- Hircine's Rage
+	{ 3, 5, 58317, 3, "Werewolf", 0 },		-- Hircine's Rage
 	{ 3, 6, 58319, 3, "Werewolf", 0 },
 	{ 3, 7, 58321, 3, "Werewolf", 0 },
 	{ 3, 8, 58323, 3, "Werewolf", 0 },
-	{ 3, 9, 58325, 3, "Werewolf", 0 },			-- Hircine's Fortitude
+	{ 3, 9, 58325, 3, "Werewolf", 0 },		-- Hircine's Fortitude
 	{ 3, 10, 58329, 3, "Werewolf", 0 },
 	{ 3, 11, 58332, 3, "Werewolf", 0 },
 	{ 3, 12, 58334, 3, "Werewolf", 0 },
@@ -1179,27 +1179,27 @@ uespLog.MISSING_SKILL_DATA = {
 	{ 4, 10, 42177, 5, "Werewolf", 0 },
 	{ 4, 11, 42178, 5, "Werewolf", 0 },
 	{ 4, 12, 42179, 5, "Werewolf", 0 },
-	{ 5, 1, 58405, 6, "Werewolf", 0 },			-- Piercing Howl
+	{ 5, 1, 58405, 6, "Werewolf", 0 },		-- Piercing Howl
 	{ 5, 2, 58736, 6, "Werewolf", 0 },
 	{ 5, 3, 58738, 6, "Werewolf", 0 },
 	{ 5, 4, 58740, 6, "Werewolf", 0 },
-	{ 5, 5, 58742, 6, "Werewolf", 0 },			-- Howl of Despair
+	{ 5, 5, 58742, 6, "Werewolf", 0 },		-- Howl of Despair
 	{ 5, 6, 58786, 6, "Werewolf", 0 },
 	{ 5, 7, 58790, 6, "Werewolf", 0 },
 	{ 5, 8, 58794, 6, "Werewolf", 0 },
-	{ 5, 9, 58798, 6, "Werewolf", 0 },			-- Howl of Agony
+	{ 5, 9, 58798, 6, "Werewolf", 0 },		-- Howl of Agony
 	{ 5, 10, 58802, 6, "Werewolf", 0 },
 	{ 5, 11, 58805, 6, "Werewolf", 0 },
 	{ 5, 12, 58808, 6, "Werewolf", 0 },
-	{ 6, 1, 58855, 9, "Werewolf", 0 },			-- Infectious Claws
+	{ 6, 1, 58855, 9, "Werewolf", 0 },		-- Infectious Claws
 	{ 6, 2, 58857, 9, "Werewolf", 0 },
 	{ 6, 3, 58859, 9, "Werewolf", 0 },
 	{ 6, 4, 58862, 9, "Werewolf", 0 },
-	{ 6, 5, 58864, 9, "Werewolf", 0 },			-- Claws of Anguish
+	{ 6, 5, 58864, 9, "Werewolf", 0 },		-- Claws of Anguish
 	{ 6, 6, 58870, 9, "Werewolf", 0 },
 	{ 6, 7, 58873, 9, "Werewolf", 0 },
 	{ 6, 8, 58876, 9, "Werewolf", 0 },
-	{ 6, 9, 58879, 9, "Werewolf", 0 },			-- Claws of Life
+	{ 6, 9, 58879, 9, "Werewolf", 0 },		-- Claws of Life
 	{ 6, 10, 58901, 9, "Werewolf", 0 },
 	{ 6, 11, 58904, 9, "Werewolf", 0 },
 	{ 6, 12, 58907, 9, "Werewolf", 0 },

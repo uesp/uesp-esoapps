@@ -571,7 +571,6 @@ uespLog.lastHarvestTarget = { }
 uespLog.startGameTime = GetGameTimeMilliseconds()
 uespLog.startTimeStamp = GetTimeStamp()
 uespLog.currentXp = GetUnitXP('player')
-uespLog.currentVeteranXp = GetUnitVeteranPoints('player')
 
 uespLog.lastMailItems = { }
 uespLog.lastMailId = 0
@@ -1233,7 +1232,7 @@ uespLog.MISSING_SKILL_DATA = {
 uespLog.ITEMCHANGE_IGNORE_FIELDS = { 
 	['level'] = 1,  
 	['reqLevel'] = 1, 
-	['reqVetLevel'] = 1, 
+	['reqCP'] = 1, 
 	['quality'] = 1,
 	['itemLink'] = 1,	
 }
@@ -2123,9 +2122,7 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_BEGIN_LOCKPICK, uespLog.OnBeginLockPick)
 	
 	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_EXPERIENCE_UPDATE, uespLog.OnExperienceUpdate)
-	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_VETERAN_POINTS_UPDATE, uespLog.OnVeteranPointsUpdate)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_EXPERIENCE_GAIN, uespLog.OnExperienceGain)
-	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_VETERAN_POINTS_GAIN, uespLog.OnVeteranPointsGain)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ALLIANCE_POINT_UPDATE, uespLog.OnAlliancePointsUpdate)
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SCREENSHOT_SAVED, uespLog.OnScreenShotSaved)
@@ -2626,7 +2623,7 @@ function uespLog.ShowItemInfo (itemLink)
 	local weaponPower = GetItemLinkWeaponPower(itemLink)
 	local armorRating = GetItemLinkArmorRating(itemLink, false)
 	local reqLevel = GetItemLinkRequiredLevel(itemLink)
-	local reqVetLevel = GetItemLinkRequiredVeteranRank(itemLink)
+	local reqCP = GetItemLinkRequiredChampionPoints(itemLink)
 	local value = GetItemLinkValue(itemLink, false)
 	local condition = GetItemLinkCondition(itemLink)
 	local hasArmorDecay = DoesItemLinkHaveArmorDecay(itemLink)
@@ -2654,7 +2651,7 @@ function uespLog.ShowItemInfo (itemLink)
 	local runeRank = GetItemLinkRequiredCraftingSkillRank(itemLink)		
 	local isBound = IsItemLinkBound(itemLink)
 	local bindType = GetItemLinkBindType(itemLink)
-	local glyphMinLevel, glyphMaxLevel, glyphMinVetLevel, glyphMaxVetLevel = GetItemLinkGlyphMinMaxLevels(itemLink)
+	local glyphMinLevel, glyphMinCP = GetItemLinkGlyphMinLevels(itemLink)
 	local bookTitle = GetItemLinkBookTitle(itemLink)
 	local isBookKnown = IsItemLinkBookKnown(itemLink)
 	local craftSkillRank = GetItemLinkRequiredCraftingSkillRank(itemLink)
@@ -2685,12 +2682,12 @@ function uespLog.ShowItemInfo (itemLink)
 	uespLog.MsgColor(uespLog.itemColor, ".    Data: "..tostring(itemData))
 	uespLog.MsgColor(uespLog.itemColor, ".    Type: ".. uespLog.GetItemTypeStr(itemType) .." ("..tostring(itemType)..")      Equip: "..equipTypeStr.." ("..tostring(equipType)..")")
 	
-	if (glyphMinLevel ~= nil and glyphMaxLevel ~= nil) then
-		glyphLevelString = tostring(glyphMinLevel).." to "..tostring(glyphMaxLevel)
-	elseif (glyphMinVetLevel ~= nil and glyphMaxVetLevel ~= nil) then
-		glyphLevelString = "V"..tostring(glyphMinVetLevel).." to V"..tostring(glyphMaxVetLevel)
-	elseif (glyphMinLevel ~= nil and glyphMaxVetLevel ~= nil) then
-		glyphLevelString = tostring(glyphMinLevel).." to V"..tostring(glyphMaxVetLevel)
+	if (glyphMinLevel ~= nil) then
+		glyphLevelString = tostring(glyphMinLevel)
+	elseif (glyphMinCP ~= nil) then
+		glyphLevelString = "CP"..tostring(glyphMinCP)
+	else
+		glyphLevelString = "?"
 	end
 	
 	if (weaponType > 0) then
@@ -2705,8 +2702,8 @@ function uespLog.ShowItemInfo (itemLink)
 		uespLog.MsgColor(uespLog.itemColor, ".    Flags: "..flagString)
 	end
 	
-	if (reqVetLevel ~= nil and reqVetLevel > 0) then
-		levelString = "V"..tostring(reqVetLevel)
+	if (reqCP ~= nil and reqCP > 0) then
+		levelString = "CP"..tostring(reqCP)
 	elseif (reqLevel ~= nil) then
 		levelString = tostring(reqLevel)
 	end
@@ -3368,39 +3365,10 @@ uespLog.XPREASONS = {
 	[PROGRESS_REASON_TRADESKILL_TRAIT] = "tradeskill trait",
 }
 
-uespLog.old_VETERANXPREASONS = {
-	[-1] = "none",
-	[0] = "complete poi",
-	[1] = "alliance points",
-	[2] = "PVP emperor",
-	[3] = "monster kill",
-	[4] = "dungeon challenge A",
-	[5] = "command",
-	[6] = "dungeon challenge A",
-	[7] = "dungeon challenge A",
-	[8] = "dungeon challenge A",
-	[9] = "dungeon challenge A",
-	[10] = "quest low",
-	[11] = "quest med",
-	[12] = "quest high",
-	[13] = "boss kill",
-}
-
-uespLog.VETERANXPREASONS = uespLog.XPREASONS
-
 
 function uespLog.GetXPReasonStr(reason)
 	if (uespLog.XPREASONS[reason] ~= nil) then
 		return uespLog.XPREASONS[reason]
-	end
-	
-	return "unknown ("..tostring(reason)..")"
-end
-
-
-function uespLog.GetVeteranXPReasonStr(reason)
-	if (uespLog.VETERANXPREASONS[reason] ~= nil) then
-		return uespLog.VETERANXPREASONS[reason]
 	end
 	
 	return "unknown ("..tostring(reason)..")"
@@ -3427,7 +3395,7 @@ function uespLog.OnExperienceGain (eventCode, reason, level, previousExperience,
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	if (GetUnitVeteranRank("player") <= 0) then
+	if (GetUnitChampionPoints("player") <= 0) then
 		uespLog.DebugLogMsgColor(uespLog.xpColor, "Gained "..tostring(logData.xpGained).." xp for "..uespLog.GetXPReasonStr(reason))
 	end
 end
@@ -3455,57 +3423,9 @@ function uespLog.OnExperienceUpdate (eventCode, unitTag, currentExp, maxExp, rea
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	if (unitTag == "player" and GetUnitVeteranRank(unitTag) <= 0) then
+	if (unitTag == "player" and GetUnitChampionPoints(unitTag) <= 0) then
 		uespLog.DebugLogMsgColor(uespLog.xpColor, "Gained "..tostring(logData.xpGained).." xp for "..uespLog.GetXPReasonStr(reason))
 	end
-end
-
-
-function uespLog.OnVeteranPointsGain (eventCode, reason, rank, previousExperience, currentExperience)
-	local logData = { }
-	
-	logData.event = "VeteranXPUpdate"
-	logData.unit = "player"
-	logData.xpGained = currentExperience - previousExperience
-	logData.rank = rank
-	logData.reason = reason
-	
-	uespLog.currentVeteranXp = currentExperience
-	
-	if (logData.xpGained == 0) then
-		return
-	elseif (reason == -1) then
-		uespLog.DebugExtraMsg("UESP::Gained "..tostring(logData.xpGained).." veteran points for unknown reason")
-		return
-	end
-	
-	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
-	uespLog.DebugLogMsgColor(uespLog.xpColor, "Gained "..tostring(logData.xpGained).." veteran points for "..uespLog.GetVeteranXPReasonStr(reason))
-end
-
-
-function uespLog.OnVeteranPointsUpdate (eventCode, unitTag, currentExp, maxExp, reason)
-	local logData = { }
-	
-	 --if ( unitTag ~= 'player' ) th6en return end
-	
-	logData.event = "VeteranXPUpdate"
-	logData.unit = unitTag
-	logData.xpGained = currentExp - uespLog.currentVeteranXp
-	logData.maxXP = maxExp
-	logData.reason = reason
-	
-	uespLog.currentVeteranXp = currentExp
-	
-	if (logData.xpGained == 0) then
-		return
-	elseif (reason == -1) then
-		uespLog.DebugExtraMsg("UESP::Gained "..tostring(logData.xpGained).." veteran points for unknown reason")
-		return
-	end
-	
-	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
-	uespLog.DebugLogMsgColor(uespLog.xpColor, "Gained "..tostring(logData.xpGained).." veteran points for "..uespLog.GetVeteranXPReasonStr(reason))
 end
 
 
@@ -6093,7 +6013,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 	logData.weaponPower = GetItemLinkWeaponPower(itemLink)
 	logData.armorRating = GetItemLinkArmorRating(itemLink, false)
 	logData.reqLevel = GetItemLinkRequiredLevel(itemLink)
-	logData.reqVetLevel = GetItemLinkRequiredVeteranRank(itemLink)
+	logData.reqCP = GetItemLinkRequiredChampionPoints(itemLink)
 	logData.value = GetItemLinkValue(itemLink, false)
 	logData.condition = GetItemLinkCondition(itemLink)
 	
@@ -6223,17 +6143,12 @@ function uespLog.CreateItemLinkLog (itemLink)
 	logData.bindType = GetItemLinkBindType(itemLink)
 	
 	if (not isGunnySack) then
-		local glyphMinLevel, glyphMaxLevel, glyphMinVetLevel, glyphMaxVetLevel = GetItemLinkGlyphMinMaxLevels(itemLink)
+		local glyphMinLevel, glyphMinCP = GetItemLinkGlyphMinLevels(itemLink)
 		
-		if (glyphMinLevel ~= nil and glyphMaxLevel ~= nil) then
+		if (glyphMinLevel ~= nil) then
 			logData.minGlyphLevel = glyphMinLevel
-			logData.maxGlyphLevel = glyphMaxLevel
-		elseif (glyphMinVetLevel ~= nil and glyphMaxVetLevel ~= nil) then
-			logData.minGlyphLevel = glyphMinVetLevel + 50
-			logData.maxGlyphLevel = glyphMaxVetLevel + 50
-		elseif (glyphMinLevel ~= nil and glyphMaxVetLevel ~= nil) then
-			logData.minGlyphLevel = glyphMinLevel
-			logData.maxGlyphLevel = glyphMaxVetLevel + 50
+		elseif (glyphMinCP ~= nil) then
+			logData.minCP = glyphMinCP
 		end
 	end
 
@@ -6329,7 +6244,7 @@ function uespLog.LogItemLinkShort (itemLink, event, extraData)
 	logData.weaponPower = GetItemLinkWeaponPower(itemLink)
 	logData.armorRating = GetItemLinkArmorRating(itemLink, false)
 	logData.reqLevel = GetItemLinkRequiredLevel(itemLink)
-	logData.reqVetLevel = GetItemLinkRequiredVeteranRank(itemLink)
+	logData.reqCP = GetItemLinkRequiredChampionPoints(itemLink)
 	logData.value = GetItemLinkValue(itemLink, false)
 	logData.condition = GetItemLinkCondition(itemLink)
 		
@@ -6375,13 +6290,7 @@ function uespLog.LogItemLinkShort (itemLink, event, extraData)
 	end
 	
 	logData.quality = GetItemLinkQuality(itemLink)
-	
-	--logData.isBound = IsItemLinkBound(itemLink)
-	--logData.bindType = GetItemLinkBindType(itemLink)
 
-	--logData.glyphMinLevel, logData.glyphMaxLevel, logData.glyphMinVetLevel, logData.glyphMaxVetLevel = GetItemLinkGlyphMinMaxLevels(itemLink)
-	--logData.isBookKnown = IsItemLinkBookKnown(itemLink)
-	
 	uespLog.AppendDataToLog("all", logData, extraData)
 end
 
@@ -7377,22 +7286,19 @@ function uespLog.MineEnchantCharges()
 					local hasCharges = DoesItemLinkHaveEnchantCharges(itemLink)
 					local realQuality = GetItemLinkQuality(itemLink)
 					local realLevel = GetItemLinkRequiredLevel(itemLink)
-					local realVetRank = GetItemLinkRequiredVeteranRank(itemLink)
+					local realCP = GetItemLinkRequiredChampionPoints(itemLink)
 					local weaponPower = GetItemLinkWeaponPower(itemLink)
-					
-					if (realVetRank ~= nil and realVetRank > 0) then
-						realLevel = realVetRank + 50
-					end
 					
 					enchantData[#enchantData + 1] = 
 					{ 
-						[1] = level,
-						[2] = quality,
-						[3] = realLevel,
-						[4] = realQuality,
-						[5] = numCharges,
-						[6] = maxCharges,
-						[7] = weaponPower,
+						[1] = realLevel,
+						[2] = realCP,
+						[3] = quality,
+						[4] = realLevel,
+						[5] = realQuality,
+						[6] = numCharges,
+						[7] = maxCharges,
+						[8] = weaponPower,
 					}
 				end
 			end
@@ -7794,23 +7700,17 @@ end
 function uespLog.MineItemsQualityMapLogItem(itemLink, intLevel, intSubtype, extraData)
 	local logData = { }
 	local reqLevel = GetItemLinkRequiredLevel(itemLink)
-	local reqVetLevel = GetItemLinkRequiredVeteranRank(itemLink)
+	local reqCP = GetItemLinkRequiredChampionPoints(itemLink)
 	local quality = GetItemLinkQuality(itemLink)
-	local level = 0
-	
-	if (reqVetLevel ~= nil and reqVetLevel > 0) then
-		level = reqVetLevel + 50
-	elseif (reqLevel ~= nil and reqLevel > 0) then
-		level = reqLevel
-	end
 	
 	logData.event = "mineItem::quality"
 	logData.itemLink = itemLink
 	logData.intLevel = intLevel
 	logData.intSubtype = intSubtype
-	logData.level = level
+	logData.level = reqLevel
+	logData.cp = reqCP
 	logData.quality = quality
-	logData.csv = tostring(intLevel) .. ", "..tostring(intSubtype)..", "..tostring(level)..", "..tostring(quality)
+	logData.csv = tostring(intLevel) .. ", "..tostring(intSubtype)..", "..tostring(reqLevel)..", "..tostring(reqCP)..", "..tostring(quality)
 
 	uespLog.AppendDataToLog("all", logData, extraData)
 end

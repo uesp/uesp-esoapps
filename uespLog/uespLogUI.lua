@@ -539,16 +539,11 @@ end
 
 
 function uespLog.GetStatText (statType, statName)
-	local softCap = GetStatSoftCap(statType)
 	local currentStat = GetPlayerStat(statType, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
-	local noCapStat = GetPlayerStat(statType, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_DONT_APPLY_SOFT_CAP)
+	--local noCapStat = GetPlayerStat(statType, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_DONT_APPLY_SOFT_CAP)
 	local OutputText = ""
 	
-	if (softCap == nil) then
-		OutputText = tostring(statName)..": "..tostring(currentStat).." (no cap)"
-	else
-		OutputText = tostring(statName)..": "..tostring(currentStat).." ("..tostring(noCapStat).." with cap of ".. tostring(softCap)..")"
-	end
+	OutputText = tostring(statName)..": "..tostring(currentStat).." (no cap)"
 		
 	return OutputText
 end

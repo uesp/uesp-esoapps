@@ -120,7 +120,7 @@ uespLog.charDataLastFoodEaten = {
 	['type'] = '',
 	['desc'] = '',
 	['reqLevel'] = '',
-	['reqVetRank'] = '',
+	['reqCP'] = '',
 }
 
 
@@ -326,12 +326,10 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	charData.Class = GetUnitClass("player")
 	charData.Gender = GetUnitGender("player")
 	charData.Level = GetUnitLevel("player")
-	charData.VeteranRank = GetUnitVeteranRank("player")
 	charData.EffectiveLevel = GetUnitEffectiveLevel("player")
 	charData.Zone = GetUnitZone("player")
 	charData.ChampionPointsEarned = GetPlayerChampionPointsEarned()
 	charData.BattleLevel = GetUnitBattleLevel("player")
-	charData.BattleVeteranRank = GetUnitVetBattleLevel("player")
 	charData.BuildType = uespLog.GetCharDataBuildType()
 	charData.SecondsPlayed = GetSecondsPlayed()
 	charData.Latency = GetLatency()
@@ -397,7 +395,7 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	charData.LastFoodEatenType = uespLog.charDataLastFoodEaten.type
 	charData.LastFoodEatenDesc = uespLog.charDataLastFoodEaten.desc
 	charData.LastFoodEatenLevel = uespLog.charDataLastFoodEaten.reqLevel
-	charData.LastFoodEatenVetRank = uespLog.charDataLastFoodEaten.reqVetRank
+	charData.LastFoodEatenCP = uespLog.charDataLastFoodEaten.reqCP
 	
 	charData.Stats = uespLog.CreateCharDataStats()
 	charData.Power = uespLog.CreateCharDataPower()
@@ -464,9 +462,9 @@ end
 function uespLog.OnEatDrinkItem(itemLink)
 	local itemName = GetItemLinkName(itemLink)
 	local itemTypeString = "unknown"
-	local hasAbility, abilityHeader, abilityDescription, cooldown, hasScaling, minLevel, maxLevel, isVeteranRank = GetItemLinkOnUseAbilityInfo(itemLink)
+	local hasAbility, abilityHeader, abilityDescription, cooldown, hasScaling, minLevel, maxLevel = GetItemLinkOnUseAbilityInfo(itemLink)
 	local reqLevel = GetItemLinkRequiredLevel(itemLink)
-	local reqVetRank = GetItemLinkRequiredVeteranRank(itemLink)
+	local reqCP = GetItemLinkRequiredChampionPoints(itemLink)
 	local itemType = GetItemLinkItemType(itemLink)
 
 	if (itemName == "" or itemLink == "") then
@@ -486,7 +484,7 @@ function uespLog.OnEatDrinkItem(itemLink)
 	uespLog.charDataLastFoodEaten.type = itemTypeString
 	uespLog.charDataLastFoodEaten.desc = abilityDescription
 	uespLog.charDataLastFoodEaten.reqLevel = reqLevel
-	uespLog.charDataLastFoodEaten.reqVetRank = reqVetRank
+	uespLog.charDataLastFoodEaten.reqCP = reqCP
 	
 	uespLog.savedVars.charInfo.data.lastFoodEaten = uespLog.charDataLastFoodEaten
 	

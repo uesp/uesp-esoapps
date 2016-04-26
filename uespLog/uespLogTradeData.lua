@@ -511,27 +511,16 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 		
 		-- Enchanting Potency Runestone
 	elseif (itemType == 51) then
-		local glyphMinLevel, glyphMaxLevel, glyphMinVetLevel, glyphMaxVetLevel = GetItemLinkGlyphMinMaxLevels(itemLink)
+		local glyphMinLevel, glyphMinCP = GetItemLinkRequiredChampionPoints(itemLink)
 		local minString = ""
-		local maxString = ""
 		
 		if (glyphMinLevel ~= nil) then
 			minString = "level "..tostring(glyphMinLevel)
-		elseif (glyphMinVetLevel ~= nil) then
-			minString = "|t32:32:EsoUI/Art/UnitFrames/target_veteranRank_icon.dds|trank "..tostring(glyphMinVetLevel)
+		elseif (glyphMinCP ~= nil) then
+			minString = "CP "..tostring(glyphMinCP)
 		end
 		
-		if (glyphMaxLevel ~= nil) then
-			maxString = "level "..tostring(glyphMaxLevel)
-		elseif (glyphMaxVetLevel ~= nil) then
-			maxString = "|t32:32:EsoUI/Art/UnitFrames/target_veteranRank_icon.dds|trank "..tostring(glyphMaxVetLevel)
-		end
-		
-		if (minString == maxString) then
-			itemText = "Used to create glyphs of "..maxString.."."
-		else
-			itemText = "Used to create glyphs of "..minString.." to "..maxString.."."
-		end
+		itemText = "Used to create glyphs of "..minString.."."
 		
 		iconColor = uespLog.TRADE_NORMALTEXT_COLOR
 		fontName = "ZoFontGame"

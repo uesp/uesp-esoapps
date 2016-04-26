@@ -477,9 +477,9 @@
 --			- Added the "/rl" chat command as a short form for "/reloadui".
 --			- Added the "/afk", "/away" and "/back" chat commands for setting the player status (seen in guild).
 --					/afk							Toggles AFK state on/off (away/online)
---					/afx [on/off]					Turns AFK state on and off (away/online)
---					/afx [away|online|dnd|offline] 	Sets player status to a specific state
---					/afx status						Shows the current player status
+--					/afk [on/off]					Turns AFK state on and off (away/online)
+--					/afk [away|online|dnd|offline] 	Sets player status to a specific state
+--					/afk status						Shows the current player status
 --					/away							Turns state to "Away"
 --					/back							Turns state to "Online"
 --			- Fixed logging of Thieves Troves.

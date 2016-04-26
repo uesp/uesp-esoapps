@@ -4981,16 +4981,10 @@ end
 
 function uespLog.DisplayStat (statType, statName)
 	--value = GetPlayerStat(DerivedStats derivedStat, StatBonusOption statBonusOption, StatSoftCapOption statSoftCapOption)
-
-	local softCap = GetStatSoftCap(statType)
 	local currentStat = GetPlayerStat(statType, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
-	local noCapStat = GetPlayerStat(statType, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_DONT_APPLY_SOFT_CAP)
+	-- local noCapStat = GetPlayerStat(statType, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_DONT_APPLY_SOFT_CAP)
 	
-	if (softCap == nil) then
-		uespLog.MsgColor(uespLog.statColor, "UESP::"..tostring(statName).." "..tostring(currentStat).." (no cap)")
-	else
-		uespLog.MsgColor(uespLog.statColor, "UESP::"..tostring(statName).." "..tostring(currentStat).." ("..tostring(noCapStat).." with cap of ".. tostring(softCap)..")")
-	end
+	uespLog.MsgColor(uespLog.statColor, "UESP::"..tostring(statName).." "..tostring(currentStat).." (no cap)")
 end
 
 
@@ -5001,12 +4995,11 @@ SLASH_COMMANDS["/uespcharinfo"] = function (cmd)
 	uespLog.Msg("UESP::Skill Points = ".. tostring(numPoints))
 	uespLog.Msg("UESP::Skyshards = ".. tostring(numSkyShards))
 	
-	local armorSC = GetStatSoftCap(STAT_ARMOR_RATING)
-	local hpSC = GetStatSoftCap(STAT_HEALTH_MAX)
-	local mgSC = GetStatSoftCap(STAT_MAGICKA_MAX)
+	local armorSC = GetPlayerStat(STAT_ARMOR_RATING, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+	local hpSC = GetPlayerStat(STAT_HEALTH_MAX, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+	local mgSC = GetPlayerStat(STAT_MAGICKA_MAX, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
 	
-	local stSC = GetStatSoftCap(STAT_MAGICKA_REGEN_COMBAT)
-	--local value = GetPlayerStat(DerivedStats derivedStat, StatBonusOption statBonusOption, StatSoftCapOption statSoftCapOption)
+	local stSC = GetPlayerStat(STAT_MAGICKA_REGEN_COMBAT, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
 	
 	uespLog.DisplayStat(STAT_HEALTH_MAX, "HP")
 	uespLog.DisplayStat(STAT_MAGICKA_MAX, "Magicka")

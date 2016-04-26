@@ -5038,7 +5038,7 @@ SLASH_COMMANDS["/uespcharinfo"] = function (cmd)
 	uespLog.DisplayStat(STAT_DAMAGE_RESIST_START, "Resist Start")
 		
 	uespLog.DisplayStat(STAT_CRITICAL_STRIKE, "Critical Strike")
-	uespLog.DisplayStat(STAT_WEAPON_POWER, "Weapon Power")
+	uespLog.DisplayStat(STAT_WEAPON_AND_SPELL_DAMAGE, "Weapon Power")
 	uespLog.DisplayStat(STAT_SPELL_POWER, "Spell Power")
 	uespLog.DisplayStat(STAT_SPELL_CRITICAL, "Spell Critical")
 	uespLog.DisplayStat(STAT_SPELL_PENETRATION, "Spell Penetration")

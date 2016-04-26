@@ -5,14 +5,14 @@ import math
 import errno
 import csv
 
-BASEPATHINDEX = "-19-pts"
+BASEPATHINDEX = "-10pts"
 MAPINFOFILE = "d:\\esoexport\\goodimages" + BASEPATHINDEX + "\\maps\\mapinfo.txt"
 NEWMAPSFILE = "d:\\esoexport\\goodimages" + BASEPATHINDEX + "\\maps_new.txt"
 OUTPUTPATH = "d:\\esoexport\\goodimages" + BASEPATHINDEX + "\\maps\\"
 
 MAX_ZOOM_VALUE = 11
 
-FIRSTID = 1069
+FIRSTID = 1135
 MAPNAME = 0
 MAXZOOM = 1
 MINZOOM = 2
@@ -165,7 +165,7 @@ def CreateDBOutput (OutputFilename):
         SqlString += "SET @revision_id = LAST_INSERT_ID();\n"
                 
         SqlString += "DELETE FROM uesp_gamemap.world WHERE id={0};\n".format(ID)
-        SqlString += "INSERT INTO uesp_gamemap.world(id, revisionId, parentId, name, displayName, minZoom, maxZoom, zoomOffset, posLeft, posTop, posRight, posBottom, enabled) VALUES({0}, @revision_id, {9}, \"{1}\", \"{8}\", {3}, {2}, {3}, {4}, {5}, {6}, {7}, 1);\n".format(ID, mapInfo[MAPNAME], mapInfo[MAXZOOM], mapInfo[MINZOOM], posLeft, posTop, posRight, posBottom, mapDisplayName, mapParentID)
+        SqlString += "INSERT INTO uesp_gamemap.world(id, revisionId, parentId, name, displayName, minZoom, maxZoom, zoomOffset, posLeft, posTop, posRight, posBottom, enabled) VALUES({0}, @revision_id, {9}, \"{1}\", \"{8}\", {3}, {2}, {3}, {4}, {5}, {6}, {7}, 1);\n".format(ID, mapInfo[MAPNAME], MAX_ZOOM_VALUE, mapInfo[MINZOOM], posLeft, posTop, posRight, posBottom, mapDisplayName, mapParentID)
 
         SqlString += "INSERT INTO uesp_gamemap.world_history(worldId, parentId, revisionId, name, displayName, minZoom, maxZoom, zoomOffset, posLeft, posTop, posRight, posBottom, enabled) VALUES({0}, @revision_id, {9}, \"{1}\", \"{8}\", {3}, {2}, {3}, {4}, {5}, {6}, {7}, 1);\n".format(ID, mapInfo[MAPNAME], MAX_ZOOM_VALUE, mapInfo[MINZOOM], posLeft, posTop, posRight, posBottom, mapDisplayName, mapParentID)
         SqlString += "SET @world_history_id = LAST_INSERT_ID();\n"

@@ -7,7 +7,7 @@ import math
 import errno
 import csv
 
-BasePathIndex = "-19"
+BasePathIndex = "-10pts"
 INPUTPATH = "d:\\esoexport\\goodimages" + BasePathIndex + "\\combinedmaps\\"
 OUTPUTPATH = "d:\\esoexport\\goodimages" + BasePathIndex + "\\maps\\"
 DEFAULTNULLTILE = "d:\\esoexport\\goodimages" + BasePathIndex + "\\maps\\blacknulltile.jpg"
@@ -16,7 +16,7 @@ MAXZOOMLEVEL = 10
 MAXZOOM_OUTPUT = 11
 OUTPUTIMAGESIZE = 256
 
-ONLYDOMAP = "shroudedpass"
+ONLYDOMAP = ""
 ONLYDOMAPPATH = ""
 
 g_DefaultNullImage = Image.open(DEFAULTNULLTILE)
@@ -145,7 +145,7 @@ def SplitMap (RootPath, MapFilename):
     NewMapInfo = CMapInfo()
     NewMapInfo.name = OutputMapName
     NewMapInfo.maxZoom = MAXZOOMLEVEL
-    NewMapInfo.maxZoom = ZoomLevel
+    NewMapInfo.minZoom = ZoomLevel
     NewMapInfo.numTilesX = FirstNumTilesX
     NewMapInfo.numTilesY = FirstNumTilesY
     g_MapInfos.append(NewMapInfo)    
@@ -160,7 +160,7 @@ def DumpMapInfo (OutputFilename):
     f.write("Name, MaxZoom, MinZoom, NumTilesX, NumTilesY\n")
 
     for MapInfo in g_MapInfos:
-        f.write("{0}, {1}, {2}, {3}, {4}\n".format(MapInfo.name, MapInfo.minZoom, MAXZOOM_OUTPUT, MapInfo.numTilesX, MapInfo.numTilesY))
+        f.write("{0}, {1}, {2}, {3}, {4}\n".format(MapInfo.name, MAXZOOM_OUTPUT, MapInfo.minZoom, MapInfo.numTilesX, MapInfo.numTilesY))
 
     f.close()
     return

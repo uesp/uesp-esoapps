@@ -3554,8 +3554,8 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 		lootMsg = " from "..tostring(posData.lastTarget)
 	end
 
-		-- 0 = loot
-	if (reason == 0) then
+		-- 0 = loot, 13 = loot?
+	if (reason == 0 or reason == 13) then
 		logData.event = "MoneyGained"
 		logData.qnt = uespLog.lastMoneyChange
 			

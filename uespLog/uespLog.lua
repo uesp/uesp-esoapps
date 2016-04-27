@@ -499,6 +499,8 @@
 --			  so you can save between multiple characters. Calculated coefficients are not saved.
 --			- Fixed crash on OSx clients when catching a Wet Gunny Sack.
 --			- Output in "/uespdebug extra" mode displayed in a different color (light gray).
+--			- Added the "/uespdump skills missing [note]" command for dumping skills that are missing from
+--			  the current PTS character templates.
 --			- Fixes for PTS update 10:
 --				- Updated API to version 100015.
 --				- Removed use of deleted API function GetStatSoftCap().
@@ -533,8 +535,6 @@
 --					9. To reset saved parameters but keep the list of tracked skills use "/usc resetsaved"
 --			  This should give you skill coefficients for all skills in one calculation.
 --
---			- Added the "/uespdump skills missing [note]" command for dumping skills that are missing from
---			  the current PTS character templates.
 --
 --		Future Versions (Work in Progress)
 --			- A warning is displayed in chat if you use an unknown slash command.

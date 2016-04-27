@@ -1868,32 +1868,62 @@ end
 
 
 function uespLog.ParseLink(link)
+	local text, color, itemId, data2, allData, niceName, niceLink = uespLog.ParseLinkID(link)
+	
+	return text, color, allData, niceName, niceLink
+end
+
+
+function uespLog.ParseLinkID(link)
 	--|HFFFFFF:item:45817:1:1:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|hJode|h
 	
-	if type(link) == "string" then
-		local color, data, text = link:match("|H(.-):(.-)|h(.-)|h")
+	if (type(link) == "string") then
+		local color, itemType, itemId, data1, data2, data, text = link:match("|H(.-):(.-):(.-):(.-):(.-):(.-)|h(.-)|h")
 		
-		if (color == nil or text == nil or data == nil) then
-			return link, "", "", "", link, ""
+		if (color == nil or itemId == nil or data1 == nil or data == nil) then
+			return link, "", "", "", "", link, link
 		end
 		
 		local niceName = link
 		local niceLink = link
+		local allData = itemId..":"..data1 .. ":" .. data2 .. ":" .. data
 		
 		if (text == "") then
 			text = GetItemLinkName(link)
+			local i = text:find("|")
+			
+				-- Remove text after | in some item names in update 10
+			if (i ~= nil) then
+				text = text:sub(1, i-1)
+			end
+			
+				-- Remove item names with brackets
+			local firstChar = text:sub(1, 1)
+			
+			if (firstChar == "[") then
+				text = text:sub(2)
+			end
+			
+			local lastChar = text:sub(-1, -1)
+			
+			if (lastChar == "]") then
+				text = text:sub(1, -2)
+			end
+
 		end
 		
 		if (text ~= nil) then
 			niceName = text:gsub("%^.*", "")
-			niceLink = "|H"..color..":"..data.."|h["..niceName.."]|h"
-		end
+			--niceLink = "|H"..color..":"..itemType..":"..allData.."|h["..niceName.."]|h"
+			niceLink = "|H1:"..itemType..":"..allData.."|h|h"
+		end		
 		
-		return text, color, data, niceName, niceLink
+		return text, color, itemId, data2, allData, niceName, niceLink
     end
 	
-	return "", "", "", "", link
+	return "", "", "", "", "", "", link
 end
+
 
 
 function uespLog.MakeNiceLink(link)
@@ -1921,36 +1951,6 @@ function uespLog.MakeNiceLink(link)
     end
 	
 	return link, ""
-end
-
-
-function uespLog.ParseLinkID(link)
-	--|HFFFFFF:item:45817:1:1:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|hJode|h
-	
-	if (type(link) == "string") then
-		local color, itemType, itemId, data1, data2, data, text = link:match("|H(.-):(.-):(.-):(.-):(.-):(.-)|h(.-)|h")
-		
-		if (color == nil or itemId == nil or data1 == nil or data == nil) then
-			return link, "", "", "", "", link, link
-		end
-		
-		local niceName = link
-		local niceLink = link
-		local allData = itemId..":"..data1 .. ":" .. data2 .. ":" .. data
-		
-		if (text == "") then
-			text = GetItemLinkName(link)
-		end
-		
-		if (text ~= nil) then
-			niceName = text:gsub("%^.*", "")
-			niceLink = "|H"..color..":"..itemType..":"..allData.."|h["..niceName.."]|h"
-		end		
-		
-		return text, color, itemId, data2, allData, niceName, niceLink
-    end
-	
-	return "", "", "", "", "", "", link
 end
 
 
@@ -3395,9 +3395,9 @@ function uespLog.OnExperienceGain (eventCode, reason, level, previousExperience,
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	if (GetUnitChampionPoints("player") <= 0) then
-		uespLog.DebugLogMsgColor(uespLog.xpColor, "Gained "..tostring(logData.xpGained).." xp for "..uespLog.GetXPReasonStr(reason))
-	end
+	--if (GetUnitChampionPoints("player") <= 0) then
+	uespLog.DebugLogMsgColor(uespLog.xpColor, "Gained "..tostring(logData.xpGained).." xp for "..uespLog.GetXPReasonStr(reason))
+	--end
 end
 
 
@@ -3423,7 +3423,7 @@ function uespLog.OnExperienceUpdate (eventCode, unitTag, currentExp, maxExp, rea
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	if (unitTag == "player" and GetUnitChampionPoints(unitTag) <= 0) then
+	if (unitTag == "player") then
 		uespLog.DebugLogMsgColor(uespLog.xpColor, "Gained "..tostring(logData.xpGained).." xp for "..uespLog.GetXPReasonStr(reason))
 	end
 end
@@ -4080,7 +4080,7 @@ function uespLog.OnCraftCompleted (eventCode, craftSkill)
 		
 		local itemText, itemColor, itemData, niceName, niceLink = uespLog.ParseLink(itemLink)
 	
-		uespLog.DebugLogMsgColor(uespLog.itemColor, "Crafted item ".. tostring(niceLink) .." (x"..tostring(stack)..")")
+		uespLog.DebugLogMsgColor(uespLog.itemColor, "Crafted item ".. tostring(itemLink) .." (x"..tostring(stack)..")")
 	end
 	
 	if (numItemsGained == 0) then

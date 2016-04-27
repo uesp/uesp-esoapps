@@ -3553,6 +3553,8 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 	if (posData.lastTarget ~= nil) then
 		lootMsg = " from "..tostring(posData.lastTarget)
 	end
+	
+	logData.reason = reason
 
 		-- 0 = loot, 13 = loot?
 	if (reason == 0 or reason == 13) then

@@ -3692,7 +3692,7 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 		posData.harvestType = uespLog.currentHarvestTarget.harvestType
 		msgType = "resource(" .. tostring(posData.harvestType) .. ")"
 		rcvType = "harvested"
-	elseif (niceLink == niceName) then
+	elseif (niceLink == niceName) the
 		msgType = "quest item"
 		rcvType = "looted quest item"
 	end

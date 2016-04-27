@@ -500,7 +500,10 @@
 --			- Fixed crash on OSx clients when catching a Wet Gunny Sack.
 --			- Output in "/uespdebug extra" mode displayed in a different color (light gray).
 --			- Fixes for PTS update 10:
---				- Removed use of deleted API function GetStatSoftCap()
+--				- Updated API to version 100015.
+--				- Removed use of deleted API function GetStatSoftCap().
+--				- Changed VR related items to CP.
+--				- Fixed some minor looting display issues.
 --
 --			  Added several commands to /uespskillcoef (/usc):
 --					/usc showdata [name/id]     Shows raw data for the particular skill

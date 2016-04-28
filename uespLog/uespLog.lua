@@ -747,6 +747,7 @@ uespLog.ignoredNPCs = {
 	["Dragon Frog"] = 1,	--Thieves Guild
 	["Nixad"] = 1,			--Dark Brotherhood
 	["Lynx"] = 1,			--Dark Brotherhood
+	["Badger"] = 1,			--Dark Brotherhood
 }
 
 uespLog.lastTargetData = {

@@ -506,6 +506,7 @@
 --				- Removed use of deleted API function GetStatSoftCap().
 --				- Changed VR related items to CP.
 --				- Fixed some minor looting display issues.
+--				- Styles updated.
 --
 --			  Added several commands to /uespskillcoef (/usc):
 --					/usc showdata [name/id]     Shows raw data for the particular skill

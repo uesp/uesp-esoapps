@@ -65,7 +65,9 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[ITEMSTYLE_ALLIANCE_EBONHEART] 	= "uespLog/images/dragonscute.dds",			-- Ebonheart, 24 /esoui/art/icons/crafting_style_item_ebonheart_pact.dds
 	[ITEMSTYLE_ALLIANCE_ALDMERI] 	= "uespLog/images/eaglefeather.dds",		-- Aldmeri, 25 /esoui/art/icons/crafting_style_item_aldmeri_dominion.dds
 	[ITEMSTYLE_UNIVERSAL] 			= "uespLog/images/mimicstone.dds",			-- Universal, 36 /esoui/art/icons/crafing_universal_item.dds  (incorrect spelling "crafing" in 1.9 PTS)
-	[ITEMSTYLE_ORG_THIEVES_GUILD] 	= "uespLog/images/thievesguild.dds",		-- Thieves Guild, 11 /esoui/art/icons/mapkey/mapkey_thievesguild.dds
+	[ITEMSTYLE_ORG_THIEVES_GUILD] 	= "uespLog/images/thievesguild_style.dds",		-- Thieves Guild, 11 /esoui/art/icons/crafting_style_item_thieves_guild_r2.dds
+	[ITEMSTYLE_ORG_ABAHS_WATCH] 	= "uespLog/images/abahswatch.dds",			-- Abah's Watch, 41, /esoui/art/icons/crafting_style_item_abahs_watch_r2.dds
+	[ITEMSTYLE_ORG_ASSASSINS]	 	= "uespLog/images/assassinsleague.dds",		-- Assassin's League, 46, /esoui/art/icons/crafting_style_item_dark_brotherhood_r2.dds
 	-- [ITEMSTYLE_ORG_DARK_BROTHERHOOD] = "",			-- Dark Brotherhood, 12, N/A
 	
 }
@@ -101,7 +103,9 @@ uespLog.STYLE_ICON_DATA = {
 	[ITEMSTYLE_ALLIANCE_EBONHEART] 	= "/esoui/art/icons/crafting_style_item_ebonheart_pact.dds",
 	[ITEMSTYLE_ALLIANCE_ALDMERI] 	= "/esoui/art/icons/crafting_style_item_aldmeri_dominion.dds",
 	[ITEMSTYLE_UNIVERSAL] 			= "/esoui/art/icons/crafing_universal_item.dds",	-- Incorrect spelling "crafing" in 1.9 PTS
-	[ITEMSTYLE_ORG_THIEVES_GUILD] 	= "/esoui/art/icons/mapkey/mapkey_thievesguild.dds",
+	[ITEMSTYLE_ORG_THIEVES_GUILD] 	= "/esoui/art/icons/crafting_style_item_thieves_guild_r2.dds",
+	[ITEMSTYLE_ORG_ABAHS_WATCH] 	= "/esoui/art/icons/crafting_style_item_abahs_watch_r2.dds",
+	[ITEMSTYLE_ORG_ASSASSINS]	 	= "/esoui/art/icons/crafting_style_item_dark_brotherhood_r2.dds",
 }
 
 

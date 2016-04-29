@@ -6157,7 +6157,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 		if (glyphMinLevel ~= nil) then
 			logData.minGlyphLevel = glyphMinLevel
 		elseif (glyphMinCP ~= nil) then
-			logData.minCP = glyphMinCP
+			logData.minGlyphLevel = 50 + math.floor(glyphMinCP/10)
 		end
 	end
 

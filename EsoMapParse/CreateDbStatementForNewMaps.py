@@ -7,12 +7,12 @@ import csv
 
 BASEPATHINDEX = "-10pts"
 MAPINFOFILE = "d:\\esoexport\\goodimages" + BASEPATHINDEX + "\\maps\\mapinfo.txt"
-NEWMAPSFILE = "d:\\esoexport\\goodimages" + BASEPATHINDEX + "\\maps_new.txt"
+NEWMAPSFILE = "d:\\esoexport\\goodimages" + BASEPATHINDEX + "\\maps_new1.txt"
 OUTPUTPATH = "d:\\esoexport\\goodimages" + BASEPATHINDEX + "\\maps\\"
 
 MAX_ZOOM_VALUE = 11
 
-FIRSTID = 1135
+FIRSTID = 1177
 MAPNAME = 0
 MAXZOOM = 1
 MINZOOM = 2

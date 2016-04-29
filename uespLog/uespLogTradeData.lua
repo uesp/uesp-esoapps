@@ -515,16 +515,16 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 		
 		-- Enchanting Potency Runestone
 	elseif (itemType == 51) then
-		local glyphMinLevel, glyphMinCP = GetItemLinkRequiredChampionPoints(itemLink)
+		local glyphMinLevel, glyphMinCP = GetItemLinkGlyphMinLevels(itemLink)
 		local minString = ""
 		
 		if (glyphMinLevel ~= nil) then
 			minString = "level "..tostring(glyphMinLevel)
 		elseif (glyphMinCP ~= nil) then
-			minString = "CP "..tostring(glyphMinCP)
+			minString = "|t24:24:esoui/art/champion/champion_icon.dds|t CP "..tostring(glyphMinCP)
 		end
 		
-		itemText = "Used to create glyphs of "..minString.."."
+		itemText = "Used to create glyphs of "..minString.." and higher."
 		
 		iconColor = uespLog.TRADE_NORMALTEXT_COLOR
 		fontName = "ZoFontGame"

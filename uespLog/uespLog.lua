@@ -507,6 +507,7 @@
 --				- Changed VR related items to CP.
 --				- Fixed some minor looting display issues.
 --				- Styles updated.
+--				- Fix crash when mining items with subtype of 0.
 --
 --			  Added several commands to /uespskillcoef (/usc):
 --					/usc showdata [name/id]     Shows raw data for the particular skill

@@ -825,7 +825,7 @@ uespLog.ALLIANCE_NAMES = {
 }
 
 uespLog.MINEITEM_LEVELS = {
-	{  1, 50,   0,  11, "dropped" },
+	{  1, 50,   1,  11, "dropped" },	-- Subtype of 0 crashes in the update 10-PTS client
 	{  1, 50,  18,  19, "unknown" },
 	{  1, 50,  20,  24, "crafted" },
 	{  1,  4,  25,  29, "crafted" },
@@ -965,7 +965,7 @@ uespLog.IdCheckTotalCount = 0
 uespLog.mineItemPotionData = false
 uespLog.mineItemReloadDelay = uespLog.MINEITEM_AUTORELOAD_DELTATIMEMS
 uespLog.mineItemPotionDataEffectIndex = 0
-uespLog.MINEITEM_POTION_MAXEFFECTINDEX = 24
+uespLog.MINEITEM_POTION_MAXEFFECTINDEX = 30
 uespLog.MINEITEM_POTION_ITEMID = 54339
 uespLog.MINEITEM_POTION_MAGICITEMID = 1234567
 uespLog.MINEITEM_ENCHANT_ITEMID = 55679
@@ -6010,7 +6010,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 	local logData = { }
 	
 	logData.itemLink = itemLink
-	
+		
 	logData.name = GetItemLinkName(itemLink)
 	local isGunnySack = string.lower(logData.name) == "wet gunny sack"
 	
@@ -6041,7 +6041,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 		logData.enchantName = enchantName
 		logData.enchantDesc = enchantDesc
 	end
-	
+			
 	hasUseAbility, useAbilityName, useAbilityDesc, cooldown = GetItemLinkOnUseAbilityInfo(itemLink)
 	
 	if (hasUseAbility) then
@@ -6080,7 +6080,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 	if (isVendorTrash) then flagString = flagString .. "Vendor " end
 	
 	siegeType = GetItemLinkSiegeType(itemLink)
-	
+			
 	if (siegeType > 0) then
 		logData.siegeType = siegeType
 		logData.maxSiegeHP = GetItemLinkSiegeMaxHP(itemLink)
@@ -6104,7 +6104,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 		logData.runeType = GetItemLinkEnchantingRuneClassification(itemLink)
 		logData.runeRank = GetItemLinkRequiredCraftingSkillRank(itemLink)		
 	end
-	
+			
 	craftSkill = GetItemLinkCraftingSkillType(itemLink)
 	
 	if (craftSkill > 0) then 
@@ -6140,14 +6140,14 @@ function uespLog.CreateItemLinkLog (itemLink)
 	if (craftSkillRank ~= nil and requiredRank > 0) then
 		logData.craftSkillRank = craftSkillRank
 	end
-	
+		
 	local numIngredients = GetItemLinkRecipeNumIngredients(itemLink)
 	
 	for i = 1, numIngredients do
 		local ingredientName, numOwned = GetItemLinkRecipeIngredientInfo(itemLink, i)
 		logData["ingrName"..tostring(i)] = ingredientName
 	end
-	
+		
 	--logData.isBound = IsItemLinkBound(itemLink)
 	logData.bindType = GetItemLinkBindType(itemLink)
 	
@@ -6163,7 +6163,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 
 	local traitAbilityCount = 0
 	local maxTraits = GetMaxTraits()
-	
+		
 	for i = 1, maxTraits  do
 		local hasTraitAbility, traitAbilityDescription, traitCooldown = GetItemLinkTraitOnUseAbilityInfo(itemLink, i)
 		
@@ -6173,7 +6173,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 			logData["traitCooldown" .. tostring(traitAbilityCount) ] = traitCooldown
 		end
 	end
-
+	
 	local levelsDescription = GetItemLinkMaterialLevelDescription(itemLink)
 	
 	if (levelsDescription ~= nil and levelsDescription ~= "") then
@@ -7351,7 +7351,7 @@ function uespLog.MineItemIteratePotionData (effectIndex)
 				uespLog.mineItemCount = uespLog.mineItemCount + 1
 				
 				itemLink = uespLog.MakeItemLinkEx( { itemId = uespLog.MINEITEM_POTION_ITEMID, level = level, quality = quality, potionEffect = effectIndex } )
-				
+								
 				if (uespLog.IsValidItemLink(itemLink)) then
 				
 					if (isFirst) then
@@ -7359,8 +7359,10 @@ function uespLog.MineItemIteratePotionData (effectIndex)
 						
 						extraData.comment = comment
 						extraData.realItemId = uespLog.MINEITEM_POTION_ITEMID
-						
+						extraData.magicItemId = uespLog.MINEITEM_POTION_MAGICITEMID
+												
 						fullItemLog = uespLog.CreateItemLinkLog(itemLink)
+						
 						fullItemLog.event = "mineitem"
 						fullItemLog.itemLink = string.gsub(fullItemLog.itemLink, tostring(extraData.realItemId), tostring(uespLog.MINEITEM_POTION_MAGICITEMID))
 						
@@ -7390,6 +7392,7 @@ function uespLog.MineItemIteratePotionData (effectIndex)
 				if (uespLog.mineItemCount % uespLog.mineUpdateItemCount == 0) then
 					--uespLog.DebugMsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." potion data, "..tostring(uespLog.mineItemBadCount).." bad...")
 				end
+				
 			end
 		end
 	end
@@ -8759,12 +8762,7 @@ function uespLog.MakeItemLink(itemId, inputLevel, inputQuality)
 	local itemLevel = inputLevel or 1
 	local itemQuality = inputQuality or 1
 	
-	local itemLink = "|H0:item:"..tostring(itemId)..":"..tostring(itemQuality)..":"..tostring(itemLevel)..":0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h[Item ".. tostring(itemId) .."]|h"
-	local itemName = GetItemLinkName(itemLink)
-	
-	if (itemName ~= "" and itemName ~= nil) then
-		itemLink = "|H0:item:"..tostring(itemId)..":"..tostring(itemQuality)..":"..tostring(itemLevel)..":0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h[".. tostring(itemName) .."]|h"
-	end
+	local itemLink = "|H0:item:"..tostring(itemId)..":"..tostring(itemQuality)..":"..tostring(itemLevel)..":0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"
 	
 	return itemLink
 end
@@ -8788,13 +8786,7 @@ function uespLog.MakeItemLinkEx(itemData)
 			..tostring(enchantId)..":"..tostring(enchantQuality)..":"..tostring(enchantLevel)..":0:0:0:0:0:0:0:0:0:0:"
 			..tostring(style)..":"..tostring(crafted)..":"..tostring(bound)..":"..tostring(charges)..":"..tostring(potionEffect).."|h"
 		
-	local itemLink = itemLinkBase .. "[Item ".. tostring(itemId) .."]|h"
-	local itemName = GetItemLinkName(itemLink)
-	
-	if (itemName ~= "" and itemName ~= nil) then
-		itemLink = itemLinkBase .. "[".. tostring(itemName) .."]|h"
-	end
-			
+	local itemLink = itemLinkBase .. "|h"
 	return itemLink
 end
 

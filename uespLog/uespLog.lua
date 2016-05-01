@@ -3290,6 +3290,8 @@ uespLog.ITEMSTYLES = {
 	[36] = "Universal",
 	[37] = "Reach Winter",
 	[36] = "Universal",
+	[41] = "Abah's Watch",
+	[46] = "Assassin's League",
 	[47] = "Outlaw",
 }
 
@@ -4301,6 +4303,7 @@ end
 
 function uespLog.OnPowerUpdate (eventCode, unitTag, powerIndex, powerType, powerValue, powerMax, powerEffectiveMax)
 	--EVENT_POWER_UPDATE (string unitTag, luaindex powerIndex, integer powerType, integer powerValue, integer powerMax, integer powerEffectiveMax)
+	local gameTime = GetGameTimeMilliseconds() / 1000
 	
 	if (unitTag ~= "player") then
 		return
@@ -4313,24 +4316,31 @@ function uespLog.OnPowerUpdate (eventCode, unitTag, powerIndex, powerType, power
 		diff = powerValue - uespLog.lastPlayerHP
 		uespLog.lastPlayerHP = GetUnitPower("player", POWERTYPE_HEALTH)
 		typeString = "health"
+		return
 	elseif (powerType == POWERTYPE_MAGICKA) then
 		diff = powerValue - uespLog.lastPlayerMG
 		uespLog.lastPlayerMG = GetUnitPower("player", POWERTYPE_MAGICKA)
 		typeString = "magicka"
+		return
 	elseif (powerType == POWERTYPE_STAMINA) then
 		diff = powerValue - uespLog.lastPlayerST
 		uespLog.lastPlayerST = GetUnitPower("player", POWERTYPE_STAMINA)
 		typeString = "stamina"
+		return 
 	elseif (powerType == POWERTYPE_ULTIMATE) then
 		diff = powerValue - uespLog.lastPlayerUT
 		uespLog.lastPlayerUT = GetUnitPower("player", POWERTYPE_ULTIMATE)
 		typeString = "ultimate"
+	else
+		return
 	end
 	
 	if (diff < 0) then
 		diff = math.abs(diff)
+		--uespLog.DebugMsg(tostring(gameTime) .. " -- Lost "..tostring(diff).." "..typeString)
 		uespLog.DebugExtraMsg("Lost "..tostring(diff).." "..typeString)
 	elseif (diff > 0) then
+		--uespLog.DebugMsg(tostring(gameTime) .. " -- Gained "..tostring(diff).." "..typeString)
 		uespLog.DebugExtraMsg("Gained "..tostring(diff).." "..typeString)
 	else
 		--uespLog.DebugExtraMsg("powerIndex = "..tostring(powerIndex)..", type="..tostring(powerType)..", value="..tostring(powerValue)..", max="..tostring(powerMax)..", effMax="..tostring(powerEffectiveMax))

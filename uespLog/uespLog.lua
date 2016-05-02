@@ -4316,17 +4316,14 @@ function uespLog.OnPowerUpdate (eventCode, unitTag, powerIndex, powerType, power
 		diff = powerValue - uespLog.lastPlayerHP
 		uespLog.lastPlayerHP = GetUnitPower("player", POWERTYPE_HEALTH)
 		typeString = "health"
-		return
 	elseif (powerType == POWERTYPE_MAGICKA) then
 		diff = powerValue - uespLog.lastPlayerMG
 		uespLog.lastPlayerMG = GetUnitPower("player", POWERTYPE_MAGICKA)
 		typeString = "magicka"
-		return
 	elseif (powerType == POWERTYPE_STAMINA) then
 		diff = powerValue - uespLog.lastPlayerST
 		uespLog.lastPlayerST = GetUnitPower("player", POWERTYPE_STAMINA)
 		typeString = "stamina"
-		return 
 	elseif (powerType == POWERTYPE_ULTIMATE) then
 		diff = powerValue - uespLog.lastPlayerUT
 		uespLog.lastPlayerUT = GetUnitPower("player", POWERTYPE_ULTIMATE)

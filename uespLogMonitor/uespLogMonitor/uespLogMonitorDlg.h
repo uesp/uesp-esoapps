@@ -210,6 +210,7 @@ protected:
 	bool ParseSavedVarBuildData       (const std::string VarName, void* pUserData);
 	bool ParseSavedVarCharData        (const std::string VarName, void* pUserData);
 	bool ParseSavedVarBankData        (const std::string VarName, void* pUserData);
+	bool ParseSavedVarCraftBagData    (const std::string VarName, void* pUserData);
 	bool ParseSavedVarGlobals		  (const std::string VarName, void* pUserData);
 	bool ParseSavedVarAchievements	  (const std::string VarName, void* pUserData);
 	bool ParseSavedVarAll			  (const std::string VarName, void* pUserData);

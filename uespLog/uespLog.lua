@@ -522,6 +522,7 @@
 --				- Fixed some minor looting display issues.
 --				- Styles updated.
 --				- Fix crash when mining items with subtype of 0.
+--				- Character data saves the craft bag inventory.
 --
 --			  Added several commands to /uespskillcoef (/usc):
 --					/usc showdata [name/id]     Shows raw data for the particular skill
@@ -1011,6 +1012,11 @@ uespLog.DEFAULT_BUILDDATA =
 }
 
 uespLog.DEFAULT_BANKDATA = 
+{
+	data = {}
+}
+
+uespLog.DEFAULT_CRAFTBAGDATA = 
 {
 	data = {}
 }
@@ -2101,6 +2107,7 @@ function uespLog.Initialize( self, addOnName )
 		["settings"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "settings", uespLog.DEFAULT_SETTINGS),
 		["buildData"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "buildData", uespLog.DEFAULT_BUILDDATA),
 		["bankData"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "bankData", uespLog.DEFAULT_BANKDATA),
+		["craftBagData"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "craftBagData", uespLog.DEFAULT_CRAFTBAGDATA),
 		["tempData"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "tempData", uespLog.DEFAULT_DATA),
 		["skillCoef"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "skillCoef", uespLog.DEFAULT_SKILLCOEF_DATA),
 		["charData"] = ZO_SavedVars:New("uespLogSavedVars", uespLog.DATA_VERSION, "charData", uespLog.DEFAULT_CHARDATA),
@@ -6018,10 +6025,11 @@ SLASH_COMMANDS["/uespcount"] = function(cmd)
 	local count5, size5 = uespLog.countSection("charData")
 	local count6, size6 = uespLog.countSection("charInfo")
 	local count7, size7 = uespLog.countSection("bankData")
-	local count8, size8 = uespLog.countSection("tempData")
-	local count9, size9 = uespLog.countSection("skillCoef")
-	local count = count1 + count2 + count3 + count4 + count5 + count6 + count7 + count8 + count9
-	local size = size1 + size2 + size3 + size4 + size5 + size6 + size7 + size8 + size9
+	local count8, size8 = uespLog.countSection("craftBagData")
+	local count9, size9 = uespLog.countSection("tempData")
+	local count10, size10 = uespLog.countSection("skillCoef")
+	local count = count1 + count2 + count3 + count4 + count5 + count6 + count7 + count8 + count9 + count10
+	local size = size1 + size2 + size3 + size4 + size5 + size6 + size7 + size8 + size9 + size10
 	
 	uespLog.MsgColor(uespLog.countColor, "UESP:: Total of " .. tostring(count) .. " records taking up " .. string.format("%.2f", size/1000000) .. " MB")
 end
@@ -8153,7 +8161,7 @@ function uespLog.ClearAllSavedVarSections()
 	
 		if (key == "settings" or key == "info" or key == "charInfo") then
 			-- Keep data
-		elseif (key == "globals" or key == "all" or key == "achievements" or key == "buildData" or key == "charData" or key == "bankData" or key == "tempData" or key == "skillCoef") then
+		elseif (key == "globals" or key == "all" or key == "achievements" or key == "buildData" or key == "charData" or key == "bankData" or key == "tempData" or key == "skillCoef" or key == "craftBagData") then
 			uespLog.savedVars[key].data = { }
 			uespLog.savedVars[key].version = uespLog.DATA_VERSION
 		else
@@ -8174,7 +8182,7 @@ function uespLog.ClearRootSavedVar()
 					
 					if (key4 == "settings" or key4 == "info" or key4 == "charInfo") then
 						-- Keep data
-					elseif (key4 == "globals" or key4 == "all" or key4 == "achievements" or key == "buildData" or key == "charData" or key == "bankData" or key == "tempData" or key == "skillCoef") then
+					elseif (key4 == "globals" or key4 == "all" or key4 == "achievements" or key == "buildData" or key == "charData" or key == "bankData" or key == "tempData" or key == "skillCoef" or key == "craftBagData") then
 						uespLogSavedVars[key1][key2][key3][key4].data = { }
 						uespLogSavedVars[key1][key2][key3][key4].version = uespLog.DATA_VERSION
 					else

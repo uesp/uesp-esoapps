@@ -143,6 +143,7 @@ function uespLog.SaveCharData (note)
 	
 	uespLog.savedVars.charData.data = charData
 	uespLog.savedVars.bankData.data = uespLog.CreateBankData()
+	uespLog.savedVars.craftBagData.data = uespLog.CreateCraftBagData()
 	
 	uespLog.DebugMsg("UESP::Saved character data...")
 	
@@ -222,6 +223,28 @@ function uespLog.CreateBankData ()
 	end
 	
 	return bankData
+end
+
+
+function uespLog.CreateCraftBagData ()
+	--BAG_VIRTUAL == 5
+	local craftBagData = { }
+	local i
+	
+	craftBagData.IsCraftBag = 1
+	craftBagData.UsedSize = GetNumBagUsedSlots(BAG_VIRTUAL)
+	craftBagData.TimeStamp = GetTimeStamp()
+	craftBagData.UniqueAccountName = uespLog.GetUniqueAccountName()
+	craftBagData.Inventory = {}
+	
+	local slotIndex = GetNextVirtualBagSlotId(nil)
+	
+	while (slotIndex ~= nil) do
+		craftBagData.Inventory[#craftBagData.Inventory + 1] = uespLog.CreateInventorySlotData(BAG_VIRTUAL, slotIndex)
+		slotIndex = GetNextVirtualBagSlotId(slotIndex)
+	end
+	
+	return craftBagData
 end
 
 
@@ -935,6 +958,7 @@ end
 function uespLog.ClearCharData()
 	uespLog.savedVars.charData.data = { }
 	uespLog.savedVars.bankData.data = { }
+	uespLog.savedVars.craftBagData.data = { }
 	uespLog.Msg("UESP::Cleared all character data.")
 end
 

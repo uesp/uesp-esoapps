@@ -503,6 +503,18 @@
 --			  the current PTS character templates.
 --			- Added the "/uespshowcoor [on|off]" command to turn the map coordinate display on/off. Thanks to
 --			  Ptits de Barbe for submitting this patch.
+--			- Added the /uesptrackstat command for tracking changes to Health/Magicka/Stamina/Ultimate. You
+--			  can enable tracking of one or more stats and any change will be displayed in the chat window
+--			  along with a game time reference. Warning that this command results in a lot of messages as you
+--			  might expect.
+--					/uesptrackstat						Shows command help and current status of tracking.
+--					/uesptrackstat health   [on/off]	Turns Health tracking on/off.
+--					/uesptrackstat magicka  [on/off]	Turns Magicka tracking on/off.
+--					/uesptrackstat stamina  [on/off]	Turns Stamina tracking on/off.
+--					/uesptrackstat ultimate [on/off]	Turns Ultimate tracking on/off.
+--					/uesptrackstat all					Start tracking all stats.
+--					/uesptrackstat none					Turns off all tracking.
+--					/uesptrackstat resettime			Resets the game time display to 0.
 --			- Fixes for PTS update 10:
 --				- Updated API to version 100015.
 --				- Removed use of deleted API function GetStatSoftCap().
@@ -606,6 +618,8 @@ uespLog.dumpIndexTable = { }
 uespLog.dumpTableTable = { }
 uespLog.countGlobal = 0
 uespLog.countGlobalError = 0
+
+uespLog.baseTrackStatGameTime = GetGameTimeMilliseconds()
 
 uespLog.UsedMerethicResin = false
 
@@ -782,6 +796,7 @@ uespLog.lastItemLinkUsed = ""
 uespLog.lastItemLinkUsed_BagId = -1
 uespLog.lastItemLinkUsed_SlotIndex = -1
 
+uespLog.defaultColor = "EEEE00"
 uespLog.debugColor = "999999"
 uespLog.researchColor = "00ffff"
 uespLog.timeColor = "00ffff"
@@ -797,6 +812,10 @@ uespLog.pvpColor = "ff33ff"
 uespLog.errorColor = "ff9999"
 uespLog.warningColor = "ff9999"
 uespLog.fishingColor = "9999ff"
+uespLog.trackStatHeaColor = "FF3331"
+uespLog.trackStatMagColor = "29A2DE"
+uespLog.trackStatStaColor = "35F935"
+uespLog.trackStatUltColor = "FFFFFF"
 
 uespLog.currentTargetData = {
 	name = "",
@@ -1050,6 +1069,12 @@ uespLog.DEFAULT_SETTINGS =
 		["charDataPassword"] = "",
 		["charDataOldPassword"] = "",
 		["fishing"] = false,
+		["trackStat"] = { 
+			[POWERTYPE_MAGICKA] = false,
+			[POWERTYPE_HEALTH] = false,
+			[POWERTYPE_STAMINA] = false,
+			[POWERTYPE_ULTIMATE] = false,
+		},
 	}
 }
 
@@ -1252,6 +1277,44 @@ uespLog.ITEMCHANGE_IGNORE_FIELDS = {
 function uespLog.BoolToOnOff(flag)
 	if (flag) then return "on" end
 	return "off"
+end
+
+
+function uespLog.GetTrackStat(powerType)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.trackStat == nil) then
+		uespLog.savedVars.settings.data.trackStat = uespLog.DEFAULT_SETTINGS.trackStat
+	end
+	
+	if (powerType == nil) then
+		return uespLog.savedVars.settings.data.trackStat
+	end
+	
+	local flag = uespLog.savedVars.settings.data.trackStat[powerType]
+	
+	if (flag == nil) then
+		return false
+	end
+	
+	return flag
+end
+
+
+function uespLog.SetTrackStat(powerType, flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.trackStat == nil) then
+		uespLog.savedVars.settings.data.trackStat = uespLog.DEFAULT_SETTINGS.trackStat
+	end
+	
+	uespLog.savedVars.settings.data.trackStat[powerType] = flag
 end
 
 
@@ -4330,7 +4393,7 @@ end
 
 function uespLog.OnPowerUpdate (eventCode, unitTag, powerIndex, powerType, powerValue, powerMax, powerEffectiveMax)
 	--EVENT_POWER_UPDATE (string unitTag, luaindex powerIndex, integer powerType, integer powerValue, integer powerMax, integer powerEffectiveMax)
-	local gameTime = GetGameTimeMilliseconds() / 1000
+	local gameTime = (GetGameTimeMilliseconds() - uespLog.baseTrackStatGameTime) / 1000 
 	
 	if (unitTag ~= "player") then
 		return
@@ -4338,33 +4401,53 @@ function uespLog.OnPowerUpdate (eventCode, unitTag, powerIndex, powerType, power
 	
 	local diff = 0
 	local typeString = ""
+	local display = false
+	local color = uespLog.defaultColor
 	
 	if (powerType == POWERTYPE_HEALTH) then
 		diff = powerValue - uespLog.lastPlayerHP
 		uespLog.lastPlayerHP = GetUnitPower("player", POWERTYPE_HEALTH)
 		typeString = "health"
+		if (uespLog.GetTrackStat(POWERTYPE_HEALTH)) then display = true end
+		color = uespLog.trackStatHeaColor
 	elseif (powerType == POWERTYPE_MAGICKA) then
 		diff = powerValue - uespLog.lastPlayerMG
 		uespLog.lastPlayerMG = GetUnitPower("player", POWERTYPE_MAGICKA)
 		typeString = "magicka"
+		if (uespLog.GetTrackStat(POWERTYPE_MAGICKA)) then display = true end
+		color = uespLog.trackStatMagColor
 	elseif (powerType == POWERTYPE_STAMINA) then
 		diff = powerValue - uespLog.lastPlayerST
 		uespLog.lastPlayerST = GetUnitPower("player", POWERTYPE_STAMINA)
 		typeString = "stamina"
+		if (uespLog.GetTrackStat(POWERTYPE_STAMINA)) then display = true end
+		color = uespLog.trackStatStaColor
 	elseif (powerType == POWERTYPE_ULTIMATE) then
 		diff = powerValue - uespLog.lastPlayerUT
 		uespLog.lastPlayerUT = GetUnitPower("player", POWERTYPE_ULTIMATE)
 		typeString = "ultimate"
+		if (uespLog.GetTrackStat(POWERTYPE_ULTIMATE)) then display = true end
+		color = uespLog.trackStatUltColor
 	else
 		return
 	end
 	
+	local gameTimeStr = string.format("%7.3f", gameTime)
+	
 	if (diff < 0) then
 		diff = math.abs(diff)
-		--uespLog.DebugMsg(tostring(gameTime) .. " -- Lost "..tostring(diff).." "..typeString)
+		
+		if (display) then
+			uespLog.MsgColor(color, tostring(gameTimeStr) .. ": -"..tostring(diff).." "..typeString)
+		end
+		
 		uespLog.DebugExtraMsg("Lost "..tostring(diff).." "..typeString)
 	elseif (diff > 0) then
-		--uespLog.DebugMsg(tostring(gameTime) .. " -- Gained "..tostring(diff).." "..typeString)
+		
+		if (display) then
+			uespLog.MsgColor(color, tostring(gameTimeStr) .. ": +"..tostring(diff).." "..typeString)
+		end
+		
 		uespLog.DebugExtraMsg("Gained "..tostring(diff).." "..typeString)
 	else
 		--uespLog.DebugExtraMsg("powerIndex = "..tostring(powerIndex)..", type="..tostring(powerType)..", value="..tostring(powerValue)..", max="..tostring(powerMax)..", effMax="..tostring(powerEffectiveMax))
@@ -10251,3 +10334,74 @@ end
 
 
 SLASH_COMMANDS["/uespshowcoor"] = uespLog.DoShowCoorCommand
+
+
+function uespLog.DoTrackStatCommand(cmd)
+	local cmds, firstCmd = uespLog.SplitCommands(cmd)
+	local secondCmd = string.lower(cmds[2])
+	local secondCmdBool = nil
+	local setPowerType = nil
+	
+	if (secondCmd == "on") then
+		secondCmdBool = true
+	elseif (secondCmd == "off") then
+		secondCmdBool = false
+	end
+	
+	if (firstCmd == "all") then
+		uespLog.SetTrackStat(POWERTYPE_MAGICKA, true)
+		uespLog.SetTrackStat(POWERTYPE_STAMINA, true)
+		uespLog.SetTrackStat(POWERTYPE_HEALTH, true)
+		uespLog.SetTrackStat(POWERTYPE_ULTIMATE, true)
+		uespLog.Msg("Now tracking all stats.")
+	elseif (firstCmd == "none") then
+		uespLog.SetTrackStat(POWERTYPE_MAGICKA, false)
+		uespLog.SetTrackStat(POWERTYPE_STAMINA, false)
+		uespLog.SetTrackStat(POWERTYPE_HEALTH, false)
+		uespLog.SetTrackStat(POWERTYPE_ULTIMATE, false)
+		uespLog.Msg("Now tracking no stats.")
+	elseif (firstCmd == "magicka") then
+		setPowerType = POWERTYPE_MAGICKA
+	elseif (firstCmd == "stamina") then
+		setPowerType = POWERTYPE_STAMINA
+	elseif (firstCmd == "health") then
+		setPowerType = POWERTYPE_HEALTH
+	elseif (firstCmd == "ultimate") then
+		setPowerType = POWERTYPE_ULTIMATE
+	elseif (firstCmd == "resettime") then
+		uespLog.baseTrackStatGameTime = GetGameTimeMilliseconds()
+		uespLog.Msg("Game time for stat tracking reset to 0.")
+	else
+		local trackMag = uespLog.GetTrackStat(POWERTYPE_MAGICKA)
+		local trackSta = uespLog.GetTrackStat(POWERTYPE_STAMINA)
+		local trackHea = uespLog.GetTrackStat(POWERTYPE_HEALTH)
+		local trackUlt = uespLog.GetTrackStat(POWERTYPE_ULTIMATE)
+		
+		uespLog.Msg("Permits tracking of changes to health/magicka/stmaina/ultimate:")
+		uespLog.Msg(".    /uesptrackstat health     [on/off]    - Currently "..uespLog.BoolToOnOff(trackHea))
+		uespLog.Msg(".    /uesptrackstat magicka  [on/off]    - Currently "..uespLog.BoolToOnOff(trackMag))
+		uespLog.Msg(".    /uesptrackstat stamina   [on/off]    - Currently "..uespLog.BoolToOnOff(trackSta))
+		uespLog.Msg(".    /uesptrackstat ultimate   [on/off]    - Currently "..uespLog.BoolToOnOff(trackUlt))
+		uespLog.Msg(".    /uesptrackstat all                          - Track all stats")
+		uespLog.Msg(".    /uesptrackstat none                       - Track no stats")
+		uespLog.Msg(".    /uesptrackstat resettime                - Reset display game time to 0")
+	end
+	
+	if (setPowerType ~= nil) then
+	
+		if (secondCmd == nil or secondCmd == "") then
+			secondCmdBool = not uespLog.GetTrackStat(setPowerType)
+			uespLog.SetTrackStat(setPowerType, secondCmdBool)
+			uespLog.Msg("Set "..firstCmd.." stat tracking to "..uespLog.BoolToOnOff(secondCmdBool)..".")
+		elseif (secondCmdBool == nil) then
+			uespLog.Msg("Unknown option to /uesptrackstat. Should be 'on' or 'off'!")
+		else
+			uespLog.SetTrackStat(setPowerType, secondCmdBool)
+			uespLog.Msg("Set "..firstCmd.." stat tracking to "..uespLog.BoolToOnOff(secondCmdBool)..".")
+		end
+	end
+	
+end
+
+
+SLASH_COMMANDS["/uesptrackstat"] = uespLog.DoTrackStatCommand

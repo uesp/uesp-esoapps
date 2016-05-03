@@ -30,6 +30,10 @@
 		- Remote error messages are output when a form upload/parse fails.
 		- Build data uploading correctly follows the "enabled" flag.
 
+	v0.40 - 29 May 2016
+		- Added support for parsing crafting bag data from log files.
+		- Fixed "Send Other File" to include build and character data.
+
 
 	TODO:
 		- Proper UI threading.
@@ -345,6 +349,7 @@ bool CuespLogMonitorDlg::ParseSavedVarAccount (const std::string VarName, void* 
 
 	ParseSavedVarDataSection("buildData",		&CuespLogMonitorDlg::ParseSavedVarBuildData);
 	ParseSavedVarDataSection("bankData",        &CuespLogMonitorDlg::ParseSavedVarBankData);
+	ParseSavedVarDataSection("craftBagData",    &CuespLogMonitorDlg::ParseSavedVarCraftBagData);
 
 	ParseSavedVarDataSection("info",			&CuespLogMonitorDlg::ParseSavedVarInfo);
 	
@@ -709,6 +714,65 @@ bool CuespLogMonitorDlg::ParseSavedVarBankData (const std::string VarName, void*
 	m_CharData += ".IsBank = 1\n";
 
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Found the bankData section with %d rows (%u bytes).", numObjects, m_CharData.length());
+	lua_pop(m_pLuaState, 1);
+
+	return true;
+}
+
+
+bool CuespLogMonitorDlg::ParseSavedVarCraftBagData(const std::string VarName, void* pUserData)
+{
+	std::string Version = ParseSavedVarDataVersion();
+
+	lua_getfield(m_pLuaState, -1, "data");
+
+	if (lua_isnil(m_pLuaState, -1))
+	{
+		lua_pop(m_pLuaState, 1);
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to find the 'data' field in craftBagData account section!");
+		return false;
+	}
+
+	int numObjects = lua_rawlen(m_pLuaState, -1);
+
+	char nameBuffer[256];
+	snprintf(nameBuffer, 250, "uespCharData[%d]", m_CharDataCount + 1);
+
+	std::string dataString = GetLuaVariableString(nameBuffer, false);
+
+	if (dataString.empty())
+	{
+		lua_pop(m_pLuaState, 1);
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to parse the craftBagData variable data!");
+		return false;
+	}
+
+	if (dataString.size() < CuespLogMonitorDlg::MINIMUM_VALID_CHARDATA_SIZE)
+	{
+		PrintLogLine(ULM_LOGLEVEL_INFO, "Found the craftBagData section with no content.");
+		lua_pop(m_pLuaState, 1);
+		return true;
+	}
+
+	++m_CharDataCount;
+	if (m_CharData.empty()) m_CharData = "uespCharData = {}\n";
+
+	m_CharData += "\n";
+	m_CharData += dataString;
+
+	m_CharData += "\n";
+	m_CharData += nameBuffer;
+	m_CharData += ".UserName = '";
+	m_CharData += GetCurrentUserName();
+	m_CharData += "'\n";
+	m_CharData += nameBuffer;
+	m_CharData += ".WikiUser = '";
+	m_CharData += m_Options.UespWikiAccountName;
+	m_CharData += "'\n";
+	m_CharData += nameBuffer;
+	m_CharData += ".IsCraftBag = 1\n";
+
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Found the craftBagData section with %d rows (%u bytes).", numObjects, m_CharData.length());
 	lua_pop(m_pLuaState, 1);
 
 	return true;
@@ -2496,6 +2560,7 @@ bool CuespLogMonitorDlg::DeleteOldLogDataAccount (const std::string VarName, voi
 	DeleteOldLogDataSection("buildData", -1, VarName);
 
 	DeleteOldLogDataSection("bankData", -1, VarName);
+	DeleteOldLogDataSection("craftBagData", -1, VarName);
 
 	return true;
 }
@@ -2833,23 +2898,37 @@ void CuespLogMonitorDlg::OnFileSendotherlog()
 
 bool CuespLogMonitorDlg::SendEntireLog (const std::string Filename)
 {
-	PrintLogLine(ULM_LOGLEVEL_INFO, "Sending log file '%s'...", Filename.c_str());
-	m_IsCheckingFile = true;
-
-	if (HasQueuedData()) 
+	if (HasQueuedData())
 	{
 		PrintLogLine(ULM_LOGLEVEL_INFO, "Sending remaining queued log data...");
 		SendQueuedData();
 	}
 
+	if (WaitForSingleObject(m_hSendQueueMutex, 1000) != WAIT_OBJECT_0)
+	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to wait for send queue mutex! Try again later...");
+		return false;
+	}
+
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Sending log file '%s'...", Filename.c_str());
+	m_IsCheckingFile = true;
+
 	if (!LoadSavedVars(Filename))
 	{
 		m_IsCheckingFile = false;
+		ReleaseMutex(m_hSendQueueMutex);
 		return false;
 	}
 
 			/* Send any data that needs to be updated */
-	bool Result = SendAllLogData();
+	//bool Result = SendAllLogData();
+	bool Result = true;
+	
+	Result &= CheckAndSendLogData();
+	Result &= CheckAndSendBuildData();
+	Result &= CheckAndSendCharData();
+
+	ReleaseMutex(m_hSendQueueMutex);
 
 	eso::PrintLog("LUA Stack size = %d", lua_gettop(m_pLuaState));
 	lua_settop(m_pLuaState, 0);

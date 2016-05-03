@@ -501,6 +501,8 @@
 --			- Output in "/uespdebug extra" mode displayed in a different color (light gray).
 --			- Added the "/uespdump skills missing [note]" command for dumping skills that are missing from
 --			  the current PTS character templates.
+--			- Added the "/uespshowcoor [on|off]" command to turn the map coordinate display on/off. Thanks to
+--			  Ptits de Barbe for submitting this patch.
 --			- Fixes for PTS update 10:
 --				- Updated API to version 100015.
 --				- Removed use of deleted API function GetStatSoftCap().
@@ -1032,6 +1034,7 @@ uespLog.DEFAULT_SETTINGS =
 		["mineItemOnlyLevel"] = -1,
 		["mineItemPotionData"] = false,
 		["mineItemReloadDelay"] = uespLog.MINEITEM_AUTORELOAD_DELTATIMEMS,
+		["showCursorMapCoords"] = true,
 		["isAutoMiningItems"] = false,
 		["pvpUpdate"] = false,
 		["enabledTreasureTimers"] = false,
@@ -1297,6 +1300,30 @@ function uespLog.SetLoreBookMsgFlag(flag)
 	end
 	
 	uespLog.savedVars.settings.data.loreBookMsg = flag
+end
+
+
+function uespLog.GetShowCursorMapCoordsFlag()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.showCursorMapCoords == nil) then
+		uespLog.savedVars.settings.data.showCursorMapCoords = uespLog.DEFAULT_SETTINGS.showCursorMapCoords
+	end
+	
+	return uespLog.savedVars.settings.data.showCursorMapCoords 
+end
+
+
+function uespLog.SetShowCursorMapCoordsFlag(flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	uespLog.savedVars.settings.data.showCursorMapCoords = flag 
 end
 
 
@@ -8584,7 +8611,7 @@ end
 function uespLog.UpdateCoordinates()
     local mouseOverControl = WINDOW_MANAGER:GetMouseOverControl()
 
-    if (mouseOverControl == ZO_WorldMapContainer or mouseOverControl:GetParent() == ZO_WorldMapContainer) then
+    if (uespLog.GetShowCursorMapCoordsFlag() and (mouseOverControl == ZO_WorldMapContainer or mouseOverControl:GetParent() == ZO_WorldMapContainer)) then
         local currentOffsetX = ZO_WorldMapContainer:GetLeft()
         local currentOffsetY = ZO_WorldMapContainer:GetTop()
         local parentOffsetX = ZO_WorldMap:GetLeft()
@@ -10203,3 +10230,24 @@ function uespLog.DumpChampionPointSkill(disciplineIndex, skillIndex)
 	end	
 
 end
+
+
+function uespLog.DoShowCoorCommand(cmd)
+	local cmds, firstCmd = uespLog.SplitCommands(cmd)
+	
+	if (firstCmd == "on") then
+		uespLog.SetShowCursorMapCoordsFlag(true)
+		uespLog.Msg("Show map coordinates is now ON.")
+	elseif (firstCmd == "off") then
+		uespLog.SetShowCursorMapCoordsFlag(false)
+		uespLog.Msg("Show map coordinates is now OFF.")
+	else
+		uespLog.Msg("Turn the map coordinates display on/off:")
+		uespLog.Msg(".    /uespshowcoor [on/off]")
+		uespLog.Msg("Map coordinate display is currently "..uespLog.BoolToOnOff(uespLog.GetShowCursorMapCoordsFlag())..".")
+	end
+	
+end
+
+
+SLASH_COMMANDS["/uespshowcoor"] = uespLog.DoShowCoorCommand

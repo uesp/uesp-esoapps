@@ -106,6 +106,14 @@ function uespLog.InitOptionControlsData()
 	})
 	
 	uespLog.optionControlsData:insert({
+		type = "checkbox",
+		name = "Show Map Coordinates", 
+		tooltip = "Shows coordinates of a point on map the cursor is over. Disable if using another addon for coordinates.\n      /uespshowcoor on/off", 
+		getFunc = uespLog.GetShowCursorMapCoordsFlag,
+		setFunc = uespLog.SetShowCursorMapCoordsFlag,
+	})
+	
+	uespLog.optionControlsData:insert({
 		type = "header",
 		name = "Crafting",
 	})

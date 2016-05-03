@@ -906,7 +906,7 @@ uespLog.MINEITEM_LEVELS = {
 
 
 uespLog.MINEITEM_LEVELS_SHORT = {
-	{  1, 50,   0,  11, "dropped" },
+	{  1, 50,   1,  11, "dropped" },	-- Subtype of 0 crashes in the update 10-PTS client
 	{  1, 50,  18,  19, "unknown" },
 	{  1, 50,  20,  24, "crafted" },
 	{  1,  4,  25,  29, "crafted" },

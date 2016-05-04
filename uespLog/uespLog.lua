@@ -515,6 +515,7 @@
 --					/uesptrackstat all					Start tracking all stats.
 --					/uesptrackstat none					Turns off all tracking.
 --					/uesptrackstat resettime			Resets the game time display to 0.
+--			- Added the "/uespminecollect [note]" command for logging collectible data.
 --			- Fixes for PTS update 10:
 --				- Updated API to version 100015.
 --				- Removed use of deleted API function GetStatSoftCap().
@@ -10512,6 +10513,217 @@ end
 
 SLASH_COMMANDS["/uesptrackstat"] = uespLog.DoTrackStatCommand
 
+--[[==== 
+GetNumMaps()
+Returns: number numMaps
+GetMapInfo(number index)
+Returns: string name, number UIMapType mapType, number MapContentType mapContentType, number zoneId
+GetZoneDescription(number zoneId)
+Returns: string description
+GetZoneId(number zoneIndex)
+Returns: number zoneId
+GetZoneIndex(number zoneId)
+Returns: number zoneIndex
+--====]]
+
+--[[==== 
+GetNumPOIs(number zoneIndex)
+Returns: number numPOIs
+GetPOIInfo(number zoneIndex, number poiIndex)
+Returns: string objectiveName, number objectiveLevel, string startDescription, string finishedDescription
+IsPOIWayshrine(number zoneIndex, number poiIndex)
+Returns: boolean isWayshrine
+IsPOIPublicDungeon(number zoneIndex, number poiIndex)
+Returns: boolean isPublicDungeon
+IsPOIGroupDungeon(number zoneIndex, number poiIndex)
+Returns: boolean isGroupDungeon
+GetPOIMapInfo(number zoneIndex, number poiIndex)
+Returns: number normalizedX, number normalizedZ, number MapDisplayPinType poiType, textureName icon, boolean isShownInCurrentMap, boolean linkedCollectibleIsLocked
+GetCurrentSubZonePOIIndices()
+Returns: number:nilable zoneIndex, number:nilable poiIndex
+GetCollectibleIdForZone(number zoneIndex)
+Returns: number collectibleId
+IsJusticeEnabledForZone(number aZoneIndex)
+Returns: boolean isBountyEnabled
+GetZoneNameByIndex(number zoneIndex)
+Returns: string zoneName
+GetMapNameByIndex(number mapIndex)
+Returns: string mapName
+--====]]
+
+--[[==== 
+GetAchievementRewardCollectible(number achievementId)
+Returns: boolean hasRewardOfType, number collectibleId
+--====]]
+
+
+function uespLog.MineCollectibleCategories(note)
+	local numCategories = GetNumCollectibleCategories()
+	local logData = {}
+	local totalCount = 0
+	
+	uespLog.Msg("Logging all collectible categories...")
+	
+	logData.event = "MineCollect::Start"
+	logData.numCategories = numCategories
+	logData.note = note
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
+	for categoryIndex = 1, numCategories do
+		local name, numSubCategories, numCollectibles, unlockedCollectibles, totalCollectibles, hidesLocked = GetCollectibleCategoryInfo(categoryIndex)
+		local normalIcon, pressedIcon, mouseoverIcon = GetCollectibleCategoryKeyboardIcons(categoryIndex)
+		local gamepadIcon = GetCollectibleCategoryGamepadIcon(categoryIndex)
+		
+		logData = {}
+		logData.event = "MineCollect::Category"
+		logData.name = name
+		logData.categoryIndex = categoryIndex
+		logData.numSubCategories = numSubCategories
+		logData.numCollectibles = numCollectibles
+		logData.totalCollectibles = totalCollectibles
+		logData.hidesLocked = hidesLocked
+		logData.normalIcon = normalIcon
+		logData.pressedIcon = pressedIcon
+		logData.mouseoverIcon = mouseoverIcon
+		logData.gamepadIcon = gamepadIcon
+		uespLog.AppendDataToLog("all", logData)
+		
+		for subCategoryIndex = 1, numSubCategories do
+			local name, numCollectibles, unlockedCollectibles, totalCollectibles = GetCollectibleSubCategoryInfo(categoryIndex, subCategoryIndex)
+			
+			logData = {}
+			logData.event = "MineCollect::Subcategory"
+			logData.name = name
+			logData.subCategoryIndex = subCategoryIndex
+			logData.numCollectibles = numCollectibles
+			logData.totalCollectibles = totalCollectibles
+			uespLog.AppendDataToLog("all", logData)
+			
+			for collectibleIndex = 1, numCollectibles do
+				local collectibleId = GetCollectibleId(categoryIndex, subCategoryIndex, collectibleIndex)
+				
+				logData = {}
+				logData.event = "MineCollect::Index"
+				logData.categoryIndex = categoryIndex
+				logData.subCategoryIndex = subCategoryIndex
+				logData.collectibleIndex = collectibleIndex
+				logData.collectibleId = collectibleId
+				uespLog.AppendDataToLog("all", logData)
+				
+				totalCount = totalCount + 1
+			end
+		end
+
+	end
+	
+	logData = {}
+	logData.event = "MineCollect::End"
+	uespLog.AppendDataToLog("all", logData)
+	
+	uespLog.Msg("Found "..tostring(totalCount).." collectible categories!")
+end
+
+
+function uespLog.MineCollectibleIDs(note)
+	local logData = {}
+	local totalCount = 0
+	local zoneCollectionIds = {}
+	local achievementCollectionIds = {}
+	local zoneCount = 0
+	local achieveCount = 0
+	
+	uespLog.Msg("Logging all valid collectible IDs...")
+	
+	for zoneIndex = 1, 10000 do
+		local collectibleId = GetCollectibleIdForZone(zoneIndex)
+		
+		if (collectibleId > 0) then
+			zoneCollectionIds[collectibleId] = zoneIndex
+			zoneCount = zoneCount + 1
+		end
+	end
+	
+	uespLog.Msg("Found "..zoneCount.." zones with collectibles!")
+	
+	for achieveIndex = 1, 10000 do
+		local _, collectibleId = GetAchievementRewardCollectible(achieveIndex)
+		
+		if (collectibleId > 0) then
+			achievementCollectionIds[collectibleId] = achieveIndex
+			achieveCount = achieveCount + 1
+		end
+	end
+	
+	uespLog.Msg("Found "..achieveCount.." achievements with collectibles!")
+	
+	logData.event = "MineCollectID::Start"
+	logData.numCategories = numCategories
+	logData.note = note
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
+	for collectibleId = 1, 10000 do
+		local name, description, icon, lockedIcon, unlocked, purchasable, isActive, categoryType, hint, isPlaceholder = GetCollectibleInfo(collectibleId)
+		
+		if (name ~= nil and name ~= "") then
+			logData = {}
+			logData.event = "MineCollectID"
+			logData.id = collectibleId
+			logData.name = name
+			logData.description = description
+			logData.icon = icon
+			logData.lockedIcon = lockedIcon
+			logData.unlocked = unlocked
+			logData.isActive = isActive
+			logData.categoryType = categoryType
+			logData.hint = hint
+			logData.isPlaceholder = isPlaceholder
+			logData.zoneIndex = zoneCollectionIds[collectibleId]
+			logData.achieveIndex = achievementCollectionIds[collectibleId]
+			
+			logData.bgImage = GetCollectibleKeyboardBackgroundImage(collectibleId)
+			logData.gamepadBgImage = GetCollectibleGamepadBackgroundImage(collectibleId)
+			logData.category, logData.subCategory, logData.index = GetCategoryInfoFromCollectibleId(collectibleId)
+			
+			logData.categoryName = GetCollectibleCategoryInfo(logData.category)
+			logData.subCategoryName = GetCollectibleSubCategoryInfo(logData.category, logData.subCategory)
+			
+			logData.isSlottable = IsCollectibleSlottable(collectibleId)
+			logData.isUsable = IsCollectibleUsable(collectibleId)
+			logData.isRenameable = IsCollectibleRenameable(collectibleId)
+			logData.isPlaceholder = IsCollectiblePlaceholder(collectibleId)
+			logData.itemLink = GetCollectibleLink(collectibleId)
+			
+			logData.nickname = GetCollectibleNickname(collectibleId)
+			logData.helpCategoryIndex, logData.helpIndex = GetCollectibleHelpIndices(collectibleId)
+			
+			logData.questName, logData.backgroundText = GetCollectibleQuestPreviewInfo(collectibleId)
+			_, logData.cooldown = GetCollectibleCooldownAndDuration(collectibleId)
+			logData.isHidden, logData.visualPriority = WouldCollectibleBeHidden(collectibleId)
+			logData.hasAppearance = DoesCollectibleHaveVisibleAppearance(collectibleId)
+
+			uespLog.AppendDataToLog("all", logData)
+			
+			totalCount = totalCount + 1
+		end
+	end
+	
+	
+	logData = {}
+	logData.event = "MineCollectID::End"
+	uespLog.AppendDataToLog("all", logData)
+	
+	uespLog.Msg("Found and logged "..tostring(totalCount).." collectibles!")
+end
+
+
+function uespLog.MineCollectCommand(cmd)
+	local cmds, firstCmd = uespLog.SplitCommands(cmd)
+	uespLog.MineCollectibleIDs(firstCmd)
+end
+
+
+SLASH_COMMANDS["/uespminecollect"] = uespLog.MineCollectCommand
+
 
 -- Item subtypes that crash with GetItemLinkTraitOnUseAbilityInfo() in update 10
 uespLog.BAD_TRAIT_ITEMTYPES = {
@@ -10615,3 +10827,5 @@ uespLog.BAD_TRAIT_ITEMTYPES = {
 		[377] = true,
 		[379] = true,
 	}
+	
+	

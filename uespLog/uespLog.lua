@@ -490,7 +490,7 @@
 --			- Another fix to try and eliminate the little bit of lag that some people experience when killing
 --			  mobs with a Destruction Staff equipped.
 --			
---		- v0.63 -- ? March 2016
+--		- v0.70 -- 29 May 2016
 --			- Fixed "Show Item Info" menu item when smithing an item.
 --			- Updated clock/moon phases to be more accurate and match the lore date given by other addons.
 --			- Improved skill data logging.
@@ -563,8 +563,8 @@
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "0.63"
-uespLog.releaseDate = "12 March 2016"
+uespLog.version = "0.70"
+uespLog.releaseDate = "29 May 2016"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -848,7 +848,7 @@ uespLog.ALLIANCE_NAMES = {
 }
 
 uespLog.MINEITEM_LEVELS = {
-	{  1, 50,   1,  11, "dropped" },	-- Subtype of 0 crashes in the update 10-PTS client
+	{  1, 50,   0,  11, "dropped" },
 	{  1, 50,  18,  19, "unknown" },
 	{  1, 50,  20,  24, "crafted" },
 	{  1,  4,  25,  29, "crafted" },
@@ -905,8 +905,59 @@ uespLog.MINEITEM_LEVELS = {
 }
 
 
+uespLog.MINEITEM_LEVELS_SAFE = {
+	{  1, 50,   1,   9, "dropped" },
+	{  1, 50,  11,  11, "dropped" },
+	{  1, 50,  19,  19, "unknown" },
+	{  1, 50,  20,  24, "crafted" },
+	{  1,  4,  25,  29, "crafted" },
+	{  1, 50,  31,  31, "crafted" },
+	{  1,  1,  32,  34, "crafted" },
+	{ 50, 50,  39,  48, "quest" },
+	{  1, 50,  49,  50, "unknown" },
+	{ 50, 50,  51,  60, "dropped" },
+	{ 50, 50,  61,  70, "dropped" },
+	{ 50, 50,  71,  80, "unknown" },
+	{ 50, 50,  81,  90, "dropped" },
+	{ 50, 50,  91, 100, "dropped" },
+	{ 50, 50, 101, 110, "dropped" },
+	{ 50, 50, 111, 120, "dropped/sold" },
+	{  1, 50, 121, 124, "unknown" },
+	{ 50, 50, 125, 134, "crafted" },
+	{ 50, 50, 135, 144, "crafted" },
+	{ 50, 50, 145, 154, "crafted" },
+	{ 50, 50, 155, 164, "crafted" },
+	{ 50, 50, 165, 174, "crafted" },
+	{  1, 50, 175, 175, "unknown" },
+	{  1, 50, 177, 177, "unknown" },
+	{ 50, 50, 188, 188, "unknown" },
+	{ 50, 50, 208, 208, "unknown" },
+	{ 50, 50, 228, 234, "unknown" },
+	{ 50, 50, 235, 235, "store" },
+	{ 50, 50, 236, 240, "crafted" }, --VR11
+	{ 50, 50, 246, 247, "unknown" },
+	{ 50, 50, 248, 251, "dropped" },
+	{ 50, 50, 253, 253, "store" },
+	{ 50, 50, 254, 258, "crafted" },
+	{ 50, 50, 264, 267, "dropped" },
+	{ 50, 50, 264, 271, "unknown" },
+	{ 50, 50, 272, 276, "crafted" },
+	{ 50, 50, 283, 285, "dropped" },
+	{ 50, 50, 286, 289, "unknown" },
+	{ 50, 50, 290, 294, "crafted" },
+	{ 50, 50, 300, 300, "unknown" },
+	{ 50, 50, 301, 301, "dropped" },
+	{ 50, 50, 304, 307, "dropped" },
+	{ 50, 50, 308, 312, "crafted" },
+	{ 50, 50, 358, 364, "dropped" },
+	{ 50, 50, 365, 365, "unknown" },
+	{ 50, 50, 366, 370, "crafted" },
+	{ 50, 50, 378, 378, "unknown" },
+}
+
+
 uespLog.MINEITEM_LEVELS_SHORT = {
-	{  1, 50,   1,  11, "dropped" },	-- Subtype of 0 crashes in the update 10-PTS client
+	{  1, 50,   1,  11, "dropped" },
 	{  1, 50,  18,  19, "unknown" },
 	{  1, 50,  20,  24, "crafted" },
 	{  1,  4,  25,  29, "crafted" },
@@ -947,6 +998,52 @@ uespLog.MINEITEM_LEVELS_SHORT = {
 	{ 50, 50, 308, 309, "crafted" },
 	{  1, 50, 319, 319, "novalue" },
 	{ 50, 50, 324, 337, "novalue" },
+	{ 50, 50, 358, 364, "dropped" },
+	{ 50, 50, 365, 365, "unknown" },
+	{ 50, 50, 366, 366, "crafted" },
+	{ 50, 50, 378, 378, "unknown" },
+}
+
+
+uespLog.MINEITEM_LEVELS_SHORT_SAFE = {
+	{  1, 50,   1,   9, "dropped" },
+	{  1, 50,  11,  11, "dropped" },
+	{  1, 50,  19,  19, "unknown" },
+	{  1, 50,  20,  24, "crafted" },
+	{  1,  4,  25,  29, "crafted" },
+	{  1, 50,  31,  31, "crafted" },
+	{  1,  1,  32,  34, "crafted" },
+	{ 50, 50,  39,  48, "quest" },
+	{  1, 50,  49,  50, "unknown" },
+	{ 50, 50,  51,  60, "dropped" },
+	{ 50, 50,  61,  70, "dropped" },
+	{ 50, 50,  71,  80, "unknown" },
+	{ 50, 50,  81,  90, "dropped" },
+	{ 50, 50,  91, 100, "dropped" },
+	{ 50, 50, 111, 120, "dropped/sold" },
+	{  1, 50, 121, 124, "unknown" },
+	{ 50, 50, 125, 125, "crafted" },
+	{ 50, 50, 127, 127, "crafted" },
+	{ 50, 50, 129, 129, "crafted" },
+	{ 50, 50, 131, 131, "crafted" },
+	{ 50, 50, 134, 134, "crafted" },
+	{  1, 50, 175, 175, "unknown" },
+	{  1, 50, 177, 177, "unknown" },
+	{ 50, 50, 188, 188, "unknown" },
+	{ 50, 50, 208, 208, "unknown" },
+	{ 50, 50, 228, 234, "unknown" },
+	{ 50, 50, 235, 235, "store" },
+	{ 50, 50, 246, 247, "unknown" },
+	{ 50, 50, 248, 251, "dropped" },
+	{ 50, 50, 253, 253, "store" },
+	{ 50, 50, 265, 267, "dropped" },
+	{ 50, 50, 268, 271, "unknown" },
+	{ 50, 50, 283, 285, "dropped" },
+	{ 50, 50, 286, 289, "unknown" },
+	{ 50, 50, 300, 300, "unknown" },
+	{ 50, 50, 301, 301, "dropped" },
+	{ 50, 50, 304, 307, "dropped" },
+	{ 50, 50, 308, 309, "crafted" },
 	{ 50, 50, 358, 364, "dropped" },
 	{ 50, 50, 365, 365, "unknown" },
 	{ 50, 50, 366, 366, "crafted" },
@@ -6291,7 +6388,8 @@ function uespLog.CreateItemLinkLog (itemLink)
 	local maxTraits = GetMaxTraits()
 		
 	for i = 1, maxTraits  do
-		local hasTraitAbility, traitAbilityDescription, traitCooldown = GetItemLinkTraitOnUseAbilityInfo(itemLink, i)
+		local hasTraitAbility, traitAbilityDescription, traitCooldown, hasScaling, minLevel, maxLevel, isCP = GetItemLinkTraitOnUseAbilityInfo(itemLink, i)
+		--local hasTraitAbility = false
 		
 		if (hasTraitAbility) then
 			traitAbilityCount = traitAbilityCount + 1
@@ -7236,7 +7334,7 @@ function uespLog.MineItemIterateLevels (itemId)
 	local itemName
 	local extraData = uespLog.GetTimeData()
 
-	for i, value in ipairs(uespLog.MINEITEM_LEVELS) do
+	for i, value in ipairs(uespLog.MINEITEM_LEVELS_SAFE) do
 		local levelStart = value[1]
 		local levelEnd = value[2]
 		local qualityStart = value[3]
@@ -7284,7 +7382,7 @@ function uespLog.MineItemIterateLevelsShort (itemId)
 	local newItemLog = { }
 	local diffItemLog = { }
 
-	for i, value in ipairs(uespLog.MINEITEM_LEVELS) do
+	for i, value in ipairs(uespLog.MINEITEM_LEVELS_SAFE) do
 		local levelStart = value[1]
 		local levelEnd = value[2]
 		local qualityStart = value[3]
@@ -7396,7 +7494,7 @@ function uespLog.MineEnchantCharges()
 			[7] = "WeaponPower",
 		}
 
-	for i, value in ipairs(uespLog.MINEITEM_LEVELS) do
+	for i, value in ipairs(uespLog.MINEITEM_LEVELS_SAFE) do
 		local levelStart = value[1]
 		local levelEnd = value[2]
 		local qualityStart = value[3]
@@ -7464,7 +7562,7 @@ function uespLog.MineItemIteratePotionData (effectIndex)
 	local newItemLog = { }
 	local diffItemLog = { }
 
-	for i, value in ipairs(uespLog.MINEITEM_LEVELS) do
+	for i, value in ipairs(uespLog.MINEITEM_LEVELS_SAFE) do
 		local levelStart = value[1]
 		local levelEnd = value[2]
 		local qualityStart = value[3]
@@ -7477,7 +7575,7 @@ function uespLog.MineItemIteratePotionData (effectIndex)
 				uespLog.mineItemCount = uespLog.mineItemCount + 1
 				
 				itemLink = uespLog.MakeItemLinkEx( { itemId = uespLog.MINEITEM_POTION_ITEMID, level = level, quality = quality, potionEffect = effectIndex } )
-								
+				
 				if (uespLog.IsValidItemLink(itemLink)) then
 				
 					if (isFirst) then
@@ -7768,7 +7866,7 @@ end
 function uespLog.MineItemsCount ()
 	local totalCount = 0
 
-	for i, value in ipairs(uespLog.MINEITEM_LEVELS) do
+	for i, value in ipairs(uespLog.MINEITEM_LEVELS_SAFE) do
 		local levelStart = value[1]
 		local levelEnd = value[2]
 		local qualityStart = value[3]
@@ -7781,13 +7879,13 @@ function uespLog.MineItemsCount ()
 		totalCount = totalCount + numTypes * numLevels
 	end
 	
-	uespLog.MsgColor(uespLog.mineColor, "UESP::Total mine item entries = "..tostring(#uespLog.MINEITEM_LEVELS))
+	uespLog.MsgColor(uespLog.mineColor, "UESP::Total mine item entries = "..tostring(#uespLog.MINEITEM_LEVELS_SAFE))
 	uespLog.MsgColor(uespLog.mineColor, "UESP::Total level/subtype combinations = "..tostring(totalCount))
 	uespLog.MsgColor(uespLog.mineColor, "UESP::Estimated item combinations = "..tostring(totalCount * uespLog.MINEITEM_ITEMCOUNTESTIMATE))
 	
 	totalCount = 0
 
-	for i, value in ipairs(uespLog.MINEITEM_LEVELS_SHORT) do
+	for i, value in ipairs(uespLog.MINEITEM_LEVELS_SHORT_SAFE) do
 		local levelStart = value[1]
 		local levelEnd = value[2]
 		local qualityStart = value[3]
@@ -7800,7 +7898,7 @@ function uespLog.MineItemsCount ()
 		totalCount = totalCount + numTypes * numLevels
 	end
 	
-	uespLog.MsgColor(uespLog.mineColor, "UESP::Total mine item entries (short) = "..tostring(#uespLog.MINEITEM_LEVELS_SHORT))
+	uespLog.MsgColor(uespLog.mineColor, "UESP::Total mine item entries (short) = "..tostring(#uespLog.MINEITEM_LEVELS_SHORT_SAFE))
 	uespLog.MsgColor(uespLog.mineColor, "UESP::Total level/subtype combinations (short) = "..tostring(totalCount))
 	uespLog.MsgColor(uespLog.mineColor, "UESP::Estimated item combinations (short) = "..tostring(totalCount * uespLog.MINEITEM_ITEMCOUNTESTIMATE))
 end
@@ -10413,3 +10511,107 @@ end
 
 
 SLASH_COMMANDS["/uesptrackstat"] = uespLog.DoTrackStatCommand
+
+
+-- Item subtypes that crash with GetItemLinkTraitOnUseAbilityInfo() in update 10
+uespLog.BAD_TRAIT_ITEMTYPES = {
+		[0] = true,
+		[10] = true,
+		[12] = true,
+		[13] = true,
+		[14] = true,
+		[15] = true,
+		[16] = true,
+		[17] = true,
+		[18] = true,
+		[30] = true,
+		[35] = true,
+		[36] = true,
+		[37] = true,
+		[38] = true,
+		[176] = true,
+			[178] = true,
+			[179] = true,
+			[180] = true,
+		[181] = true,
+			[182] = true,
+			[183] = true,
+			[184] = true,
+			[185] = true,
+			[186] = true,
+		[187] = true,
+		[241] = true,
+			[242] = true,
+			[243] = true,
+			[244] = true,
+			[245] = true,
+			[259] = true,
+			[260] = true,
+			[261] = true,
+			[262] = true,
+			[263] = true,
+			[277] = true,
+			[278] = true,
+			[279] = true,
+			[280] = true,
+			[281] = true,
+		[282] = true,
+		[295] = true,
+			[296] = true,
+			[297] = true,
+			[298] = true,
+			[299] = true,
+		[313] = true,
+			[314] = true,
+			[315] = true,
+			[316] = true,
+			[317] = true,
+			[318] = true,
+			[319] = true,
+		[320] = true,
+			[321] = true,
+			[322] = true,
+			[323] = true,
+			[324] = true,
+			[325] = true,
+			[326] = true,
+			[327] = true,
+			[328] = true,
+			[329] = true,
+			[330] = true,
+			[331] = true,
+			[332] = true,
+			[333] = true,
+			[334] = true,
+			[335] = true,
+			[336] = true,
+			[337] = true,
+			[338] = true,
+			[339] = true,
+			[340] = true,
+			[341] = true,
+			[342] = true,
+			[343] = true,
+			[344] = true,
+			[345] = true,
+			[346] = true,
+			[347] = true,
+			[348] = true,
+			[349] = true,
+			[350] = true,
+			[351] = true,
+			[352] = true,
+			[353] = true,
+			[354] = true,
+			[355] = true,
+			[356] = true,
+		[357] = true,
+		[371] = true,
+			[372] = true,
+			[373] = true,
+			[374] = true,
+			[375] = true,
+			[376] = true,
+		[377] = true,
+		[379] = true,
+	}

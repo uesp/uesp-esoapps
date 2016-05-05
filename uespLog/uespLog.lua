@@ -516,6 +516,7 @@
 --					/uesptrackstat none					Turns off all tracking.
 --					/uesptrackstat resettime			Resets the game time display to 0.
 --			- Added the "/uespminecollect [note]" command for logging collectible data.
+--			- Updated achievement data logging.
 --			- Fixes for PTS update 10:
 --				- Updated API to version 100015.
 --				- Removed use of deleted API function GetStatSoftCap().
@@ -5333,7 +5334,7 @@ SLASH_COMMANDS["/uespdump"] = function(cmd)
 	elseif (firstCmd == "skills") then
 		uespLog.DumpSkills(cmds[2], cmds[3])
 	elseif (firstCmd == "achievements") then
-		uespLog.DumpAchievements()
+		uespLog.DumpAchievements(cmds[2])
 	elseif (firstCmd == "inventory") then
 		uespLog.DumpInventory()
 	elseif (firstCmd == "cp" or firstCmd == "championpoints") then
@@ -7141,36 +7142,9 @@ function uespLog.CountAchievements()
 end
 
 
-if GetAchievementRewardInfo == nil then
-   function GetAchievementRewardInfo(achievementId, rewardIndex)
-      local rewards = {}
-
-      local points = GetAchievementRewardPoints(achievementId)
-      table.insert(rewards, {ACHIEVEMENT_REWARD_TYPE_POINTS, points})
-
-      local hasRewardItem, itemName, iconTextureName, quality = GetAchievementRewardItem(achievementId)
-      if hasRewardItem then
-         table.insert(rewards, {ACHIEVEMENT_REWARD_TYPE_ITEM, itemName, iconTextureName, quality})
-      end
-
-      local hasRewardTitle, titleName = GetAchievementRewardTitle(achievementId)
-      if hasRewardTitle then
-         table.insert(rewards, {ACHIEVEMENT_REWARD_TYPE_TITLE, titleName})
-      end
-
-      local hasRewardDye, dyeIndex = GetAchievementRewardDye(achievementId)
-      if hasRewardDye then
-         table.insert(rewards, {ACHIEVEMENT_REWARD_TYPE_DYE, dyeIndex})
-      end
-      
-      return unpack(rewards[rewardIndex])
-   end
-end
-
-
 function uespLog.DumpAchievementPriv (categoryIndex, subCategoryIndex, achievementIndex)
 	local achievementId = GetAchievementId(categoryIndex, subCategoryIndex, achievementIndex)
-	local achName, achDescription, achPoints, achIcon, achCompleted, achData, achTime = GetAchievementInfo(achievementId)
+	local achName, achDescription, achPoints, achIcon, achCompleted, achDate, achTime = GetAchievementInfo(achievementId)
 	local numRewards = GetAchievementNumRewards(achievementId)	
 	local numCriteria = GetAchievementNumCriteria(achievementId)
 	local rewardCount = 0
@@ -7178,53 +7152,47 @@ function uespLog.DumpAchievementPriv (categoryIndex, subCategoryIndex, achieveme
 	local logData = { }	
 	
 	logData.event = "Achievement"
-	logData.label = "Achievement"
+	logData.categoryIndex = categoryIndex
+	logData.subCategoryIndex = subCategoryIndex
+	logData.achievementIndex = achievementIndex
+	logData.name = achName
 	logData.description = achDescription
 	logData.id = achievementId
 	logData.points = achPoints
 	logData.icon = achIcon
 	logData.numRewards = numRewards
 	logData.numCriteria = numCriteria
-	uespLog.AppendDataToLog("achievements", logData)
-					
-	for rewardIndex = 1, numRewards do
-		local rewardType, rewardPoints, rewardName, rewardIcon, rewardQuality = GetAchievementRewardInfo(achievementId, rewardIndex)
-		local itemLink = ""
-		local typeName = ""
-							
-		if (rewardType == ACHIEVEMENT_REWARD_TYPE_ITEM) then
-			itemLink = GetAchievementItemLink(achievementId, rewardIndex, LINK_STYLE_DEFAULT)
-			typeName = "item"
-		elseif (rewardType == ACHIEVEMENT_REWARD_TYPE_TITLE) then
-			typeName = "title"
-		elseif (rewardType == ACHIEVEMENT_REWARD_TYPE_POINTS) then
-			typeName = "points"
-		elseif (rewardType == ACHIEVEMENT_REWARD_TYPE_NONE) then
-			typeName = "none"
-		end
-		
-		logData = { }
-		logData.event = "Achievement"
-		logData.label = "Reward"
-		logData.type = typeName
-		logData.name = rewardName
-		logData.points = rewardPoints
-		logData.icon = rewardIcon
-		logData.quality = rewardQuality
-		logData.itemLink = itemLink
-		uespLog.AppendDataToLog("achievements", logData)
+	logData.itemLink = GetAchievementItemLink(achievementId)
+	logData.link = GetAchievementLink(achievementId)
+	logData.firstId = GetFirstAchievementInLine(achievementId)
+	logData.prevId = GetPreviousAchievementInLine(achievementId)
+	logData.points = GetAchievementRewardPoints(achievementId)
 	
+	logData.hasItemReward, logData.itemName, logData.itemIcon, logData.itemQuality = GetAchievementRewardItem(achievementId)
+	logData.hasTitleReward, logData.title = GetAchievementRewardTitle(achievementId)
+	logData.hasDyeReward, logData.dyeIndex = GetAchievementRewardDye(achievementId)
+	logData.hasCollectibleReward, logData.collectibleId = GetAchievementRewardCollectible(achievementId)
+	
+	if (logData.hasDyeReward) then
+		logData.dyeName, _, logData.dyeRarity, logData.dyeHue, _, logData.dyeR, logData.dyeG, logData.dyeB, logData.dyeSortKey = GetDyeInfo(logData.dyeIndex)
 		rewardCount = rewardCount + 1
 	end
 	
+	if (logData.hasItemReward) then rewardCount = rewardCount + 1 end
+	if (logData.hasTitleReward) then rewardCount = rewardCount + 1 end
+	if (logData.hasCollectibleReward) then rewardCount = rewardCount + 1 end
+
+	uespLog.AppendDataToLog("achievements", logData)
+		
 	for criterionIndex = 1, numCriteria do
 		local critDescription, critNumCompleted, critNumRequired = GetAchievementCriterion(achievementId, criterionIndex)
 		
 		logData = { }
-		logData.event = "Achievement"
-		logData.label = "Criteria"
+		logData.event = "Achievement::Criteria"
+		logData.id = achievementId
 		logData.description = critDescription
 		logData.numRequired = critNumRequired
+		logData.index = criterionIndex
 		uespLog.AppendDataToLog("achievements", logData)
 		
 		criteriaCount = criteriaCount + 1
@@ -7234,11 +7202,12 @@ function uespLog.DumpAchievementPriv (categoryIndex, subCategoryIndex, achieveme
 end
 
 
-function uespLog.DumpAchievements ()
+function uespLog.DumpAchievements (note)
 	local numCategories = GetNumAchievementCategories()
 	local outputCount = 0
 	local rewardCount = 0
 	local criteriaCount = 0
+	local categoryCount = 0
 	local Msg = ""
 	
 		-- Clear achievements data
@@ -7246,14 +7215,18 @@ function uespLog.DumpAchievements ()
 	
 	local logData = { }
 	logData.event = "Achievement::Start"
+	logData.note = note
 	uespLog.AppendDataToLog("achievements", logData, uespLog.GetTimeData())
 	
 	for categoryIndex = 1, numCategories do
-		local categoryName, numSubCategories, numCateAchievements, earnedCatePoints, totalCatePoints, hidesCatePoints, normalIcon, pressedIcon, mouseoverIcon = GetAchievementCategoryInfo(categoryIndex)
+		local categoryName, numSubCategories, numCateAchievements, earnedCatePoints, totalCatePoints, hidesCatePoints = GetAchievementCategoryInfo(categoryIndex)
+		local normalIcon, pressedIcon, mouseoverIcon = GetAchievementCategoryKeyboardIcons(categoryIndex)
+		local gamepadIcon = GetAchievementCategoryGamepadIcon(categoryIndex)
 		
 		logData = { }
-		logData.event = "Category"
+		logData.event = "Achievement::Category"
 		logData.name = categoryName
+		logData.categoryIndex = categoryIndex
 		logData.subCategories = numSubCategories
 		logData.numAchievements = numCateAchievements
 		logData.points = totalCatePoints
@@ -7261,21 +7234,27 @@ function uespLog.DumpAchievements ()
 		logData.icon = normalIcon
 		logData.pressedIcon = pressedIcon
 		logData.mouseoverIcon = mouseoverIcon
+		logData.gamepadIcon = gamepadIcon
 		uespLog.AppendDataToLog("achievements", logData)
+		categoryCount = categoryCount + 1
 		
 		for subCategoryIndex = 1, numSubCategories do
-			local subcategoryName, numsubCateAchievements, earnedSubCatePoints, totalSubCatePoints, hidesSubCatePoints = GetAchievementSubCategoryInfo(categoryIndex, subCategoryIndex)
+			local subcategoryName, numSubCateAchievements, earnedSubCatePoints, totalSubCatePoints, hidesSubCatePoints = GetAchievementSubCategoryInfo(categoryIndex, subCategoryIndex)
 			
 			logData = { }
-			logData.event = "Subcategory"
+			logData.event = "Achievement::Subcategory"
 			logData.name = subcategoryName
-			logData.numAchievements = numsubCateAchievements
+			logData.categoryName = categoryName
+			logData.categoryIndex = categoryIndex
+			logData.subCategoryIndex = subCategoryIndex
+			logData.numAchievements = numSubCateAchievements
 			logData.points = totalSubCatePoints
 			logData.hidesPoints = hidesSubCatePoints
 			uespLog.AppendDataToLog("achievements", logData)
+			categoryCount = categoryCount + 1
 			
-			for achievementIndex = 1, numsubCateAchievements do
-				local rc, cc = uespLog.DumpAchievementPriv (categoryIndex, subCategoryIndex, achievementIndex)
+			for achievementIndex = 1, numSubCateAchievements do
+				local rc, cc = uespLog.DumpAchievementPriv(categoryIndex, subCategoryIndex, achievementIndex)
 				rewardCount = rewardCount + rc
 				criteriaCount = criteriaCount + cc
 				outputCount = outputCount + 1
@@ -7283,7 +7262,7 @@ function uespLog.DumpAchievements ()
 		end
 		
 		for achievementIndex = 1, numCateAchievements do
-			local rc, cc = uespLog.DumpAchievementPriv (categoryIndex, nil, achievementIndex)
+			local rc, cc = uespLog.DumpAchievementPriv(categoryIndex, nil, achievementIndex)
 			rewardCount = rewardCount + rc
 			criteriaCount = criteriaCount + cc
 			outputCount = outputCount + 1
@@ -7295,7 +7274,7 @@ function uespLog.DumpAchievements ()
 	logData.event = "Achievement::End"
 	uespLog.AppendDataToLog("achievements", logData)
 	
-	uespLog.DebugMsg("UESP::Output ".. outputCount .." achievements, ".. rewardCount.." rewards, and "..criteriaCount.." criterias to log!");
+	uespLog.DebugMsg("UESP::Output "..categoryCount.." categories, ".. outputCount .." achievements, ".. rewardCount.." rewards, and "..criteriaCount.." criterias to log!");
 end
 
 

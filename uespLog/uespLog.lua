@@ -503,18 +503,6 @@
 --			  the current PTS character templates.
 --			- Added the "/uespshowcoor [on|off]" command to turn the map coordinate display on/off. Thanks to
 --			  Ptits de Barbe for submitting this patch.
---			- Added the /uesptrackstat command for tracking changes to Health/Magicka/Stamina/Ultimate. You
---			  can enable tracking of one or more stats and any change will be displayed in the chat window
---			  along with a game time reference. Warning that this command results in a lot of messages as you
---			  might expect.
---					/uesptrackstat						Shows command help and current status of tracking.
---					/uesptrackstat health   [on/off]	Turns Health tracking on/off.
---					/uesptrackstat magicka  [on/off]	Turns Magicka tracking on/off.
---					/uesptrackstat stamina  [on/off]	Turns Stamina tracking on/off.
---					/uesptrackstat ultimate [on/off]	Turns Ultimate tracking on/off.
---					/uesptrackstat all					Start tracking all stats.
---					/uesptrackstat none					Turns off all tracking.
---					/uesptrackstat resettime			Resets the game time display to 0.
 --			- Added the "/uespminecollect [note]" command for logging collectible data.
 --			- Updated achievement data logging.
 --			- Fixes for PTS update 10:
@@ -559,6 +547,21 @@
 --			- A warning is displayed in chat if you use an unknown slash command.
 --			- Fishing notifications (turn on with /uespfish on)
 --			- Daily quest tracking (/uespdaily)
+--			- Added the /uesptrackstat command for tracking changes to Health/Magicka/Stamina/Ultimate. You
+--			  can enable tracking of one or more stats and any change will be displayed in the chat window
+--			  along with a game time reference. Warning that this command results in a lot of messages as you
+--			  might expect.
+--					/uesptrackstat						Shows command help and current status of tracking.
+--					/uesptrackstat health   [on/off]	Turns Health tracking on/off.
+--					/uesptrackstat magicka  [on/off]	Turns Magicka tracking on/off.
+--					/uesptrackstat stamina  [on/off]	Turns Stamina tracking on/off.
+--					/uesptrackstat ultimate [on/off]	Turns Ultimate tracking on/off.
+--					/uesptrackstat all					Start tracking all stats.
+--					/uesptrackstat none					Turns off all tracking.
+--					/uesptrackstat resettime			Resets the game time display to 0.
+--			   Note that this feature is currently not working perfectly due to the EVENT_POWER_UPDATE seems
+--			   to "miss" some stat updates. In the future this will be changed to use EVENT_COMBAT_UPDATE instead.
+--
 --
 
 
@@ -566,7 +569,7 @@
 uespLog = { }
 
 uespLog.version = "0.70"
-uespLog.releaseDate = "29 May 2016"
+uespLog.releaseDate = "30 May 2016"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

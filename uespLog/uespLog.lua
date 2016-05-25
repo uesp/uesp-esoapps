@@ -543,7 +543,8 @@
 --			  This should give you skill coefficients for all skills in one calculation.
 --
 --
---		Future Versions (Work in Progress)
+--		Future Versions (Works in Progress)
+--		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
 --			- A warning is displayed in chat if you use an unknown slash command.
 --			- Fishing notifications (turn on with /uespfish on)
 --			- Daily quest tracking (/uespdaily)

@@ -2215,8 +2215,9 @@ function uespLog.Initialize( self, addOnName )
 		["skillCoef"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "skillCoef", uespLog.DEFAULT_SKILLCOEF_DATA),
 		["charData"] = ZO_SavedVars:New("uespLogSavedVars", uespLog.DATA_VERSION, "charData", uespLog.DEFAULT_CHARDATA),
 		["charInfo"] = ZO_SavedVars:New("uespLogSavedVars", uespLog.DATA_VERSION, "charInfo", uespLog.DEFAULT_CHARINFO),
+		["skillCoefAbilityList"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "skillCoefAbilityList", {}),
 	}
-	
+		
 	if (uespLog.savedVars["charInfo"].data.lastFoodEaten ~= nil) then
 		uespLog.charDataLastFoodEaten = uespLog.savedVars["charInfo"].data.lastFoodEaten 
 	end
@@ -8291,6 +8292,7 @@ SLASH_COMMANDS["/uespreset"] = function (cmd)
 		uespLog.ClearRootSavedVar()
 		uespLog.ClearBuildData()
 		uespLog.ClearCharData()
+		uespLog.SkillCoefResetSkillList()
 		uespLog.Msg("UESP::Reset all logged data")
 	elseif (cmd == "builddata") then
 		uespLog.ClearBuildData()

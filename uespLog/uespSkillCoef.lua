@@ -683,6 +683,12 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		uespLog.SkillCoefAddCharSkills()
 	elseif (cmd1 == "addmissing") then
 		uespLog.SkillCoefAddMissingSkills()
+	elseif (cmd1 == "savelist") then
+		uespLog.SkillCoefSaveSkillList()
+	elseif (cmd1 == "loadlist") then
+		uespLog.SkillCoefLoadSkillList()
+	elseif (cmd1 == "resetlist") then
+		uespLog.SkillCoefResetSkillList()
 	elseif (cmd1 == "stop" or cmd1 == "end" or cmd1 == "abort") then
 		uespLog.SkillCoef_CaptureWykkyd_CurrentIndex = uespLog.SkillCoef_CaptureWykkyd_EndIndex + 1
 		
@@ -718,6 +724,62 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 end
 
 SLASH_COMMANDS["/usc"] = SLASH_COMMANDS["/uespskillcoef"]
+
+
+function uespLog.SkillCoefSaveSkillList()
+	local data
+	local count = 0
+	data = {}
+	
+	for abilityId, abilityData in pairs(uespLog.SkillCoefAbilityData) do
+		count = count + 1
+		data[#data + 1] = { id = abilityId, rank = abilityData['rank'] }
+	end
+	
+	if (uespLog.savedVars.skillCoefAbilityList == nil) then
+		uespLog.savedVars.skillCoefAbilityList = uespLog.DEFAULT_DATA
+	end
+	
+	uespLog.savedVars.skillCoefAbilityList.data = data
+	uespLog.Msg("Saved "..tostring(count).." abilities to the skillCoefAbilityList section.")
+end
+
+
+function uespLog.SkillCoefLoadSkillList()
+	local data
+	local count = 0
+	local newCount = 0
+	
+	if (uespLog.savedVars.skillCoefAbilityList == nil) then
+		uespLog.Msg("No skills found in skillCoefAbilityList section!")
+		return
+	end
+	
+	data = uespLog.savedVars.skillCoefAbilityList.data
+	
+	for _, abilityData in ipairs(data) do
+		local _, isNew = uespLog.InitSkillCoefData(abilityData['id'], abilityData['rank'])
+		
+		if (isNew) then
+			newCount = newCount + 1
+		end
+		
+		count = count + 1
+	end
+	
+	uespLog.Msg("Loaded "..tostring(newCount).." of "..tostring(count).." abilities from the skillCoefAbilityList section.")
+end
+
+
+function uespLog.SkillCoefResetSkillList()
+
+	if (uespLog.savedVars.skillCoefAbilityList == nil) then
+		uespLog.savedVars.skillCoefAbilityList = uespLog.DEFAULT_DATA
+	end
+	
+	uespLog.savedVars.skillCoefAbilityList.data = {}
+	uespLog.Msg("Reset the skillCoefAbilityList section.")
+end
 
 
 function uespLog.ShowSkillCoefBadData()

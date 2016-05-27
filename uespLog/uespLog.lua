@@ -512,7 +512,7 @@
 --				- Changed VR related items to CP.
 --				- Fixed some minor looting display issues.
 --				- Styles updated.
---				- Fix crash when mining items with subtype of 0.
+--				- Fix crash when mining items with subtype of 0 and some other values.
 --				- Character data saves the craft bag inventory.
 --
 --			  Added several commands to /uespskillcoef (/usc):

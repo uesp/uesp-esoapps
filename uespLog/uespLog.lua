@@ -491,6 +491,7 @@
 --			  mobs with a Destruction Staff equipped.
 --			
 --		- v0.70 -- 29 May 2016
+-- 		    - REQUIRED UPDATE: uespLogMonitor updated to v0.40 with updates to the character data upload.
 --			- Fixed "Show Item Info" menu item when smithing an item.
 --			- Updated clock/moon phases to be more accurate and match the lore date given by other addons.
 --			- Improved skill data logging.

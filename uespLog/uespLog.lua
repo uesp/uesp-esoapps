@@ -562,7 +562,7 @@
 --					/uesptrackstat none					Turns off all tracking.
 --					/uesptrackstat resettime			Resets the game time display to 0.
 --			   Note that this feature is currently not working perfectly as the EVENT_POWER_UPDATE seems to
---			   "miss" some stat updates. In the future this will be changed to use EVENT_COMBAT_UPDATE instead.
+--			   "miss" some stat updates. In the future this will be changed to use EVENT_COMBAT_EVENT instead.
 --
 --
 

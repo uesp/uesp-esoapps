@@ -544,6 +544,9 @@
 --			  This should give you skill coefficients for all skills in one calculation.
 --
 --
+--		- v0.71 -- 
+--
+--
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
 --			- A warning is displayed in chat if you use an unknown slash command.
@@ -570,7 +573,7 @@
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "0.70"
+uespLog.version = "0.71"
 uespLog.releaseDate = "31 May 2016"
 uespLog.DATA_VERSION = 3
 
@@ -854,6 +857,56 @@ uespLog.ALLIANCE_NAMES = {
 	[3] = "Daggerfall Covenant",
 }
 
+
+uespLog.MINEITEM_UNSAFE_SUBTYPES = {
+	[0]   = true,
+	[10]  = true,
+	[18]  = true,
+	[30]  = true,
+	[37]  = true,
+	[38]  = true,
+	[241] = true,
+	[242] = true,
+	[243] = true,
+	[244] = true,
+	[245] = true,
+	[253] = true,
+	[277] = true,
+	[278] = true,
+	[279] = true,
+	[280] = true,
+	[281] = true,
+	[282] = true,
+	[295] = true,
+	[296] = true,
+	[297] = true,
+	[298] = true,
+	[299] = true,
+	[313] = true,
+	[314] = true,
+	[315] = true,
+	[316] = true,
+	[317] = true,
+	[319] = true,
+	[323] = true,
+	[324] = true,
+	[325] = true,
+	[326] = true,
+	[327] = true,
+	[328] = true,
+	[329] = true,
+	[330] = true,
+	[331] = true,
+	[332] = true,
+	[333] = true,
+	[334] = true,
+	[335] = true,
+	[336] = true,
+	[337] = true,
+	[338] = true,
+}
+
+
 uespLog.MINEITEM_LEVELS = {
 	{  1, 50,   0,  11, "dropped" },
 	{  1, 50,  18,  19, "unknown" },
@@ -913,6 +966,7 @@ uespLog.MINEITEM_LEVELS = {
 
 
 uespLog.MINEITEM_LEVELS_SAFE = {
+	{  0,  1,   0,   1, "?" },
 	{  1, 50,   1,   9, "dropped" },
 	{  1, 50,  11,  11, "dropped" },
 	{  1, 50,  19,  19, "unknown" },
@@ -947,7 +1001,7 @@ uespLog.MINEITEM_LEVELS_SAFE = {
 	{ 50, 50, 253, 253, "store" },
 	{ 50, 50, 254, 258, "crafted" },
 	{ 50, 50, 264, 267, "dropped" },
-	{ 50, 50, 264, 271, "unknown" },
+	{ 50, 50, 268, 271, "unknown" },
 	{ 50, 50, 272, 276, "crafted" },
 	{ 50, 50, 283, 285, "dropped" },
 	{ 50, 50, 286, 289, "unknown" },
@@ -2086,15 +2140,15 @@ function uespLog.ParseLinkID(link)
 	--|HFFFFFF:item:45817:1:1:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|hJode|h
 	
 	if (type(link) == "string") then
-		local color, itemType, itemId, data1, data2, data, text = link:match("|H(.-):(.-):(.-):(.-):(.-):(.-)|h(.-)|h")
+		local color, itemType, itemId, internalSubType, internalLevel, data, text = link:match("|H(.-):(.-):(.-):(.-):(.-):(.-)|h(.-)|h")
 		
-		if (color == nil or itemId == nil or data1 == nil or data == nil) then
+		if (color == nil or itemId == nil or internalSubType == nil or data == nil) then
 			return link, "", "", "", "", link, link
 		end
 		
 		local niceName = link
 		local niceLink = link
-		local allData = itemId..":"..data1 .. ":" .. data2 .. ":" .. data
+		local allData = itemId..":"..internalSubType .. ":" .. internalLevel .. ":" .. data
 		
 		if (text == "") then
 			text = GetItemLinkName(link)
@@ -2126,10 +2180,10 @@ function uespLog.ParseLinkID(link)
 			niceLink = "|H1:"..itemType..":"..allData.."|h|h"
 		end		
 		
-		return text, color, itemId, data2, allData, niceName, niceLink
+		return text, color, itemId, internalLevel, allData, niceName, niceLink, internalSubType
     end
 	
-	return "", "", "", "", "", "", link
+	return "", "", "", "", "", "", link, ""
 end
 
 
@@ -6254,7 +6308,8 @@ function uespLog.CreateItemLinkLog (itemLink)
 	local flagString = ""
 	local flavourText
 	local logData = { }
-	
+	local _, _, itemId, internalLevel, _, _, _, internalSubType  = uespLog.ParseLinkID(itemLink)
+		
 	logData.itemLink = itemLink
 		
 	logData.name = GetItemLinkName(itemLink)
@@ -6397,7 +6452,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 	--logData.isBound = IsItemLinkBound(itemLink)
 	logData.bindType = GetItemLinkBindType(itemLink)
 	
-	if (not isGunnySack) then
+	if (not isGunnySack and isSafeSubType) then
 		local glyphMinLevel, glyphMinCP = GetItemLinkGlyphMinLevels(itemLink)
 		
 		if (glyphMinLevel ~= nil) then
@@ -6409,16 +6464,21 @@ function uespLog.CreateItemLinkLog (itemLink)
 
 	local traitAbilityCount = 0
 	local maxTraits = GetMaxTraits()
-		
-	for i = 1, maxTraits  do
-		local hasTraitAbility, traitAbilityDescription, traitCooldown, hasScaling, minLevel, maxLevel, isCP = GetItemLinkTraitOnUseAbilityInfo(itemLink, i)
-		--local hasTraitAbility = false
-		
-		if (hasTraitAbility) then
-			traitAbilityCount = traitAbilityCount + 1
-			logData["traitAbility" .. tostring(traitAbilityCount) ] = traitAbilityDescription
-			logData["traitCooldown" .. tostring(traitAbilityCount) ] = traitCooldown
+	local isSafeSubType = not (uespLog.MINEITEM_UNSAFE_SUBTYPES[internalSubType] or false)
+	
+	if (isSafeSubType) then
+	
+		for i = 1, maxTraits  do
+			local hasTraitAbility, traitAbilityDescription, traitCooldown, hasScaling, minLevel, maxLevel, isCP = GetItemLinkTraitOnUseAbilityInfo(itemLink, i)
+			--local hasTraitAbility = false
+			
+			if (hasTraitAbility) then
+				traitAbilityCount = traitAbilityCount + 1
+				logData["traitAbility" .. tostring(traitAbilityCount) ] = traitAbilityDescription
+				logData["traitCooldown" .. tostring(traitAbilityCount) ] = traitCooldown
+			end
 		end
+		
 	end
 	
 	local levelsDescription = GetItemLinkMaterialLevelDescription(itemLink)

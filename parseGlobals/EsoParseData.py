@@ -3,9 +3,9 @@ import EsoLuaFile
 import EsoFunctionInfo
 
     # Modify below constants to point to relevant files/paths
-INPUT_GLOBAL_FILENAME = "/cygdrive/d/esoexport/gamemnf-19/globals.txt"
-INPUT_LUA_PATH = "/cygdrive/d/esoexport/gamemnf-19/esoui/"
-OUTPUT_PATH = "/cygdrive/d/esoexport/apidata/output/100014/"
+INPUT_GLOBAL_FILENAME = "/cygdrive/d/esoexport/gamemnf-10/globals.txt"
+INPUT_LUA_PATH = "/cygdrive/d/esoexport/gamemnf-10/esoui/"
+OUTPUT_PATH = "/cygdrive/d/esoexport/apidata/output/100015/"
 
     # Set to your specific Google CSE ID if you want site search
 GOOGLE_SEARCH_ENGINE_ID = "012503365948233236492:dsuicagnjii"

@@ -490,7 +490,7 @@
 --			- Another fix to try and eliminate the little bit of lag that some people experience when killing
 --			  mobs with a Destruction Staff equipped.
 --			
---		- v0.70 -- 29 May 2016
+--		- v0.70 -- 31 May 2016
 -- 		    - REQUIRED UPDATE: uespLogMonitor updated to v0.40 with updates to the character data upload.
 --			- Fixed "Show Item Info" menu item when smithing an item.
 --			- Updated clock/moon phases to be more accurate and match the lore date given by other addons.
@@ -571,7 +571,7 @@
 uespLog = { }
 
 uespLog.version = "0.70"
-uespLog.releaseDate = "30 May 2016"
+uespLog.releaseDate = "31 May 2016"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -2336,7 +2336,8 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ALLIANCE_POINT_UPDATE, uespLog.OnAlliancePointsUpdate)
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SCREENSHOT_SAVED, uespLog.OnScreenShotSaved)
-	
+		 
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_COMBAT_EVENT, uespLog.OnCombatEvent)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_POWER_UPDATE, uespLog.OnPowerUpdate)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SYNERGY_ABILITY_GAINED, uespLog.OnSynergyAbilityGained)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SYNERGY_ABILITY_LOST, uespLog.OnSynergyAbilityLost)
@@ -4500,6 +4501,20 @@ end
 function uespLog.OnEffectChanged (eventCode, changeType, effectSlot, effectName, unitTag, beginTime, endTime, stackCount, iconName, buffType, effectType, abilityType, statusEffectType)
 	--EVENT_EFFECT_CHANGED (integer changeType, integer effectSlot, string effectName, string unitTag, number beginTime, number endTime, integer stackCount, string iconName, string buffType, integer effectType, integer abilityType, integer statusEffectType)
 	uespLog.DebugExtraMsg("Effect Changed: "..effectName.." unit:"..unitTag.." type:"..changeType.."")
+end
+
+
+function uespLog.OnCombatEvent (eventCode, result, isError, abilityName, abilityGraphic, abilityActionSlotType, sourceName, sourceType, targetName, targetType, hitValue, powerType, damageType, isLogged, sourceUnitId, targetUnitId, abilityId)
+
+	--if (sourceType ~= COMBAT_UNIT_TYPE_PLAYER) then
+		--return
+	--end
+	
+	--if (powerType ~= POWERTYPE_STAMINA) then
+		--return
+	--end
+	
+	--uespLog.DebugMsg("Combat Stamina from "..tostring(abilityName).." value: "..tostring(hitValue))
 end
 
 

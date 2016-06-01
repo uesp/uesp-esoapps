@@ -1244,7 +1244,7 @@ uespLog.DEFAULT_SETTINGS =
 }
 
 	-- Skill lines missing from PTS for skill dumps
-	--		index, rank, abilityId, learnedLevel, skillLine, type, skillType
+	--		index, rank, abilityId, learnedLevel, skillLine, type, abilityType, skillType
 uespLog.MISSING_SKILL_DATA = {
 	{ 1, 1, 63799, 1, "Legerdemain", 1 },     -- Improved Hiding
 	{ 1, 2, 63800, 6, "Legerdemain", 1 },

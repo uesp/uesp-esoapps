@@ -1244,7 +1244,7 @@ uespLog.DEFAULT_SETTINGS =
 }
 
 	-- Skill lines missing from PTS for skill dumps
-	--		index, rank, abilityId, learnedLevel, skillLine, type
+	--		index, rank, abilityId, learnedLevel, skillLine, type, skillType
 uespLog.MISSING_SKILL_DATA = {
 	{ 1, 1, 63799, 1, "Legerdemain", 1 },     -- Improved Hiding
 	{ 1, 2, 63800, 6, "Legerdemain", 1 },
@@ -1427,6 +1427,18 @@ uespLog.MISSING_SKILL_DATA = {
 	{ 4, 1, 76451, 4, "Thieves Guild", 1 },     -- Clemency
 	{ 5, 1, 76452, 7, "Thieves Guild", 1 },     -- Timely Escape
 	{ 6, 1, 76453, 10, "Thieves Guild", 1 },     -- Veil of Shadows
+	{ 1, 1, 76325, 1, "Dark Brotherhood", 1, 4 },     -- Blade of Woe
+	{ 2, 1, 77392, 2, "Dark Brotherhood", 1, 4 },     -- Scales of Pitiless Justice
+	{ 2, 2, 77394, 5, "Dark Brotherhood", 1, 4 },
+	{ 2, 3, 77395, 8, "Dark Brotherhood", 1, 4 },
+	{ 2, 4, 79865,11, "Dark Brotherhood", 1, 4 },
+	{ 3, 1, 77397, 3, "Dark Brotherhood", 1, 4 },		-- Padomaic Spirit
+	{ 3, 2, 77398, 6, "Dark Brotherhood", 1, 4 },
+	{ 3, 3, 77399, 9, "Dark Brotherhood", 1, 4 },
+	{ 3, 4, 79868,12, "Dark Brotherhood", 1, 4 },
+	{ 4, 1, 77396, 4, "Dark Brotherhood", 1, 4 },		-- Shadowy Supplier
+	{ 5, 1, 77400, 7, "Dark Brotherhood", 1, 4 },		-- Shadow Rider
+	{ 6, 1, 77401,10, "Dark Brotherhood", 1, 4 },		-- Spectral Assassin
 }
 
 
@@ -5516,14 +5528,15 @@ function uespLog.DumpSkillMissing(note)
 		local abilityId = skillData[3]
 		local learnedLevel = skillData[4]
 		local skillLine = skillData[5]
-		local skillType = skillData[6]
+		local abilityType = skillData[6]
+		local skillType = skillData[7]
 		local extraData = {	}
 		
 		local lastAbility = nil
 		local nextAbility = nil
 		local nextAbility2 = nil
 		
-		if (skillType == 1) then
+		if (abilityType == 1) then
 			lastAbility = uespLog.MISSING_SKILL_DATA[k-1]
 			if (rank == 1) then lastAbility = nil end
 			
@@ -5561,6 +5574,7 @@ function uespLog.DumpSkillMissing(note)
 		extraData.prevSkill = 0
 		extraData.nextSkill = 0
 		extraData.nextSkill2 = 0
+		extraData.skillType = skillType
 		
 		if (lastAbility ~= nil) then
 			extraData.prevSkill = lastAbility[3]
@@ -5574,9 +5588,9 @@ function uespLog.DumpSkillMissing(note)
 			extraData.nextSkill2 = nextAbility2[3]
 		end
 		
-		if (skillType == 1) then
+		if (abilityType == 1) then
 			extraData.passive = true
-		elseif (skillType == 2) then
+		elseif (abilityType == 2) then
 			extraData.ultimate = true
 		end
 		

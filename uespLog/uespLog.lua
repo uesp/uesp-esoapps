@@ -7236,6 +7236,8 @@ function uespLog.DumpAchievementPriv (categoryIndex, subCategoryIndex, achieveme
 	logData.categoryIndex = categoryIndex
 	logData.subCategoryIndex = subCategoryIndex
 	logData.achievementIndex = achievementIndex
+	logData.categoryName = GetAchievementCategoryInfo(categoryIndex)
+	logData.subCategoryName = GetAchievementSubCategoryInfo(categoryIndex, subCategoryIndex)
 	logData.name = achName
 	logData.description = achDescription
 	logData.id = achievementId

@@ -32,6 +32,7 @@ uespLog.UESP_POWERTYPE_MEDIUMARMOR   = -52
 uespLog.UESP_POWERTYPE_HEAVYARMOR    = -53
 uespLog.UESP_POWERTYPE_WEAPONDAGGER  = -54
 uespLog.UESP_POWERTYPE_ARMORTYPE     = -55
+uespLog.UESP_POWERTYPE_DAMAGE        = -56
 
 uespLog.SKILLCOEF_CHECK_ABILITYID = 28302
 uespLog.SKILLCOEF_CHECK_INDEX = 2
@@ -51,6 +52,7 @@ uespLog.SKILLCOEF_MECHANIC_NAMES = {
 	[uespLog.UESP_POWERTYPE_HEAVYARMOR] = "Heavy Armor",
 	[uespLog.UESP_POWERTYPE_WEAPONDAGGER] = "Daggers",
 	[uespLog.UESP_POWERTYPE_ARMORTYPE] = "Armor Types",
+	[uespLog.UESP_POWERTYPE_DAMAGE] = "Spell + Weapon Damage",
 }
 
 
@@ -90,6 +92,12 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[36193] = { [5] = uespLog.UESP_POWERTYPE_SOULTETHER },
 	[36200] = { [5] = uespLog.UESP_POWERTYPE_SOULTETHER },
 	[36207] = { [5] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	
+	-- Leeching Strikes
+	[36908] = { [1] = POWERTYPE_MAGICKA, [2] = POWERTYPE_STAMINA, },
+	[37989] = { [1] = POWERTYPE_MAGICKA, [2] = POWERTYPE_STAMINA, },
+	[38002] = { [1] = POWERTYPE_MAGICKA, [2] = POWERTYPE_STAMINA, },
+	[38015] = { [1] = POWERTYPE_MAGICKA, [2] = POWERTYPE_STAMINA, },
 		
 	-- 1H+Shield Absorb Magic
 	-- Is a stamina ability but scales off of health
@@ -175,20 +183,20 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	
 	-- Fighters Guild Silver Shards/Silver Leash/Silver Bolts
 	-- Its a stamina ability but number 4/5 scales on health
-	[40300] = { [5] = POWERTYPE_HEALTH },
-	[42659] = { [5] = POWERTYPE_HEALTH },
-	[42665] = { [5] = POWERTYPE_HEALTH },
-	[42671] = { [5] = POWERTYPE_HEALTH },
+	--[40300] = { [1] = POWERTYPE_STAMINA },
+	--[42659] = { [1] = POWERTYPE_HEALTH },
+	--[42665] = { [1] = POWERTYPE_HEALTH },
+	--[42671] = { [1] = POWERTYPE_HEALTH },
 
-	[40336] = { [4] = POWERTYPE_HEALTH },
-	[42677] = { [4] = POWERTYPE_HEALTH },
-	[42687] = { [4] = POWERTYPE_HEALTH },
-	[42696] = { [4] = POWERTYPE_HEALTH },
+	--[40336] = { [1] = POWERTYPE_HEALTH },
+	--[42677] = { [1] = POWERTYPE_HEALTH },
+	--[42687] = { [1] = POWERTYPE_HEALTH },
+	--[42696] = { [1] = POWERTYPE_HEALTH },
 	
-	[35721] = { [4] = POWERTYPE_HEALTH },
-	[42647] = { [4] = POWERTYPE_HEALTH },
-	[42651] = { [4] = POWERTYPE_HEALTH },
-	[42655] = { [4] = POWERTYPE_HEALTH },
+	--[35721] = { [4] = POWERTYPE_HEALTH },
+	--[42647] = { [4] = POWERTYPE_HEALTH },
+	--[42651] = { [4] = POWERTYPE_HEALTH },
+	--[42655] = { [4] = POWERTYPE_HEALTH },
 	
 	-- Templar Repentance
 	[26821] = { [2] = POWERTYPE_ULTIMATE, [3] = POWERTYPE_ULTIMATE },
@@ -197,22 +205,22 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[27043] = { [2] = POWERTYPE_ULTIMATE, [3] = POWERTYPE_ULTIMATE },
 	
 	-- Templar Cleansing Ritual
-	[22265] = { [4] = POWERTYPE_ULTIMATE },
-	[27243] = { [4] = POWERTYPE_ULTIMATE },
-	[27249] = { [4] = POWERTYPE_ULTIMATE },
-	[27255] = { [4] = POWERTYPE_ULTIMATE },
+	[22265] = { [5] = POWERTYPE_ULTIMATE },
+	[27243] = { [5] = POWERTYPE_ULTIMATE },
+	[27249] = { [5] = POWERTYPE_ULTIMATE },
+	[27255] = { [5] = POWERTYPE_ULTIMATE },
 	
-	-- Templar Purifying Ritual
-	[22259] = { [5] = POWERTYPE_ULTIMATE },
-	[27261] = { [5] = POWERTYPE_ULTIMATE },
-	[27269] = { [5] = POWERTYPE_ULTIMATE },
-	[27275] = { [5] = POWERTYPE_ULTIMATE },
+	-- Templar Purifying Ritual/Ritual of Retribution
+	[22259] = { [8] = POWERTYPE_ULTIMATE },
+	[27261] = { [8] = POWERTYPE_ULTIMATE },
+	[27269] = { [8] = POWERTYPE_ULTIMATE },
+	[27275] = { [8] = POWERTYPE_ULTIMATE },
 	
 	-- Templar Extended Ritual
-	[22262] = { [4] = POWERTYPE_ULTIMATE },
-	[27281] = { [4] = POWERTYPE_ULTIMATE },
-	[27288] = { [4] = POWERTYPE_ULTIMATE },
-	[27295] = { [4] = POWERTYPE_ULTIMATE },
+	[22262] = { [5] = POWERTYPE_ULTIMATE },
+	[27281] = { [5] = POWERTYPE_ULTIMATE },
+	[27288] = { [5] = POWERTYPE_ULTIMATE },
+	[27295] = { [5] = POWERTYPE_ULTIMATE },
 	
 	-- Sorcerer Lightning Splash
 	[23182] = { [3] = POWERTYPE_ULTIMATE },
@@ -299,22 +307,22 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[41937] = { [3] = uespLog.UESP_POWERTYPE_SOULTETHER },
 	
 	-- Werewolf Werewolf Transformation
-	[32455] = { [2] = POWERTYPE_STAMINA },
-	[42356] = { [2] = POWERTYPE_STAMINA },
-	[42357] = { [2] = POWERTYPE_STAMINA },
-	[42358] = { [2] = POWERTYPE_STAMINA },
+	[32455] = { [3] = POWERTYPE_STAMINA },
+	[42356] = { [3] = POWERTYPE_STAMINA },
+	[42357] = { [3] = POWERTYPE_STAMINA },
+	[42358] = { [3] = POWERTYPE_STAMINA },
 	
 	-- Werewolf Werewolf Berserker
-	[39076] = { [2] = POWERTYPE_STAMINA },
-	[42377] = { [2] = POWERTYPE_STAMINA },
-	[42378] = { [2] = POWERTYPE_STAMINA },
-	[42379] = { [2] = POWERTYPE_STAMINA },
+	[39076] = { [3] = POWERTYPE_STAMINA },
+	[42377] = { [3] = POWERTYPE_STAMINA },
+	[42378] = { [3] = POWERTYPE_STAMINA },
+	[42379] = { [3] = POWERTYPE_STAMINA },
 
 	-- Werewolf Pack Leader
-	[39075] = { [2] = POWERTYPE_STAMINA },
-	[42365] = { [2] = POWERTYPE_STAMINA },
-	[42366] = { [2] = POWERTYPE_STAMINA },
-	[42367] = { [2] = POWERTYPE_STAMINA },
+	[39075] = { [3] = POWERTYPE_STAMINA },
+	[42365] = { [3] = POWERTYPE_STAMINA },
+	[42366] = { [3] = POWERTYPE_STAMINA },
+	[42367] = { [3] = POWERTYPE_STAMINA },
 	
 	-- Alliance Support Replenishing Barrier	
 	-- Although it's an ultimate the 3rd number seems to be only based off of magic
@@ -425,9 +433,9 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[29375] = { [3] = POWERTYPE_STAMINA },
 	[45430] = { [3] = POWERTYPE_STAMINA },
 	
-	-- Sorcerer Disintegrate
-	[31422] = { [2] = POWERTYPE_HEALTH },
-	[45192] = { [2] = POWERTYPE_HEALTH },
+	-- Sorcerer Disintegrate/Implosion
+	[31422] = { [3] = POWERTYPE_HEALTH, [6] = POWERTYPE_HEALTH },
+	[45192] = { [3] = POWERTYPE_HEALTH, [6] = POWERTYPE_HEALTH },
 	
 	-- Templar Burning Light	
 	[31718] = { [2] = POWERTYPE_ULTIMATE },
@@ -485,6 +493,17 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[60783] = POWERTYPE_STAMINA,
 	[60786] = POWERTYPE_MAGICKA,
 	[60796] = POWERTYPE_MAGICKA,
+	
+-- CP
+
+	-- Resilient
+	[61660] = POWERTYPE_HEALTH,
+	
+	-- Riposte
+	[60229] = { [2] = uespLog.UESP_POWERTYPE_DAMAGE },
+	
+	-- Invigorating bash
+	[60407] = POWERTYPE_HEALTH,
 		
 }
 
@@ -1968,7 +1987,10 @@ function uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 		y = 0		
 	elseif (mechanic == uespLog.UESP_POWERTYPE_WEAPONDAGGER) then
 		x = skill.dagger
-		y = 0		
+		y = 0
+	elseif (mechanic == uespLog.UESP_POWERTYPE_DAMAGE) then
+		x = skill.sd
+		y = skill.wd
 	elseif (mechanic == POWERTYPE_ULTIMATE) then
 		x = math.max(skill.mag, skill.sta)
 		y = math.max(skill.sd, skill.wd)

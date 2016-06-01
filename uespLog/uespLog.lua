@@ -546,6 +546,7 @@
 --
 --		- v0.71 -- 
 --			- "/uespstyle" now works with the 3 new styles added in DB.
+--			- "/usc addcharskills" now also adds CP passive abilities to coefficient tracking.
 --
 --
 --		Future Versions (Works in Progress)

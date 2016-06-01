@@ -1174,6 +1174,29 @@ function uespLog.SkillCoefAddCharSkills()
 	end
 	
 	uespLog.Msg("Found "..tostring(newSkills).." new skills to track.")
+	uespLog.SkillCoefAddCPPassives()
+end
+
+
+function uespLog.SkillCoefAddCPPassives()
+	local numDisc = GetNumChampionDisciplines()
+	local newSkills = 0
+	
+	for disciplineIndex = 1, numDisc do
+		local numSkills = GetNumChampionDisciplineSkills(disciplineIndex)	
+		
+		for skillIndex = 1, numSkills do
+			local unlockLevel = GetChampionSkillUnlockLevel(disciplineIndex, skillIndex)
+			local abilityId = GetChampionAbilityId(disciplineIndex, skillIndex)
+			
+			if (unlockLevel ~= nil and unlockLevel > 0) then
+				local result, isNew = uespLog.InitSkillCoefData(abilityId, 0)
+				if (isNew) then newSkills = newSkills + 1 end
+			end
+		end
+	end
+	
+	uespLog.Msg("Found "..tostring(newSkills).." new CP skills to track.")
 end
 
 

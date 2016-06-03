@@ -547,6 +547,7 @@
 --		- v0.71 -- 
 --			- "/uespstyle" now works with the 3 new styles added in DB.
 --			- "/usc addcharskills" now also adds CP passive abilities to coefficient tracking.
+--			- Improving items will show the correct improved item link in the chat window now.
 --
 --
 --		Future Versions (Works in Progress)
@@ -779,6 +780,7 @@ uespLog.ignoredNPCs = {
 	["Nixad"] = 1,			--Dark Brotherhood
 	["Lynx"] = 1,			--Dark Brotherhood
 	["Badger"] = 1,			--Dark Brotherhood
+	["Heron"] = 1,			--Dark Brotherhood
 }
 
 uespLog.lastTargetData = {
@@ -4432,6 +4434,11 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 		-- Skip durability updates or items already logged
 	if (updateReason == INVENTORY_UPDATE_REASON_DURABILITY_CHANGE) then
 		--uespLog.DebugExtraMsg("UESP::Skipping inventory slot update for "..itemName..", reason "..tostring(updateReason)..", sound "..tostring(itemSoundCategory))
+		return
+	end
+	
+	if (ITEM_SOUND_CATEGORY_BOOSTER) then
+		uespLog.LogInventoryItem(bagId, slotIndex, "SlotUpdate")
 		return
 	end
 	

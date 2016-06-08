@@ -548,6 +548,7 @@
 --			- "/uespstyle" now works with the 3 new styles added in DB.
 --			- "/usc addcharskills" now also adds CP passive abilities to coefficient tracking.
 --			- Improving items will show the correct improved item link in the chat window now.
+--			- Poison data is now collected when mining potion item data.
 --
 --
 --		Future Versions (Works in Progress)
@@ -1147,12 +1148,13 @@ uespLog.IsIdCheckInProgress = false
 uespLog.IdCheckRangeIdStart = -1
 uespLog.IdCheckValidCount = 0
 uespLog.IdCheckTotalCount = 0
-uespLog.mineItemPotionData = false
 uespLog.mineItemReloadDelay = uespLog.MINEITEM_AUTORELOAD_DELTATIMEMS
 uespLog.mineItemPotionDataEffectIndex = 0
 uespLog.MINEITEM_POTION_MAXEFFECTINDEX = 30
-uespLog.MINEITEM_POTION_ITEMID = 54339
-uespLog.MINEITEM_POTION_MAGICITEMID = 1234567
+uespLog.MINEITEM_POTION_ITEMID = 76847
+uespLog.MINEITEM_POISON_ITEMID = 54339
+uespLog.MINEITEM_POTION_MAGICITEMID = 1	-- 1234567
+uespLog.MINEITEM_POISON_MAGICITEMID = 2
 uespLog.MINEITEM_ENCHANT_ITEMID = 55679
 uespLog.MINEITEM_ENCHANT_ENCHANTID = 26841
 
@@ -7634,7 +7636,7 @@ function uespLog.MineEnchantCharges()
 end
 
 
-function uespLog.MineItemIteratePotionData (effectIndex)
+function uespLog.MineItemIteratePotionData (effectIndex, realItemId, potionItemId)
 	local i, value
 	local level, quality
 	local itemLink
@@ -7660,7 +7662,7 @@ function uespLog.MineItemIteratePotionData (effectIndex)
 				setCount = setCount + 1
 				uespLog.mineItemCount = uespLog.mineItemCount + 1
 				
-				itemLink = uespLog.MakeItemLinkEx( { itemId = uespLog.MINEITEM_POTION_ITEMID, level = level, quality = quality, potionEffect = effectIndex } )
+				itemLink = uespLog.MakeItemLinkEx( { itemId = realItemId, level = level, quality = quality, potionEffect = effectIndex } )
 				
 				if (uespLog.IsValidItemLink(itemLink)) then
 				
@@ -7668,13 +7670,13 @@ function uespLog.MineItemIteratePotionData (effectIndex)
 						isFirst = false
 						
 						extraData.comment = comment
-						extraData.realItemId = uespLog.MINEITEM_POTION_ITEMID
-						extraData.magicItemId = uespLog.MINEITEM_POTION_MAGICITEMID
+						extraData.realItemId = realItemId
+						extraData.magicItemId = potionItemId
 												
 						fullItemLog = uespLog.CreateItemLinkLog(itemLink)
 						
 						fullItemLog.event = "mineitem"
-						fullItemLog.itemLink = string.gsub(fullItemLog.itemLink, tostring(extraData.realItemId), tostring(uespLog.MINEITEM_POTION_MAGICITEMID))
+						fullItemLog.itemLink = string.gsub(fullItemLog.itemLink, tostring(extraData.realItemId), tostring(potionItemId))
 						
 						uespLog.AppendDataToLog("all", fullItemLog, extraData)
 						extraData.comment = nil
@@ -7683,12 +7685,13 @@ function uespLog.MineItemIteratePotionData (effectIndex)
 						newItemLog = uespLog.CreateItemLinkLog(itemLink)
 						
 						extraData.comment = comment
-						extraData.realItemId = uespLog.MINEITEM_POTION_ITEMID
-						extraData.magicItemId = uespLog.MINEITEM_POTION_MAGICITEMID
+						extraData.realItemId = realItemId
+						extraData.magicItemId = potionItemId
 						
 						diffItemLog = uespLog.CompareItemLogs(lastItemLog, newItemLog)
+						diffItemLog.itemLink = newItemLog.itemLink
 						diffItemLog.event = "mi"
-						diffItemLog.itemLink = string.gsub(diffItemLog.itemLink, tostring(extraData.realItemId), tostring(uespLog.MINEITEM_POTION_MAGICITEMID))
+						diffItemLog.itemLink = string.gsub(diffItemLog.itemLink, tostring(extraData.realItemId), tostring(potionItemId))
 						
 						uespLog.AppendDataToLog("all", diffItemLog, extraData)
 						lastItemLog = newItemLog
@@ -7831,7 +7834,8 @@ function uespLog.MineItemsAutoLoopPotionData ()
 		return
 	end
 	
-	uespLog.MineItemIteratePotionData(uespLog.mineItemPotionDataEffectIndex)
+	uespLog.MineItemIteratePotionData(uespLog.mineItemPotionDataEffectIndex, uespLog.MINEITEM_POTION_ITEMID, uespLog.MINEITEM_POTION_MAGICITEMID)
+	uespLog.MineItemIteratePotionData(uespLog.mineItemPotionDataEffectIndex, uespLog.MINEITEM_POISON_ITEMID, uespLog.MINEITEM_POISON_MAGICITEMID)
 	uespLog.mineItemPotionDataEffectIndex = uespLog.mineItemPotionDataEffectIndex + 1
 
 		-- Chain the call to keep going if required
@@ -8331,7 +8335,8 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 	end
 	
 	if (uespLog.mineItemPotionData) then
-		uespLog.MineItemIteratePotionData(uespLog.startNumber)
+		uespLog.MineItemIteratePotionData(uespLog.mineItemPotionDataEffectIndex, uespLog.MINEITEM_POTION_ITEMID, uespLog.MINEITEM_POTION_MAGICITEMID)
+		uespLog.MineItemIteratePotionData(uespLog.mineItemPotionDataEffectIndex, uespLog.MINEITEM_POISON_ITEMID, uespLog.MINEITEM_POISON_MAGICITEMID)
 	else
 		uespLog.MsgColor(uespLog.mineColor, "UESP::Trying to mine items with ID "..tostring(startNumber))
 		uespLog.MineItems(startNumber, startNumber)

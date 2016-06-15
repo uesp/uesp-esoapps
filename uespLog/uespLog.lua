@@ -549,6 +549,7 @@
 --			- "/usc addcharskills" now also adds CP passive abilities to coefficient tracking.
 --			- Improving items will show the correct improved item link in the chat window now.
 --			- Poison data is now collected when mining potion item data.
+--			- Fixed saving of werewolf stat in character/build data.
 --
 --
 --		Future Versions (Works in Progress)

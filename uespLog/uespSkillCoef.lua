@@ -33,6 +33,7 @@ uespLog.UESP_POWERTYPE_HEAVYARMOR    = -53
 uespLog.UESP_POWERTYPE_WEAPONDAGGER  = -54
 uespLog.UESP_POWERTYPE_ARMORTYPE     = -55
 uespLog.UESP_POWERTYPE_DAMAGE        = -56
+uespLog.UESP_POWERTYPE_ASSASSINATION = -57
 
 uespLog.SKILLCOEF_CHECK_ABILITYID = 28302
 uespLog.SKILLCOEF_CHECK_INDEX = 2
@@ -53,6 +54,7 @@ uespLog.SKILLCOEF_MECHANIC_NAMES = {
 	[uespLog.UESP_POWERTYPE_WEAPONDAGGER] = "Daggers",
 	[uespLog.UESP_POWERTYPE_ARMORTYPE] = "Armor Types",
 	[uespLog.UESP_POWERTYPE_DAMAGE] = "Spell + Weapon Damage",
+	[uespLog.UESP_POWERTYPE_ASSASSINATION] = "Assassination Skills Slotted",
 }
 
 
@@ -408,6 +410,10 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	-- Note that skill output is truncated to integer values so fit accuracy may be low
 	[29791] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
 	[45529] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	
+	-- Nightblade Pressure Points
+	[36636] = uespLog.UESP_POWERTYPE_ASSASSINATION,
+	[45053] = uespLog.UESP_POWERTYPE_ASSASSINATION,	
 	
 	-- Nightblade Shadow Barrier	
 	[18866] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR, [3] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
@@ -2000,6 +2006,9 @@ function uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 	elseif (mechanic == POWERTYPE_HEALTH) then
 		x = skill.hea
 		y = 0
+	elseif (mechanic == uespLog.UESP_POWERTYPE_ASSASSINATION) then
+		x = 0	-- TODO - Actually count skills
+		y = 0		
 	end
 	
 	return x, y

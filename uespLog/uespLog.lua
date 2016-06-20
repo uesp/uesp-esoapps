@@ -550,6 +550,7 @@
 --			- Improving items will show the correct improved item link in the chat window now.
 --			- Poison data is now collected when mining potion item data.
 --			- Fixed saving of werewolf stat in character/build data.
+--			- Added the "/uespcontloot [on|off]" command to autoloot items from containers. 
 --
 --
 --		Future Versions (Works in Progress)
@@ -1246,6 +1247,7 @@ uespLog.DEFAULT_SETTINGS =
 			[POWERTYPE_STAMINA] = false,
 			[POWERTYPE_ULTIMATE] = false,
 		},
+		["containerAutoLoot"] = false,
 	}
 }
 
@@ -1460,6 +1462,30 @@ uespLog.ITEMCHANGE_IGNORE_FIELDS = {
 function uespLog.BoolToOnOff(flag)
 	if (flag) then return "on" end
 	return "off"
+end
+
+
+function uespLog.GetContainerAutoLoot()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.containerAutoLoot == nil) then
+		uespLog.savedVars.settings.data.containerAutoLoot = uespLog.DEFAULT_SETTINGS.containerAutoLoot
+	end
+	
+	return uespLog.savedVars.settings.data.containerAutoLoot
+end
+
+
+function uespLog.SetContainerAutoLoot(flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	uespLog.savedVars.settings.data.containerAutoLoot = flag
 end
 
 
@@ -2304,6 +2330,15 @@ function uespLog.Initialize( self, addOnName )
 		end
 	end
 	
+	if (uespLog.savedVars["charInfo"].data.stats ~= nil) then
+		uespLog.charData_StatsData = uespLog.savedVars["charInfo"].data.stats 
+	end
+	
+	if (uespLog.savedVars["charInfo"].data.skills ~= nil) then
+		-- uespLog.charData_SkillsData = uespLog.savedVars["charInfo"].data.skills 
+		uespLog.savedVars["charInfo"].data.skills = nil
+	end
+	
 	if (uespLog.savedVars.settings.data.charDataPassword == nil) then
 		uespLog.savedVars.settings.data.charDataPassword = ""
 	end
@@ -2360,6 +2395,7 @@ function uespLog.Initialize( self, addOnName )
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTIVE_QUEST_TOOL_CHANGED, uespLog.OnQuestToolChanged)	
 		
+	EVENT_MANAGER:UnregisterForEvent( "LOOT_SHARED" , EVENT_LOOT_UPDATED)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOOT_UPDATED, uespLog.OnLootUpdated)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOOT_RECEIVED, uespLog.OnLootGained)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOOT_CLOSED, uespLog.OnLootClosed)
@@ -2437,6 +2473,9 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_KEEP_UNDER_ATTACK_CHANGED, uespLog.OnKeepUnderAttack)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_KEEP_GATE_STATE_CHANGED, uespLog.OnKeepGateStateChanged)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_GUILD_KEEP_CLAIM_UPDATED, uespLog.OnGuildKeepClaimUpdated)	
+	
+
+
 	
 	uespLog.Old_ZO_InventorySlot_DoPrimaryAction = ZO_InventorySlot_DoPrimaryAction
 	ZO_InventorySlot_DoPrimaryAction = uespLog.ZO_InventorySlot_DoPrimaryAction
@@ -3871,13 +3910,48 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 end
 
 
-function uespLog.OnLootUpdated (eventCode, actionName, isOwned)
+-- NOTE: Copied from original API local function in /ingame/zo_loot/loot_shared.lua.html
+function uespLog.UpdateLootWindow(eventCode)
+	local name, targetType, actionName, isOwned = GetLootTargetInfo()
+	local useDefaultLoot = true
+	
+	if (name ~= "") then
+	
+		if targetType == INTERACT_TARGET_TYPE_ITEM then
+			name = zo_strformat(SI_TOOLTIP_ITEM_NAME, name)
+		elseif targetType == INTERACT_TARGET_TYPE_OBJECT then
+			name = zo_strformat(SI_LOOT_OBJECT_NAME, name)
+		elseif targetType == INTERACT_TARGET_TYPE_FIXTURE then
+			name = zo_strformat(SI_TOOLTIP_FIXTURE_INSTANCE, name)
+		end
+	end
+	
+	if (uespLog.GetContainerAutoLoot()) then
+		local isAutoloot = GetSetting(SETTING_TYPE_LOOT, LOOT_SETTING_AUTO_LOOT) == "1"
+		local isStolenAutoLoot = GetSetting(SETTING_TYPE_LOOT, LOOT_SETTING_AUTO_LOOT_STOLEN) == "1"
+		
+		if (targetType == INTERACT_TARGET_TYPE_ITEM and ((isOwned == false and isStolenAutoLoot) or (isOwned and isAutoloot))) then
+			useDefaultLoot = false
+			LOOT_SHARED:LootAllItems()
+		end
+	end
+	
+	if (useDefaultLoot) then
+		SYSTEMS:GetObject("loot"):UpdateLootWindow(name, actionName, isOwned)
+	end
+	
+end
+
+
+function uespLog.OnLootUpdated (eventCode)
 	--uespLog.DebugMsg("OnLootUpdated::"..tostring(uespLog.lastTargetData.name).."  count = "..tostring(GetNumLootItems()))
 	--uespLog.DebugExtraMsg("OnLootUpdated::actionName = "..tostring(actionName))
 	--uespLog.DebugExtraMsg("OnLootUpdated::isOwned = "..tostring(isOwned))
 	
 	uespLog.lastLootUpdateCount = GetNumLootItems()
 	uespLog.lastLootTargetName = uespLog.lastTargetData.name
+	
+	uespLog.UpdateLootWindow(eventCode)
 end
 
 
@@ -10835,6 +10909,26 @@ end
 
 
 SLASH_COMMANDS["/uespminecollect"] = uespLog.MineCollectCommand
+
+
+function uespLog.ContainerLootCommand(cmd)
+	local cmds, firstCmd = uespLog.SplitCommands(cmd)
+	
+	if (firstCmd == "on") then
+		uespLog.SetContainerAutoLoot(true)
+		uespLog.Msg("Turned container auto-looting on.")
+	elseif (firstCmd == "off") then
+		uespLog.SetContainerAutoLoot(false)
+		uespLog.Msg("Turned container auto-looting off.")
+	else
+		uespLog.Msg("Command Foramt: /uespcontloot [on|off]")
+		uespLog.Msg("Container auto-looting is "..uespLog.BoolToOnOff(uespLog.GetContainerAutoLoot()))
+	end
+	
+end
+
+
+SLASH_COMMANDS["/uespcontloot"] = uespLog.ContainerLootCommand
 
 
 -- Item subtypes that crash with GetItemLinkTraitOnUseAbilityInfo() in update 10

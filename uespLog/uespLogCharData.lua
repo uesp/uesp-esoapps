@@ -108,7 +108,21 @@ uespLog.CHARDATA_CRAFTSTYLE_NAMES = {
 uespLog.charData_ActionBarData = { 
 	[1] = { },
 	[2] = { },
-	[3] = { }, -- Overload
+	[3] = { }, -- Overload / Werewolf
+}
+
+
+uespLog.charData_SkillsData = { 
+	[1] = { },
+	[2] = { },
+	[3] = { }, -- Overload / Werewolf
+}
+
+
+uespLog.charData_StatsData = { 
+	[1] = { },
+	[2] = { },
+	[3] = { }, -- Overload / Werewolf
 }
 
 
@@ -131,6 +145,8 @@ uespLog.charDataLogoutSave = false
 
 function uespLog.InitCharData()
 	uespLog.SaveActionBarForCharData()
+	uespLog.SaveStatsForCharData()
+	--uespLog.SaveSkillsForCharData()
 end
 
 
@@ -320,6 +336,24 @@ function uespLog.SaveBuildData (note, forceSave)
 end
 
 
+function uespLog.AddBuildDataBarStat (charData, barIndex, name, value)
+	charData["Bar" .. tostring(barIndex) .. ":" .. tostring(name)] = value
+end
+
+
+function uespLog.GetBuildDataActiveBarIndex()
+	local barIndex = GetActiveWeaponPairInfo()
+	
+	if (uespLog.IsInOverloadState()) then
+		barIndex = 3
+	elseif (IsWerewolf()) then
+		barIndex = 3
+	end
+	
+	return barIndex
+end
+
+
 function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	local charData = { }
 	suppressMsg = suppressMsg or true
@@ -357,12 +391,11 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	charData.SecondsPlayed = GetSecondsPlayed()
 	charData.Latency = GetLatency()
 	
-	charData.ActiveWeaponBar = GetActiveWeaponPairInfo()
+	charData.ActiveWeaponBar = uespLog.GetBuildDataActiveBarIndex()
 	charData.ActiveAbilityBar = charData.ActiveWeaponBar
 	charData.OverloadState = 0
 	
 	if (uespLog.IsInOverloadState()) then
-		charData.ActiveAbilityBar = 3
 		charData.OverloadState = 1
 	end
 	
@@ -370,10 +403,15 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	charData.MediumArmorCount = uespLog.CountEquippedArmor(ARMORTYPE_MEDIUM)
 	charData.HeavyArmorCount = uespLog.CountEquippedArmor(ARMORTYPE_HEAVY)
 	charData.ArmorTypeCount = uespLog.CountEquippedArmorTypes()
+	
 	charData.DaggerWeaponCount = uespLog.CountEquippedWeapons(WEAPONTYPE_DAGGER)
 	charData.SwordWeaponCount = uespLog.CountEquippedWeapons(WEAPONTYPE_SWORD)
 	charData.MaceWeaponCount = uespLog.CountEquippedWeapons(WEAPONTYPE_HAMMER)
 	charData.AxeWeaponCount = uespLog.CountEquippedWeapons(WEAPONTYPE_AXE)
+	uespLog.AddBuildDataBarStat(charData, charData.ActiveWeaponBar, "DaggerWeaponCount", charData.DaggerWeaponCount)
+	uespLog.AddBuildDataBarStat(charData, charData.ActiveWeaponBar, "SwordWeaponCount", charData.SwordWeaponCount)
+	uespLog.AddBuildDataBarStat(charData, charData.ActiveWeaponBar, "MaceWeaponCount", charData.MaceWeaponCount)
+	uespLog.AddBuildDataBarStat(charData, charData.ActiveWeaponBar, "AxeWeaponCount", charData.AxeWeaponCount)
 	
 	charData.Alliance = GetAllianceName(GetUnitAlliance("player"))
 	charData.AllianceRank = GetUnitAvARank("player")
@@ -413,14 +451,14 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	charData.LastFoodEatenLevel = uespLog.charDataLastFoodEaten.reqLevel
 	charData.LastFoodEatenCP = uespLog.charDataLastFoodEaten.reqCP
 	
-	charData.Stats = uespLog.CreateCharDataStats()
-	charData.Power = uespLog.CreateCharDataPower()
+	charData.Stats = uespLog.CreateCharDataStats(false)
+	charData.Power = uespLog.CreateCharDataPower(false)
 	charData.Buffs, charData.Vampire, charData.Werewolf = uespLog.CreateCharDataBuffs()
 	charData.ActionBar = uespLog.CreateCharDataActionBar()
 	charData.EquipSlots = uespLog.CreateCharDataEquipSlots()
 	charData.ChampionPoints = uespLog.CreateCharDataChampionPoints()
 	charData.Crafting = uespLog.CreateCharDataCrafting()
-	
+		
 			-- Note: This function only works if the character is actually in Werewolf form at the time
 	if (IsWerewolf()) then
 		charData.Werewolf = 2
@@ -437,7 +475,49 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 		charData.ScreenShot = ""
 	end
 	
+	uespLog.MergeBuildDataStats(charData)
+	-- uespLog.MergeBuildDataSkills(charData)
+
 	return charData
+end
+
+
+
+function uespLog.MergeBuildDataStats(charData)
+	local barIndex = uespLog.GetBuildDataActiveBarIndex()
+	
+	for i = 1, 3 do
+		if (i ~= barIndex) then 
+		
+			for name, value in pairs(uespLog.charData_StatsData[i]) do
+				charData.Stats[name] = value
+			end
+
+		end
+	end
+	
+end
+
+
+function uespLog.MergeBuildDataSkills(charData)
+	local barIndex = uespLog.GetBuildDataActiveBarIndex()
+	
+	for i = 1, 3 do
+		if (i ~= barIndex) then 
+		
+			for name, skillData in pairs(uespLog.charData_SkillsData[i]) do
+				local key
+				
+				key = "desc" .. tostring(barIndex)
+				--charData.Skills[name][key] = skillData[key]
+				
+				key = "cost" .. tostring(barIndex)
+				--charData.Skills[name][key] = skillData[key]
+			end
+
+		end
+	end
+	
 end
 
 
@@ -500,7 +580,6 @@ function uespLog.OnEatDrinkItem(itemLink)
 		return
 	end
 	
-	uespLog.charDataLastFoodEaten.name = itemName
 	uespLog.charDataLastFoodEaten.itemLink = itemLink
 	uespLog.charDataLastFoodEaten.type = itemTypeString
 	uespLog.charDataLastFoodEaten.desc = abilityDescription
@@ -520,16 +599,34 @@ function uespLog.OnScreenShotSaved(eventCode, directory, filename)
 end
 
 
-function uespLog.CreateCharDataStats()
+function uespLog.SaveStatsForCharData()
+	local barIndex = uespLog.GetBuildDataActiveBarIndex()
+	local statsData = uespLog.CreateCharDataStats(true)
+	local powerData = uespLog.CreateCharDataPower(true)
+	
+	uespLog.charData_StatsData[barIndex] = statsData
+	
+	uespLog.savedVars.charInfo.data.stats = uespLog.charData_StatsData
+end
+
+
+function uespLog.CreateCharDataStats(onlyBar)
 	local stats = {}
 	local i
+	local barIndex = uespLog.GetBuildDataActiveBarIndex()
 	
 	for i = -10, 100 do
 		if (uespLog.CHARDATA_STATS[i] ~= nil) then
-			local stat = GetPlayerStat(i, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+			local value = GetPlayerStat(i, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+			local name = uespLog.CHARDATA_STATS[i]
 			
-			if (stat ~= nil) then
-				stats[uespLog.CHARDATA_STATS[i]] = stat
+			if (value ~= nil) then
+				
+				if (not onlyBar) then
+					stats[name] = value
+				end
+				
+				stats["Bar" .. tostring(barIndex) .. ":" .. tostring(name)] = value
 			end
 		end
 	end
@@ -538,16 +635,23 @@ function uespLog.CreateCharDataStats()
 end
 
 
-function uespLog.CreateCharDataPower()
+function uespLog.CreateCharDataPower(onlyBar)
 	local power = {}
 	local i
+	local barIndex = uespLog.GetBuildDataActiveBarIndex()
 	
 	for i = -10, 50 do
 		if (uespLog.CHARDATA_POWER[i] ~= nil) then
 			local current, currentMax, effectiveMax = GetUnitPower("player", i)
+			local name = uespLog.CHARDATA_POWER[i]
 			
 			if (currentMax ~= nil) then
-				power[uespLog.CHARDATA_POWER[i]] = currentMax
+			
+				if (not onlyBar) then
+					power[name] = currentMax
+				end
+				
+				power["Bar" .. tostring(barIndex) .. ":" .. tostring(name)] = currentMax
 			end
 		end
 	end
@@ -614,6 +718,16 @@ function uespLog.CreateCharDataEquipSlots()
 end
 
 
+function uespLog.SaveSkillsForCharData()
+	local barIndex = uespLog.GetBuildDataActiveBarIndex()
+	local skillsData = uespLog.CreateCharDataSkills()
+	
+	uespLog.charData_SkillsData[barIndex] = skillsData
+	
+	uespLog.savedVars.charInfo.data.skills = uespLog.charData_SkillsData
+end
+
+
 function uespLog.CreateCharDataSkills()
 	local skills = {}
 	local numSkillTypes = GetNumSkillTypes()
@@ -621,6 +735,7 @@ function uespLog.CreateCharDataSkills()
 	local skillIndex
 	local abilityIndex
 	local totalSkillPoints = 0
+	local barIndex = uespLog.GetBuildDataActiveBarIndex()
 	
 	for skillType = 1, numSkillTypes do
 		local numSkillLines = GetNumSkillLines(skillType)
@@ -702,11 +817,13 @@ function uespLog.CreateCharDataSkills()
 							["id"] = abilityId, 
 							["icon"] = texture, 
 							["desc"] = description, 
+							--["desc" .. tostring(barIndex)] = description, 
 							["type"] = skillType, 
 							["index"] = abilityIndex,
 							["name"] = name, 
 							["area"] = areaStr,
 							["cost"] = costStr,
+							--["cost" .. tostring(barIndex)] = costStr,
 							["range"] = rangeStr,
 							["radius"] = radius,
 							["castTime"] = castTime,
@@ -810,15 +927,13 @@ end
 
 
 function uespLog.SaveActionBarForCharData()
-	local weaponPairIndex, isLocked = GetActiveWeaponPairInfo()
+	local weaponPairIndex = 1
 	local timestamp = GetTimeStamp()
 	
-	if (weaponPairIndex < 1 or weaponPairIndex > 2) then
-		return false
-	end
+	weaponPairIndex = uespLog.GetBuildDataActiveBarIndex()
 	
-	if (uespLog.IsInOverloadState()) then
-		weaponPairIndex = 3
+	if (weaponPairIndex < 1 or weaponPairIndex > 3) then
+		return false
 	end
 	
 	if (uespLog.LastSavedActionBar_WeaponPair == weaponPairIndex and timestamp - uespLog.LastSavedActionBar_TimeStamp >= uespLog.SAVEACTIONBAR_MINDELTATIME) then
@@ -867,7 +982,7 @@ function uespLog.SaveActionBarForCharData()
 			areaStr = tostring(radius/100) .. " x " .. tostring(angleDistance/50) .. " meters"
 		end
 		
-		uespLog.charData_ActionBarData[weaponPairIndex][i] = { 
+		uespLog.charData_ActionBarData[weaponPairIndex][i] = {
 				["name"] = name, 
 				["id"] = id, 
 				["icon"] = texture,
@@ -929,6 +1044,7 @@ function uespLog.OnActionSlotAbilitySlotted (eventCode, newAbilitySlotted)
 	uespLog.SaveActionBarForCharData()
 end
 
+
 -- Note: This gets called **alot** (40-50 times) when a mob is killed with a Destruction Staff wielded
 function uespLog.OnActionSlotUpdated (eventCode, slotNum)
 	--uespLog.DebugMsg("OnActionSlotUpdated "..tostring(slotNum)..":"..tostring(GetGameTimeMilliseconds()))
@@ -937,7 +1053,7 @@ function uespLog.OnActionSlotUpdated (eventCode, slotNum)
 	--local timestamp = GetGameTimeMilliseconds()
 	--data[#data+1] = "EVENT_ACTION_SLOT_UPDATED "..tostring(slotNum).." "..tostring(timestamp)
 	
-	uespLog.SaveActionBarForCharData()
+	--uespLog.SaveActionBarForCharData()
 end
 
 
@@ -950,6 +1066,10 @@ end
 function uespLog.OnActiveWeaponPairChanged (eventCode, activeWeaponPair, locked)
 	--uespLog.DebugMsg("OnActiveWeaponPairChanged "..tostring(activeWeaponPair))
 	uespLog.SaveActionBarForCharData()
+	uespLog.SaveStatsForCharData()
+	
+		-- Far too slow
+	--uespLog.SaveSkillsForCharData()
 end
 
 

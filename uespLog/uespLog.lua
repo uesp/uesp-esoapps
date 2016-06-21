@@ -552,7 +552,14 @@
 --			- Fixed saving of werewolf stat in character/build data.
 --			- Added the "/uespcontloot [on|off]" command to autoloot items from containers. 
 --			- Spell and Physical Penetration stats are added to the character and inventory window.
---			  Use "/uespcustomstat on" and reload the UI to take effect.
+--			  Use "/uespcustomstat on" and reload the UI to take effect. The current list of custom stats are:
+--					Spell and Physical Penetration
+--					Spell and Weapon Critical Damage 
+--						These values are calculated from scratch as the game gives no way to get their values.
+--					Effective Spell and Weapon Power
+--						These are custom stats meant to gauge your overall damage potential in terms of
+--						Magicka/Stamina, Spell/Weapon Damage, Critical/Critical Damage, and Penetration.
+--						It currently uses a target resistance of 18.2k with no critical resistance.
 --			- Improved the display of the startup message.
 --
 --
@@ -1254,6 +1261,10 @@ uespLog.DEFAULT_SETTINGS =
 		},
 		["containerAutoLoot"] = false,
 		["customStatDisplay"] = false,
+		["targetResistance"] = 18200,
+		["targetCritResistFactor"] = 0,
+		["targetCritResistFlat"] = 0,
+		
 	}
 }
 
@@ -2348,6 +2359,18 @@ function uespLog.Initialize( self, addOnName )
 		["charInfo"] = ZO_SavedVars:New("uespLogSavedVars", uespLog.DATA_VERSION, "charInfo", uespLog.DEFAULT_CHARINFO),
 		["skillCoefAbilityList"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "skillCoefAbilityList", {}),
 	}
+	
+	if (uespLog.savedVars.settings.data.targetResistance == nil) then
+		uespLog.savedVars.settings.data.targetResistance = uespLog.DEFAULT_SETTINGS.data.targetResistance
+	end
+	
+	if (uespLog.savedVars.settings.data.targetCritResistFactor == nil) then
+		uespLog.savedVars.settings.data.targetCritResistFactor = uespLog.DEFAULT_SETTINGS.data.targetCritResistFactor
+	end
+	
+	if (uespLog.savedVars.settings.data.targetCritResistFlat == nil) then
+		uespLog.savedVars.settings.data.targetCritResistFlat = uespLog.DEFAULT_SETTINGS.data.targetCritResistFlat
+	end
 		
 	if (uespLog.savedVars["charInfo"].data.lastFoodEaten ~= nil) then
 		uespLog.charDataLastFoodEaten = uespLog.savedVars["charInfo"].data.lastFoodEaten 
@@ -10992,6 +11015,372 @@ end
 SLASH_COMMANDS["/uespcustomstats"] = uespLog.CustomStatsCommand
 
 
+uespLog.STAT_EFFECTIVE_SPELL_POWER = -100
+uespLog.STAT_EFFECTIVE_WEAPON_POWER = -101
+uespLog.STAT_SPELL_CRITICAL_DAMAGE = -102
+uespLog.STAT_WEAPON_CRITICAL_DAMAGE = -103
+uespLog.EFFECTIVE_SPELL_POWER_TEXT = "Effective Spell Power"
+uespLog.EFFECTIVE_WEAPON_POWER_TEXT = "Effective Weapon Power"
+uespLog.SPELL_CRITICAL_DAMAGE_TEXT = "Spell Critical Damage"
+uespLog.WEAPON_CRITICAL_DAMAGE_TEXT = "Weapon Critical Damage"
+
+
+function uespLog.GetActiveWeaponTypes()
+	local activeIndex = GetActiveWeaponPairInfo()
+	local weaponType1 = 0
+	local weaponType2 = 0
+	
+	if (activeIndex == 1) then
+		weaponType1 = GetItemWeaponType(BAG_WORN, EQUIP_SLOT_MAIN_HAND)
+		weaponType2 = GetItemWeaponType(BAG_WORN, EQUIP_SLOT_OFF_HAND)
+	else
+		weaponType1 = GetItemWeaponType(BAG_WORN, EQUIP_SLOT_BACKUP_MAIN)
+		weaponType2 = GetItemWeaponType(BAG_WORN, EQUIP_SLOT_BACKUP_OFF)
+	end
+	
+	return weaponType1, weaponType2
+end
+
+
+function uespLog.GetAttackSpellMitigation()
+	local AttackMitigation  = 0
+	local PenetrationFactor = 0
+	local Penetration = GetPlayerStat(STAT_SPELL_PENETRATION, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+	local Level = GetUnitLevel("player")
+	local EffectiveLevel = GetUnitEffectiveLevel("player")
+	local TargetDefenseBonus = 0
+	local currentRank = GetSkillAbilityUpgradeInfo(2, 5, 7)		-- 5/10%
+	local weaponType1, weaponType2 = uespLog.GetActiveWeaponTypes()
+	
+		-- Destruction Staff: Penetrating Magic Passive
+	if (weaponType1 == WEAPONTYPE_FIRE_STAFF or weaponType1 == WEAPONTYPE_FROST_STAFF or weaponType1 == WEAPONTYPE_LIGHTNING_STAFF) then
+		if (currentRank == 1) then
+			PenetrationFactor = 0.05 
+		elseif (currentRank == 2) then
+			PenetrationFactor = 0.10 
+		end
+	end
+	
+	-- AttackMitigation = (((Target.SpellResist)*(1 - Skill2.SpellPenetration) - SpellPenetration)*(-1/(Level * 1000)) + 1)*(1 - Target.DefenseBonus)
+	AttackMitigation = uespLog.savedVars.settings.data.targetResistance * (1 - PenetrationFactor)
+	AttackMitigation = AttackMitigation - Penetration
+	AttackMitigation = 1 + AttackMitigation * (-1 / (Level * 1000))
+	AttackMitigation = AttackMitigation * (1 - TargetDefenseBonus)
+	
+	if (AttackMitigation > 1) then AttackMitigation = 1 end
+	if (AttackMitigation < 0) then AttackMitigation = 0 end
+	
+	return AttackMitigation
+end
+
+
+function uespLog.GetAttackPhysicalMitigation()
+	local AttackMitigation  = 0
+	local PenetrationFactor = 0
+	local Penetration = GetPlayerStat(STAT_PHYSICAL_PENETRATION, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+	local Level = GetUnitLevel("player")
+	local EffectiveLevel = GetUnitEffectiveLevel("player")
+	local TargetDefenseBonus = 0
+	local currentRank2H = GetSkillAbilityUpgradeInfo(2, 1, 7)		-- 10/20%
+	local currentRankDW = GetSkillAbilityUpgradeInfo(2, 3, 10)		-- 5/10% x1/2
+	local activeWeaponType = 1
+	local weaponType1, weaponType2 = uespLog.GetActiveWeaponTypes()
+	
+		-- 2H Passive
+	if (weaponType1 == WEAPONTYPE_TWO_HANDED_HAMMER) then
+		if (currentRank2H == 1) then
+			PenetrationFactor = 0.10 
+		elseif (currentRank2H == 2) then
+			PenetrationFactor = 0.20 
+		end
+		
+		-- 1H Passive
+	elseif (weaponType1 == WEAPONTYPE_HAMMER or weaponType2 == WEAPONTYPE_HAMMER) then
+		
+		if (currentRankDW == 1) then
+			PenetrationFactor = 0.05 
+		elseif (currentRankDW == 2) then
+			PenetrationFactor = 0.10 
+		end
+		
+		if (weaponType1 == WEAPONTYPE_HAMMER and weaponType2 == WEAPONTYPE_HAMMER) then
+			PenetrationFactor = PenetrationFactor * 2
+		end
+	end
+	
+	-- AttackMitigation = (((Target.PhysicalResist)*(1 - Skill2.PhysicalPenetration) - PhysicalPenetration)*(-1/(Level * 1000)) + 1)*(1 - Target.DefenseBonus)
+	AttackMitigation = uespLog.savedVars.settings.data.targetResistance * (1 - PenetrationFactor)
+	AttackMitigation = AttackMitigation - Penetration
+	AttackMitigation = 1 + AttackMitigation * (-1 / (Level * 1000))
+	AttackMitigation = AttackMitigation * (1 - TargetDefenseBonus)
+	
+	if (AttackMitigation > 1) then AttackMitigation = 1 end
+	if (AttackMitigation < 0) then AttackMitigation = 0 end
+	
+	return AttackMitigation
+end
+
+
+function uespLog.GetPlayerMundus()
+	local mundus1 = ""
+	local mundus2 = ""
+	local numBuffs = GetNumBuffs("player")
+	
+	for i = 1, numBuffs do
+		local buffName = GetUnitBuffInfo("player", i)
+		local mundusName = buffName:match("Boon: (.*)")
+		
+		if (mundusName ~= nil) then
+		
+			if (mundus1 == "") then
+				mundus1 = mundusName
+			else
+				mundus2 = mundusName
+			end
+		end
+	end
+	
+	return mundus1, mundus2
+end
+
+
+function uespLog.GetPlayerDivineEffect()
+	local wornItems = GetBagSize(BAG_WORN)
+	local totalDivines = 0
+	
+	for i = 0, wornItems do
+		local itemLink = GetItemLink(BAG_WORN, i)
+		local traitType, traitDesc = GetItemLinkTraitInfo(itemLink)
+		
+		if (traitType == ITEM_TRAIT_TYPE_ARMOR_DIVINES) then
+			local value = traitDesc:match(" by |c[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]([%d\.]+)|r%%")
+			
+			if (value ~= nil) then
+				totalDivines = totalDivines + tonumber(value)/100
+			end
+		end
+	end
+	
+	return totalDivines
+end
+
+
+function uespLog.FindPlayerSkillLineName(skillLineName)
+	local numSkillTypes = GetNumSkillTypes()
+
+	for skillType = 1, numSkillTypes do
+		local numSkillLines = GetNumSkillLines(skillType)
+		
+		for skillLine = 1, numSkillLines do
+			local name = GetSkillLineInfo(skillType, skillLine)
+			
+			if (name == skillLineName) then
+				return skillType, skillLine
+			end
+		end
+	end
+
+	return -1, -1
+end
+
+
+function uespLog.DoesPlayerHaveSkillLineSlotted(skillLine)
+	local skillType, skillLine = uespLog.FindPlayerSkillLineName(skillLine)
+		
+	if (skillType < 0) then
+		return false
+	end
+	
+	local skillIds = {}
+	local numAbilities = GetNumSkillAbilities(skillType, skillLine)
+	
+	for i = 3, 8 do
+		local id = GetSlotBoundId(i)
+		skillIds[id] = true
+	end
+	
+	for i = 1, numAbilities do
+		local id = GetSkillAbilityId(skillType, skillLine, i)
+		
+		if (skillIds[id] ~= nil) then
+			return true
+		end
+	end
+
+	return false
+end
+
+
+function uespLog.CountItemLinkSetItemsWorn(itemLink)
+	local hasSet, setName, numBonuses, numEquipped, maxEquipped = GetItemLinkSetInfo(itemLink, false)
+	return numEquipped
+end
+
+
+function uespLog.GetPlayerBaseCriticalDamage()
+	local critDamage = 0.50
+	local mundus1, mundus2 = uespLog.GetPlayerMundus()
+	
+		-- Templar:Piercing Spear 31698/44046, 5/10%
+	local currentId = GetSkillAbilityId(1, 1, 7)
+	
+	if (uespLog.DoesPlayerHaveSkillLineSlotted("Aedric Spear")) then
+		if (currentId == 31698) then
+			critDamage = critDamage + 0.05
+		elseif (currentId == 44046) then
+			critDamage = critDamage + 0.10		
+		end
+	end
+	
+		-- Nightblade: Assassination, 36641/45060, 5/10%
+	currentId = GetSkillAbilityId(1, 1, 10)
+	
+	if (uespLog.DoesPlayerHaveSkillLineSlotted("Assassination")) then
+		if (currentId == 36641) then
+			critDamage = critDamage + 0.05
+		elseif (currentId == 45060) then
+			critDamage = critDamage + 0.10		
+		end
+	end
+	
+		-- Sets: Archer's Mind
+	if (uespLog.CountItemLinkSetItemsWorn("|H0:item:43761:6:33:0:0:0:0:0:0:0:0:0:0:0:0:8:0:0:0:0:0|h|h") >= 5) then
+		critDamage = critDamage + 0.05
+		
+		if (GetUnitStealthState("Player")) then
+			critDamage = critDamage + 0.10
+		end
+	end
+		
+		-- Buffs: Minor Force=12%, Major Force=30%
+	local numBuffs = GetNumBuffs("player")
+	
+	for i = 1, numBuffs do
+		local buffName = GetUnitBuffInfo("player", i)
+		
+		if (buffName == "Minor Force") then
+			critDamage = critDamage + 0.12
+		elseif (buffName == "Major Force") then
+			critDamage = critDamage + 0.30
+		end
+	end
+		
+		-- Mundus: The Shadow * Divines
+	if (mundus1 == "The Shadow" or mundus2 == "The Shadow") then
+		local Divines = uespLog.GetPlayerDivineEffect()
+		critDamage = critDamage + 0.12 * (1 + Divines)
+	end
+	
+	return critDamage
+end
+
+
+function uespLog.GetPlayerSpellCriticalDamage()
+	local critDamage = uespLog.GetPlayerBaseCriticalDamage()
+		
+		-- The Apprentice:Elfborn 61680	7	3
+	local numPoints = GetNumPointsSpentOnChampionSkill(7, 3)
+	
+	if (numPoints ~= nil and numPoints > 0) then
+		local abilityId = GetChampionAbilityId(7, 3)
+		local description = GetChampionAbilityDescription(abilityId, 0)
+		local value = description:match(" by |c[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]([%d.]+)|r%%")
+		
+		if (value ~= nil) then
+			critDamage = critDamage + tonumber(value)/100
+		end
+		
+	end
+	
+	return math.floor(critDamage*1000 + 0.5)/1000
+end
+
+
+function uespLog.GetPlayerWeaponCriticalDamage()
+	local critDamage = uespLog.GetPlayerBaseCriticalDamage()
+		
+		--The Ritual:Precise Strikes 59105	5	2
+	local numPoints = GetNumPointsSpentOnChampionSkill(5, 2)
+	
+	if (numPoints ~= nil and numPoints > 0) then
+		local abilityId = GetChampionAbilityId(5, 2)
+		local description = GetChampionAbilityDescription(abilityId, 0)
+		local value = description:match(" by |c[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]([%d.]+)|r%%")
+		
+		if (value ~= nil) then
+			critDamage = critDamage + tonumber(value)/100
+		end
+		
+	end	
+	
+	return math.floor(critDamage*1000 + 0.5)/1000
+end
+
+
+function uespLog.GetEffectiveSpellPower()
+	local Magicka = GetPlayerStat(STAT_MAGICKA_MAX, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+	local SpellDamage = GetPlayerStat(STAT_SPELL_POWER, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+	local SpellCrit = GetPlayerStat(STAT_SPELL_CRITICAL, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+	local SpellCritDamage = uespLog.GetPlayerSpellCriticalDamage()
+	local AttackSpellMitigation = uespLog.GetAttackSpellMitigation()
+	local Level = GetUnitLevel("player")
+	local EffectiveLevel = GetUnitEffectiveLevel("player")
+	local TargetCritResistFactor = uespLog.savedVars.settings.data.targetCritResistFactor
+	local TargetCritResistFlat = uespLog.savedVars.settings.data.targetCritResistFlat
+	local AttackCrit = SpellCrit - TargetCritResistFactor - (TargetCritResistFlat)*(0.035/250)
+	local result = 0
+
+	SpellCrit = math.floor(AttackCrit / (2 * EffectiveLevel * (100 + EffectiveLevel)) * 1000 + 100 + 0.5)/1000;
+	
+		-- EffectiveSpellPower = (round(Magicka/10.5) + SpellDamage)*(1 + AttackSpellCrit*SpellCritDamage)*(AttackSpellMitigation)
+	result = math.floor(Magicka/10.5 + 0.5) + SpellDamage
+	result = result * (1 + SpellCrit * SpellCritDamage)
+	result = result * AttackSpellMitigation
+		
+	return math.floor(result)
+end
+
+
+function uespLog.GetEffectiveWeaponPower()
+	local Stamina = GetPlayerStat(STAT_STAMINA_MAX, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+	local WeaponDamage = GetPlayerStat(STAT_POWER, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+	local WeaponCrit = GetPlayerStat(STAT_CRITICAL_STRIKE, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+	local WeaponCritDamage = uespLog.GetPlayerWeaponCriticalDamage()
+	local AttackPhysicalMitigation = uespLog.GetAttackPhysicalMitigation()
+	local Level = GetUnitLevel("player")
+	local EffectiveLevel = GetUnitEffectiveLevel("player")
+	local TargetCritResistFactor = uespLog.savedVars.settings.data.targetCritResistFactor
+	local TargetCritResistFlat = uespLog.savedVars.settings.data.targetCritResistFlat
+	local AttackCrit = WeaponCrit - TargetCritResistFactor - (TargetCritResistFlat)*(0.035/250)
+	local result = 0
+	
+	WeaponCrit = math.floor(AttackCrit / (2 * EffectiveLevel * (100 + EffectiveLevel)) * 1000 + 100 + 0.5)/1000;
+	
+		--EffectiveWeaponPower = (round(Stamina/10.5) + WeaponDamage)*(1 + AttackWeaponCrit*WeaponCritDamage)*(AttackPhysicalMitigation)
+	result = math.floor(Stamina/10.5 + 0.5) + WeaponDamage
+	result = result * (1 + WeaponCrit * WeaponCritDamage)
+	result = result * AttackPhysicalMitigation
+	
+	return math.floor(result)
+end
+
+
+function uespLog:ZO_StatEntry_Keyboard_GetValue()
+
+	if (self.statType == uespLog.STAT_EFFECTIVE_SPELL_POWER) then
+		return uespLog.GetEffectiveSpellPower()
+	elseif (self.statType == uespLog.STAT_EFFECTIVE_WEAPON_POWER) then
+		return uespLog.GetEffectiveWeaponPower()
+	elseif (self.statType == uespLog.STAT_SPELL_CRITICAL_DAMAGE) then
+		return tostring(math.floor(uespLog.GetPlayerSpellCriticalDamage()*100 + 0.5)) .. "%"
+	elseif (self.statType == uespLog.STAT_WEAPON_CRITICAL_DAMAGE) then
+		return tostring(math.floor(uespLog.GetPlayerWeaponCriticalDamage()*100 + 0.5)) .. "%"
+	end
+
+    return GetPlayerStat(self.statType, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+end
+
+
 function uespLog:CreateAttributesSection()
 	
 	uespLog.Old_ZO_Stats_CreateAttributesSection(self)
@@ -11002,9 +11391,18 @@ function uespLog:CreateAttributesSection()
 		
 	self:SetNextControlPadding(20)
     self:AddStatRow(STAT_SPELL_PENETRATION, STAT_PHYSICAL_PENETRATION)
-	
+	self:SetNextControlPadding(0)
+	self:AddStatRow(uespLog.STAT_SPELL_CRITICAL_DAMAGE, uespLog.STAT_WEAPON_CRITICAL_DAMAGE)
+	self:SetNextControlPadding(0)
+	self:AddStatRow(uespLog.STAT_EFFECTIVE_SPELL_POWER, uespLog.STAT_EFFECTIVE_WEAPON_POWER)
+		
 		-- A fix for SI_STAT_SPELL_PENETRATION being "Focus Rating" for some reason
 	self.statEntries[STAT_SPELL_PENETRATION].control.name:SetText(uespLog.SPELL_PENETRATION_TEXT)
+	
+	self.statEntries[uespLog.STAT_EFFECTIVE_SPELL_POWER].control.name:SetText(uespLog.EFFECTIVE_SPELL_POWER_TEXT)
+	self.statEntries[uespLog.STAT_EFFECTIVE_WEAPON_POWER].control.name:SetText(uespLog.EFFECTIVE_WEAPON_POWER_TEXT)
+	self.statEntries[uespLog.STAT_SPELL_CRITICAL_DAMAGE].control.name:SetText(uespLog.SPELL_CRITICAL_DAMAGE_TEXT)
+	self.statEntries[uespLog.STAT_WEAPON_CRITICAL_DAMAGE].control.name:SetText(uespLog.WEAPON_CRITICAL_DAMAGE_TEXT)
 end
 
 
@@ -11015,10 +11413,15 @@ function uespLog.AddCharacterWindowStats()
 	end
 
 	table.insert(ZO_INVENTORY_STAT_GROUPS, { STAT_SPELL_PENETRATION, STAT_PHYSICAL_PENETRATION })
+	table.insert(ZO_INVENTORY_STAT_GROUPS, { uespLog.STAT_EFFECTIVE_SPELL_POWER, uespLog.STAT_EFFECTIVE_WEAPON_POWER })
+	table.insert(ZO_INVENTORY_STAT_GROUPS, { uespLog.STAT_SPELL_CRITICAL_DAMAGE, uespLog.STAT_WEAPON_CRITICAL_DAMAGE })
 	
 	uespLog.Old_ZO_Stats_CreateAttributesSection = ZO_Stats.CreateAttributesSection
 	ZO_Stats.CreateAttributesSection = uespLog.CreateAttributesSection
 	STATS.CreateAttributesSection = uespLog.CreateAttributesSection
+	
+	uespLog.Old_ZO_StatEntry_Keyboard_GetValue = ZO_StatEntry_Keyboard.GetValue
+	ZO_StatEntry_Keyboard.GetValue = uespLog.ZO_StatEntry_Keyboard_GetValue
 	
 	local statsWindow = ZO_CharacterWindowStats
 	
@@ -11048,6 +11451,42 @@ function uespLog.AddCharacterWindowStats()
 	lastControl = statControl
 	nextPaddingY = 25
 	
+	statControl = CreateControlFromVirtual("$(parent)StatEntry", parentControl, "ZO_StatsEntry", uespLog.STAT_SPELL_CRITICAL_DAMAGE)
+	relativeAnchorSide = (lastControl == nil) and TOP or BOTTOM
+	statControl:SetAnchor(TOP, lastControl, relativeAnchorSide, 0, nextPaddingY)
+	statEntry = ZO_StatEntry_Keyboard:New(statControl, uespLog.STAT_SPELL_CRITICAL_DAMAGE)
+	statEntry.tooltipAnchorSide = LEFT
+	statEntry.control.name:SetText(" "..uespLog.SPELL_CRITICAL_DAMAGE_TEXT)
+	lastControl = statControl
+	nextPaddingY = 5
+	
+	statControl = CreateControlFromVirtual("$(parent)StatEntry", parentControl, "ZO_StatsEntry", uespLog.STAT_WEAPON_CRITICAL_DAMAGE)
+	relativeAnchorSide = (lastControl == nil) and TOP or BOTTOM
+	statControl:SetAnchor(TOP, lastControl, relativeAnchorSide, 0, nextPaddingY)
+	statEntry = ZO_StatEntry_Keyboard:New(statControl, uespLog.STAT_WEAPON_CRITICAL_DAMAGE)
+	statEntry.tooltipAnchorSide = LEFT
+	statEntry.control.name:SetText(" "..uespLog.WEAPON_CRITICAL_DAMAGE_TEXT)
+	lastControl = statControl
+	nextPaddingY = 25
+	
+	statControl = CreateControlFromVirtual("$(parent)StatEntry", parentControl, "ZO_StatsEntry", uespLog.STAT_EFFECTIVE_SPELL_POWER)
+	relativeAnchorSide = (lastControl == nil) and TOP or BOTTOM
+	statControl:SetAnchor(TOP, lastControl, relativeAnchorSide, 0, nextPaddingY)
+	statEntry = ZO_StatEntry_Keyboard:New(statControl, uespLog.STAT_EFFECTIVE_SPELL_POWER)
+	statEntry.tooltipAnchorSide = LEFT
+	statEntry.control.name:SetText(" "..uespLog.EFFECTIVE_SPELL_POWER_TEXT)
+	lastControl = statControl
+	nextPaddingY = 5
+	
+	statControl = CreateControlFromVirtual("$(parent)StatEntry", parentControl, "ZO_StatsEntry", uespLog.STAT_EFFECTIVE_WEAPON_POWER)
+	relativeAnchorSide = (lastControl == nil) and TOP or BOTTOM
+	statControl:SetAnchor(TOP, lastControl, relativeAnchorSide, 0, nextPaddingY)
+	statEntry = ZO_StatEntry_Keyboard:New(statControl, uespLog.STAT_EFFECTIVE_WEAPON_POWER)
+	statEntry.tooltipAnchorSide = LEFT
+	statEntry.control.name:SetText(" "..uespLog.EFFECTIVE_WEAPON_POWER_TEXT)
+	lastControl = statControl
+	nextPaddingY = 25
+		
 end
 
 

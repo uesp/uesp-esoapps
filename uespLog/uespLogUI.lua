@@ -114,6 +114,23 @@ function uespLog.InitOptionControlsData()
 	})
 	
 	uespLog.optionControlsData:insert({
+		type = "checkbox",
+		name = "Container Autoloot", 
+		tooltip = "When enabled you will autoloot containers you open in your inventory.\n      /uespcontloot on/off", 
+		getFunc = uespLog.GetContainerAutoLoot,
+		setFunc = uespLog.SetContainerAutoLoot,
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "checkbox",
+		name = "Show Custom Stats", 
+		tooltip = "Enables the display of extra stats in the character and inventory windows.\n      /uespcustomstats on/off", 
+		warning = "Requires the UI to be reloaded to take effect.",
+		getFunc = uespLog.GetCustomStatDisplay,
+		setFunc = uespLog.SetCustomStatDisplay,
+	})
+	
+	uespLog.optionControlsData:insert({
 		type = "header",
 		name = "Crafting",
 	})

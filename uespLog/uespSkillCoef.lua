@@ -444,8 +444,10 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[45192] = { [3] = POWERTYPE_HEALTH, [6] = POWERTYPE_HEALTH },
 	
 	-- Templar Burning Light	
-	[31718] = { [2] = POWERTYPE_ULTIMATE },
-	[44730] = { [2] = POWERTYPE_ULTIMATE },
+	--[31718] = { [2] = POWERTYPE_ULTIMATE },
+	--[44730] = { [2] = POWERTYPE_ULTIMATE },
+	[31718] = { [2] = POWERTYPE_STAMINA },		-- Temporary fix as the tooltip is bugged
+	[44730] = { [2] = POWERTYPE_STAMINA },
 	
 	-- Imperial Red Diamond
 	[36155] = { [2] = POWERTYPE_HEALTH },

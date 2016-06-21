@@ -551,6 +551,9 @@
 --			- Poison data is now collected when mining potion item data.
 --			- Fixed saving of werewolf stat in character/build data.
 --			- Added the "/uespcontloot [on|off]" command to autoloot items from containers. 
+--			- Spell and Physical Penetration stats are added to the character and inventory window.
+--			  Use "/uespcustomstat on" and reload the UI to take effect.
+--			- Improved the display of the startup message.
 --
 --
 --		Future Versions (Works in Progress)
@@ -600,6 +603,8 @@ uespLog.ACTION_COLLECT = "Collect"
 uespLog.ACTION_STEALFROM = GetString(SI_GAMECAMERAACTIONTYPE20)
 uespLog.ACTION_STEAL = GetString(SI_GAMECAMERAACTIONTYPE19)
 uespLog.FISHING_HOLE = "Fishing Hole"
+uespLog.SPELL_PENETRATION_TEXT = "Spell Penetration"
+uespLog.PHYSICAL_PENETRATION_TEXT = "Physical Penetration"
 
 uespLog.currentHarvestTarget = nil
 uespLog.lastHarvestTarget = { }
@@ -675,7 +680,7 @@ uespLog.lastLootUpdateCount = -1
 uespLog.lastLootTargetName = ""
 
 uespLog.savedVars = {}
-    
+
 	-- DayLength / OffsetMod / MoonStartMod
 	-- 21000 / 3600 / 0
 	-- 17280 / 9000 / 0
@@ -1248,6 +1253,7 @@ uespLog.DEFAULT_SETTINGS =
 			[POWERTYPE_ULTIMATE] = false,
 		},
 		["containerAutoLoot"] = false,
+		["customStatDisplay"] = false,
 	}
 }
 
@@ -1462,6 +1468,31 @@ uespLog.ITEMCHANGE_IGNORE_FIELDS = {
 function uespLog.BoolToOnOff(flag)
 	if (flag) then return "on" end
 	return "off"
+end
+
+
+
+function uespLog.GetCustomStatDisplay()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.customStatDisplay == nil) then
+		uespLog.savedVars.settings.data.customStatDisplay = uespLog.DEFAULT_SETTINGS.customStatDisplay
+	end
+	
+	return uespLog.savedVars.settings.data.customStatDisplay
+end
+
+
+function uespLog.SetCustomStatDisplay(flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	uespLog.savedVars.settings.data.customStatDisplay = flag
 end
 
 
@@ -2376,6 +2407,8 @@ function uespLog.Initialize( self, addOnName )
 	zo_callLater(uespLog.InitAutoMining, 5000)
 	
 	uespLog.InitSettingsMenu()
+	
+	EVENT_MANAGER:RegisterForEvent( "uespLog", EVENT_PLAYER_ACTIVATED, uespLog.outputInitMessage)
 			
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_RETICLE_TARGET_CHANGED, uespLog.OnTargetChange)
 	
@@ -2473,9 +2506,8 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_KEEP_UNDER_ATTACK_CHANGED, uespLog.OnKeepUnderAttack)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_KEEP_GATE_STATE_CHANGED, uespLog.OnKeepGateStateChanged)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_GUILD_KEEP_CLAIM_UPDATED, uespLog.OnGuildKeepClaimUpdated)	
-	
-
-
+		
+	uespLog.AddCharacterWindowStats()
 	
 	uespLog.Old_ZO_InventorySlot_DoPrimaryAction = ZO_InventorySlot_DoPrimaryAction
 	ZO_InventorySlot_DoPrimaryAction = uespLog.ZO_InventorySlot_DoPrimaryAction
@@ -2550,7 +2582,6 @@ function uespLog.Initialize( self, addOnName )
 	uespLog.SetupSlashCommands()
 	
 	zo_callLater(uespLog.InitTradeData, 500) 
-	zo_callLater(uespLog.outputInitMessage, 4000)
 	zo_callLater(uespLog.InitCharData, 500)
 end
 
@@ -2622,6 +2653,8 @@ end
 
 
 function uespLog.outputInitMessage ()
+	EVENT_MANAGER:UnregisterForEvent("uespLog", EVENT_PLAYER_ACTIVATED)
+	
 	local flagStr = uespLog.BoolToOnOff(uespLog.IsDebug())
 	if (uespLog.IsDebugExtra()) then flagStr = "EXTRA" end
 	uespLog.Msg("uespLog v"..uespLog.version.." add-on initialized...debug output is currently "..tostring(flagStr)..".")
@@ -5345,6 +5378,7 @@ SLASH_COMMANDS["/uespcharinfo"] = function (cmd)
 	uespLog.DisplayStat(STAT_BLOCK, "Block")
 	uespLog.DisplayStat(STAT_CRITICAL_RESISTANCE, "Critical Resist")
 	uespLog.DisplayStat(STAT_SPELL_RESIST, "Spell Resist")
+	uespLog.DisplayStat(STAT_MITIGATION, "Mitigation")
 	uespLog.DisplayStat(STAT_SPELL_MITIGATION, "Spell Mitigation")
 	uespLog.DisplayStat(STAT_DODGE, "Dodge")
 	uespLog.DisplayStat(STAT_PARRY, "Parry")
@@ -10927,7 +10961,7 @@ function uespLog.ContainerLootCommand(cmd)
 		uespLog.SetContainerAutoLoot(false)
 		uespLog.Msg("Turned container auto-looting off.")
 	else
-		uespLog.Msg("Command Foramt: /uespcontloot [on|off]")
+		uespLog.Msg("Command Format: /uespcontloot [on|off]")
 		uespLog.Msg("Container auto-looting is "..uespLog.BoolToOnOff(uespLog.GetContainerAutoLoot()))
 	end
 	
@@ -10935,6 +10969,86 @@ end
 
 
 SLASH_COMMANDS["/uespcontloot"] = uespLog.ContainerLootCommand
+
+
+function uespLog.CustomStatsCommand(cmd)
+	local cmds, firstCmd = uespLog.SplitCommands(cmd)
+	
+	if (firstCmd == "on") then
+		uespLog.SetCustomStatDisplay(true)
+		uespLog.Msg("Turned custom stat display on (reload UI to take effect)")
+	elseif (firstCmd == "off") then
+		uespLog.SetCustomStatDisplay(false)
+		uespLog.Msg("Turned custom stat display off (reload UI to take effect)")
+	else
+		uespLog.Msg("Command Format: /uespcustomstats [on|off]")
+		uespLog.Msg("Changes to this setting require you to reload the UI to take effect.")
+		uespLog.Msg("Custom stat display is "..uespLog.BoolToOnOff(uespLog.GetCustomStatDisplay()))
+	end
+	
+end
+
+
+SLASH_COMMANDS["/uespcustomstats"] = uespLog.CustomStatsCommand
+
+
+function uespLog:CreateAttributesSection()
+	
+	uespLog.Old_ZO_Stats_CreateAttributesSection(self)
+	
+	if (not uespLog.GetCustomStatDisplay()) then
+		return
+	end
+		
+	self:SetNextControlPadding(20)
+    self:AddStatRow(STAT_SPELL_PENETRATION, STAT_PHYSICAL_PENETRATION)
+	
+		-- A fix for SI_STAT_SPELL_PENETRATION being "Focus Rating" for some reason
+	self.statEntries[STAT_SPELL_PENETRATION].control.name:SetText(uespLog.SPELL_PENETRATION_TEXT)
+end
+
+
+function uespLog.AddCharacterWindowStats()
+
+	if (not uespLog.GetCustomStatDisplay()) then
+		return
+	end
+
+	table.insert(ZO_INVENTORY_STAT_GROUPS, { STAT_SPELL_PENETRATION, STAT_PHYSICAL_PENETRATION })
+	
+	uespLog.Old_ZO_Stats_CreateAttributesSection = ZO_Stats.CreateAttributesSection
+	ZO_Stats.CreateAttributesSection = uespLog.CreateAttributesSection
+	STATS.CreateAttributesSection = uespLog.CreateAttributesSection
+	
+	local statsWindow = ZO_CharacterWindowStats
+	
+	if (statsWindow == nil) then
+		return
+	end
+	
+	local parentControl = statsWindow:GetNamedChild("ScrollScrollChild")
+    local lastControl = ZO_CharacterWindowStatsScrollScrollChildStatEntry24
+    local nextPaddingY = 25
+	
+	local statControl = CreateControlFromVirtual("$(parent)StatEntry", parentControl, "ZO_StatsEntry", STAT_SPELL_PENETRATION)
+	local relativeAnchorSide = (lastControl == nil) and TOP or BOTTOM
+	statControl:SetAnchor(TOP, lastControl, relativeAnchorSide, 0, nextPaddingY)
+	local statEntry = ZO_StatEntry_Keyboard:New(statControl, STAT_SPELL_PENETRATION)
+	statEntry.tooltipAnchorSide = LEFT
+	statEntry.control.name:SetText(" "..uespLog.SPELL_PENETRATION_TEXT)
+	lastControl = statControl
+	nextPaddingY = 5
+	
+	statControl = CreateControlFromVirtual("$(parent)StatEntry", parentControl, "ZO_StatsEntry", STAT_PHYSICAL_PENETRATION)
+	relativeAnchorSide = (lastControl == nil) and TOP or BOTTOM
+	statControl:SetAnchor(TOP, lastControl, relativeAnchorSide, 0, nextPaddingY)
+	statEntry = ZO_StatEntry_Keyboard:New(statControl, STAT_PHYSICAL_PENETRATION)
+	statEntry.tooltipAnchorSide = LEFT
+	statEntry.control.name:SetText(" "..uespLog.PHYSICAL_PENETRATION_TEXT)
+	lastControl = statControl
+	nextPaddingY = 25
+	
+end
 
 
 -- Item subtypes that crash with GetItemLinkTraitOnUseAbilityInfo() in update 10

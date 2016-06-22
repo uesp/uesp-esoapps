@@ -4547,7 +4547,7 @@ function uespLog.OnCraftCompleted (eventCode, craftSkill)
 		
 		local itemText, itemColor, itemData, niceName, niceLink = uespLog.ParseLink(itemLink)
 	
-		uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "Crafted item ".. tostring(itemLink) .." (x"..tostring(stack)..").")
+		uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "You crafted item ".. tostring(itemLink) .." (x"..tostring(stack)..").")
 	end
 	
 	if (numItemsGained == 0) then
@@ -4643,17 +4643,20 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 	
 	if (usedItemType == ITEMTYPE_FISH and itemType == ITEMTYPE_INGREDIENT and usedDeltaTime < 2500) then
 		-- if (itemSoundCategory == ITEM_SOUND_CATEGORY_ANIMAL_COMPONENT) then
-		uespLog.MsgColor(uespLog.itemColor, "Created "..itemLink.." from "..tostring(uespLog.lastItemUsed).."!")
-	end
-	
+		uespLog.MsgColor(uespLog.itemColor, "You created "..itemLink.." from "..tostring(uespLog.lastItemUsed).."!")
+		
 		-- Update creation of glass motif chapter
-	if (uespLog.UsedMerethicResin) then
+	elseif (uespLog.UsedMerethicResin) then
 	
 		if (string.find(string.lower(itemName), "glass") ~= nil) then
 			uespLog.MsgColor(uespLog.itemColor, "You used a Merethic Resin to create "..tostring(itemLink).."!")
 		end
 		
 		uespLog.UsedMerethicResin = false
+		
+		-- Update receiving items from Shadowy Supplier
+	elseif (reason == 0 and isNewItem and uespLog.lastTargetData.name == "Remains-Silent") then
+		uespLog.MsgColor(uespLog.itemColor, "You received "..itemLink.." from "..tostring(uespLog.lastTargetData.name).."!")
 	end
 	
 	uespLog.LogInventoryItem(bagId, slotIndex, "SlotUpdate")

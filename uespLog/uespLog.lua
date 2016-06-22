@@ -3517,7 +3517,7 @@ function uespLog.OnSkillRankUpdate (eventCode, skillType, skillIndex, rank)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 		 
-	uespLog.MsgType(uespLog.MSG_OTHER, "UESP: "..tostring(name).." raised to rank "..tostring(rank).."!")
+	uespLog.MsgType(uespLog.MSG_OTHER, ""..tostring(name).." skill line raised to rank "..tostring(rank).."!")
 end
 
 
@@ -3575,7 +3575,12 @@ function uespLog.OnQuestAdded (eventCode, journalIndex, questName, objectiveName
 	logData.objective = objectiveName
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
-	uespLog.MsgType(uespLog.MSG_QUEST, "UESP: Quest added "..questName.."::"..objectiveName)
+	
+	if (objectiveName ~= "") then
+		uespLog.MsgType(uespLog.MSG_QUEST, "Quest "..tostring(questName)..", "..tostring(objectiveName).." added!")
+	else
+		uespLog.MsgType(uespLog.MSG_QUEST, "Quest "..tostring(questName).." added!")
+	end
 	
 	uespLog.CheckQuestItems(journalIndex, questName)
 	
@@ -3594,7 +3599,7 @@ function uespLog.OnQuestRemoved (eventCode, isCompleted, questIndex, questName, 
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 
-	uespLog.MsgType(uespLog.MSG_QUEST, "UESP: Quest removed "..questName)
+	uespLog.MsgType(uespLog.MSG_QUEST, "Quest "..tostring(questName).." removed!")
 	
 	uespLog.DailyQuestOnQuestComplete(questName, questIndex, isCompleted)
 end
@@ -3610,7 +3615,7 @@ function uespLog.OnQuestObjectiveCompleted (eventCode, zoneIndex, poiIndex, xpGa
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	
-	uespLog.MsgType(uespLog.MSG_QUEST, "UESP: Quest objective completed")
+	uespLog.DebugMsg("UESP: Quest objective completed")
 end
 
 
@@ -3632,7 +3637,7 @@ function uespLog.OnQuestCounterChanged (eventCode, journalIndex, questName, cond
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
  
-	uespLog.MsgType(uespLog.MSG_QUEST, "UESP: Change in quest "..questName.."::"..conditionText.." ("..tostring(newConditionVal).."/"..tostring(conditionMax)..")")
+	uespLog.MsgType(uespLog.MSG_QUEST, "Quest "..questName..", "..conditionText.." now "..tostring(newConditionVal).."/"..tostring(conditionMax)..".")
 end
 
 
@@ -3645,7 +3650,7 @@ function uespLog.OnQuestCompleteExperience (eventCode, questName, xpGained)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.MsgType(uespLog.MSG_QUEST, "UESP: Finished quest "..questName)
+	uespLog.MsgType(uespLog.MSG_QUEST, "Finished quest "..tostring(questName).."!")
 end
 
 
@@ -3826,14 +3831,14 @@ function uespLog.OnExperienceGain (eventCode, reason, level, previousExperience,
 	if (logData.xpGained == 0) then
 		return
 	elseif (reason == -1) then
-		uespLog.DebugExtraMsg("UESP: You gained "..tostring(logData.xpGained).." xp for unknown reason")
+		uespLog.DebugExtraMsg("UESP: You gained "..tostring(logData.xpGained).." xp for unknown reason.")
 		return
 	end
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
 	--if (GetUnitChampionPoints("player") <= 0) then
-	uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.xpColor, "You gained "..tostring(logData.xpGained).." xp for "..uespLog.GetXPReasonStr(reason))
+	uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.xpColor, "You gained "..tostring(logData.xpGained).." xp for "..uespLog.GetXPReasonStr(reason)..".")
 	--end
 end
 
@@ -3854,14 +3859,14 @@ function uespLog.OnExperienceUpdate (eventCode, unitTag, currentExp, maxExp, rea
 	if (logData.xpGained == 0) then
 		return
 	elseif (reason == -1) then
-		uespLog.DebugExtraMsg("UESP: You gained "..tostring(logData.xpGained).." xp for unknown reason")
+		uespLog.DebugExtraMsg("UESP: You gained "..tostring(logData.xpGained).." xp for unknown reason.")
 		return
 	end
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
 	if (unitTag == "player") then
-		uespLog.MsgType(uespLog.MSG_OTHER, uespLog.xpColor, "You gained "..tostring(logData.xpGained).." xp for "..uespLog.GetXPReasonStr(reason))
+		uespLog.MsgType(uespLog.MSG_OTHER, uespLog.xpColor, "You gained "..tostring(logData.xpGained).." xp for "..uespLog.GetXPReasonStr(reason)..".")
 	end
 end
 
@@ -3895,13 +3900,13 @@ function uespLog.OnSkillPointsChanged (eventCode, pointsBefore, pointsNow, isSky
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
 	if (pointsBefore > pointsNow) then
-		uespLog.MsgType(uespLog.MSG_OTHER, "Skill points lost (".. tostring(logData.points) ..")")
+		uespLog.MsgType(uespLog.MSG_OTHER, "Skill points lost (".. tostring(logData.points) ..")!")
 	elseif (isSkyShard and pointsBefore == pointsNow) then
-		uespLog.MsgType(uespLog.MSG_OTHER, "Found Skyshard ("..GetNumSkyShards().."/3 pieces)")
+		uespLog.MsgType(uespLog.MSG_OTHER, "Found Skyshard ("..GetNumSkyShards().."/3 pieces)!")
 	elseif (isSkyShard and logData.points == 1) then
-		uespLog.MsgType(uespLog.MSG_OTHER, "Found Skyshard...skill points changed (".. tostring(logData.points) ..")")
+		uespLog.MsgType(uespLog.MSG_OTHER, "Found Skyshard...skill points changed (".. tostring(logData.points) ..")!")
 	else
-		uespLog.MsgType(uespLog.MSG_OTHER, "Skill points added (".. tostring(logData.points) ..")")
+		uespLog.MsgType(uespLog.MSG_OTHER, "Skill points added (".. tostring(logData.points) ..")!")
 	end
 end
 
@@ -3934,7 +3939,7 @@ function uespLog.OnQuestAdvanced (eventCode, journalIndex, questName, isPushed, 
 
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.MsgType(uespLog.MSG_QUEST, "UESP: Quest advanced "..questName)
+	uespLog.DebugExtraMsg("UESP: Quest advanced "..questName)
 	
 	uespLog.CheckQuestItems(journalIndex, questName)
 end
@@ -3998,7 +4003,7 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 		logData.qnt = uespLog.lastMoneyChange
 			
 		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData())
-		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You looted "..tostring(uespLog.lastMoneyChange).." gold"..lootMsg)
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You looted "..tostring(uespLog.lastMoneyChange).." gold"..lootMsg..".")
 		
 		-- 4 = quest reward
 	elseif (reason == 4) then
@@ -4006,7 +4011,7 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 		logData.qnt = uespLog.lastMoneyChange
 
 		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData())
-		uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "Quest reward "..tostring(uespLog.lastMoneyChange).." gold"..lootMsg)
+		uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "Quest reward "..tostring(uespLog.lastMoneyChange).." gold"..lootMsg..".")
 		
 		-- 62 = Stolen
 	elseif (reason == 62) then
@@ -4014,9 +4019,9 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 		logData.qnt = uespLog.lastMoneyChange
 
 		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData())
-		uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "You stole "..tostring(uespLog.lastMoneyChange).." gold"..lootMsg)
+		uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "You stole "..tostring(uespLog.lastMoneyChange).." gold"..lootMsg..".")
 	else
-		uespLog.DebugMsg("UESP: Money Change, New="..tostring(newMoney)..",  Old="..tostring(oldMoney)..",  Diff="..tostring(uespLog.lastMoneyChange)..",  Reason="..tostring(reason))
+		uespLog.DebugExtraMsg("UESP: Money Change, New="..tostring(newMoney)..",  Old="..tostring(oldMoney)..",  Diff="..tostring(uespLog.lastMoneyChange)..",  Reason="..tostring(reason))
 	end	
 	
 end
@@ -4194,20 +4199,20 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData(), extraLogData)
 		
 		if (extraLogData ~= nil and extraLogData.skippedLoot) then
-			uespLog.DebugMsgColor(uespLog.itemColor, "Skipped looting "..niceLink.." (x"..tostring(quantity)..") (prov level "..tostring(extraLogData.tradeType)..")"..lootMsg)
+			uespLog.DebugMsgColor(uespLog.itemColor, "Skipped looting "..niceLink.." (x"..tostring(quantity)..") (prov level "..tostring(extraLogData.tradeType)..")"..lootMsg..".")
 		else
 			
 			if (quantity == 1) then
-				uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You "..rcvType.." "..niceLink..lootMsg)
+				uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You "..rcvType.." "..niceLink..lootMsg..".")
 			else
-				uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You "..rcvType.." "..niceLink.." (x"..tostring(quantity)..")"..lootMsg)
+				uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You "..rcvType.." "..niceLink.." (x"..tostring(quantity)..")"..lootMsg..".")
 			end
 		end
 		
 		local money, stolenMoney = GetLootMoney()
 		uespLog.DebugExtraMsg("UESP: LootMoney = "..tostring(money)..", stolen = "..tostring(stolenMoney))
 	else
-		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "Someone "..rcvType.." "..msgType.." "..niceLink.." (x"..tostring(quantity)..")")
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "Someone "..rcvType.." "..msgType.." "..niceLink.." (x"..tostring(quantity)..").")
 	end
 	
 end
@@ -4518,7 +4523,7 @@ function uespLog.OnCraftCompleted (eventCode, craftSkill)
 	uespLog.AddTotalInspiration(inspiration)
 	
 	if (inspiration > 0) then
-		uespLog.MsgType(uespLog.MSG_OTHER, "Craft completed with "..tostring(inspiration).." xp ("..tostring(uespLog.GetTotalInspiration()).." since last reset)")
+		uespLog.MsgType(uespLog.MSG_OTHER, "Craft completed with "..tostring(inspiration).." xp ("..tostring(uespLog.GetTotalInspiration()).." since last reset).")
 	end
 	
     for i = 1, numItemsGained do
@@ -4542,11 +4547,11 @@ function uespLog.OnCraftCompleted (eventCode, craftSkill)
 		
 		local itemText, itemColor, itemData, niceName, niceLink = uespLog.ParseLink(itemLink)
 	
-		uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "Crafted item ".. tostring(itemLink) .." (x"..tostring(stack)..")")
+		uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "Crafted item ".. tostring(itemLink) .." (x"..tostring(stack)..").")
 	end
 	
 	if (numItemsGained == 0) then
-		uespLog.MsgType(uespLog.MSG_OTHER, "0 items crafted")
+		uespLog.MsgType(uespLog.MSG_OTHER, "No items crafted")
 	end	
 end
 
@@ -4554,7 +4559,7 @@ end
 function uespLog.OnInventoryItemUsed (eventCode, itemSoundCategory)
 
 	uespLog.OnUseItem(eventCode, uespLog.lastItemLinkUsed_BagId, uespLog.lastItemLinkUsed_SlotIndex, uespLog.lastItemLinkUsed, itemSoundCategory)
-	uespLog.DebugMsg("UESP: OnInventoryItemUsed sound="..tostring(itemSoundCategory))
+	uespLog.DebugExtraMsg("UESP: OnInventoryItemUsed sound="..tostring(itemSoundCategory))
 	
 	uespLog.lastItemLinkUsed = ""
 	uespLog.lastItemLinkUsed_BagId = -1
@@ -4843,7 +4848,7 @@ function uespLog.OnFoundSkyshard ()
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetCurrentTargetData(), uespLog.GetTimeData())
 	
-	uespLog.MsgType(uespLog.MSG_OTHER, "Found skyshard")
+	uespLog.MsgType(uespLog.MSG_OTHER, "Found skyshard!")
 end
 
 
@@ -4855,7 +4860,7 @@ function uespLog.OnFoundTreasure (name)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetCurrentTargetData(), uespLog.GetTimeData())
 	
-	uespLog.MsgType(uespLog.MSG_OTHER, "Found "..tostring(name))
+	uespLog.MsgType(uespLog.MSG_OTHER, "Found "..tostring(name).."!")
 
 	uespLog.lastLootTargetName = name
 end
@@ -4868,14 +4873,14 @@ function uespLog.OnFoundFish ()
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetCurrentTargetData(), uespLog.GetTimeData())
 	
-	uespLog.MsgType(uespLog.MSG_OTHER, "Found fishing hole")
+	uespLog.MsgType(uespLog.MSG_OTHER, "Found fishing hole!")
 end
 
 
 function uespLog.OnMailMessageReadable (eventCode, mailId)
 	local senderDisplayName, senderCharacterName, subject, icon, unread, fromSystem, fromCustomerService, returned, numAttachments, attachedMoney, codAmount, expiresInDays, secsSinceReceived = GetMailItemInfo(mailId)
 	
-	uespLog.MsgType(uespLog.MSG_OTHER, "Read mail from " ..tostring(senderDisplayName).." with "..tostring(numAttachments).." items")
+	uespLog.DebugExtraMsg("Read mail from " ..tostring(senderDisplayName).." with "..tostring(numAttachments).." items")
 	
 	uespLog.lastMailItems = { }
 	uespLog.lastMailId = mailId
@@ -4901,13 +4906,13 @@ function uespLog.OnMailMessageTakeAttachedMoney (eventCode, mailId)
 	local senderDisplayName, senderCharacterName, subject, icon, unread, fromSystem, fromCustomerService, returned, numAttachments, attachedMoney, codAmount, expiresInDays, secsSinceReceived = GetMailItemInfo(mailId)
 	
 	if (attachedMoney > 0) then
-		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "UESP: You received "..tostring(attachedMoney).."gp from mail attachment.")
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You received "..tostring(attachedMoney).."gp from mail attachment.")
 	elseif (uespLog.lastMailGold > 0) then
-		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "UESP: You received "..tostring(uespLog.lastMailGold).."gp from mail attachment.")
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You received "..tostring(uespLog.lastMailGold).."gp from mail attachment.")
 	end
 	
 	if (uespLog.lastMailCOD > 0) then
-		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "UESP: You paid a mail COD charge of "..tostring(uespLog.lastMailGold).."gp.")
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You paid a mail COD charge of "..tostring(uespLog.lastMailGold).."gp to "..tostring(senderDisplayName)..".")
 	end
 	
 	uespLog.lastMailGold = 0
@@ -4921,10 +4926,10 @@ function uespLog.OnMailMessageTakeAttachedItem (eventCode, mailId)
 	local logData = { }
 	local timeData = uespLog.GetTimeData()
 	
-	uespLog.DebugMsgColor(uespLog.itemColor, "Received mail item from " ..tostring(senderDisplayName).." money="..tostring(attachedMoney))
+	uespLog.DebugExtraMsg("Received mail item from " ..tostring(senderDisplayName).." money="..tostring(attachedMoney))
 	
 	if (mailId ~= uespLog.lastMailId or #uespLog.lastMailItems == 0) then
-		uespLog.DebugMsg("No attachments in mail")
+		uespLog.DebugMsg("Error: No attachments in mail")
 		return
 	end
 	
@@ -11301,12 +11306,19 @@ function uespLog.GetPlayerBaseCriticalDamage()
 	local numBuffs = GetNumBuffs("player")
 	
 	for i = 1, numBuffs do
-		local buffName = GetUnitBuffInfo("player", i)
+		local buffName, timeStarted, timeEnded = GetUnitBuffInfo("player", i)
 		
 		if (buffName == "Minor Force") then
 			critDamage = critDamage + 0.12
 		elseif (buffName == "Major Force") then
 			critDamage = critDamage + 0.30
+		elseif (buffName == "Aggressive Horn") then		-- Doesn't seem to have its own seperate buff for Major Force
+			local currentTime = GetGameTimeMilliseconds()/1000
+			local deltaTime = currentTime - timeStarted
+			
+			if (deltaTime <= 9.5) then
+				critDamage = critDamage + 0.30
+			end
 		end
 	end
 		
@@ -11603,6 +11615,22 @@ end
 
 SLASH_COMMANDS["/uespmsg"] = uespLog.MessageCommand
 
+
+function uespLog.ShowBuffsCommand(cmds)
+	local numBuffs = GetNumBuffs("player")
+	
+	uespLog.Msg("Listing all "..tostring(numBuffs).." buffs currently on player:")
+	
+	for i = 1, numBuffs do
+		local buffName = GetUnitBuffInfo("player", i)
+		
+		uespLog.Msg(".     "..tostring(i)..") "..tostring(buffName).."")
+	end
+	
+end
+
+
+SLASH_COMMANDS["/uespshowbuffs"] = uespLog.ShowBuffsCommand
 
 -- Item subtypes that crash with GetItemLinkTraitOnUseAbilityInfo() in update 10
 uespLog.BAD_TRAIT_ITEMTYPES = {

@@ -561,6 +561,16 @@
 --						Magicka/Stamina, Spell/Weapon Damage, Critical/Critical Damage, and Penetration.
 --						It currently uses a target resistance of 18.2k with no critical resistance.
 --			- Improved the display of the startup message.
+--			- Changed how some of the more useful chat messages are output and added the "/uespmsg" command 
+--			  to control their display.
+--						/uespmsg                   Shows the current stats
+--						/uespmsg [on|off]          Turns all messages on/off
+--						/uespmsg loot [on|off]     Turns loot related messages on/off
+--						/uespmsg npc [on|off]      Turns NPC related messages on/off
+--						/uespmsg quest [on|off]    Turns quest related messages on/off
+--						/uespmsg other [on|off]    Turns all other messages on/off
+--            Now "/uespdebug" only controls the display of less useful debug related messages. Initially all
+--			  new messages are off unless you have "/uespdebug on" set in which case they are initially turned on.
 --
 --
 --		Future Versions (Works in Progress)
@@ -675,6 +685,12 @@ uespLog.dumpIgnoreObjects = {
 	["ZgooSV"] = 1,
 	["ZGOO_ADDRESS_LOOKUP"] = 1
 }
+
+uespLog.MSG_LOOT = "loot"
+uespLog.MSG_NPC = "npc"
+uespLog.MSG_QUEST = "quest"
+uespLog.MSG_MISC = "misc"
+uespLog.MSG_OTHER = uespLog.MSG_MISC
 
 uespLog.lastConversationOption = { }
 uespLog.lastConversationOption.Text = ""
@@ -1264,7 +1280,12 @@ uespLog.DEFAULT_SETTINGS =
 		["targetResistance"] = 18200,
 		["targetCritResistFactor"] = 0,
 		["targetCritResistFlat"] = 0,
-		
+		["messageDisplay"] = {
+			[uespLog.MSG_LOOT] = false,
+			[uespLog.MSG_QUEST] = false,
+			[uespLog.MSG_NPC] = false,
+			[uespLog.MSG_MISC] = false,
+		},		
 	}
 }
 
@@ -1481,6 +1502,33 @@ function uespLog.BoolToOnOff(flag)
 	return "off"
 end
 
+
+function uespLog.GetMessageDisplay(msgType)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.messageDisplay == nil) then
+		uespLog.savedVars.settings.data.messageDisplay = uespLog.DEFAULT_SETTINGS.messageDisplay
+	end
+	
+	if (uespLog.savedVars.settings.data.messageDisplay[msgType] == null) then
+		return false
+	end
+	
+	return uespLog.savedVars.settings.data.messageDisplay[msgType]
+end
+
+
+function uespLog.SetMessageDisplay(msgType, flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	uespLog.savedVars.settings.data.messageDisplay[msgType] = flag
+end
 
 
 function uespLog.GetCustomStatDisplay()
@@ -1854,6 +1902,10 @@ function uespLog.IsDebug()
 		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
 	end
 	
+	if (uespLog.savedVars.settings.data.debug == nil) then
+		uespLog.savedVars.settings.data.debug = uespLog.DEFAULT_SETTINGS.data.debug
+	end
+	
 	return uespLog.savedVars.settings.data.debug
 end
 
@@ -1920,12 +1972,9 @@ end
 
 
 function uespLog.SetDebugExtra(flag)
+
 	if (uespLog.savedVars.settings == nil) then
 		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
-	end
-	
-	if (uespLog.savedVars.settings.data.debugExtra == nil) then
-		uespLog.savedVars.settings.data.debugExtra = uespLog.DEFAULT_SETTINGS.data.debugExtra
 	end
 	
 	uespLog.savedVars.settings.data.debugExtra = flag
@@ -1956,12 +2005,37 @@ function uespLog.Msg(text)
 end
 
 
+function uespLog.MsgType(msgType, text)
+
+	if (uespLog.GetMessageDisplay(msgType)) then
+		d(text)
+	end
+	
+end
+
+
+function uespLog.MsgColorType(msgType, Color, text)
+
+	if (uespLog.GetMessageDisplay(msgType)) then
+	
+		if (uespLog.IsColor()) then
+			d("|c" .. Color .. text .. "|r")
+		else
+			d(text)
+		end
+	end
+	
+end
+
+
 function uespLog.MsgColor(Color, text)
+
 	if (uespLog.IsColor()) then
 		d("|c" .. Color .. text .. "|r")
 	else
 		d(text)
 	end
+	
 end
 
 
@@ -1970,9 +2044,9 @@ function uespLog.DebugLogMsg(text)
 	if (uespLog.IsDebug()) then
 	
 		if (not uespLog.IsLogData()) then 
-			text = "UESP::Ignored " .. text
+			text = "UESP: Ignored " .. text
 		else
-			text = "UESP::" .. text
+			text = "UESP: " .. text
 		end
 		
 		d(text)
@@ -1986,9 +2060,9 @@ function uespLog.DebugLogMsgColor(Color, text)
 	if (uespLog.IsDebug()) then
 	
 		if (not uespLog.IsLogData()) then 
-			text = "UESP::Ignored " .. text
+			text = "UESP: Ignored " .. text
 		else
-			text = "UESP::" .. text
+			text = "UESP: " .. text
 		end
 		
 		if (uespLog.IsColor()) then
@@ -2032,18 +2106,16 @@ end
 
 
 function uespLog.DebugExtraMsg(text)
+
 	if (uespLog.IsDebugExtra()) then
 	
-		if (not uespLog.IsLogData()) then 
-			text = text .. " (logging off)"
-		end
-		
 		if (uespLog.IsColor()) then
 			d("|c" .. uespLog.debugColor .. text .. "|r")
 		else
 			d(text)
 		end
 	end
+	
 end
 
 
@@ -2103,7 +2175,7 @@ function uespLog.AppendStringToLog(section, logString)
 	if (logString == nil) then return end
 
 	if (uespLog.savedVars[section] == nil) then
-		uespLog.DebugMsg("UESP::Error -- The section" .. tostring(section) .." is not valid!")
+		uespLog.DebugMsg("UESP: Error -- The section" .. tostring(section) .." is not valid!")
 		return
 	end
 	
@@ -2121,8 +2193,8 @@ function uespLog.AppendStringToLog(section, logString)
 		
 	if (#sv >= uespLog.NextSectionSizeWarning[section] and GetGameTimeMilliseconds() >= uespLog.NextSectionWarningGameTime[section]) then
 		uespLog.MsgColor(uespLog.SECTION_SIZE_WARNING_COLOR, "WARNING: Log '"..tostring(section).."' data exceeds "..tostring(#sv).." elements in size.")
-		uespLog.DebugMsgColor(uespLog.SECTION_SIZE_WARNING_COLOR, "Loss of data is possible when loading the saved variable file!")
-		uespLog.DebugMsgColor(uespLog.SECTION_SIZE_WARNING_COLOR, "You should save the data, submit it to the UESP and do \"/uespreset all\".")
+		uespLog.MsgColor(uespLog.SECTION_SIZE_WARNING_COLOR, "Loss of data is possible when loading the saved variable file!")
+		uespLog.MsgColor(uespLog.SECTION_SIZE_WARNING_COLOR, "You should save the data, submit it to the UESP and do \"/uespreset all\".")
 		uespLog.NextSectionSizeWarning[section] = #sv + uespLog.NEXT_SECTION_SIZE_WARNING
 		uespLog.NextSectionWarningGameTime[section] = GetGameTimeMilliseconds() + uespLog.NEXT_SECTION_SIZE_WARNING_TIMEMS
 	end
@@ -2359,6 +2431,17 @@ function uespLog.Initialize( self, addOnName )
 		["charInfo"] = ZO_SavedVars:New("uespLogSavedVars", uespLog.DATA_VERSION, "charInfo", uespLog.DEFAULT_CHARINFO),
 		["skillCoefAbilityList"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "skillCoefAbilityList", {}),
 	}
+	
+	if (uespLog.savedVars.settings.data.messageDisplay == nil) then
+		uespLog.savedVars.settings.data.messageDisplay = uespLog.DEFAULT_SETTINGS.data.messageDisplay
+		
+		if (uespLog.IsDebug()) then
+			uespLog.savedVars.settings.data.messageDisplay.npc = true
+			uespLog.savedVars.settings.data.messageDisplay.loot = true
+			uespLog.savedVars.settings.data.messageDisplay.quest = true
+			uespLog.savedVars.settings.data.messageDisplay.other = true
+		end
+	end
 	
 	if (uespLog.savedVars.settings.data.targetResistance == nil) then
 		uespLog.savedVars.settings.data.targetResistance = uespLog.DEFAULT_SETTINGS.data.targetResistance
@@ -2653,7 +2736,7 @@ function uespLog.InitAutoMining ()
 
 	if (uespLog.isAutoMiningItems and uespLog.mineItemAutoRestart) then
 		
-		uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Auto-resetting current log data...")
+		uespLog.MsgColor(uespLog.mineColor, "UESP: Auto-resetting current log data...")
 		uespLog.ClearSavedVarSection("all")
 		
 		if (uespLog.mineItemsAutoNextItemId > uespLog.MINEITEM_AUTO_MAXITEMID) then
@@ -2663,9 +2746,9 @@ function uespLog.InitAutoMining ()
 			uespLog.savedVars.settings.data.mineItemAutoReload = false
 			uespLog.mineItemAutoRestart = false
 			uespLog.savedVars.settings.data.mineItemAutoRestart = false
-			uespLog.MsgColor(uespLog.mineColor, "UESP::Stopped auto-mining due to reaching max ID of "..tostring(uespLog.mineItemsAutoNextItemId))
+			uespLog.MsgColor(uespLog.mineColor, "UESP: Stopped auto-mining due to reaching max ID of "..tostring(uespLog.mineItemsAutoNextItemId))
 		else
-			uespLog.MsgColor(uespLog.mineColor, "UESP::Auto-restarting item mining at ID "..tostring(uespLog.mineItemsAutoNextItemId).." in 10 secs...")
+			uespLog.MsgColor(uespLog.mineColor, "UESP: Auto-restarting item mining at ID "..tostring(uespLog.mineItemsAutoNextItemId).." in 10 secs...")
 			zo_callLater(uespLog.MineItemsAutoLoop, 10000)
 			uespLog.MineItemsOutputStartLog()
 			uespLog.mineItemAutoRestartOutputEnd = false
@@ -2679,7 +2762,6 @@ function uespLog.outputInitMessage ()
 	EVENT_MANAGER:UnregisterForEvent("uespLog", EVENT_PLAYER_ACTIVATED)
 	
 	local flagStr = uespLog.BoolToOnOff(uespLog.IsDebug())
-	if (uespLog.IsDebugExtra()) then flagStr = "EXTRA" end
 	uespLog.Msg("uespLog v"..uespLog.version.." add-on initialized...debug output is currently "..tostring(flagStr)..".")
 end
 
@@ -2803,14 +2885,11 @@ end
 
 
 function uespLog.OnTooltipMouseUp (control, button, upInside)
-	--uespLog.DebugMsg("UESP::OnTooltipMouseUp")
 
 	if upInside and button == 2 then
-		--uespLog.DebugMsg("UESP::OnTooltipMouseUp")
 		local link = PopupTooltip.lastLink
 		
 		if link ~= "" then
-			--uespLog.DebugMsg("UESP::OnTooltipMouseUp")
 			ClearMenu()
 
 			local function AddLink()
@@ -2838,8 +2917,6 @@ function uespLog.FindDataIndexFromHorizontalList (scrollListControl, rootList, d
 	for i, control in ipairs(rootList.controls) do
 		if scrollListControl == control then
 			selIndex = 1 - ((rootList.selectedIndex or 0) - (i - rootList.halfNumVisibleEntries - 1))
-			--uespLog.DebugMsg("Found index at "..tostring(i)..", "..tostring(rootList.selectedIndex)..", "..tostring(selIndex)..", default="..tostring(defaultIndex))
-			--uespLog.DebugMsg("Control data = "..tostring(control[dataName]))
 		
 			if (dataName ~= nil and control[dataName] ~= nil) then
 				return control[dataName]
@@ -2860,8 +2937,6 @@ function uespLog.ShowItemInfoRowControl (rowControl)
 	local storeMode = uespLog.GetStoreMode()
 	--SI_STORE_MODE_REPAIR SI_STORE_MODE_BUY_BACK SI_STORE_MODE_BUY  SI_STORE_MODE_SELL
 	
-	--uespLog.DebugMsg("uespLog.ShowItemInfoRowControl() "..tostring(rowControl:GetName()))
-
 	if (dataEntry ~= nil and dataEntry.data ~= nil and dataEntry.data.slotIndex ~= nil) then
 		slotIndex = dataEntry.data.slotIndex
 		bagId = dataEntry.data.bagId
@@ -2951,21 +3026,10 @@ function uespLog.ShowItemInfoRowControl (rowControl)
 			itemLink = GetItemLink(SMITHING.deconstructionPanel.extractionSlot.bagId, SMITHING.deconstructionPanel.extractionSlot.slotIndex)
 		end				
 		
-		--uespLog.DebugMsg("UESP::rowControl parent[a] = "..tostring(rowControl.patternIndex))
-		--uespLog.DebugMsg("UESP::rowControl parent[b] = "..tostring(rowControl.materialIndex))
-		--uespLog.DebugMsg("UESP::rowControl parent[c] = "..tostring(rowControl.styleIndex))
-		--uespLog.DebugMsg("UESP::rowControl parent[d] = "..tostring(rowControl.traitIndex))
-		--uespLog.DebugMsg("UESP::rowControl parent[0] = "..tostring(parentNames[0]))
-		--uespLog.DebugMsg("UESP::rowControl parent[1] = "..tostring(parentNames[1]))
-		--uespLog.DebugMsg("UESP::rowControl parent[2] = "..tostring(parentNames[2]))
-		--uespLog.DebugMsg("UESP::rowControl statValue = "..tostring(rowControl.dataEntry.data.statValue))
-		--uespLog.DebugMsg("UESP::rowControl slotIndex = "..tostring(rowControl.dataEntry.data.slotIndex))
-		--uespLog.DebugMsg("UESP::ShowItemInfoRowControl no slot info found!")
-		--return
 	end
 
 	if (itemLink == nil) then
-		uespLog.DebugExtraMsg("UESP::ShowItemInfoRowControl -- No itemLink found!")
+		uespLog.DebugMsg("UESP: ShowItemInfoRowControl -- No itemLink found!")
 		return
 	end
 	
@@ -3057,7 +3121,7 @@ function uespLog.ShowItemInfo (itemLink)
 	if (siegeType > 0) then flagString = flagString.."Siege  " end
 	if (hasUseAbility) then flagString = flagString.."UseAbility  " end
 	
-	uespLog.MsgColor(uespLog.itemColor, "UESP::Information for "..tostring(itemNiceLink))
+	uespLog.MsgColor(uespLog.itemColor, "UESP: Information for "..tostring(itemNiceLink))
 	uespLog.MsgColor(uespLog.itemColor, ".    Data: "..tostring(itemData))
 	uespLog.MsgColor(uespLog.itemColor, ".    Type: ".. uespLog.GetItemTypeStr(itemType) .." ("..tostring(itemType)..")      Equip: "..equipTypeStr.." ("..tostring(equipType)..")")
 	
@@ -3197,16 +3261,11 @@ function uespLog.ShowItemInfo (itemLink)
 		uespLog.MsgColor(uespLog.itemColor, ".    Description: "..tostring(flavourText))
 	end
 	
-	--uespLog.MsgColor(uespLog.itemColor, ".    Research Index: "..tostring(researchIndex))
-	
 end
 
 
 function uespLog.new_ItemOnAddGameData (tooltipControl, gameDataType, ...)
 	local data = {...}
-	
-	uespLog.DebugMsg("UESP::gameItemDataType = "..tostring(gameDataType))
-	--uespLog.DebugMsg("UESP::Length Data = "..tostring(#data))
 	
 	for i = 1, #data do
 		uespLog.DebugMsg(".  "..tostring(i)..") "..tostring(data[i]))
@@ -3218,9 +3277,6 @@ end
 
 function uespLog.new_OnAddGameData (tooltipControl, gameDataType, ...)
 	local data = {...}
-	
-	uespLog.DebugMsg("UESP::gameDataType = "..tostring(gameDataType))
-	--uespLog.DebugMsg("UESP::Length Data = "..tostring(#data))
 	
 	for i = 1, #data do
 		uespLog.DebugMsg(".  "..tostring(i)..") "..tostring(data[i]))
@@ -3251,7 +3307,7 @@ end
 
 
 function uespLog.HandleChatterOptionClicked (self, label)
-	--uespLog.DebugExtraMsg("UESP::HandleChatterOptionClicked")
+	--uespLog.DebugExtraMsg("UESP: HandleChatterOptionClicked")
 	--uespLog.DebugExtraMsg("Index:"..tostring(label.optionIndex))
 	--uespLog.DebugExtraMsg("Text:"..tostring(label:GetText()))
 	--uespLog.DebugExtraMsg("Type:"..tostring(label.optionType))
@@ -3286,10 +3342,10 @@ function uespLog.OnQuestOffered (eventCode)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.currentConversationData, uespLog.GetTimeData())
 	
-	uespLog.DebugExtraMsg("UESP::Updated Conversation (QuestOffered)...")
-	--uespLog.DebugExtraMsg("UESP::dialog = "..tostring(dialog))
-	--uespLog.DebugExtraMsg("UESP::response = "..tostring(response))
-	--uespLog.DebugExtraMsg("UESP::farewell = "..tostring(farewell))	
+	uespLog.DebugExtraMsg("UESP: Updated Conversation (QuestOffered)...")
+	--uespLog.DebugExtraMsg("UESP: dialog = "..tostring(dialog))
+	--uespLog.DebugExtraMsg("UESP: response = "..tostring(response))
+	--uespLog.DebugExtraMsg("UESP: farewell = "..tostring(farewell))	
 end
 
 
@@ -3297,7 +3353,7 @@ function uespLog.OnConversationUpdated (eventCode, conversationBodyText, convers
 
 	local logData = { }
 	
-	uespLog.DebugExtraMsg("UESP::Updated conversation START...")
+	uespLog.DebugExtraMsg("UESP: Updated conversation START...")
 
 	logData.event = "ConversationUpdated"
 	logData.bodyText = conversationBodyText
@@ -3314,7 +3370,7 @@ function uespLog.OnConversationUpdated (eventCode, conversationBodyText, convers
 		uespLog.AppendDataToLog("all", logData)
 	end
 	
-	uespLog.DebugExtraMsg("UESP::Updated conversation...")
+	uespLog.DebugExtraMsg("UESP: Updated conversation...")
 	
 	uespLog.lastConversationOption.Text = ""
 	uespLog.lastConversationOption.Type = ""
@@ -3383,7 +3439,7 @@ function uespLog.OnChatterBegin (eventCode, optionCount)
 		uespLog.AppendDataToLog("all", logData)
 	end
 	
-	uespLog.DebugExtraMsg("UESP::Chatter begin...")
+	uespLog.DebugExtraMsg("UESP: Chatter begin...")
 	
 		-- Manually call the original function to update the chat window
 	INTERACTION:InitializeInteractWindow(ChatterGreeting)
@@ -3399,7 +3455,7 @@ function uespLog.OnBeginLockPick (eventCode)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugLogMsg("Lock of quality "..tostring(logData.quality))
+	uespLog.MsgType(uespLog.MSG_OTHER, "UESP: Lock of quality "..tostring(logData.quality))
 end
 
 
@@ -3412,8 +3468,8 @@ function uespLog.OnShowBook (eventCode, bookTitle, body, medium, showTitle)
 	logData.medium = medium
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
-	 
-	uespLog.DebugLogMsg("Book "..bookTitle)
+	
+	uespLog.MsgType(uespLog.MSG_OTHER, "UESP: Book "..bookTitle)
 end
 
 
@@ -3426,7 +3482,7 @@ function uespLog.OnLoreBookAlreadyKnown (eventCode, bookTitle)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugLogMsg("Lore book "..bookTitle.." (already known)")
+	uespLog.MsgType(uespLog.MSG_OTHER, "UESP: Lore book "..bookTitle.." (already known)")
 end
 
 
@@ -3445,7 +3501,7 @@ function uespLog.OnLoreBookLearned (eventCode, categoryIndex, collectionIndex, b
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 		 
-	uespLog.DebugLogMsg("Lore book "..bookTitle.." (guild "..tostring(guildIndex)..")")
+	uespLog.MsgType(uespLog.MSG_OTHER, "UESP: Lore book "..bookTitle.." (guild "..tostring(guildIndex)..")")
 end
 
 
@@ -3461,7 +3517,7 @@ function uespLog.OnSkillRankUpdate (eventCode, skillType, skillIndex, rank)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 		 
-	uespLog.DebugLogMsg(tostring(name).." raised to rank "..tostring(rank).."!")
+	uespLog.MsgType(uespLog.MSG_OTHER, "UESP: "..tostring(name).." raised to rank "..tostring(rank).."!")
 end
 
 
@@ -3488,7 +3544,7 @@ function uespLog.OnBuyReceipt (eventCode, itemLink, entryType, entryQuantity, mo
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugLogMsgColor(uespLog.itemColor, "Bought "..niceLink.." for "..tostring(money).."gp")
+	uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "Bought "..niceLink.." for "..tostring(money).."gp")
 end
 
 
@@ -3504,9 +3560,9 @@ function uespLog.OnSellReceipt (eventCode, itemLink, itemQuantity, money)
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
 	if (itemQuantity == 1) then
-		uespLog.DebugLogMsgColor(uespLog.itemColor, "Sold "..niceLink.." for "..tostring(money).."gp")
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "Sold "..niceLink.." for "..tostring(money).."gp")
 	else
-		uespLog.DebugLogMsgColor(uespLog.itemColor, "Sold "..niceLink.." (x"..tostring(itemQuantity)..") for "..tostring(money).."gp")
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "Sold "..niceLink.." (x"..tostring(itemQuantity)..") for "..tostring(money).."gp")
 	end
 end
 
@@ -3519,7 +3575,7 @@ function uespLog.OnQuestAdded (eventCode, journalIndex, questName, objectiveName
 	logData.objective = objectiveName
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
-	uespLog.DebugLogMsg("Quest added "..questName.."::"..objectiveName)
+	uespLog.MsgType(uespLog.MSG_QUEST, "UESP: Quest added "..questName.."::"..objectiveName)
 	
 	uespLog.CheckQuestItems(journalIndex, questName)
 	
@@ -3538,7 +3594,7 @@ function uespLog.OnQuestRemoved (eventCode, isCompleted, questIndex, questName, 
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 
-	uespLog.DebugLogMsg("Quest removed "..questName)
+	uespLog.MsgType(uespLog.MSG_QUEST, "UESP: Quest removed "..questName)
 	
 	uespLog.DailyQuestOnQuestComplete(questName, questIndex, isCompleted)
 end
@@ -3554,7 +3610,7 @@ function uespLog.OnQuestObjectiveCompleted (eventCode, zoneIndex, poiIndex, xpGa
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	
-	uespLog.DebugLogMsg("Objective completed")
+	uespLog.MsgType(uespLog.MSG_QUEST, "UESP: Quest objective completed")
 end
 
 
@@ -3576,7 +3632,7 @@ function uespLog.OnQuestCounterChanged (eventCode, journalIndex, questName, cond
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
  
-	uespLog.DebugLogMsg("Change in quest "..questName.."::"..conditionText.." ("..tostring(newConditionVal).."/"..tostring(conditionMax)..")")
+	uespLog.MsgType(uespLog.MSG_QUEST, "UESP: Change in quest "..questName.."::"..conditionText.." ("..tostring(newConditionVal).."/"..tostring(conditionMax)..")")
 end
 
 
@@ -3589,7 +3645,7 @@ function uespLog.OnQuestCompleteExperience (eventCode, questName, xpGained)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugLogMsg("Finished "..questName)
+	uespLog.MsgType(uespLog.MSG_QUEST, "UESP: Finished quest "..questName)
 end
 
 
@@ -3770,14 +3826,14 @@ function uespLog.OnExperienceGain (eventCode, reason, level, previousExperience,
 	if (logData.xpGained == 0) then
 		return
 	elseif (reason == -1) then
-		uespLog.DebugExtraMsg("UESP::Gained "..tostring(logData.xpGained).." xp for unknown reason")
+		uespLog.DebugExtraMsg("UESP: You gained "..tostring(logData.xpGained).." xp for unknown reason")
 		return
 	end
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
 	--if (GetUnitChampionPoints("player") <= 0) then
-	uespLog.DebugLogMsgColor(uespLog.xpColor, "Gained "..tostring(logData.xpGained).." xp for "..uespLog.GetXPReasonStr(reason))
+	uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.xpColor, "You gained "..tostring(logData.xpGained).." xp for "..uespLog.GetXPReasonStr(reason))
 	--end
 end
 
@@ -3798,14 +3854,14 @@ function uespLog.OnExperienceUpdate (eventCode, unitTag, currentExp, maxExp, rea
 	if (logData.xpGained == 0) then
 		return
 	elseif (reason == -1) then
-		uespLog.DebugExtraMsg("UESP::Gained "..tostring(logData.xpGained).." xp for unknown reason")
+		uespLog.DebugExtraMsg("UESP: You gained "..tostring(logData.xpGained).." xp for unknown reason")
 		return
 	end
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
 	if (unitTag == "player") then
-		uespLog.DebugLogMsgColor(uespLog.xpColor, "Gained "..tostring(logData.xpGained).." xp for "..uespLog.GetXPReasonStr(reason))
+		uespLog.MsgType(uespLog.MSG_OTHER, uespLog.xpColor, "You gained "..tostring(logData.xpGained).." xp for "..uespLog.GetXPReasonStr(reason))
 	end
 end
 
@@ -3823,7 +3879,7 @@ function uespLog.OnAlliancePointsUpdate (eventCode, alliancePoints, playSound, d
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugLogMsgColor(uespLog.xpColor, "Gained "..tostring(logData.xpGained).." alliance points.")
+	uespLog.MsgType(uespLog.MSG_OTHER, uespLog.xpColor, "You gained "..tostring(logData.xpGained).." alliance points.")
 end
 
 
@@ -3839,13 +3895,13 @@ function uespLog.OnSkillPointsChanged (eventCode, pointsBefore, pointsNow, isSky
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
 	if (pointsBefore > pointsNow) then
-		uespLog.DebugLogMsg("Skill points lost (".. tostring(logData.points) ..")")
+		uespLog.MsgType(uespLog.MSG_OTHER, "Skill points lost (".. tostring(logData.points) ..")")
 	elseif (isSkyShard and pointsBefore == pointsNow) then
-		uespLog.DebugLogMsg("Found Skyshard ("..GetNumSkyShards().."/3 pieces)")
+		uespLog.MsgType(uespLog.MSG_OTHER, "Found Skyshard ("..GetNumSkyShards().."/3 pieces)")
 	elseif (isSkyShard and logData.points == 1) then
-		uespLog.DebugLogMsg("Found Skyshard...skill points changed (".. tostring(logData.points) ..")")
+		uespLog.MsgType(uespLog.MSG_OTHER, "Found Skyshard...skill points changed (".. tostring(logData.points) ..")")
 	else
-		uespLog.DebugLogMsg("Skill points added (".. tostring(logData.points) ..")")
+		uespLog.MsgType(uespLog.MSG_OTHER, "Skill points added (".. tostring(logData.points) ..")")
 	end
 end
 
@@ -3863,7 +3919,7 @@ function uespLog.OnQuestOptionalStepAdvanced (eventCode, text)
 
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugLogMsg("Quest optional step advanced ("..text..")")
+	uespLog.MsgType(uespLog.MSG_QUEST, "UESP: Quest optional step advanced ("..text..")")
 end
 
 
@@ -3878,7 +3934,7 @@ function uespLog.OnQuestAdvanced (eventCode, journalIndex, questName, isPushed, 
 
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugExtraMsg("UESP::Quest advanced "..questName)
+	uespLog.MsgType(uespLog.MSG_QUEST, "UESP: Quest advanced "..questName)
 	
 	uespLog.CheckQuestItems(journalIndex, questName)
 end
@@ -3888,7 +3944,7 @@ function uespLog.OnRecipeLearned (eventCode, recipeListIndex, recipeIndex)
 	uespLog.DumpRecipe(recipeListIndex, recipeIndex,  uespLog.GetTimeData())
 	
 	local known, recipeName = GetRecipeInfo(recipeListIndex, recipeIndex)
-	uespLog.DebugLogMsg("New recipe " .. recipeName)
+	uespLog.MsgType(uespLog.MSG_OTHER, "UESP: New recipe " ..tostring(recipeName).." learned")
 end
 
 
@@ -3914,7 +3970,7 @@ function uespLog.OnTelvarStoneUpdate (eventCode, newStones, oldStones, reason)
 		msg = "lost"
 	end
 	
-	uespLog.DebugLogMsgColor(uespLog.itemColor, "You "..msg.." "..tostring(logData.qnt).." telvar stones ("..tostring(newStones).." total)")
+	uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You "..msg.." "..tostring(logData.qnt).." telvar stones ("..tostring(newStones).." total)")
 end
 
 
@@ -3942,7 +3998,7 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 		logData.qnt = uespLog.lastMoneyChange
 			
 		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData())
-		uespLog.DebugLogMsgColor(uespLog.itemColor, "You looted "..tostring(uespLog.lastMoneyChange).." gold"..lootMsg)
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You looted "..tostring(uespLog.lastMoneyChange).." gold"..lootMsg)
 		
 		-- 4 = quest reward
 	elseif (reason == 4) then
@@ -3950,7 +4006,7 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 		logData.qnt = uespLog.lastMoneyChange
 
 		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData())
-		uespLog.DebugLogMsgColor(uespLog.itemColor, "Quest reward "..tostring(uespLog.lastMoneyChange).." gold"..lootMsg)
+		uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "Quest reward "..tostring(uespLog.lastMoneyChange).." gold"..lootMsg)
 		
 		-- 62 = Stolen
 	elseif (reason == 62) then
@@ -3958,9 +4014,9 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 		logData.qnt = uespLog.lastMoneyChange
 
 		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData())
-		uespLog.DebugLogMsgColor(uespLog.itemColor, "You stole "..tostring(uespLog.lastMoneyChange).." gold"..lootMsg)
+		uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "You stole "..tostring(uespLog.lastMoneyChange).." gold"..lootMsg)
 	else
-		uespLog.DebugExtraMsg("UESP::Money Change, New="..tostring(newMoney)..",  Old="..tostring(oldMoney)..",  Diff="..tostring(uespLog.lastMoneyChange)..",  Reason="..tostring(reason))
+		uespLog.DebugMsg("UESP: Money Change, New="..tostring(newMoney)..",  Old="..tostring(oldMoney)..",  Diff="..tostring(uespLog.lastMoneyChange)..",  Reason="..tostring(reason))
 	end	
 	
 end
@@ -4000,9 +4056,6 @@ end
 
 
 function uespLog.OnLootUpdated (eventCode)
-	--uespLog.DebugMsg("OnLootUpdated::"..tostring(uespLog.lastTargetData.name).."  count = "..tostring(GetNumLootItems()))
-	--uespLog.DebugExtraMsg("OnLootUpdated::actionName = "..tostring(actionName))
-	--uespLog.DebugExtraMsg("OnLootUpdated::isOwned = "..tostring(isOwned))
 	
 	uespLog.lastLootUpdateCount = GetNumLootItems()
 	uespLog.lastLootTargetName = uespLog.lastTargetData.name
@@ -4016,7 +4069,6 @@ function uespLog.OnTreasureLooted (targetName)
 	local duration = uespLog.GetTreasureTimers()[safeName]
 
 	if (not uespLog.IsTreasureTimerEnabled() or duration == nil or duration <= 0) then
-		-- uespLog.DebugExtraMsg("OnTreasureLooted::Skipped creating timer for "..tostring(targetName))
 		return
 	end
 		
@@ -4026,7 +4078,7 @@ function uespLog.OnTreasureLooted (targetName)
 					
 	uespLog.AddTreasureTimer(targetName, duration)
 	
-	uespLog.DebugLogMsgColor(uespLog.itemColor, "Created "..tostring(duration).." sec timer for "..tostring(targetName).." just looted.")
+	uespLog.DebugMsgColor(uespLog.itemColor, "Created "..tostring(duration).." sec timer for "..tostring(targetName).." just looted.")
 end
 
 
@@ -4068,11 +4120,9 @@ end
 
 
 function uespLog.OnLootClosed (eventCode)
-	-- uespLog.DebugMsg("OnLootClosed::count = "..tostring(GetNumLootItems()))
 	
 	if (uespLog.lastLootUpdateCount == 0) then
 		uespLog.OnTreasureLooted(uespLog.lastLootTargetName)
-		-- uespLog.DebugMsg("Finished looting "..tostring(uespLog.lastLootTargetName))
 	elseif (uespLog.lastLootUpdateCount > 0) then
 		-- uespLog.DebugMsg("Did not finish looting "..tostring(uespLog.lastLootTargetName))
 	else
@@ -4142,26 +4192,22 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 
 	if (self) then
 		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData(), extraLogData)
-		--You looted [Sword] (x1) (level 30, Breton)
 		
 		if (extraLogData ~= nil and extraLogData.skippedLoot) then
-			uespLog.DebugMsgColor(uespLog.itemColor, "UESP::Skipped looting "..niceLink.." (x"..tostring(quantity)..") (prov level "..tostring(extraLogData.tradeType)..")"..lootMsg)
+			uespLog.DebugMsgColor(uespLog.itemColor, "Skipped looting "..niceLink.." (x"..tostring(quantity)..") (prov level "..tostring(extraLogData.tradeType)..")"..lootMsg)
 		else
-			--uespLog.DebugLogMsgColor(uespLog.itemColor, "You looted "..msgType.." "..niceLink.." (x"..tostring(quantity)..") (level "..tostring(itemLevel)..", "..itemStyleStr..")")
-			--uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You "..rcvType.." "..msgType.." "..niceLink.." (x"..tostring(quantity)..") from "..tostring(posData.lastTarget))
 			
 			if (quantity == 1) then
-				uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You "..rcvType.." "..niceLink..lootMsg)
+				uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You "..rcvType.." "..niceLink..lootMsg)
 			else
-				uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You "..rcvType.." "..niceLink.." (x"..tostring(quantity)..")"..lootMsg)
+				uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You "..rcvType.." "..niceLink.." (x"..tostring(quantity)..")"..lootMsg)
 			end
 		end
 		
 		local money, stolenMoney = GetLootMoney()
-		uespLog.DebugExtraMsg("UESP::LootMoney = "..tostring(money)..", stolen = "..tostring(stolenMoney))
+		uespLog.DebugExtraMsg("UESP: LootMoney = "..tostring(money)..", stolen = "..tostring(stolenMoney))
 	else
-		
-		uespLog.DebugMsgColor(uespLog.itemColor, "UESP::Someone "..rcvType.." "..msgType.." "..niceLink.." (x"..tostring(quantity)..")")
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "Someone "..rcvType.." "..msgType.." "..niceLink.." (x"..tostring(quantity)..")")
 	end
 	
 end
@@ -4296,8 +4342,6 @@ function uespLog.IsItemLinkBookKnown(itemLink)
 			--bookIndex, chapterIndex, styleName, slotName = itemName:match("Crafting Motifs ([%d]+), Ch%. ([%d]+): ([%a%s]+) ([%a]+)")
 		end
 	end
-	
-	--uespLog.DebugMsg(" BookIndex: "..tostring(bookIndex)..":"..tostring(chapterIndex)..":"..tostring(styleName)..":"..tostring(slotName))
 	
 		-- Mercenary Motifs
 		-- Crafting Motifs 19, Chap. 12: Mercenary XXXXX
@@ -4474,7 +4518,7 @@ function uespLog.OnCraftCompleted (eventCode, craftSkill)
 	uespLog.AddTotalInspiration(inspiration)
 	
 	if (inspiration > 0) then
-		uespLog.DebugLogMsg("Craft completed with "..tostring(inspiration).." xp ("..tostring(uespLog.GetTotalInspiration()).." since last reset)")
+		uespLog.MsgType(uespLog.MSG_OTHER, "Craft completed with "..tostring(inspiration).." xp ("..tostring(uespLog.GetTotalInspiration()).." since last reset)")
 	end
 	
     for i = 1, numItemsGained do
@@ -4498,11 +4542,11 @@ function uespLog.OnCraftCompleted (eventCode, craftSkill)
 		
 		local itemText, itemColor, itemData, niceName, niceLink = uespLog.ParseLink(itemLink)
 	
-		uespLog.DebugLogMsgColor(uespLog.itemColor, "Crafted item ".. tostring(itemLink) .." (x"..tostring(stack)..")")
+		uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "Crafted item ".. tostring(itemLink) .." (x"..tostring(stack)..")")
 	end
 	
 	if (numItemsGained == 0) then
-		uespLog.DebugLogMsg("0 items crafted")
+		uespLog.MsgType(uespLog.MSG_OTHER, "0 items crafted")
 	end	
 end
 
@@ -4510,7 +4554,7 @@ end
 function uespLog.OnInventoryItemUsed (eventCode, itemSoundCategory)
 
 	uespLog.OnUseItem(eventCode, uespLog.lastItemLinkUsed_BagId, uespLog.lastItemLinkUsed_SlotIndex, uespLog.lastItemLinkUsed, itemSoundCategory)
-	uespLog.DebugExtraMsg("UESP::OnInventoryItemUsed sound="..tostring(itemSoundCategory))
+	uespLog.DebugMsg("UESP: OnInventoryItemUsed sound="..tostring(itemSoundCategory))
 	
 	uespLog.lastItemLinkUsed = ""
 	uespLog.lastItemLinkUsed_BagId = -1
@@ -4523,7 +4567,7 @@ function uespLog.OnUseItem(eventCode, bagId, slotIndex, itemLink, itemSoundCateg
 	local logData = { }
 	local itemType = GetItemLinkItemType(itemLink) --ITEMTYPE_CONTAINER
 	
-	uespLog.DebugExtraMsg("UESP::OnUseItem "..tostring(itemLink).."("..tostring(bagId)..","..tostring(slotIndex)..") sound="..tostring(itemSoundCategory)..", type="..tostring(itemType))
+	uespLog.DebugExtraMsg("UESP: OnUseItem "..tostring(itemLink).."("..tostring(bagId)..","..tostring(slotIndex)..") sound="..tostring(itemSoundCategory)..", type="..tostring(itemType))
 	
 	uespLog.lastItemUsed = itemLink
 	uespLog.lastItemUsedGameTime = GetGameTimeMilliseconds()
@@ -4533,7 +4577,7 @@ function uespLog.OnUseItem(eventCode, bagId, slotIndex, itemLink, itemSoundCateg
 		logData.sound = itemSoundCategory
 		logData.itemLink = itemLink
 		uespLog.AppendDataToLog("all", logData)
-		uespLog.DebugLogMsg("Footlocker "..tostring(itemLink).." opened.")
+		uespLog.MsgType(uespLog.MSG_LOOT, "Footlocker "..tostring(itemLink).." opened.")
 		
 		uespLog.lastTargetData.action = "opened"
 		local x, y, z, zone = uespLog.GetUnitPosition(unitTag)
@@ -4562,11 +4606,11 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 	local itemName = GetItemName(bagId, slotIndex)
 	local itemLink = GetItemLink(bagId, slotIndex, LINK_STYLE_BRACKETS)
 	
-	uespLog.DebugExtraMsg("UESP::Inventory slot("..tostring(bagId)..","..tostring(slotIndex)..") update for "..itemName..", isNew "..tostring(isNewItem)..", reason "..tostring(updateReason)..", sound "..tostring(itemSoundCategory))
+	uespLog.DebugExtraMsg("UESP: Inventory slot("..tostring(bagId)..","..tostring(slotIndex)..") update for "..itemName..", isNew "..tostring(isNewItem)..", reason "..tostring(updateReason)..", sound "..tostring(itemSoundCategory))
 
 		-- Skip durability updates or items already logged
 	if (updateReason == INVENTORY_UPDATE_REASON_DURABILITY_CHANGE) then
-		--uespLog.DebugExtraMsg("UESP::Skipping inventory slot update for "..itemName..", reason "..tostring(updateReason)..", sound "..tostring(itemSoundCategory))
+		--uespLog.DebugExtraMsg("UESP: Skipping inventory slot update for "..itemName..", reason "..tostring(updateReason)..", sound "..tostring(itemSoundCategory))
 		return
 	end
 	
@@ -4584,7 +4628,7 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 	end
 	
 	if (not isNewItem) then
-		uespLog.DebugExtraMsg("UESP::Skipping inventory slot update for "..itemName..", old, reason "..tostring(updateReason)..", sound "..tostring(itemSoundCategory))
+		uespLog.DebugExtraMsg("UESP: Skipping inventory slot update for "..itemName..", old, reason "..tostring(updateReason)..", sound "..tostring(itemSoundCategory))
 		return
 	end
 	
@@ -4677,7 +4721,7 @@ function uespLog.OnTargetChange (eventCode)
 		
 		uespLog.AppendDataToLog("all", logData, uespLog.GetLastTargetData(), uespLog.GetTimeData())
 		
-		uespLog.DebugLogMsg("Npc "..name)
+		uespLog.MsgType(uespLog.MSG_NPC, "UESP: Npc "..name)
 	elseif (unitType == COMBAT_UNIT_TYPE_PLAYER) then
 		uespLog.lastOnTargetChange = ""
 	elseif (unitType ~= 0) then
@@ -4799,7 +4843,7 @@ function uespLog.OnFoundSkyshard ()
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetCurrentTargetData(), uespLog.GetTimeData())
 	
-	uespLog.DebugLogMsg("Found skyshard")
+	uespLog.MsgType(uespLog.MSG_OTHER, "Found skyshard")
 end
 
 
@@ -4811,7 +4855,7 @@ function uespLog.OnFoundTreasure (name)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetCurrentTargetData(), uespLog.GetTimeData())
 	
-	uespLog.DebugLogMsg("Found "..tostring(name))
+	uespLog.MsgType(uespLog.MSG_OTHER, "Found "..tostring(name))
 
 	uespLog.lastLootTargetName = name
 end
@@ -4824,14 +4868,14 @@ function uespLog.OnFoundFish ()
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetCurrentTargetData(), uespLog.GetTimeData())
 	
-	uespLog.DebugLogMsg("Found fishing hole")
+	uespLog.MsgType(uespLog.MSG_OTHER, "Found fishing hole")
 end
 
 
 function uespLog.OnMailMessageReadable (eventCode, mailId)
 	local senderDisplayName, senderCharacterName, subject, icon, unread, fromSystem, fromCustomerService, returned, numAttachments, attachedMoney, codAmount, expiresInDays, secsSinceReceived = GetMailItemInfo(mailId)
 	
-	uespLog.DebugExtraMsg("Read mail from " ..tostring(senderDisplayName).." with "..tostring(numAttachments).." items")
+	uespLog.MsgType(uespLog.MSG_OTHER, "Read mail from " ..tostring(senderDisplayName).." with "..tostring(numAttachments).." items")
 	
 	uespLog.lastMailItems = { }
 	uespLog.lastMailId = mailId
@@ -4857,13 +4901,13 @@ function uespLog.OnMailMessageTakeAttachedMoney (eventCode, mailId)
 	local senderDisplayName, senderCharacterName, subject, icon, unread, fromSystem, fromCustomerService, returned, numAttachments, attachedMoney, codAmount, expiresInDays, secsSinceReceived = GetMailItemInfo(mailId)
 	
 	if (attachedMoney > 0) then
-		uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You received "..tostring(attachedMoney).."gp from mail attachment.")
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "UESP: You received "..tostring(attachedMoney).."gp from mail attachment.")
 	elseif (uespLog.lastMailGold > 0) then
-		uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You received "..tostring(uespLog.lastMailGold).."gp from mail attachment.")
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "UESP: You received "..tostring(uespLog.lastMailGold).."gp from mail attachment.")
 	end
 	
 	if (uespLog.lastMailCOD > 0) then
-		uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You paid a mail COD charge of "..tostring(uespLog.lastMailGold).."gp.")
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "UESP: You paid a mail COD charge of "..tostring(uespLog.lastMailGold).."gp.")
 	end
 	
 	uespLog.lastMailGold = 0
@@ -4877,7 +4921,7 @@ function uespLog.OnMailMessageTakeAttachedItem (eventCode, mailId)
 	local logData = { }
 	local timeData = uespLog.GetTimeData()
 	
-	uespLog.DebugExtraMsg("Received mail item from " ..tostring(senderDisplayName).." money="..tostring(attachedMoney))
+	uespLog.DebugMsgColor(uespLog.itemColor, "Received mail item from " ..tostring(senderDisplayName).." money="..tostring(attachedMoney))
 	
 	if (mailId ~= uespLog.lastMailId or #uespLog.lastMailItems == 0) then
 		uespLog.DebugMsg("No attachments in mail")
@@ -4903,7 +4947,6 @@ function uespLog.OnMailMessageTakeAttachedItem (eventCode, mailId)
 	for attachIndex = 1,  #uespLog.lastMailItems do
 		--local itemLink = GetAttachedItemLink(mailId, attachIndex)
 		--local icon, stack, creatorName = GetAttachedItemInfo(mailId, attachIndex) 
-		
 		local lastItem = uespLog.lastMailItems[attachIndex]
 		
 		logData = { }
@@ -4918,9 +4961,9 @@ function uespLog.OnMailMessageTakeAttachedItem (eventCode, mailId)
 		uespLog.AppendDataToLog("all", logData, timeData)
 		
 		if (tradeType > 0) then
-			uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You received hireling mail item "..tostring(logData.itemLink).." (x"..tostring(lastItem.stack)..")")
+			uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You received hireling mail item "..tostring(logData.itemLink).." (x"..tostring(lastItem.stack)..")")
 		else
-			uespLog.DebugMsgColor(uespLog.itemColor, "UESP::You received mail item "..tostring(logData.itemLink).." (x"..tostring(lastItem.stack)..")")
+			uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You received mail item "..tostring(logData.itemLink).." (x"..tostring(lastItem.stack)..")")
 		end
 	end
 	
@@ -5200,13 +5243,13 @@ function uespLog.ShowTime (inputTimestamp)
 	local gameTimeStr = uespLog.getGameTimeStr(timeStamp, uespLog.IsDebugExtra())
 	local moonPhaseStr = uespLog.getMoonPhaseStr(timeStamp, uespLog.IsDebugExtra())
 		
-	uespLog.MsgColor(uespLog.timeColor, "UESP::Game Time = " .. gameTimeStr .. "")
-	uespLog.MsgColor(uespLog.timeColor, "UESP::Moon Phase = " .. moonPhaseStr .. "")
-	uespLog.MsgColor(uespLog.timeColor, "UESP::localGameTime = " .. tostring(localGameTime/1000) .. " sec")
-	uespLog.MsgColor(uespLog.timeColor, "UESP::timeStamp = " .. tostring(timeStamp))
-	uespLog.MsgColor(uespLog.timeColor, "UESP::timeStamp Date = " .. timeStampFmt)
-	uespLog.MsgColor(uespLog.timeColor, "UESP::_VERSION = " ..version..",  API = "..tostring(apiVersion))	
-	uespLog.DebugExtraMsg("UESP::timeStampStr = " .. timeStampStr)
+	uespLog.MsgColor(uespLog.timeColor, "UESP: Game Time = " .. gameTimeStr .. "")
+	uespLog.MsgColor(uespLog.timeColor, "UESP: Moon Phase = " .. moonPhaseStr .. "")
+	uespLog.MsgColor(uespLog.timeColor, "UESP: localGameTime = " .. tostring(localGameTime/1000) .. " sec")
+	uespLog.MsgColor(uespLog.timeColor, "UESP: timeStamp = " .. tostring(timeStamp))
+	uespLog.MsgColor(uespLog.timeColor, "UESP: timeStamp Date = " .. timeStampFmt)
+	uespLog.MsgColor(uespLog.timeColor, "UESP: _VERSION = " ..version..",  API = "..tostring(apiVersion))	
+	uespLog.DebugExtraMsg("UESP: timeStampStr = " .. timeStampStr)
 end
 
 
@@ -5320,14 +5363,14 @@ SLASH_COMMANDS["/uesptime"] = function (cmd)
 		local headingStr = string.format("%.2f", heading*57.29582791)
 		local cameraHeading = GetPlayerCameraHeading()
 		local camHeadingStr = string.format("%.2f", cameraHeading*57.29582791)
-		uespLog.MsgColor(uespLog.timeColor, "UESP::Current Time Stamp = " .. tostring(timeStamp).." secs")
-		uespLog.MsgColor(uespLog.timeColor, "UESP::Player Heading = " .. tostring(headingStr).." degrees")
-		uespLog.MsgColor(uespLog.timeColor, "UESP::Camera Heading = " .. tostring(camHeadingStr).." degrees")
+		uespLog.MsgColor(uespLog.timeColor, "UESP: Current Time Stamp = " .. tostring(timeStamp).." secs")
+		uespLog.MsgColor(uespLog.timeColor, "UESP: Player Heading = " .. tostring(headingStr).." degrees")
+		uespLog.MsgColor(uespLog.timeColor, "UESP: Camera Heading = " .. tostring(camHeadingStr).." degrees")
 		return
 	elseif (cmdWords[1] == "daylength") then
 	
 		if (cmdWords[2] == nil) then
-			uespLog.MsgColor(uespLog.timeColor, "UESP::Game time day length is currently "..tostring(uespLog.DEFAULT_REALSECONDSPERGAMEDAY).." secs")
+			uespLog.MsgColor(uespLog.timeColor, "UESP: Game time day length is currently "..tostring(uespLog.DEFAULT_REALSECONDSPERGAMEDAY).." secs")
 			return
 		end
 		
@@ -5335,7 +5378,7 @@ SLASH_COMMANDS["/uesptime"] = function (cmd)
 		
 		if (value > 0) then
 			uespLog.DEFAULT_REALSECONDSPERGAMEDAY = value
-			uespLog.MsgColor(uespLog.timeColor, "UESP::Game time day length set to "..tostring(uespLog.DEFAULT_REALSECONDSPERGAMEDAY).." secs")
+			uespLog.MsgColor(uespLog.timeColor, "UESP: Game time day length set to "..tostring(uespLog.DEFAULT_REALSECONDSPERGAMEDAY).." secs")
 		end
 	else
 		uespLog.ShowTime()
@@ -5353,13 +5396,13 @@ SLASH_COMMANDS["/uespenl"] = function (cmd)
 	local enl = GetEnlightenedPool()
 	local mult = GetEnlightenedMultiplier()
 
-	uespLog.MsgColor(uespLog.xpColor, "UESP::You have "..tostring(enl).." enlightenment at a x"..tostring(mult).." bonus.")
+	uespLog.MsgColor(uespLog.xpColor, "You have "..tostring(enl).." enlightenment at a x"..tostring(mult).." bonus.")
 end
 
 
 function uespLog.DisplayPowerStat (statType, statName)
 	local currentStat, maxValue, effectiveMax = GetUnitPower("player", statType)
-	uespLog.MsgColor(uespLog.statColor, "UESP::"..tostring(statName).." "..tostring(currentStat).." (effective max "..tostring(effectiveMax).." of ".. tostring(maxValue)..")")
+	uespLog.MsgColor(uespLog.statColor, "UESP: "..tostring(statName).." "..tostring(currentStat).." (effective max "..tostring(effectiveMax).." of ".. tostring(maxValue)..")")
 end
 
 
@@ -5368,7 +5411,7 @@ function uespLog.DisplayStat (statType, statName)
 	local currentStat = GetPlayerStat(statType, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
 	-- local noCapStat = GetPlayerStat(statType, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_DONT_APPLY_SOFT_CAP)
 	
-	uespLog.MsgColor(uespLog.statColor, "UESP::"..tostring(statName).." "..tostring(currentStat).." (no cap)")
+	uespLog.MsgColor(uespLog.statColor, "UESP: "..tostring(statName).." "..tostring(currentStat).." (no cap)")
 end
 
 
@@ -5376,8 +5419,8 @@ SLASH_COMMANDS["/uespcharinfo"] = function (cmd)
 	local numPoints = GetAvailableSkillPoints()
 	local numSkyShards = GetNumSkyShards()
 	
-	uespLog.Msg("UESP::Skill Points = ".. tostring(numPoints))
-	uespLog.Msg("UESP::Skyshards = ".. tostring(numSkyShards))
+	uespLog.Msg("UESP: Skill Points = ".. tostring(numPoints))
+	uespLog.Msg("UESP: Skyshards = ".. tostring(numSkyShards))
 	
 	local armorSC = GetPlayerStat(STAT_ARMOR_RATING, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
 	local hpSC = GetPlayerStat(STAT_HEALTH_MAX, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
@@ -5440,10 +5483,10 @@ SLASH_COMMANDS["/uespcharinfo"] = function (cmd)
 	
 	--uespLog.DisplayStat(STAT_CRITICAL_STRIKE, "")
 	
-	--uespLog.Msg("UESP::HP Soft Cap = ".. tostring(hpSC))
-	--uespLog.Msg("UESP::MG Soft Cap = ".. tostring(mgSC))
-	--uespLog.Msg("UESP::ST Soft Cap = ".. tostring(stSC))
-	--uespLog.Msg("UESP::Armor Soft Cap = ".. tostring(armorSC))
+	--uespLog.Msg("UESP: HP Soft Cap = ".. tostring(hpSC))
+	--uespLog.Msg("UESP: MG Soft Cap = ".. tostring(mgSC))
+	--uespLog.Msg("UESP: ST Soft Cap = ".. tostring(stSC))
+	--uespLog.Msg("UESP: Armor Soft Cap = ".. tostring(armorSC))
 end
 
 
@@ -5473,19 +5516,21 @@ SLASH_COMMANDS["/uespdebug"] = function (cmd)
 	if (cmd == "on") then
 		uespLog.SetDebug(true)
 		uespLog.SetDebugExtra(false)
-		uespLog.Msg("Turned UESP log messages on.")
+		uespLog.Msg("Turned UESP debug log messages on.")
 	elseif (cmd == "off") then
 		uespLog.SetDebug(false)
 		uespLog.SetDebugExtra(false)
-		uespLog.Msg("Turned UESP log messages off.")
+		uespLog.Msg("Turned UESP debug log messages off.")
 	elseif (cmd == "extra") then
 		uespLog.SetDebug(true)
 		uespLog.SetDebugExtra(true)
-		uespLog.Msg("Turned UESP log messages to EXTRA mode.")
+		uespLog.Msg("Turned UESP debug log messages to extra.")
 	elseif (cmd == "") then
 		local flagStr = uespLog.BoolToOnOff(uespLog.IsDebug())
-		if (uespLog.IsDebugExtra()) then flagStr = "EXTRA" end
-		uespLog.Msg("uespdebug is currently " .. flagStr .. ". Use on/off/extra to set!")
+		uespLog.Msg("Turns debug chat messages on/off. Command format is:")
+		uespLog.Msg(".          /uespdebug [on||off||extra]")
+		if (uespLog.IsDebugExtra()) then flagStr = "Extra" end
+		uespLog.Msg("Debug output is currently " .. flagStr .. ".")
 	end
 	
 end
@@ -5531,7 +5576,7 @@ SLASH_COMMANDS["/uespmail"] = function (cmd)
 	end
 	
 	if (displayHelp) then
-		uespLog.Msg("UESP::Format of /uespmail is:")
+		uespLog.Msg("Turns the mail delete confirmation on/off. Command format is:")
 		uespLog.Msg(".      /uespmail deletenotify [on||off]")
 	end
 	
@@ -5578,7 +5623,7 @@ SLASH_COMMANDS["/uespdump"] = function(cmd)
 		elseif (not uespLog.dumpIterateEnabled) then
 			uespLog.DumpGlobals(tonumber(cmds[2]))
 		else
-			uespLog.DebugMsg("UESP::Dump globals iterative currently running...")
+			uespLog.Msg("Dump globals iterative currently running...")
 		end
 	
 	elseif (firstCmd == "globalprefix") then
@@ -5769,26 +5814,26 @@ function uespLog.DumpSkillTypes(note, classOnly, raceOnly, passiveOnly)
 	classOnly = classOnly or false
 	raceOnly = raceOnly or false
 	passiveOnly = passiveOnly or false
-	uespLog.DebugLogMsg("Logging abilities by skill types for current character...")
+	uespLog.Msg("Logging abilities by skill types for current character...")
 	
 	if (classOnly) then
 		startSkill = 1
 		
 		if (raceOnly) then
 			endSkill = 7
-			uespLog.DebugLogMsg(".     Logging only class and race abilities...")
+			uespLog.Msg(".     Logging only class and race abilities...")
 		else
 			endSkill = 1
-			uespLog.DebugLogMsg(".     Logging only class abilities...")
+			uespLog.Msg(".     Logging only class abilities...")
 		end
 	elseif (raceOnly) then
 		startSkill = 7
 		endSkill = 7
-		uespLog.DebugLogMsg(".     Logging only race abilities...")
+		uespLog.Msg(".     Logging only race abilities...")
 	end
 	
 	if (passiveOnly) then
-		uespLog.DebugLogMsg(".     Logging only passive abilities...")
+		uespLog.Msg(".     Logging only passive abilities...")
 	end
 	
 	logData.event = "skillDump::StartType"
@@ -5910,12 +5955,12 @@ function uespLog.DumpSkillTypes(note, classOnly, raceOnly, passiveOnly)
 		if (classOnly) then
 			if (raceOnly) then
 				numSkillTypes = 1
-				uespLog.DebugLogMsg(".     Logging only class abilities...")
+				uespLog.Msg(".     Logging only class abilities...")
 			end
 		end
 	end
 	
-	uespLog.DebugMsg(".     Found "..tostring(count).." abilities by type!")
+	uespLog.Msg(".     Found "..tostring(count).." abilities by type!")
 	
 	logData = { }
 	logData.event = "skillDump::EndType"
@@ -5929,7 +5974,7 @@ function uespLog.DumpLearnedAbilities(note)
 	local count = 0
 	local level = 0
 	
-	uespLog.DebugLogMsg("Logging learned abilities...")
+	uespLog.Msg("Logging learned abilities...")
 	
 	logData.event = "skillDump::StartLearned"
 	logData.apiVersion = GetAPIVersion()
@@ -5954,7 +5999,7 @@ function uespLog.DumpLearnedAbilities(note)
 		end
 	end
 
-	uespLog.DebugMsg(".     Found "..tostring(count).." learned abilities!")
+	uespLog.Msg(".     Found "..tostring(count).." learned abilities!")
 	
 	logData = { }
 	logData.event = "skillDump::EndLearned"
@@ -5968,7 +6013,7 @@ function uespLog.DumpSkillsProgression(note, classOnly)
 	local progressionIndex = 0
 	local count = 0
 	
-	uespLog.DebugLogMsg("Logging skill progressions...")
+	uespLog.Msg("Logging skill progressions...")
 	
 		-- Doesn't work as GetSkillAbilityIndicesFromProgressionIndex() doesn't seem to work correctly
 	classOnly = classOnly or false
@@ -6013,7 +6058,7 @@ function uespLog.DumpSkillsProgression(note, classOnly)
 		end
 	end
 	
-	uespLog.DebugMsg(".     Found "..tostring(count).." skill progressions!")
+	uespLog.Msg(".     Found "..tostring(count).." skill progressions!")
 	
 	logData = { }
 	logData.event = "skillDump::EndProgression"
@@ -6033,7 +6078,7 @@ function uespLog.DumpSkillsStart(note)
 	logData.note = note
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
-	uespLog.DebugLogMsg("Logging all skills with note '"..tostring(note).."'...")
+	uespLog.Msg("Logging all skills with note '"..tostring(note).."'...")
 
 	for abilityId = 1, endId do
 		if (DoesAbilityExist(abilityId)) then
@@ -6042,7 +6087,7 @@ function uespLog.DumpSkillsStart(note)
 		end
 	end
 
-	uespLog.DebugMsg("    Logged "..tostring(validAbilityCount).." abilities...")
+	uespLog.Msg(".    Logged "..tostring(validAbilityCount).." abilities...")
 	
 	logData = { }
 	logData.event = "skillDump::End"
@@ -6171,8 +6216,8 @@ function uespLog.DumpSkillsBasic()
 	local firstAbility = -1
 	local lastAbility = -1
 	
-	uespLog.DebugMsg("Dumping Basic Skill Info...")
-	uespLog.DebugMsg("    "..tostring(numAbilities).." Character Abilities")
+	uespLog.Msg("Dumping Basic Skill Info...")
+	uespLog.Msg("    "..tostring(numAbilities).." Character Abilities")
 	
 	--for abilityIndex = 1, numAbilities do
 		--local name, texture, rank, slotType, passive, showInSpellBook = GetAbilityInfoByIndex(abilityIndex)
@@ -6194,8 +6239,8 @@ function uespLog.DumpSkillsBasic()
 		end
 	end
 	
-	uespLog.DebugMsg("     Found "..tostring(validAbilityCount).." abilities overall.")
-	uespLog.DebugMsg("     First at "..tostring(firstAbility).." , last at "..tostring(lastAbility))
+	uespLog.Msg("     Found "..tostring(validAbilityCount).." abilities overall.")
+	uespLog.Msg("     First at "..tostring(firstAbility).." , last at "..tostring(lastAbility))
 	
 	return true
 end
@@ -6249,7 +6294,7 @@ function uespLog.countSection(section)
 		end
 	end
 	
-	uespLog.Msg("UESP:: Section \"" .. tostring(section) .. "\" has " .. tostring(count) .. " records taking up " .. string.format("%.2f", size/1000000) .. " MB")
+	uespLog.Msg("UESP: Section \"" .. tostring(section) .. "\" has " .. tostring(count) .. " records taking up " .. string.format("%.2f", size/1000000) .. " MB")
 	
 	return count, size
 end
@@ -6362,13 +6407,13 @@ SLASH_COMMANDS["/uespcount"] = function(cmd)
 	local count = count1 + count2 + count3 + count4 + count5 + count6 + count7 + count8 + count9 + count10
 	local size = size1 + size2 + size3 + size4 + size5 + size6 + size7 + size8 + size9 + size10
 	
-	uespLog.MsgColor(uespLog.countColor, "UESP:: Total of " .. tostring(count) .. " records taking up " .. string.format("%.2f", size/1000000) .. " MB")
+	uespLog.MsgColor(uespLog.countColor, "UESP: Total of " .. tostring(count) .. " records taking up " .. string.format("%.2f", size/1000000) .. " MB")
 end
 
 
 SLASH_COMMANDS["/uesphelp"] = function(cmd)
-	uespLog.Msg("UESP::uespLog Addon v".. tostring(uespLog.version) .. " released ".. uespLog.releaseDate)
-	uespLog.Msg("UESP::This add-on logs a variety of data to the saved variables folder.")
+	uespLog.Msg("uespLog Addon v".. tostring(uespLog.version) .. " released ".. uespLog.releaseDate)
+	uespLog.Msg("This add-on logs a variety of data to the saved variables folder.")
 	uespLog.Msg("    /uespset      Access the add-on's settings menu")
 	uespLog.Msg("    /uesplog      Turns the logging of data on and off")
 	uespLog.Msg("    /uespcount    Displays statistics on the current log")
@@ -6802,7 +6847,7 @@ function uespLog.DumpInventory ()
 	logData.event = "InvDumpEnd"
 	uespLog.AppendDataToLog("all", logData)
 	
-	uespLog.DebugMsg("UESP::Output ".. slotCount .." inventory items to log!");
+	uespLog.Msg("Output ".. slotCount .." inventory items to log!");
 end
 
 
@@ -6820,7 +6865,7 @@ function uespLog.DumpGlobalsIterateStart(maxLevel)
 	local logData = {} 
 
 	if (uespLog.dumpIterateEnabled) then
-		uespLog.DebugMsg("UESP::Dump globals iteration already running!")
+		uespLog.Msg("Dump globals iteration already running!")
 		return
 	end
 	
@@ -6847,7 +6892,7 @@ function uespLog.DumpGlobalsIterateStart(maxLevel)
 	uespLog.dumpTableTable = { }
 	uespLog.dumpIterateEnabled = true
 		
-	uespLog.DebugMsg("UESP::Dumping globals iteratively to a depth of ".. tostring(uespLog.dumpIterateMaxLevel).."...")
+	uespLog.Msg("Dumping globals iteratively to a depth of ".. tostring(uespLog.dumpIterateMaxLevel).."...")
 	
 	logData.event = "Global::Start"
 	logData.niceDate = GetDate()
@@ -6863,7 +6908,7 @@ function uespLog.DumpGlobalsIterateEnd()
 	local logData = {} 
 
 	if (not uespLog.dumpIterateEnabled) then
-		uespLog.DebugMsg("UESP::Dump globals iteration not running!")
+		uespLog.Msg("Dump globals iteration not running!")
 		return
 	end
 
@@ -6871,8 +6916,8 @@ function uespLog.DumpGlobalsIterateEnd()
 	uespLog.AppendDataToLog("globals", logData, uespLog.GetTimeData())
 	
 	uespLog.dumpIterateEnabled = false
-	uespLog.DebugMsg("UESP::Stopped dump globals iteration...")
-	uespLog.DebugMsg("UESP::Found ".. tostring(uespLog.countGlobal) .." objects and ".. tostring(uespLog.countGlobalError) .." private functions...")
+	uespLog.Msg("Stopped dump globals iteration...")
+	uespLog.Msg("Found ".. tostring(uespLog.countGlobal) .." objects and ".. tostring(uespLog.countGlobalError) .." private functions...")
 	
 	local metaSize = 0
 	local indexSize = 0
@@ -6882,7 +6927,7 @@ function uespLog.DumpGlobalsIterateEnd()
 	for _ in pairs(uespLog.dumpIndexTable) do indexSize = indexSize + 1 end
 	for _ in pairs(uespLog.dumpTableTable) do tableSize = tableSize + 1 end
 	
-	uespLog.DebugMsg("UESP::Size of tables = "..tostring(metaSize) .. " / " .. tostring(indexSize) .. " / " ..tostring(tableSize))
+	uespLog.Msg("Size of tables = "..tostring(metaSize) .. " / " .. tostring(indexSize) .. " / " ..tostring(tableSize))
 end
 
 
@@ -6907,11 +6952,11 @@ function uespLog.DumpObjectInnerLoop(dumpObject, nextIndex, parentName, level, m
 	
 	if (not status) then
 		tableIndex = uespLog.DumpObjectPrivate(tableIndex, value, parentName, level)
-		uespLog.DebugExtraMsg("UESP::Error on dump object iteration...("..tostring(tableIndex)..")")
+		uespLog.DebugExtraMsg("UESP: Error on dump object iteration...("..tostring(tableIndex)..")")
 	elseif (skipObject) then
-		uespLog.DebugExtraMsg("UESP::Skipping dump for object "..tostring(tableIndex))
+		uespLog.DebugExtraMsg("UESP: Skipping dump for object "..tostring(tableIndex))
 	elseif (tableIndex == "__index" and uespLog.EndsWith(parentName, "__index")) then
-		uespLog.DebugExtraMsg("UESP::Skipping dump for recursive __index")
+		uespLog.DebugExtraMsg("UESP: Skipping dump for recursive __index")
 	elseif type(value) == "table" then
 		uespLog.DumpObjectTable(tableIndex, value, parentName, level)
 		
@@ -6961,7 +7006,7 @@ function uespLog.DumpObjectIterate()
 
 	until deltaCount >= uespLog.DUMP_ITERATE_LOOPCOUNT
 	
-	uespLog.DebugMsg("UESP::Dump iterate created "..tostring(uespLog.countGlobal-startCount).." logs with "..tostring(uespLog.countGlobalError-startErrorCount).." errors.")
+	uespLog.Msg("Dump object created "..tostring(uespLog.countGlobal-startCount).." logs with "..tostring(uespLog.countGlobalError-startErrorCount).." errors.")
 	
 	zo_callLater(uespLog.DumpObjectIterate, uespLog.DUMP_ITERATE_TIMERDELAY)
 end
@@ -6991,7 +7036,7 @@ function uespLog.DumpObjectTable (objectName, objectValue, parentName, varLevel)
 	end
 	
 	if (uespLog.printDumpObject) then
-		uespLog.DebugMsg("UESP:"..tostring(varLevel)..":table "..logData.name)
+		uespLog.Msg("UESP:"..tostring(varLevel)..":table "..logData.name)
 	end
 	
 	uespLog.countGlobal = uespLog.countGlobal + 1
@@ -7022,7 +7067,7 @@ function uespLog.DumpObjectUserData (objectName, objectValue, parentName, varLev
 	end
 	
 	if (uespLog.printDumpObject) then
-		uespLog.DebugMsg("UESP::userdata "..logData.name)
+		uespLog.Msg("UESP: userdata "..logData.name)
 	end
 	
 	uespLog.countGlobal = uespLog.countGlobal + 1
@@ -7043,7 +7088,7 @@ function uespLog.DumpObjectFunction (objectName, objectValue, parentName, varLev
 	end
 	
 	if (uespLog.printDumpObject) then
-		uespLog.DebugMsg("UESP:"..tostring(varLevel)..":Function "..logData.name)
+		uespLog.Msg("UESP:"..tostring(varLevel)..":Function "..logData.name)
 	end
 	
 	uespLog.countGlobal = uespLog.countGlobal + 1
@@ -7069,7 +7114,7 @@ function uespLog.DumpObjectOther (objectName, objectValue, parentName, varLevel)
 	end
 	
 	if (uespLog.printDumpObject) then
-		uespLog.DebugMsg("UESP:"..tostring(varLevel)..":Global "..logData.name.." = "..tostring(value))
+		uespLog.Msg("UESP:"..tostring(varLevel)..":Global "..logData.name.." = "..tostring(value))
 	end
 	
 	uespLog.countGlobal = uespLog.countGlobal + 1
@@ -7089,7 +7134,7 @@ function uespLog.DumpObjectPrivate (objectName, objectValue, parentName, varLeve
 	end
 		
 	if (uespLog.printDumpObject) then
-		uespLog.DebugMsg("UESP:"..tostring(level)..":Private "..logData.name)
+		uespLog.Msg("UESP:"..tostring(level)..":Private "..logData.name)
 	else
 		--uespLog.DebugExtraMsg(".     "..tostring(level)..":Private "..logData.name)
 	end
@@ -7209,7 +7254,7 @@ function uespLog.DumpGlobals (maxLevel, baseObject)
 		maxLevel = 10
 	end
 	
-	uespLog.DebugMsg("UESP::Dumping global objects to a depth of ".. tostring(maxLevel).."...")
+	uespLog.Msg("Dumping global objects to a depth of ".. tostring(maxLevel).."...")
 	
 	local logData = {} 
 	logData.event = "Global::Start"
@@ -7224,7 +7269,7 @@ function uespLog.DumpGlobals (maxLevel, baseObject)
 	logData.event = "Global::End"
 	uespLog.AppendDataToLog("globals", logData, uespLog.GetTimeData())
 		
-	uespLog.DebugMsg("UESP::Output ".. tostring(uespLog.countGlobal) .." global objects and ".. tostring(uespLog.countGlobalError) .." private functions to log...")
+	uespLog.Msg("Output ".. tostring(uespLog.countGlobal) .." global objects and ".. tostring(uespLog.countGlobalError) .." private functions to log...")
 end
 
 
@@ -7305,7 +7350,7 @@ function uespLog.DumpRecipes ()
 	logData.event = "Recipe::End"
 	uespLog.AppendDataToLog("all", logData)
 	
-	uespLog.DebugLogMsg("".. tostring(recipeCount) .." recipes with ".. tostring(ingrCount) .." total ingredients to log...")
+	uespLog.Msg("".. tostring(recipeCount) .." recipes with ".. tostring(ingrCount) .." total ingredients to log...")
 end
 
 
@@ -7333,7 +7378,7 @@ end
 	
 function uespLog.CountRecipes()
 	local recipeCount, knownCount = uespLog.GetRecipeCounts()
-	uespLog.MsgColor(uespLog.countColor, "UESP::You know "..tostring(knownCount).."/"..tostring(recipeCount).." recipes.")	
+	uespLog.MsgColor(uespLog.countColor, "You know "..tostring(knownCount).."/"..tostring(recipeCount).." recipes.")	
 end
 
 
@@ -7376,7 +7421,7 @@ end
 	
 function uespLog.CountAchievements()	
 	local achCount, completeCount = uespLog.GetAchievementCounts()
-	uespLog.MsgColor(uespLog.countColor, "UESP::You have "..tostring(completeCount).."/"..tostring(achCount).." achievements.")	
+	uespLog.MsgColor(uespLog.countColor, "You have "..tostring(completeCount).."/"..tostring(achCount).." achievements.")	
 end
 
 
@@ -7514,7 +7559,7 @@ function uespLog.DumpAchievements (note)
 	logData.event = "Achievement::End"
 	uespLog.AppendDataToLog("achievements", logData)
 	
-	uespLog.DebugMsg("UESP::Output "..categoryCount.." categories, ".. outputCount .." achievements, ".. rewardCount.." rewards, and "..criteriaCount.." criterias to log!");
+	uespLog.Msg("Output "..categoryCount.." categories, ".. outputCount .." achievements, ".. rewardCount.." rewards, and "..criteriaCount.." criterias to log!");
 end
 
 
@@ -7577,13 +7622,13 @@ function uespLog.MineItemIterateLevels (itemId)
 				end				
 				
 				if (uespLog.mineItemCount % uespLog.mineUpdateItemCount == 0) then
-					uespLog.DebugMsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad...")
+					uespLog.MsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad...")
 				end
 			end
 		end
 	end
 	
-	--uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Made "..tostring(setCount).." items with ID "..tostring(itemId)..", "..tostring(badItems).." bad")
+	--uespLog.MsgColor(uespLog.mineColor, "UESP: Made "..tostring(setCount).." items with ID "..tostring(itemId)..", "..tostring(badItems).." bad")
 	return setCount, badCount
 end
 
@@ -7647,7 +7692,7 @@ function uespLog.MineItemIterateLevelsShort (itemId)
 						end				
 						
 						if (uespLog.mineItemCount % uespLog.mineUpdateItemCount == 0) then
-							uespLog.DebugMsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad...")
+							uespLog.MsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad...")
 						end
 					end
 				end
@@ -7655,7 +7700,7 @@ function uespLog.MineItemIterateLevelsShort (itemId)
 		end
 	end
 	
-	--uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Made "..tostring(setCount).." items with ID "..tostring(itemId)..", "..tostring(badItems).." bad")
+	--uespLog.MsgColor(uespLog.mineColor, "UESP: Made "..tostring(setCount).." items with ID "..tostring(itemId)..", "..tostring(badItems).." bad")
 	return setCount, badCount
 end
 
@@ -7668,7 +7713,7 @@ function uespLog.MineItemIterateOther (itemId)
 	uespLog.mineItemCount = uespLog.mineItemCount + 1
 	
 	if (uespLog.mineItemCount % uespLog.mineUpdateItemCount == 0) then
-		uespLog.DebugMsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad...")
+		uespLog.MsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad...")
 	end
 	
 	if (uespLog.IsValidItemLink(itemLink)) then
@@ -7764,7 +7809,7 @@ function uespLog.MineEnchantCharges()
 		data[#data+1] = uespLog.implodeOrder(row, ", ")
 	end
 	
-	uespLog.Msg("UESP::Logged "..tostring(#enchantData).." item enchantment charge data to tempData section.")
+	uespLog.Msg("UESP: Logged "..tostring(#enchantData).." item enchantment charge data to tempData section.")
 end
 
 
@@ -7835,14 +7880,14 @@ function uespLog.MineItemIteratePotionData (effectIndex, realItemId, potionItemI
 				end				
 				
 				if (uespLog.mineItemCount % uespLog.mineUpdateItemCount == 0) then
-					--uespLog.DebugMsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." potion data, "..tostring(uespLog.mineItemBadCount).." bad...")
+					--uespLog.MsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." potion data, "..tostring(uespLog.mineItemBadCount).." bad...")
 				end
 				
 			end
 		end
 	end
 	
-	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Auto-mined "..tostring(setCount).." potion data, "..
+	uespLog.MsgColor(uespLog.mineColor, "UESP: Auto-mined "..tostring(setCount).." potion data, "..
 				tostring(badCount).." bad, effect "..tostring(effectIndex)..
 				" (total "..tostring(uespLog.mineItemCount).." items)")	
 
@@ -7861,14 +7906,14 @@ function uespLog.MineItems (startId, endId)
 	
 	uespLog.mineItemBadCount = 0
 	uespLog.mineItemCount = 0
-	uespLog.MsgColor(uespLog.mineColor, "UESP::Mining items from IDs "..tostring(startId).." to "..tostring(endId))
+	uespLog.MsgColor(uespLog.mineColor, "UESP: Mining items from IDs "..tostring(startId).." to "..tostring(endId))
 	
 	if (uespLog.mineItemOnlyLevel >= 0) then
-		uespLog.DebugMsgColor(uespLog.mineColor, ".     Only mining items with internal level of "..tostring(uespLog.mineItemOnlyLevel))
+		uespLog.MsgColor(uespLog.mineColor, ".     Only mining items with internal level of "..tostring(uespLog.mineItemOnlyLevel))
 	end
 	
 	if (uespLog.mineItemOnlySubType >= 0) then
-		uespLog.DebugMsgColor(uespLog.mineColor, ".     Only mining items with internal type of "..tostring(uespLog.mineItemOnlySubType))
+		uespLog.MsgColor(uespLog.mineColor, ".     Only mining items with internal type of "..tostring(uespLog.mineItemOnlySubType))
 	end
 	
 	logData = { }
@@ -7887,7 +7932,7 @@ function uespLog.MineItems (startId, endId)
 	logData.event = "mineitem::End"
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
-	uespLog.DebugMsgColor(uespLog.mineColor, ".    Finished Mining "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad")
+	uespLog.MsgColor(uespLog.mineColor, ".    Finished Mining "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad")
 end
 
 
@@ -7907,9 +7952,9 @@ function uespLog.MineItemsAutoLoop ()
 		if (#uespLog.savedVars.all.data >= uespLog.MINEITEMS_AUTOSTOP_LOGCOUNT or uespLog.mineItemsAutoNextItemId > uespLog.MINEITEM_AUTO_MAXITEMID) then
 		
 			if (uespLog.mineItemsAutoNextItemId > uespLog.MINEITEM_AUTO_MAXITEMID) then	
-				uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Stopped auto-mining at item "..tostring(uespLog.mineItemsAutoNextItemId).." due to reaching max ID.")
+				uespLog.MsgColor(uespLog.mineColor, "Stopped auto-mining at item "..tostring(uespLog.mineItemsAutoNextItemId).." due to reaching max ID.")
 			elseif (initItemId < uespLog.mineItemsAutoNextItemId) then
-				uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Paused auto-mining at item "..tostring(uespLog.mineItemsAutoNextItemId).." due to full log.")
+				uespLog.MsgColor(uespLog.mineColor, "Paused auto-mining at item "..tostring(uespLog.mineItemsAutoNextItemId).." due to full log.")
 			end
 			
 			if (not uespLog.mineItemAutoRestartOutputEnd) then
@@ -7920,10 +7965,10 @@ function uespLog.MineItemsAutoLoop ()
 			local reloadTime = uespLog.mineItemLastReloadTimeMS + uespLog.mineItemReloadDelay - GetGameTimeMilliseconds()
 
 			if (uespLog.mineItemAutoReload and reloadTime <= 0) then
-				uespLog.MsgColor(uespLog.mineColor, "UESP::Item mining auto reloading UI....")
+				uespLog.MsgColor(uespLog.mineColor, "Item mining auto reloading UI....")
 				SLASH_COMMANDS["/reloadui"]()
 			elseif (uespLog.mineItemAutoReload) then
-				uespLog.MsgColor(uespLog.mineColor, "UESP::Item mining auto UI reload in "..tostring(math.ceil(reloadTime/5000)*5).." secs...")
+				uespLog.MsgColor(uespLog.mineColor, "Item mining auto UI reload in "..tostring(math.ceil(reloadTime/5000)*5).." secs...")
 			end
 			
 			break
@@ -7952,7 +7997,7 @@ function uespLog.MineItemsAutoLoop ()
 	end
 	
 	if (initItemId < uespLog.mineItemsAutoNextItemId) then
-		uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Auto-mined "..tostring(uespLog.mineItemCount - initItemCount).." items, "..
+		uespLog.MsgColor(uespLog.mineColor, "Auto-mined "..tostring(uespLog.mineItemCount - initItemCount).." items, "..
 				tostring(uespLog.mineItemBadCount - initBadCount).." bad, IDs "..tostring(initItemId).."-"..tostring(itemId)..
 				" (total "..tostring(uespLog.mineItemCount).." items)")	
 	end
@@ -8001,14 +8046,14 @@ function uespLog.MineItemsAutoStart ()
 	
 	uespLog.isAutoMiningItems = true
 	uespLog.savedVars.settings.data.isAutoMiningItems = uespLog.isAutoMiningItems
-	uespLog.MsgColor(uespLog.mineColor, "UESP::Started auto-mining items at ID "..tostring(uespLog.mineItemsAutoNextItemId))
+	uespLog.MsgColor(uespLog.mineColor, "Started auto-mining items at ID "..tostring(uespLog.mineItemsAutoNextItemId))
 	
 	if (uespLog.mineItemOnlyLevel >= 0) then
-		uespLog.DebugMsgColor(uespLog.mineColor, ".     Only mining items with internal level of "..tostring(uespLog.mineItemOnlyLevel))
+		uespLog.MsgColor(uespLog.mineColor, ".     Only mining items with internal level of "..tostring(uespLog.mineItemOnlyLevel))
 	end
 	
 	if (uespLog.mineItemOnlySubType >= 0) then
-		uespLog.DebugMsgColor(uespLog.mineColor, ".     Only mining items with internal type of "..tostring(uespLog.mineItemOnlySubType))
+		uespLog.MsgColor(uespLog.mineColor, ".     Only mining items with internal type of "..tostring(uespLog.mineItemOnlySubType))
 	end
 	
 	zo_callLater(uespLog.MineItemsAutoLoop, uespLog.MINEITEMS_AUTODELAY)
@@ -8018,7 +8063,7 @@ end
 function uespLog.MineItemsAutoStartPotionData ()
 	uespLog.isAutoMiningItems = true
 	uespLog.savedVars.settings.data.isAutoMiningItems = uespLog.isAutoMiningItems
-	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Started auto-mining item potion data at effect index "..tostring(uespLog.mineItemPotionDataEffectIndex))
+	uespLog.MsgColor(uespLog.mineColor, "Started auto-mining item potion data at effect index "..tostring(uespLog.mineItemPotionDataEffectIndex))
 	
 	zo_callLater(uespLog.MineItemsAutoLoopPotionData, uespLog.MINEITEMS_AUTODELAY)
 end
@@ -8076,12 +8121,12 @@ function uespLog.MineItemsAutoEnd ()
 	end
 	
 	if (uespLog.mineItemPotionData) then
-		uespLog.MsgColor(uespLog.mineColor, "UESP::Stopped auto-mining potion data at effect index "..tostring(uespLog.mineItemPotionDataEffectIndex))	
+		uespLog.MsgColor(uespLog.mineColor, "Stopped auto-mining potion data at effect index "..tostring(uespLog.mineItemPotionDataEffectIndex))	
 	else
-		uespLog.MsgColor(uespLog.mineColor, "UESP::Stopped auto-mining items at ID "..tostring(uespLog.mineItemsAutoNextItemId))
+		uespLog.MsgColor(uespLog.mineColor, "Stopped auto-mining items at ID "..tostring(uespLog.mineItemsAutoNextItemId))
 	end
 	
-	uespLog.DebugMsgColor(uespLog.mineColor, "UESP::Total auto-mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad")	
+	uespLog.MsgColor(uespLog.mineColor, "Total auto-mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad")	
 end
 
 
@@ -8101,9 +8146,9 @@ function uespLog.MineItemsCount ()
 		totalCount = totalCount + numTypes * numLevels
 	end
 	
-	uespLog.MsgColor(uespLog.mineColor, "UESP::Total mine item entries = "..tostring(#uespLog.MINEITEM_LEVELS_SAFE))
-	uespLog.MsgColor(uespLog.mineColor, "UESP::Total level/subtype combinations = "..tostring(totalCount))
-	uespLog.MsgColor(uespLog.mineColor, "UESP::Estimated item combinations = "..tostring(totalCount * uespLog.MINEITEM_ITEMCOUNTESTIMATE))
+	uespLog.MsgColor(uespLog.mineColor, "Total mine item entries = "..tostring(#uespLog.MINEITEM_LEVELS_SAFE))
+	uespLog.MsgColor(uespLog.mineColor, "Total level/subtype combinations = "..tostring(totalCount))
+	uespLog.MsgColor(uespLog.mineColor, "Estimated item combinations = "..tostring(totalCount * uespLog.MINEITEM_ITEMCOUNTESTIMATE))
 	
 	totalCount = 0
 
@@ -8120,37 +8165,37 @@ function uespLog.MineItemsCount ()
 		totalCount = totalCount + numTypes * numLevels
 	end
 	
-	uespLog.MsgColor(uespLog.mineColor, "UESP::Total mine item entries (short) = "..tostring(#uespLog.MINEITEM_LEVELS_SHORT_SAFE))
-	uespLog.MsgColor(uespLog.mineColor, "UESP::Total level/subtype combinations (short) = "..tostring(totalCount))
-	uespLog.MsgColor(uespLog.mineColor, "UESP::Estimated item combinations (short) = "..tostring(totalCount * uespLog.MINEITEM_ITEMCOUNTESTIMATE))
+	uespLog.MsgColor(uespLog.mineColor, "Total mine item entries (short) = "..tostring(#uespLog.MINEITEM_LEVELS_SHORT_SAFE))
+	uespLog.MsgColor(uespLog.mineColor, "Total level/subtype combinations (short) = "..tostring(totalCount))
+	uespLog.MsgColor(uespLog.mineColor, "Estimated item combinations (short) = "..tostring(totalCount * uespLog.MINEITEM_ITEMCOUNTESTIMATE))
 end
 
 
 function uespLog.MineItemsAutoStatus ()
 
-	uespLog.MsgColor(uespLog.mineColor, "UESP::Minimum reload delay when auto mining is "..tostring(uespLog.mineItemReloadDelay/1000).." sec")
+	uespLog.MsgColor(uespLog.mineColor, "Minimum reload delay when auto mining is "..tostring(uespLog.mineItemReloadDelay/1000).." sec")
 	
 	if (uespLog.isAutoMiningItems) then
-		uespLog.MsgColor(uespLog.mineColor, "UESP::Currently auto-mining items.")
-		uespLog.MsgColor(uespLog.mineColor, "UESP::Total auto-mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad")	
-		uespLog.MsgColor(uespLog.mineColor, "UESP::Auto-reload = "..tostring(uespLog.mineItemAutoReload)..",  auto-restart = "..tostring(uespLog.mineItemAutoRestart))	
+		uespLog.MsgColor(uespLog.mineColor, "Currently auto-mining items.")
+		uespLog.MsgColor(uespLog.mineColor, "Total auto-mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad")	
+		uespLog.MsgColor(uespLog.mineColor, "Auto-reload = "..tostring(uespLog.mineItemAutoReload)..",  auto-restart = "..tostring(uespLog.mineItemAutoRestart))	
 	else
-		uespLog.MsgColor(uespLog.mineColor, "UESP::Not currently auto-mining items.")
+		uespLog.MsgColor(uespLog.mineColor, "Not currently auto-mining items.")
 	end
 	
 	if (not uespLog.mineItemPotionData) then
-		uespLog.MsgColor(uespLog.mineColor, "UESP::Next auto-mine itemId is "..tostring(uespLog.mineItemsAutoNextItemId))
+		uespLog.MsgColor(uespLog.mineColor, "Next auto-mine itemId is "..tostring(uespLog.mineItemsAutoNextItemId))
 	end
 	
 	if (uespLog.mineItemPotionData) then
-		uespLog.MsgColor(uespLog.mineColor, "UESP::Mining item potion data.")
-		uespLog.MsgColor(uespLog.mineColor, "UESP::Next potion effect index is "..tostring(uespLog.mineItemPotionDataEffectIndex))
+		uespLog.MsgColor(uespLog.mineColor, "Mining item potion data.")
+		uespLog.MsgColor(uespLog.mineColor, "ext potion effect index is "..tostring(uespLog.mineItemPotionDataEffectIndex))
 	elseif (uespLog.mineItemOnlyLevel >= 0 and uespLog.mineItemOnlySubType >= 0) then
-		uespLog.MsgColor(uespLog.mineColor, "UESP::Only mining items with internal level "..tostring(uespLog.mineItemOnlyLevel).." and type of "..tostring(uespLog.mineItemOnlySubType)..".")
+		uespLog.MsgColor(uespLog.mineColor, "Only mining items with internal level "..tostring(uespLog.mineItemOnlyLevel).." and type of "..tostring(uespLog.mineItemOnlySubType)..".")
 	elseif (uespLog.mineItemOnlyLevel >= 0) then
-		uespLog.MsgColor(uespLog.mineColor, "UESP::Only mining items with internal level "..tostring(uespLog.mineItemOnlyLevel)..".")
+		uespLog.MsgColor(uespLog.mineColor, "Only mining items with internal level "..tostring(uespLog.mineItemOnlyLevel)..".")
 	elseif (uespLog.mineItemOnlySubType >= 0) then
-		uespLog.MsgColor(uespLog.mineColor, "UESP::Only mining items with internal type of "..tostring(uespLog.mineItemOnlySubType)..".")
+		uespLog.MsgColor(uespLog.mineColor, "Only mining items with internal type of "..tostring(uespLog.mineItemOnlySubType)..".")
 	end
 end
 
@@ -8178,7 +8223,7 @@ function uespLog.MineItemsQualityMap(level)
 	local extraData = uespLog.GetTimeData()
 	level = level or 1
 		
-	uespLog.MsgColor(uespLog.mineColor, "UESP::Creating type quality map for item #"..tostring(uespLog.MINEITEM_QUALITYMAP_ITEMID).." at level "..tostring(level))
+	uespLog.MsgColor(uespLog.mineColor, "Creating type quality map for item #"..tostring(uespLog.MINEITEM_QUALITYMAP_ITEMID).." at level "..tostring(level))
 	
 	for subtype = 1, 400 do
 		local itemLink = uespLog.MakeItemLink(uespLog.MINEITEM_QUALITYMAP_ITEMID, level, subtype)
@@ -8198,11 +8243,11 @@ function uespLog.MineItemsIdCheck(note)
 	local extraData = uespLog.GetTimeData()
 	
 	if (uespLog.IsIdCheckInProgress) then
-		uespLog.MsgColor(uespLog.mineColor, "UESP::ID Check is already in progress...")
+		uespLog.MsgColor(uespLog.mineColor, "ID Check is already in progress...")
 		return false
 	end
 
-	uespLog.MsgColor(uespLog.mineColor, "UESP::Starting ID check of items...")
+	uespLog.MsgColor(uespLog.mineColor, "Starting ID check of items...")
 	
 	logData.event = "mineItem::idCheck::start"
 	logData.note = note or ""
@@ -8274,7 +8319,7 @@ function uespLog.MineItemsIdCheckEnd()
 	logData.totalCount = uespLog.IdCheckTotalCount
 	uespLog.AppendDataToLog("all", logData)
 	
-	uespLog.MsgColor(uespLog.mineColor, "UESP::Found "..tostring(uespLog.IdCheckValidCount).." valid items!")
+	uespLog.MsgColor(uespLog.mineColor, "Found "..tostring(uespLog.IdCheckValidCount).." valid items!")
 	uespLog.IsIdCheckInProgress = false
 end
 
@@ -8298,14 +8343,14 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 	local command = string.lower(cmds[1])
 	
 	if (command == "enable") then
-		uespLog.MsgColor(uespLog.mineColor, "UESP::Enabled use of /uespmineitems (/umi)!")
+		uespLog.MsgColor(uespLog.mineColor, "Enabled use of /uespmineitems (/umi)!")
 		uespLog.MsgColor(uespLog.mineColorWarning, ".         WARNING -- This feature is experimental and can crash the")
 		uespLog.MsgColor(uespLog.mineColorWarning, ".         ESO client! Use at your own risk....")
 		uespLog.mineItemsEnabled = true
 		uespLog.savedVars.settings.data.mineItemsEnabled = true
 		return
 	elseif (not uespLog.mineItemsEnabled) then
-		uespLog.MsgColor(uespLog.mineColor, "UESP::Use of /uespmineitems (/umi) is currently disabled!")
+		uespLog.MsgColor(uespLog.mineColor, "Use of /uespmineitems (/umi) is currently disabled!")
 		uespLog.MsgColor(uespLog.mineColor, ".         Enable with: /uespmineitems enable")
 		return
 	end
@@ -8328,16 +8373,16 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		local delay = tonumber(cmds[2]) or -1
 		
 		if (delay <= 0) then
-			uespLog.MsgColor(uespLog.mineColor, "UESP::Expecting a delay in seconds greater than zero!")
+			uespLog.MsgColor(uespLog.mineColor, "Expecting a delay in seconds greater than zero!")
 			uespLog.MsgColor(uespLog.mineColor, ".            /uespmineitems reloaddelay [seconds]")
-			uespLog.MsgColor(uespLog.mineColor, "UESP::Current reload delay is "..tostring(uespLog.mineItemReloadDelay/1000).." sec")
+			uespLog.MsgColor(uespLog.mineColor, "Current reload delay is "..tostring(uespLog.mineItemReloadDelay/1000).." sec")
 			return
 		end
 		
 		uespLog.savedVars.settings.data.mineItemReloadDelay = delay * 1000
 		uespLog.mineItemReloadDelay = delay * 1000
 		
-		uespLog.MsgColor(uespLog.mineColor, "UESP::Set reload delay when auto mining items to "..tostring(delay).." sec")
+		uespLog.MsgColor(uespLog.mineColor, "Set reload delay when auto mining items to "..tostring(delay).." sec")
 		return
 	elseif (command == "count") then
 		uespLog.MineItemsCount()
@@ -8352,13 +8397,13 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		elseif (option == "off") then
 			uespLog.mineItemPotionData = false
 			uespLog.savedVars.settings.data.mineItemPotionData = false
-			uespLog.MsgColor(uespLog.mineColor, "UESP::Mining regular item data.")
+			uespLog.MsgColor(uespLog.mineColor, "Mining regular item data.")
 		end
 		
 		if (uespLog.mineItemPotionData) then
-			uespLog.MsgColor(uespLog.mineColor, "UESP::Mining potion data.")
+			uespLog.MsgColor(uespLog.mineColor, "Mining potion data.")
 		else
-			uespLog.MsgColor(uespLog.mineColor, "UESP::Mining regular item data.")
+			uespLog.MsgColor(uespLog.mineColor, "Mining regular item data.")
 		end
 		
 		return
@@ -8368,9 +8413,9 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		uespLog.savedVars.settings.data.mineItemOnlySubType = uespLog.mineItemOnlySubType
 		
 		if (uespLog.mineItemOnlySubType < 0) then
-			uespLog.MsgColor(uespLog.mineColor, "UESP::Mining items with all internal types.")
+			uespLog.MsgColor(uespLog.mineColor, "Mining items with all internal types.")
 		else
-			uespLog.MsgColor(uespLog.mineColor, "UESP::Only mining items with internal type of "..tostring(uespLog.mineItemOnlySubType)..".")
+			uespLog.MsgColor(uespLog.mineColor, "Only mining items with internal type of "..tostring(uespLog.mineItemOnlySubType)..".")
 		end
 		
 		return
@@ -8380,9 +8425,9 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		uespLog.savedVars.settings.data.mineItemOnlyLevel = uespLog.mineItemOnlyLevel
 		
 		if (uespLog.mineItemOnlyLevel < 0) then
-			uespLog.MsgColor(uespLog.mineColor, "UESP::Mining items with all internal levels.")
+			uespLog.MsgColor(uespLog.mineColor, "Mining items with all internal levels.")
 		else
-			uespLog.MsgColor(uespLog.mineColor, "UESP::Only mining items with internal level of "..tostring(uespLog.mineItemOnlyLevel)..".")
+			uespLog.MsgColor(uespLog.mineColor, "Only mining items with internal level of "..tostring(uespLog.mineItemOnlyLevel)..".")
 		end
 		
 		return
@@ -8393,11 +8438,11 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		if (option == "on") then
 			uespLog.savedVars.settings.data.mineItemOnlySubType = uespLog.MINEITEM_ONLYSUBTYPE
 			uespLog.savedVars.settings.data.mineItemOnlyLevel = uespLog.MINEITEM_ONLYLEVEL
-			uespLog.MsgColor(uespLog.mineColor, "UESP::Only mining items with internal level "..tostring(uespLog.savedVars.settings.data.mineItemOnlyLevel).." and type "..tostring(uespLog.savedVars.settings.data.mineItemOnlySubType)..".")
+			uespLog.MsgColor(uespLog.mineColor, "Only mining items with internal level "..tostring(uespLog.savedVars.settings.data.mineItemOnlyLevel).." and type "..tostring(uespLog.savedVars.settings.data.mineItemOnlySubType)..".")
 		elseif (option == "off") then
-			uespLog.MsgColor(uespLog.mineColor, "UESP::Mining items with all internal levels/types.")
+			uespLog.MsgColor(uespLog.mineColor, "Mining items with all internal levels/types.")
 		else
-			uespLog.MsgColor(uespLog.mineColor, "UESP::Valid options for 'quick' are 'on'/'off'.")
+			uespLog.MsgColor(uespLog.mineColor, "Valid options for 'quick' are 'on'/'off'.")
 		end
 		
 		return
@@ -8433,7 +8478,7 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 			end
 		end
 		
-		uespLog.MsgColor(uespLog.mineColor, "UESP::Turned on item mining auto reload and restart!")
+		uespLog.MsgColor(uespLog.mineColor, "Turned on item mining auto reload and restart!")
 		uespLog.MsgColor(uespLog.mineColorWarning, ".   WARNING::This will reload the UI and clear log data automatically!")
 		uespLog.MsgColor(uespLog.mineColorWarning, ".                      To stop use: /uespmineitem end")
 		uespLog.MineItemsAutoStart()
@@ -8451,7 +8496,7 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 	local startNumber = tonumber(cmds[1])
 	
 	if (startNumber == nil) then
-		uespLog.MsgColor(uespLog.mineColor, "UESP::Invalid input to /uespmineitems (/umi)! Expected format is one of:")
+		uespLog.MsgColor(uespLog.mineColor, "Invalid input to /uespmineitems (/umi)! Expected format is one of:")
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems [itemId]")
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems status")
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems start [startId]")
@@ -8470,7 +8515,7 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		uespLog.MineItemIteratePotionData(uespLog.mineItemPotionDataEffectIndex, uespLog.MINEITEM_POTION_ITEMID, uespLog.MINEITEM_POTION_MAGICITEMID)
 		uespLog.MineItemIteratePotionData(uespLog.mineItemPotionDataEffectIndex, uespLog.MINEITEM_POISON_ITEMID, uespLog.MINEITEM_POISON_MAGICITEMID)
 	else
-		uespLog.MsgColor(uespLog.mineColor, "UESP::Trying to mine items with ID "..tostring(startNumber))
+		uespLog.MsgColor(uespLog.mineColor, "Trying to mine items with ID "..tostring(startNumber))
 		uespLog.MineItems(startNumber, startNumber)
 	end
 end
@@ -8499,7 +8544,7 @@ function uespLog.ClearRootSavedVar()
 		for key2, value2 in pairs(value1) do			-- @User
 			for key3, value3 in pairs(value2) do		-- $AccountWide
 				for key4, value4 in pairs(value3) do	-- globals, all, info, settings, ....
-					uespLog.DebugExtraMsg("UESP::Clearing saved data section "..tostring(key4))
+					uespLog.DebugExtraMsg("Clearing saved data section "..tostring(key4))
 					
 					if (key4 == "settings" or key4 == "info" or key4 == "charInfo") then
 						-- Keep data
@@ -8531,31 +8576,31 @@ SLASH_COMMANDS["/uespreset"] = function (cmd)
 		uespLog.ClearBuildData()
 		uespLog.ClearCharData()
 		uespLog.SkillCoefResetSkillList()
-		uespLog.Msg("UESP::Reset all logged data")
+		uespLog.Msg("Reset all logged data")
 	elseif (cmd == "builddata") then
 		uespLog.ClearBuildData()
 	elseif (cmd == "chardata") then
 		uespLog.ClearCharData()
 	elseif (cmd == "log") then
 		uespLog.ClearSavedVarSection("all")
-		uespLog.Msg("UESP::Reset regular logged data")
+		uespLog.Msg("Reset regular logged data")
 	elseif (cmd == "temp" or cmd == "tempdata") then
 		uespLog.ClearSavedVarSection("tempData")
-		uespLog.Msg("UESP::Reset temporary logged data")
+		uespLog.Msg("Reset temporary logged data")
 	elseif (cmd == "globals") then
 		uespLog.ClearSavedVarSection("globals")
-		uespLog.Msg("UESP::Reset logged global data")
+		uespLog.Msg("Reset logged global data")
 	elseif (cmd == "skillcoef") then
 		uespLog.ClearSkillCoefData()
-		uespLog.Msg("UESP::Cleared all skill coefficient data.")
+		uespLog.Msg("Cleared all skill coefficient data.")
 	elseif (cmd == "achievements") then
 		uespLog.ClearSavedVarSection("achievements")
-		uespLog.Msg("UESP::Reset logged achievement data")
+		uespLog.Msg("Reset logged achievement data")
 	elseif (cmd == "inspiration") then
 		uespLog.SetTotalInspiration(0)
-		uespLog.Msg("UESP::Reset crafting inspiration total")
+		uespLog.Msg("Reset crafting inspiration total")
 	else
-		uespLog.Msg("UESP::Expected command format is one of")
+		uespLog.Msg("Expected command format is one of")
 		uespLog.Msg(".       /uespreset log                         Collected log information")
 		uespLog.Msg(".       /uespreset builddata               Saved build data")
 		uespLog.Msg(".       /uespreset chardata                Character data")
@@ -8615,7 +8660,7 @@ function uespLog.ShowResearchInfo (craftingType)
 	local researchCount = 0
 	
 	if (numLines == 0 or maxSimultaneousResearch == 0) then
-		uespLog.MsgColor(uespLog.researchColor, "UESP::"..TradeskillName.." doesn't have any research lines available!")
+		uespLog.MsgColor(uespLog.researchColor, ""..TradeskillName.." doesn't have any research lines available!")
 		return
 	end
 	
@@ -8642,8 +8687,8 @@ function uespLog.ShowResearchInfo (craftingType)
 					timeFmt = string.format("%02d:%02d:%02d", hours, minutes, seconds)
 				end
 				
-				--uespLog.Msg("UESP::"..tostring(TradeskillName).." line for "..tostring(name).." ("..tostring(traitName)..") has "..timeFmt.." left on research.")
-				uespLog.MsgColor(uespLog.researchColor, "UESP::"..tostring(TradeskillName).." "..tostring(name).." ("..tostring(traitName)..") has "..timeFmt.." left.")
+				--uespLog.Msg(""..tostring(TradeskillName).." line for "..tostring(name).." ("..tostring(traitName)..") has "..timeFmt.." left on research.")
+				uespLog.MsgColor(uespLog.researchColor, ""..tostring(TradeskillName).." "..tostring(name).." ("..tostring(traitName)..") has "..timeFmt.." left.")
 				researchCount = researchCount + 1
 			end
 		end
@@ -8651,7 +8696,7 @@ function uespLog.ShowResearchInfo (craftingType)
 	
 	if (researchCount < maxSimultaneousResearch) then
 		local slotsOpen = maxSimultaneousResearch - researchCount
-		uespLog.MsgColor(uespLog.researchColor, "UESP::"..TradeskillName.." has "..tostring(slotsOpen).." research slots available.")
+		uespLog.MsgColor(uespLog.researchColor, ""..TradeskillName.." has "..tostring(slotsOpen).." research slots available.")
 	end
 
 end
@@ -8662,7 +8707,7 @@ SLASH_COMMANDS["/uesptestpotion"] = function (cmd)
 	for word in cmd:gmatch("%S+") do table.insert(cmds, word) end
 	
 	local itemLink = uespLog.MakeItemLinkEx( { itemId = cmds[3] or 54339, level = cmds[1] or 1, quality = cmds[2] or 1, potionEffect = cmds[4] or 8454917 } )
-	uespLog.Msg("UESP::Make test link ".. itemLink)
+	uespLog.Msg("UESP: Make test link ".. itemLink)
 	ZO_PopupTooltip_SetLink(itemLink)
 end
 
@@ -9009,7 +9054,7 @@ SLASH_COMMANDS["/uespstyle"] = function (cmd)
 	local cmds, firstCmd = uespLog.SplitCommands(cmd)
 	
 	if (cmd == "") then
-		uespLog.MsgColor(uespLog.craftColor, "UESP::Shows which chapters of the item style you know.")
+		uespLog.MsgColor(uespLog.craftColor, "Shows which chapters of the item style you know.")
 		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle [stylename]            Shows which chapters you know")
 		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle long [stylename]    Shows chapters in old long format")
 		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle list                          Lists all valid styles")
@@ -9043,7 +9088,7 @@ function uespLog.ShowTargetInfo ()
 		return
 	end
 	
-	uespLog.Msg("UESP::Last Target Info -- Name:"..tostring(uespLog.lastTargetData.name)..", type:"..tostring(uespLog.lastTargetData.type)..", level:"..tostring(uespLog.lastTargetData.level)..", gender:"..tostring(uespLog.lastTargetData.gender)..", class:"..tostring(uespLog.lastTargetData.class)..", race:"..tostring(uespLog.lastTargetData.race)..",  maxHP:"..tostring(uespLog.lastTargetData.maxHp)..",  maxMG:"..tostring(uespLog.lastTargetData.maxMg)..",  maxST:"..tostring(uespLog.lastTargetData.maxSt))
+	uespLog.Msg("Last Target Info -- Name:"..tostring(uespLog.lastTargetData.name)..", type:"..tostring(uespLog.lastTargetData.type)..", level:"..tostring(uespLog.lastTargetData.level)..", gender:"..tostring(uespLog.lastTargetData.gender)..", class:"..tostring(uespLog.lastTargetData.class)..", race:"..tostring(uespLog.lastTargetData.race)..",  maxHP:"..tostring(uespLog.lastTargetData.maxHp)..",  maxMG:"..tostring(uespLog.lastTargetData.maxMg)..",  maxST:"..tostring(uespLog.lastTargetData.maxSt))
 end
 
 
@@ -9083,7 +9128,7 @@ function uespLog.DumpSmithItems(onlySetItems)
 	local tradeskillName = uespLog.GetCraftingName(craftingType)
 	
 	if (numPatterns == 0 or craftingType == 0) then
-		uespLog.DebugMsg("UESP::You must be using a smithing station for this to work!")
+		uespLog.Msg("You must be using a smithing station for this to work!")
 		return
 	end
 	
@@ -9099,13 +9144,13 @@ function uespLog.DumpSmithItems(onlySetItems)
 		end
 		
 		if (startPattern > numPatterns) then
-			uespLog.DebugMsg("UESP::You must be at a set smithing station for this to work!")	
+			uespLog.Msg("You must be at a set smithing station for this to work!")	
 			return
 		end
 		
-		uespLog.DebugMsg("UESP::Dumping set items for "..tradeskillName.."...")
+		uespLog.Msg("Dumping set items for "..tradeskillName.."...")
 	else
-		uespLog.DebugMsg("UESP::Dumping items for "..tradeskillName.."...")
+		uespLog.Msg("Dumping items for "..tradeskillName.."...")
 	end
 		
 	--GetSmithingImprovementItemInfo(CRAFTING_TYPE_BLACKSMITHING, luaindex improvementItemIndex)
@@ -9121,10 +9166,10 @@ function uespLog.DumpSmithItems(onlySetItems)
 	--local patternName, baseName, icon, numMaterials, numTraitsRequired, numTraitsKnown, resultItemFilterType = GetSmithingPatternInfo(2)
 	--local itemLink = GetSmithingPatternResultLink(2, 1, 7, 1, 1, LINK_STYLE_DEFAULT)
 	--local itemName, itemColor, itemId, itemLevel, itemData, itemNiceName, itemNiceLink = uespLog.ParseLinkID(itemLink)
-	--uespLog.DebugMsg("UESP::Num Materials = " .. tostring(numMaterials))
-	--uespLog.DebugMsg("UESP::Item " .. tostring(itemNiceLink))
-	--uespLog.DebugMsg("UESP::Item ID " .. tostring(itemId))	
-	--uespLog.DebugMsg("UESP::Item Level " .. tostring(itemLevel))
+	--uespLog.DebugMsg("UESP: Num Materials = " .. tostring(numMaterials))
+	--uespLog.DebugMsg("UESP: Item " .. tostring(itemNiceLink))
+	--uespLog.DebugMsg("UESP: Item ID " .. tostring(itemId))	
+	--uespLog.DebugMsg("UESP: Item Level " .. tostring(itemLevel))
 	
 	local itemCount = 0
 	local logData = { }
@@ -9181,7 +9226,7 @@ function uespLog.DumpSmithItems(onlySetItems)
 		--end
 	end
 	
-	uespLog.DebugMsg("UESP::Output Items " .. tostring(itemCount))
+	uespLog.Msg("Output Items " .. tostring(itemCount))
 end
 
 
@@ -9203,11 +9248,11 @@ SLASH_COMMANDS["/uespsmithinfo"] = function (cmd)
 	local craftingType = GetCraftingInteractionType()
 	local tradeskillName = uespLog.GetCraftingName(craftingType)
 	
-	uespLog.DebugMsg("UESP::Craft Type(" .. tostring(craftingType) .. ") = " .. tradeskillName)
-	uespLog.DebugMsg("UESP::Num Patterns = " .. tostring(numPatterns))
-	uespLog.DebugMsg("UESP::Num Styles = " .. tostring(numStyles))
-	uespLog.DebugMsg("UESP::Num Improvements = " .. tostring(numImprovementItems))
-	uespLog.DebugMsg("UESP::Num Traits = " .. tostring(numTraitItems))	
+	uespLog.Msg("Craft Type(" .. tostring(craftingType) .. ") = " .. tradeskillName)
+	uespLog.Msg("Num Patterns = " .. tostring(numPatterns))
+	uespLog.Msg("Num Styles = " .. tostring(numStyles))
+	uespLog.Msg("Num Improvements = " .. tostring(numImprovementItems))
+	uespLog.Msg("Num Traits = " .. tostring(numTraitItems))	
 end
 
 
@@ -9273,7 +9318,7 @@ SLASH_COMMANDS["/uespcomparelink"] = function (cmd)
 	local itemId = cmds[1]
 	
 	if (itemId == nil) then
-		uespLog.Msg("UESP::Use the format: /uespcomparelink [id]")
+		uespLog.Msg("Use the format: /uespcomparelink [id]")
 		return
 	end
 	
@@ -9282,7 +9327,7 @@ SLASH_COMMANDS["/uespcomparelink"] = function (cmd)
 	
 	resultDiff = uespLog.CompareItemLinks(itemLink1, itemLink2)
 	
-	uespLog.Msg("UESP::Comparing items "..tostring(itemLink1).." and "..tostring(itemLink2).."")
+	uespLog.Msg("Comparing items "..tostring(itemLink1).." and "..tostring(itemLink2).."")
 	d(resultDiff)
 end
 
@@ -9295,7 +9340,7 @@ SLASH_COMMANDS["/uespmakelink"] = function (cmd)
 	local itemId = cmds[1]
 	
 	if (itemId == nil) then
-		uespLog.Msg("UESP::Use the format: /uespmakelink [id] [level] [subtype]")
+		uespLog.Msg("Use the format: /uespmakelink [id] [level] [subtype]")
 		return
 	end
 	
@@ -9304,16 +9349,16 @@ SLASH_COMMANDS["/uespmakelink"] = function (cmd)
 	local icon, sellPrice, meetsUsageRequirement, equipType, itemStyle = GetItemLinkInfo(itemLink)
 
 	if (icon == nil or icon == "" or icon == "") then
-		uespLog.Msg("UESP::Item "..tostring(itemId).." is not valid!")
+		uespLog.Msg("Item "..tostring(itemId).." is not valid!")
 		return
 	end
 	
-	uespLog.Msg("UESP::Created Item Link "..itemLink)
+	uespLog.Msg("Created Item Link "..itemLink)
 	
-	uespLog.DebugExtraMsg("UESP::Icon "..tostring(icon))
-	uespLog.DebugExtraMsg("UESP::Value "..tostring(sellPrice))
-	uespLog.DebugExtraMsg("UESP::Equip Type "..tostring(equipType))
-	uespLog.DebugExtraMsg("UESP::Item Style "..tostring(itemStyle))
+	uespLog.DebugExtraMsg("Icon "..tostring(icon))
+	uespLog.DebugExtraMsg("Value "..tostring(sellPrice))
+	uespLog.DebugExtraMsg("Equip Type "..tostring(equipType))
+	uespLog.DebugExtraMsg("Item Style "..tostring(itemStyle))
 	
 	ZO_PopupTooltip_SetLink(itemLink)
 end
@@ -9325,12 +9370,12 @@ SLASH_COMMANDS["/uespmakeenchant"] = function (cmd)
 	local enchantId = cmds[1]
 	
 	if (enchantId == nil) then
-		uespLog.Msg("UESP::Use the format: /uespmakeenchant [id] [level] [subtype] [itemid] [itemlevel] [itemsubtype]")
+		uespLog.Msg("Use the format: /uespmakeenchant [id] [level] [subtype] [itemid] [itemlevel] [itemsubtype]")
 		return
 	end
 	
 	local itemLink = uespLog.MakeEnchantLink(enchantId, cmds[2], cmds[3], cmds[4], cmds[5], cmds[6])
-	uespLog.Msg("UESP::Created Enchant Link "..itemLink)
+	uespLog.Msg("Created Enchant Link "..itemLink)
 	
 	ZO_PopupTooltip_SetLink(itemLink)
 end
@@ -9370,7 +9415,7 @@ end
 
 
 function uespLog.DumpToolTip ()
-	uespLog.DebugMsg("UESP::Dumping tooltip "..tostring(PopupTooltip))
+	uespLog.DebugMsg("Dumping tooltip "..tostring(PopupTooltip))
 	
 	uespLog.printDumpObject = true
 	--uespLog.DumpObject("", "PopupTooltip", getmetatable(PopupTooltip), 0, 2)
@@ -9380,7 +9425,7 @@ function uespLog.DumpToolTip ()
 	--end
 	
 	local numChildren = PopupTooltip:GetNumChildren()
-	uespLog.DebugMsg("UESP::Has "..tostring(numChildren).." children")
+	uespLog.DebugMsg("Has "..tostring(numChildren).." children")
 	
     for i = 1, numChildren do
         local child = PopupTooltip:GetChild(i)
@@ -9793,14 +9838,14 @@ SLASH_COMMANDS["/uesplorebook"] = function (cmd)
 	
 	if (cmd == 'on') then
 		uespLog.SetLoreBookMsgFlag(true)
-		uespLog.Msg("UESP::Set LoreBook to: "..uespLog.BoolToOnOff(uespLog.GetLoreBookMsgFlag()) )
+		uespLog.Msg("Set LoreBook to: "..uespLog.BoolToOnOff(uespLog.GetLoreBookMsgFlag()) )
 	elseif (cmd == 'off') then
 		uespLog.SetLoreBookMsgFlag(false)
-		uespLog.Msg("UESP::Set LoreBook to: "..uespLog.BoolToOnOff(uespLog.GetLoreBookMsgFlag()) )
+		uespLog.Msg("Set LoreBook to: "..uespLog.BoolToOnOff(uespLog.GetLoreBookMsgFlag()) )
 	elseif (cmd == '') then
-		uespLog.Msg("UESP::Current LoreBook Setting is: "..uespLog.BoolToOnOff(uespLog.GetLoreBookMsgFlag()) )
+		uespLog.Msg("Current LoreBook Setting is: "..uespLog.BoolToOnOff(uespLog.GetLoreBookMsgFlag()) )
 	else
-		uespLog.Msg("UESP::Turns on/off the 'LoreBook Learned' messages.")
+		uespLog.Msg("Turns on/off the 'LoreBook Learned' messages.")
 		uespLog.Msg(".     Use the format: /uesplorebook [on/off]")
 		uespLog.Msg(".     Current Setting is: "..uespLog.BoolToOnOff(uespLog.GetLoreBookMsgFlag()) )
 	end
@@ -9814,7 +9859,7 @@ SLASH_COMMANDS["/uespchardata"] = function (cmd)
 		
 	if (cmd == 'on') then
 		uespLog.SetAutoSaveCharData(true)
-		uespLog.Msg("UESP::Set auto saving of character data to: "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
+		uespLog.Msg("Set auto saving of character data to: "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
 		
 		if (uespLog.GetCharDataPassword() == "") then
 			uespLog.MsgColor(uespLog.warningColor, "Warning: You should set a char data password with the command:")
@@ -9822,7 +9867,7 @@ SLASH_COMMANDS["/uespchardata"] = function (cmd)
 		end
 	elseif (cmd == 'off') then
 		uespLog.SetAutoSaveCharData(false)
-		uespLog.Msg("UESP::Set auto saving of character data to: "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
+		uespLog.Msg("Set auto saving of character data to: "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
 	elseif (cmd == 'zonesave') then
 		cmd2 = string.lower(cmds[2] or "")
 		
@@ -9832,19 +9877,19 @@ SLASH_COMMANDS["/uespchardata"] = function (cmd)
 			uespLog.SetAutoSaveZoneCharData(false)
 		end
 		
-		uespLog.Msg("UESP::Auto zone saving of character data is "..uespLog.BoolToOnOff(uespLog.GetAutoSaveZoneCharData()) )
+		uespLog.Msg("Auto zone saving of character data is "..uespLog.BoolToOnOff(uespLog.GetAutoSaveZoneCharData()) )
 	elseif (cmd == 'password') then
 		uespLog.UpdateCharDataPassword(cmds[2], cmds[3])
 	elseif (cmd == 'save') then
 		
 		if (uespLog.SaveCharData()) then
-			uespLog.Msg("UESP::Manually saved the current character data.")
+			uespLog.Msg("Manually saved the current character data.")
 		else
-			uespLog.Msg("UESP::Error saving the current character data!")
+			uespLog.Msg("Error saving the current character data!")
 		end
 		
 	else
-		uespLog.Msg("UESP::Turns on/off the automatic saving of character data. Use the format:")
+		uespLog.Msg("Turns on/off the automatic saving of character data. Use the format:")
 		uespLog.Msg(".     /uespchardata [on/off]                     Turn automatic saving on/off")
 		uespLog.Msg(".     /uespchardata save                        Manually save the character data")
 		uespLog.Msg(".     /uespchardata password [text]       Change the character data password")
@@ -9897,11 +9942,11 @@ SLASH_COMMANDS["/uespquestitem"] = function(cmd)
 	end
 	
 	local questItemLink = "|H1:quest_item:"..tostring(questItemId).."|h|h"
-	uespLog.Msg("UESP::Made quest item link ".. questItemLink)
+	uespLog.Msg("UESP: Made quest item link ".. questItemLink)
 	ZO_PopupTooltip_SetLink(questItemLink)	
 	
-	uespLog.Msg("UESP::.    Name = ".. tostring(GetItemLinkName(questItemLink)))
-	uespLog.Msg("UESP::.    Desc = ".. tostring(GetItemLinkFlavorText(questItemLink)))
+	uespLog.Msg("UESP:    Name = ".. tostring(GetItemLinkName(questItemLink)))
+	uespLog.Msg("UESP:    Desc = ".. tostring(GetItemLinkFlavorText(questItemLink)))
 	
 end
 
@@ -10118,7 +10163,7 @@ end
 
 
 function uespLog.OnQuestToolChanged(eventCode, journalIndex, toolIndex)
-	uespLog.DebugExtraMsg("UESP::OnQuestToolChanged "..tostring(journalIndex).." "..tostring(toolIndex))
+	uespLog.DebugExtraMsg("UESP: OnQuestToolChanged "..tostring(journalIndex).." "..tostring(toolIndex))
 	--GetQuestItemInfo(number journalQuestIndex, number stepIndex, number conditionIndex)
 	--Returns: textureName iconFilename, number stackCount, string name, number questItemId
 	--GetQuestItemTooltipInfo(number journalQuestIndex, number stepIndex, number conditionIndex)
@@ -10178,7 +10223,7 @@ function uespLog.LogQuestItemLink(journalIndex, stepIndex, conditionIndex, quest
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
 	itemLink = GetQuestItemLink(journalIndex, stepIndex, conditionIndex, LINK_STYLE_BRACKETS)
-	uespLog.DebugMsg("UESP::Logged quest item link "..tostring(itemLink))
+	uespLog.MsgType(uespLog.MSG_QUEST, "UESP: Logged quest item link "..tostring(itemLink))
 end
 
 
@@ -10202,7 +10247,7 @@ function uespLog.LogQuestToolItemLink(journalIndex, toolIndex, questName)
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
 	itemLink = GetQuestToolLink(journalIndex, toolIndex, LINK_STYLE_BRACKETS)
-	uespLog.DebugMsg("UESP::Logged quest tool item link "..tostring(itemLink))
+	uespLog.MsgType(uespLog.MSG_QUEST, "UESP: Logged quest tool item link "..tostring(itemLink))
 end
 
 
@@ -10275,9 +10320,9 @@ function uespLog.SpeedCommand(cmd)
 	elseif (firstCmd == "off") then
 		uespLog.SpeedMeasureDisable()
 	elseif (uespLog.speedMeasure) then
-		uespLog.Msg("UESP::Speed measurement is on.")
+		uespLog.Msg("Speed measurement is on.")
 	else
-		uespLog.Msg("UESP::Speed measurement is off.")
+		uespLog.Msg("Speed measurement is off.")
 	end
 	
 end
@@ -10286,12 +10331,12 @@ end
 function uespLog.SpeedMeasureEnable()
 
 	if (uespLog.speedMeasure) then
-		uespLog.Msg("UESP::Speed measurement is already on!")
+		uespLog.Msg("Speed measurement is already on!")
 		return
 	end
 		
 	uespLog.speedMeasure = true
-	uespLog.Msg("UESP::Turned speed measurements on...")
+	uespLog.Msg("Turned speed measurements on...")
 	uespLog.RecordSpeedParameters()
 	zo_callLater(uespLog.SpeedMeasureCallback, uespLog.speedMeasureDeltaTime*1000)
 end
@@ -10317,7 +10362,7 @@ end
 function uespLog.SpeedMeasureDisable()
 
 	if (not uespLog.speedMeasure) then
-		uespLog.Msg("UESP::Speed measurement is already off!")
+		uespLog.Msg("Speed measurement is already off!")
 		return
 	end
 	
@@ -10330,7 +10375,7 @@ function uespLog.SpeedMeasureDisable()
 	uespLog.speedTotalTime = 0
 	uespLog.speedTotalDelta = 0
 	
-	uespLog.Msg("UESP::Turned speed measurements off...")
+	uespLog.Msg("Turned speed measurements off...")
 end
 
 
@@ -10554,7 +10599,7 @@ function uespLog.FishingCommand(cmd)
 		uespLog.Msg("Fishing features turned off.")
 	else
 		uespLog.Msg("Turns fishing related features on/off. Command format is:")
-		uespLog.Msg(".       /uespfish [on|off]")
+		uespLog.Msg(".       /uespfish [on||off]")
 		uespLog.Msg(".   Fishing is currently set to "..tostring(uespLog.GetFishingFlag())..".")
 	end
 	
@@ -10565,19 +10610,19 @@ SLASH_COMMANDS["/uespfish"] = uespLog.FishingCommand
 
 
 function uespLog.OnFishingLureCleared(eventCode)
-	uespLog.DebugExtraMsg("UESP::OnFishingLureCleared")
+	uespLog.DebugExtraMsg("UESP: OnFishingLureCleared")
 end
 
 
 function uespLog.OnFishingLureSet(eventCode, lureIndex)
 	local name, texture, stack, sellPrice, quality = GetFishingLureInfo(lureIndex)
 
-	uespLog.DebugExtraMsg("UESP::OnFishingLureSet "..tostring(lureIndex)..", "..tostring(name))
+	uespLog.DebugExtraMsg("UESP: OnFishingLureSet "..tostring(lureIndex)..", "..tostring(name))
 end
 
 
 function uespLog.OnFishingReelInReady(eventCode, itemLink, itemName, bagId, slotIndex)
-	uespLog.DebugExtraMsg("UESP::OnFishingReelInReady "..tostring(itemLink).."")
+	uespLog.DebugExtraMsg("UESP: OnFishingReelInReady "..tostring(itemLink).."")
 
 	if (not uespLog.GetFishingFlag()) then
 		return
@@ -10984,7 +11029,7 @@ function uespLog.ContainerLootCommand(cmd)
 		uespLog.SetContainerAutoLoot(false)
 		uespLog.Msg("Turned container auto-looting off.")
 	else
-		uespLog.Msg("Command Format: /uespcontloot [on|off]")
+		uespLog.Msg("Command Format: /uespcontloot [on||off]")
 		uespLog.Msg("Container auto-looting is "..uespLog.BoolToOnOff(uespLog.GetContainerAutoLoot()))
 	end
 	
@@ -11004,7 +11049,7 @@ function uespLog.CustomStatsCommand(cmd)
 		uespLog.SetCustomStatDisplay(false)
 		uespLog.Msg("Turned custom stat display off (reload UI to take effect)")
 	else
-		uespLog.Msg("Command Format: /uespcustomstats [on|off]")
+		uespLog.Msg("Command Format: /uespcustomstats [on||off]")
 		uespLog.Msg("Changes to this setting require you to reload the UI to take effect.")
 		uespLog.Msg("Custom stat display is "..uespLog.BoolToOnOff(uespLog.GetCustomStatDisplay()))
 	end
@@ -11490,6 +11535,75 @@ function uespLog.AddCharacterWindowStats()
 end
 
 
+function uespLog.ShowMessageStatus()
+	local lootMsg = uespLog.BoolToOnOff(uespLog.GetMessageDisplay(uespLog.MSG_LOOT))
+	local npcMsg = uespLog.BoolToOnOff(uespLog.GetMessageDisplay(uespLog.MSG_NPC))
+	local questMsg = uespLog.BoolToOnOff(uespLog.GetMessageDisplay(uespLog.MSG_QUEST))
+	local miscMsg = uespLog.BoolToOnOff(uespLog.GetMessageDisplay(uespLog.MSG_MISC))
+	
+	uespLog.Msg("Loot messages are "..lootMsg)
+	uespLog.Msg("NPC messages are "..npcMsg)
+	uespLog.Msg("Quest messages are "..questMsg)
+	uespLog.Msg("Other messages are "..miscMsg)
+end
+
+
+function uespLog.MessageCommand(cmds)
+	local cmds, firstCmd = uespLog.SplitCommands(cmds)
+	local secondCmd = string.lower(cmds[2] or "")
+	
+	if (firstCmd == "other") then
+		firstCmd = "misc"
+	end
+	
+	if (secondCmd == "on") then
+		secondCmd = true
+	elseif (secondCmd == "off") then
+		secondCmd = false
+	else
+		secondCmd = uespLog.GetMessageDisplay(firstCmd)
+	end
+	
+	if (firstCmd == "on") then
+		uespLog.SetMessageDisplay(uespLog.MSG_LOOT, true)
+		uespLog.SetMessageDisplay(uespLog.MSG_NPC, true)
+		uespLog.SetMessageDisplay(uespLog.MSG_QUEST, true)
+		uespLog.SetMessageDisplay(uespLog.MSG_MISC, true)
+		uespLog.ShowMessageStatus()
+	elseif (firstCmd == "off") then
+		uespLog.SetMessageDisplay(uespLog.MSG_LOOT, false)
+		uespLog.SetMessageDisplay(uespLog.MSG_NPC, false)
+		uespLog.SetMessageDisplay(uespLog.MSG_QUEST, false)
+		uespLog.SetMessageDisplay(uespLog.MSG_MISC, false)
+		uespLog.ShowMessageStatus()
+	elseif (firstCmd == "npc") then
+		uespLog.SetMessageDisplay(uespLog.MSG_NPC, secondCmd)
+		uespLog.Msg("Display of NPC messages is "..uespLog.BoolToOnOff(secondCmd))
+	elseif (firstCmd == "loot") then
+		uespLog.SetMessageDisplay(uespLog.MSG_LOOT, secondCmd)
+		uespLog.Msg("Display of loot messages is "..uespLog.BoolToOnOff(secondCmd))
+	elseif (firstCmd == "quest") then
+		uespLog.SetMessageDisplay(uespLog.MSG_QUEST, secondCmd)
+		uespLog.Msg("Display of quest messages is "..uespLog.BoolToOnOff(secondCmd))
+	elseif (firstCmd == "misc") then
+		uespLog.SetMessageDisplay(uespLog.MSG_MISC, secondCmd)
+		uespLog.Msg("Display of other messages is "..uespLog.BoolToOnOff(secondCmd))
+	else
+		uespLog.Msg("Turns specific uespLog chat messages on/off. Command format is:")
+		uespLog.Msg(".    /uespmsg [on||off]              Turns all messages on/off")
+		uespLog.Msg(".    /uespmsg loot [on||off]       Turns loot messages on/off")
+		uespLog.Msg(".    /uespmsg npc [on||off]       Turns npc messages on/off")
+		uespLog.Msg(".    /uespmsg quest [on||off]    Turns quest messages on/off")
+		uespLog.Msg(".    /uespmsg other [on||off]     Turns other messages on/off")
+		uespLog.ShowMessageStatus()
+	end
+	
+end
+
+
+SLASH_COMMANDS["/uespmsg"] = uespLog.MessageCommand
+
+
 -- Item subtypes that crash with GetItemLinkTraitOnUseAbilityInfo() in update 10
 uespLog.BAD_TRAIT_ITEMTYPES = {
 		[0] = true,
@@ -11592,5 +11706,7 @@ uespLog.BAD_TRAIT_ITEMTYPES = {
 		[377] = true,
 		[379] = true,
 	}
+	
+	
 	
 	

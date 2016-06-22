@@ -161,7 +161,7 @@ function uespLog.SaveCharData (note)
 	uespLog.savedVars.bankData.data = uespLog.CreateBankData()
 	uespLog.savedVars.craftBagData.data = uespLog.CreateCraftBagData()
 	
-	uespLog.DebugMsg("UESP::Saved character data...")
+	uespLog.DebugMsg("UESP: Saved character data...")
 	
 	uespLog.charDataLastSaveTimestamp = GetTimeStamp()
 	return true
@@ -324,14 +324,14 @@ function uespLog.SaveBuildData (note, forceSave)
 	local charData = uespLog.CreateBuildData(note, forceSave, false)
 		
 	if (charData == nil) then
-		uespLog.MsgColor(uespLog.errorColor, "UESP::Did *not* save current character!")
+		uespLog.MsgColor(uespLog.errorColor, "UESP: Did *not* save current character!")
 		return false
 	end
 	
 	local arraySize = #uespLog.savedVars.buildData.data
 	uespLog.savedVars.buildData.data[arraySize + 1] = charData
 	
-	uespLog.Msg("UESP::Saved current character data ("..tostring(#uespLog.savedVars.buildData.data).." characters in log).")
+	uespLog.Msg("UESP: Saved current character data ("..tostring(#uespLog.savedVars.buildData.data).." characters in log).")
 	return true
 end
 
@@ -550,7 +550,7 @@ end
 
 function uespLog.OnZoneChanged(eventCode, zoneName, subZoneName, newSubzone, zoneId, subZoneId)
 	uespLog.DebugExtraMsg("OnZoneChanged")
-	--uespLog.DebugMsg("Uesp::OnZoneChanged "..tostring(zoneName)..", "..tostring(subZoneName)..", "..tostring(newSubzone)..", "..tostring(zoneId)..", "..tostring(subZoneId))
+	--uespLog.DebugMsg("UESP: OnZoneChanged "..tostring(zoneName)..", "..tostring(subZoneName)..", "..tostring(newSubzone)..", "..tostring(zoneId)..", "..tostring(subZoneId))
 	
 	local diffTime = GetTimeStamp() - uespLog.charDataLastSaveTimestamp
 	
@@ -588,7 +588,7 @@ function uespLog.OnEatDrinkItem(itemLink)
 	
 	uespLog.savedVars.charInfo.data.lastFoodEaten = uespLog.charDataLastFoodEaten
 	
-	uespLog.DebugMsg("UESP::You ate/drank "..tostring(itemLink) )
+	uespLog.DebugMsg("UESP: You ate/drank "..tostring(itemLink) )
 end
 
 
@@ -1000,7 +1000,7 @@ function uespLog.SaveActionBarForCharData()
 	
 	uespLog.savedVars.charInfo.data.actionBar = uespLog.charData_ActionBarData	
 	
-	uespLog.DebugExtraMsg("UESP::***Current action bar saved***")
+	uespLog.DebugExtraMsg("UESP: ***Current action bar saved***")
 end
 
 
@@ -1077,13 +1077,13 @@ function uespLog.ClearCharData()
 	uespLog.savedVars.charData.data = { }
 	uespLog.savedVars.bankData.data = { }
 	uespLog.savedVars.craftBagData.data = { }
-	uespLog.Msg("UESP::Cleared all character data.")
+	uespLog.Msg("Cleared all character data.")
 end
 
 
 function uespLog.ClearBuildData()
 	uespLog.savedVars.buildData.data = { }
-	uespLog.Msg("UESP::Cleared logged character build data.")
+	uespLog.Msg("Cleared logged character build data.")
 end
 
 
@@ -1094,7 +1094,7 @@ function uespLog.Command_SaveBuildData (cmd)
 	firstCmd = string.lower(cmdWords[1]) or ""
 	
 	if (firstCmd == "help" or cmd == "" or (firstCmd == "forcesave" and #cmdWords <= 1)) then
-		uespLog.Msg("UESP::Saves current character build data to the log file (or '/usb').")
+		uespLog.Msg("Saves current character build data to the log file (or '/usb').")
 		uespLog.Msg(".     /usb help             = Shows basic command format")
 		uespLog.Msg(".     /usb reset            = Clears character log")
 		uespLog.Msg(".     /usb status           = Shows current character log status")
@@ -1102,7 +1102,7 @@ function uespLog.Command_SaveBuildData (cmd)
 		uespLog.Msg(".     /usb forcesave [name] = Saves character ignoring any errors")
 		uespLog.Msg(".     /usb screenshot       = Takes a 'nice' screenshot of your character")
 	elseif (firstCmd == "status") then
-		uespLog.Msg("UESP::Currently there are "..tostring(#uespLog.savedVars.buildData.data).." character builds saved in log.")
+		uespLog.Msg("Currently there are "..tostring(#uespLog.savedVars.buildData.data).." character builds saved in log.")
 	elseif (firstCmd == "reset" or firstCmd == "clear") then
 		uespLog.ClearBuildData()
 	elseif (firstCmd == "forcesave") then

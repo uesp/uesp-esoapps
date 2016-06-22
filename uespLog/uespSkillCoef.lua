@@ -1493,7 +1493,7 @@ function uespLog.CaptureSkillCoefData()
 	local skillCount = 0
 	local result
 		
-	uespLog.DebugLogMsg("Saving current skill data for character...")
+	uespLog.Msg("Saving current skill data for character...")
 	
 	uespLog.SkillCoefArmorCountLA = uespLog.CountEquippedArmor(ARMORTYPE_LIGHT)
 	uespLog.SkillCoefArmorCountMA = uespLog.CountEquippedArmor(ARMORTYPE_MEDIUM)
@@ -1565,7 +1565,7 @@ function uespLog.CaptureSkillCoefData()
 	
 	skillCount = skillCount + uespLog.CaptureMissingSkillCoefData()
 	
-	uespLog.DebugMsg(".     Saved data for "..tostring(skillCount).." skills!")
+	uespLog.Msg(".     Saved data for "..tostring(skillCount).." skills!")
 	uespLog.SkillCoefDataPointCount = uespLog.SkillCoefDataPointCount + 1
 	return true
 end

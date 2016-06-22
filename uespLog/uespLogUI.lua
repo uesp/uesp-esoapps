@@ -131,6 +131,38 @@ function uespLog.InitOptionControlsData()
 	})
 	
 	uespLog.optionControlsData:insert({
+		type = "checkbox",
+		name = "Show Loot Messages", 
+		tooltip = "Enables the display of all loot related messages in the chat window.\n      /uespmsg loot on/off", 
+		getFunc = function () return uespLog.GetMessageDisplay(uespLog.MSG_LOOT) end,
+		setFunc = function (value) uespLog.SetMessageDisplay(uespLog.MSG_LOOT, value) end
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "checkbox",
+		name = "Show Quest Messages", 
+		tooltip = "Enables the display of all quest related messages in the chat window.\n      /uespmsg quest on/off", 
+		getFunc = function () return uespLog.GetMessageDisplay(uespLog.MSG_QUEST) end,
+		setFunc = function (value) uespLog.SetMessageDisplay(uespLog.MSG_QUEST, value) end
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "checkbox",
+		name = "Show NPC Messages", 
+		tooltip = "Enables the display of all NPC related messages in the chat window.\n      /uespmsg npc on/off", 
+		getFunc = function () return uespLog.GetMessageDisplay(uespLog.MSG_NPC) end,
+		setFunc = function (value) uespLog.SetMessageDisplay(uespLog.MSG_NPC, value) end
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "checkbox",
+		name = "Show Other Messages", 
+		tooltip = "Enables the display of other messages in the chat window.\n      /uespmsg other on/off", 
+		getFunc = function () return uespLog.GetMessageDisplay(uespLog.MSG_MISC) end,
+		setFunc = function (value) uespLog.SetMessageDisplay(uespLog.MSG_MISC, value) end
+	})
+		
+	uespLog.optionControlsData:insert({
 		type = "header",
 		name = "Crafting",
 	})

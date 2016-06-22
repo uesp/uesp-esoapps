@@ -583,7 +583,7 @@ function uespLog.SetupInventoryListHooks(list, hookData)
 				uespLog.AddCraftInfoToInventorySlot(rowControl, hookData, list)
 			end				
 	else
-		uespLog.Msg("UESP::Failed to hook the inventory callback!")
+		uespLog.Msg("UESP: Failed to hook the inventory callback!")
 	end
 		
     return true
@@ -958,7 +958,7 @@ function uespLog.CheckIsItemLinkResearchableInSkill(itemLink, itemType, equipTyp
 
 	local name, icon, numTraits, timeRequiredForNextResearchSecs = GetSmithingResearchLineInfo(craftType, researchLineIndex)
     local traitType, traitDescription, known = GetSmithingResearchLineTraitInfo(craftType, researchLineIndex, traitIndex)
-	--uespLog.DebugMsg("UESP::"..itemLink..":"..tostring(traitType)..", "..tostring(traitDescription)..","..tostring(known)..", "..tostring(researchLineIndex)..", "..tostring(name))
+	--uespLog.DebugMsg("UESP: "..itemLink..":"..tostring(traitType)..", "..tostring(traitDescription)..","..tostring(known)..", "..tostring(researchLineIndex)..", "..tostring(name))
 		
 	if (traitType ~= nil and traitType ~= 0 and known) then
 		return 0
@@ -1090,7 +1090,7 @@ end
 
 
 function uespLog.DumpItemControl (itemControl)
-	uespLog.DebugMsg("UESP::Dumping item control "..tostring(itemControl))
+	uespLog.DebugMsg("UESP: Dumping item control "..tostring(itemControl))
 	
 	uespLog.printDumpObject = true
 	--uespLog.DumpObject("PopupTooltip", getmetatable(PopupTooltip), 0, 2)
@@ -1100,7 +1100,7 @@ function uespLog.DumpItemControl (itemControl)
 	--end
 	
 	local numChildren = itemControl:GetNumChildren()
-	uespLog.DebugMsg("UESP::Has "..tostring(numChildren).." children")
+	uespLog.DebugMsg("UESP: Has "..tostring(numChildren).." children")
 	
     for i = 1, numChildren do
         local child = itemControl:GetChild(i)
@@ -1168,16 +1168,16 @@ end
 
 
 function uespLog.DisplayUespCraftHelp()
-	uespLog.Msg("UESP:: /uespcraft on/off            -- Turns all crafting displays on/off")
-	uespLog.Msg("UESP:: /uespcraft style on/off      -- Turns style display on/off")
-	uespLog.Msg("UESP:: /uespcraft trait on/off      -- Turns trait display on/off")
-	uespLog.Msg("UESP:: /uespcraft recipe on/off     -- Turns recipe display on/off")
-	uespLog.Msg("UESP:: /uespcraft ingredient on/off -- Turns ingredient display on/off")
-    uespLog.Msg("UESP:: Craft display is "..uespLog.BoolToOnOff(uespLog.IsCraftDisplay()))
-	uespLog.Msg("UESP:: Craft style display is "..uespLog.BoolToOnOff(uespLog.IsCraftStyleDisplay()))
-	uespLog.Msg("UESP:: Craft trait display is "..uespLog.BoolToOnOff(uespLog.IsCraftTraitDisplay()))
-	uespLog.Msg("UESP:: Craft recipe display is "..uespLog.BoolToOnOff(uespLog.IsCraftRecipeDisplay()))
-	uespLog.Msg("UESP:: Craft ingredient display is "..uespLog.BoolToOnOff(uespLog.IsCraftIngredientDisplay()))
+	uespLog.Msg("/uespcraft on/off            -- Turns all crafting displays on/off")
+	uespLog.Msg("/uespcraft style on/off      -- Turns style display on/off")
+	uespLog.Msg("/uespcraft trait on/off      -- Turns trait display on/off")
+	uespLog.Msg("/uespcraft recipe on/off     -- Turns recipe display on/off")
+	uespLog.Msg("/uespcraft ingredient on/off -- Turns ingredient display on/off")
+    uespLog.Msg("Craft display is "..uespLog.BoolToOnOff(uespLog.IsCraftDisplay()))
+	uespLog.Msg("Craft style display is "..uespLog.BoolToOnOff(uespLog.IsCraftStyleDisplay()))
+	uespLog.Msg("Craft trait display is "..uespLog.BoolToOnOff(uespLog.IsCraftTraitDisplay()))
+	uespLog.Msg("Craft recipe display is "..uespLog.BoolToOnOff(uespLog.IsCraftRecipeDisplay()))
+	uespLog.Msg("Craft ingredient display is "..uespLog.BoolToOnOff(uespLog.IsCraftIngredientDisplay()))
 end
 
 
@@ -1347,60 +1347,60 @@ SLASH_COMMANDS["/uespcraft"] = function (cmd)
 	
 		if (cmdWords[2] == "on") then
 			uespLog.SetCraftRecipeDisplay(true)
-			uespLog.Msg("UESP::Turned recipe display on")
+			uespLog.Msg("Turned recipe display on")
 		elseif (cmdWords[2] == "off") then
 			uespLog.SetCraftRecipeDisplay(false)
-			uespLog.Msg("UESP::Turned recipe display off")
+			uespLog.Msg("Turned recipe display off")
 		else
-			uespLog.Msg("UESP::Craft recipe display is "..uespLog.BoolToOnOff(uespLog.IsCraftRecipeDisplay()))
+			uespLog.Msg("Craft recipe display is "..uespLog.BoolToOnOff(uespLog.IsCraftRecipeDisplay()))
 		end
 		
 	elseif (cmdWords[1] == "ingredient") then
 	
 		if (cmdWords[2] == "on") then
 			uespLog.SetCraftIngredientDisplay(true)
-			uespLog.Msg("UESP::Turned ingredient display on")
+			uespLog.Msg("Turned ingredient display on")
 		elseif (cmdWords[2] == "off") then
 			uespLog.SetCraftIngredientDisplay(false)
-			uespLog.Msg("UESP::Turned ingredient display off")
+			uespLog.Msg("Turned ingredient display off")
 		else
-			uespLog.Msg("UESP::Craft ingredient display is "..uespLog.BoolToOnOff(uespLog.IsCraftIngredientDisplay()))
+			uespLog.Msg("Craft ingredient display is "..uespLog.BoolToOnOff(uespLog.IsCraftIngredientDisplay()))
 		end
 		
 	elseif (cmdWords[1] == "style") then
 	
 		if (cmdWords[2] == "on") then
 			uespLog.SetCraftStyleDisplay(true)
-			uespLog.Msg("UESP::Turned style display on")
+			uespLog.Msg("Turned style display on")
 		elseif (cmdWords[2] == "off") then
 			uespLog.SetCraftStyleDisplay(false)
-			uespLog.Msg("UESP::Turned style display off")
+			uespLog.Msg("Turned style display off")
 		else
-			uespLog.Msg("UESP::Craft style display is "..uespLog.BoolToOnOff(uespLog.IsCraftStyleDisplay()))
+			uespLog.Msg("Craft style display is "..uespLog.BoolToOnOff(uespLog.IsCraftStyleDisplay()))
 		end
 				
 	elseif (cmdWords[1] == "trait") then
 	
 		if (cmdWords[2] == "on") then
 			uespLog.SetCraftTraitDisplay(true)
-			uespLog.Msg("UESP::Turned trait display on")
+			uespLog.Msg("Turned trait display on")
 		elseif (cmdWords[2] == "off") then
 			uespLog.SetCraftTraitDisplay(false)
-			uespLog.Msg("UESP::Turned trait display off")
+			uespLog.Msg("Turned trait display off")
 		else
-			uespLog.Msg("UESP::Craft trait display is "..uespLog.BoolToOnOff(uespLog.IsCraftTraitDisplay()))
+			uespLog.Msg("Craft trait display is "..uespLog.BoolToOnOff(uespLog.IsCraftTraitDisplay()))
 		end
 		
 	elseif (cmdWords[1] == "autoloot") then
-		uespLog.Msg("UESP::Craft autoloot is deprecated since update #6")
+		uespLog.Msg("Craft autoloot is deprecated since update #6")
 	elseif (cmdWords[1] == "minprovlevel") then
-		uespLog.Msg("UESP::Craft autoloot is deprecated since update #6")
+		uespLog.Msg("Craft autoloot is deprecated since update #6")
 	elseif (cmdWords[1] == "on") then
 		uespLog.SetCraftDisplay(true)
-		uespLog.Msg("UESP::Turned crafting display on")
+		uespLog.Msg("Turned crafting display on")
 	elseif (cmdWords[1] == "off") then
 		uespLog.SetCraftDisplay(false)
-		uespLog.Msg("UESP::Turned crafting display off")
+		uespLog.Msg("Turned crafting display off")
 	else
 		uespLog.DisplayUespCraftHelp()
 	end
@@ -1446,7 +1446,7 @@ function uespLog.CraftAutoLoot()
 	local numLoot = GetNumLootItems()
 	local MinProvLevel = uespLog.GetCraftAutoLootMinProvLevel()
 	
-	uespLog.DebugExtraMsg("UESP::Auto looting "..tostring(numLoot).." items...")
+	uespLog.DebugExtraMsg("UESP: Auto looting "..tostring(numLoot).." items...")
 	LootMoney()
 	
 	local targetName, targetType, actionName = GetLootTargetInfo()
@@ -1463,7 +1463,7 @@ function uespLog.CraftAutoLoot()
 		local itemId = uespLog.GetItemLinkID(itemLink)
 		local tradeType, alwaysLoot = uespLog.GetItemTradeType(lootId)
 		
-		-- uespLog.DebugExtraMsg("UESP::Auto looting "..tostring(itemLink))
+		-- uespLog.DebugExtraMsg("UESP: Auto looting "..tostring(itemLink))
 		
 		extraLogData.tradeType = tradeType
 		

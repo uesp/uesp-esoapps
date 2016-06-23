@@ -3121,7 +3121,7 @@ function uespLog.ShowItemInfo (itemLink)
 	if (siegeType > 0) then flagString = flagString.."Siege  " end
 	if (hasUseAbility) then flagString = flagString.."UseAbility  " end
 	
-	uespLog.MsgColor(uespLog.itemColor, "UESP: Information for "..tostring(itemNiceLink))
+	uespLog.MsgColor(uespLog.itemColor, "Information for "..tostring(itemNiceLink))
 	uespLog.MsgColor(uespLog.itemColor, ".    Data: "..tostring(itemData))
 	uespLog.MsgColor(uespLog.itemColor, ".    Type: ".. uespLog.GetItemTypeStr(itemType) .." ("..tostring(itemType)..")      Equip: "..equipTypeStr.." ("..tostring(equipType)..")")
 	
@@ -3455,7 +3455,7 @@ function uespLog.OnBeginLockPick (eventCode)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.MsgType(uespLog.MSG_OTHER, "UESP: Lock of quality "..tostring(logData.quality))
+	uespLog.MsgType(uespLog.MSG_OTHER, "UESP: Found lock of quality "..tostring(logData.quality))
 end
 
 
@@ -3900,14 +3900,17 @@ function uespLog.OnSkillPointsChanged (eventCode, pointsBefore, pointsNow, isSky
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
 	if (pointsBefore > pointsNow) then
-		uespLog.MsgType(uespLog.MSG_OTHER, "Skill points lost (".. tostring(logData.points) ..")!")
+		uespLog.MsgType(uespLog.MSG_OTHER, "You lost ".. tostring(logData.points) .." skill points!")
 	elseif (isSkyShard and pointsBefore == pointsNow) then
-		uespLog.MsgType(uespLog.MSG_OTHER, "Found Skyshard ("..GetNumSkyShards().."/3 pieces)!")
+		uespLog.MsgType(uespLog.MSG_OTHER, "You found a Skyshard ("..GetNumSkyShards().."/3 pieces)!")
 	elseif (isSkyShard and logData.points == 1) then
-		uespLog.MsgType(uespLog.MSG_OTHER, "Found Skyshard...skill points changed (".. tostring(logData.points) ..")!")
+		uespLog.MsgType(uespLog.MSG_OTHER, "You found a Skyshard...gained ".. tostring(logData.points) .." skill point!")
+	elseif (logData.points == 1) then
+		uespLog.MsgType(uespLog.MSG_OTHER, "You gained ".. tostring(logData.points) .." skill point!")
 	else
-		uespLog.MsgType(uespLog.MSG_OTHER, "Skill points added (".. tostring(logData.points) ..")!")
+		uespLog.MsgType(uespLog.MSG_OTHER, "You gained ".. tostring(logData.points) .." skill points!")
 	end
+	
 end
 
 
@@ -3924,7 +3927,7 @@ function uespLog.OnQuestOptionalStepAdvanced (eventCode, text)
 
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.MsgType(uespLog.MSG_QUEST, "UESP: Quest optional step advanced ("..text..")")
+	uespLog.MsgType(uespLog.MSG_QUEST, "Quest optional step advanced ("..text..")")
 end
 
 
@@ -3949,7 +3952,7 @@ function uespLog.OnRecipeLearned (eventCode, recipeListIndex, recipeIndex)
 	uespLog.DumpRecipe(recipeListIndex, recipeIndex,  uespLog.GetTimeData())
 	
 	local known, recipeName = GetRecipeInfo(recipeListIndex, recipeIndex)
-	uespLog.MsgType(uespLog.MSG_OTHER, "UESP: New recipe " ..tostring(recipeName).." learned")
+	uespLog.MsgType(uespLog.MSG_OTHER, "You learned a new recipe " ..tostring(recipeName).."!")
 end
 
 
@@ -4643,7 +4646,7 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 	
 	if (usedItemType == ITEMTYPE_FISH and itemType == ITEMTYPE_INGREDIENT and usedDeltaTime < 2500) then
 		-- if (itemSoundCategory == ITEM_SOUND_CATEGORY_ANIMAL_COMPONENT) then
-		uespLog.MsgColor(uespLog.itemColor, "You created "..itemLink.." from "..tostring(uespLog.lastItemUsed).."!")
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You created "..itemLink.." from "..tostring(uespLog.lastItemUsed).."!")
 		
 		-- Update creation of glass motif chapter
 	elseif (uespLog.UsedMerethicResin) then
@@ -4656,7 +4659,7 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 		
 		-- Update receiving items from Shadowy Supplier
 	elseif (reason == 0 and isNewItem and uespLog.lastTargetData.name == "Remains-Silent") then
-		uespLog.MsgColor(uespLog.itemColor, "You received "..itemLink.." from "..tostring(uespLog.lastTargetData.name).."!")
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You received "..itemLink.." from "..tostring(uespLog.lastTargetData.name).."!")
 	end
 	
 	uespLog.LogInventoryItem(bagId, slotIndex, "SlotUpdate")
@@ -4729,7 +4732,7 @@ function uespLog.OnTargetChange (eventCode)
 		
 		uespLog.AppendDataToLog("all", logData, uespLog.GetLastTargetData(), uespLog.GetTimeData())
 		
-		uespLog.MsgType(uespLog.MSG_NPC, "UESP: Npc "..name)
+		uespLog.MsgType(uespLog.MSG_NPC, "UESP: Found Npc "..name)
 	elseif (unitType == COMBAT_UNIT_TYPE_PLAYER) then
 		uespLog.lastOnTargetChange = ""
 	elseif (unitType ~= 0) then
@@ -4766,76 +4769,186 @@ end
 
 function uespLog.OnCombatEvent (eventCode, result, isError, abilityName, abilityGraphic, abilityActionSlotType, sourceName, sourceType, targetName, targetType, hitValue, powerType, damageType, isLogged, sourceUnitId, targetUnitId, abilityId)
 
-	--if (sourceType ~= COMBAT_UNIT_TYPE_PLAYER) then
-		--return
-	--end
+	if (sourceType ~= COMBAT_UNIT_TYPE_PLAYER and targetType ~= COMBAT_UNIT_TYPE_PLAYER) then
+		--uespLog.DebugMsg("Not Player: Result: "..tostring(result)..",  sourceType: "..tostring(sourceType)..",  damageType: "..tostring(damageType)..",  name: "..tostring(abilityName)..",  hitValue: "..tostring(hitValue))
+		return
+	end
 	
-	--if (powerType ~= POWERTYPE_STAMINA) then
-		--return
-	--end
+	local display = false
+	local color = uespLog.defaultColor
+	local typeString = ""
+	local currentValue = 0
 	
-	--uespLog.DebugMsg("Combat Stamina from "..tostring(abilityName).." value: "..tostring(hitValue))
+	if (targetType == COMBAT_UNIT_TYPE_PLAYER) then
+		--uespLog.DebugMsg("PlayerTarget....Result: "..tostring(result)..",  sourceType: "..tostring(sourceType)..",  damageType: "..tostring(damageType)..",  slotType: "..tostring(abilityActionSlotType)..",  powerType: "..powerType..", id: "..abilityId..",  name: "..abilityName..",  hitValue: "..hitValue..",  target: "..targetName..",  source: "..sourceName)
+	
+		if (result == ACTION_RESULT_DOT_TICK or result == ACTION_RESULT_DOT_TICK_CRITICAL) then
+			powerType = POWERTYPE_HEALTH
+			hitValue = -hitValue
+			abilityName = targetName .. " " .. abilityName
+		elseif (result == ACTION_RESULT_DAMAGE or result == ACTION_RESULT_CRITICAL_DAMAGE) then
+			powerType = POWERTYPE_HEALTH
+			hitValue = -hitValue
+			abilityName = targetName .. " " .. abilityName
+		else
+			powerType = -100
+		end
+	
+	elseif (sourceType == COMBAT_UNIT_TYPE_PLAYER) then
+	
+		if (result == ACTION_RESULT_HEAL or result == ACTION_RESULT_CRITICAL_HEAL or 
+			result == ACTION_RESULT_HOT_TICK or result == ACTION_RESULT_HOT_TICK_CRITICAL) then
+			powerType = POWERTYPE_HEALTH
+		elseif (result == ACTION_RESULT_DOT_TICK or result == ACTION_RESULT_DOT_TICK_CRITICAL or 
+				result == ACTION_RESULT_DAMAGE or result == ACTION_RESULT_CRITICAL_DAMAGE) then
+			powerType = -100
+		end
+	end
+	
+	if (powerType == POWERTYPE_STAMINA and uespLog.GetTrackStat(POWERTYPE_STAMINA)) then
+		display = true
+		typeString = "stamina"
+		color = uespLog.trackStatStaColor
+		uespLog.lastPlayerST = GetUnitPower("player", POWERTYPE_STAMINA)
+		currentValue = uespLog.lastPlayerST
+	elseif (powerType == POWERTYPE_MAGICKA and uespLog.GetTrackStat(POWERTYPE_MAGICKA)) then
+		display = true
+		typeString = "magicka"
+		uespLog.lastPlayerMG = GetUnitPower("player", POWERTYPE_MAGICKA)
+		currentValue = uespLog.lastPlayerMG
+		color = uespLog.trackStatMagColor
+	elseif (powerType == POWERTYPE_HEALTH and uespLog.GetTrackStat(POWERTYPE_HEALTH)) then
+		display = true
+		typeString = "health"
+		uespLog.lastPlayerHP = GetUnitPower("player", POWERTYPE_HEALTH)
+		currentValue = uespLog.lastPlayerHP
+		color = uespLog.trackStatHeaColor
+	elseif (powerType == POWERTYPE_ULTIMATE and uespLog.GetTrackStat(POWERTYPE_ULTIMATE)) then
+		display = true
+		typeString = "ultimate"
+		uespLog.lastPlayerUT = GetUnitPower("player", POWERTYPE_ULTIMATE)
+		currentValue = uespLog.lastPlayerUT
+		color = uespLog.trackStatUltColor
+	end
+	
+	if (not display) then
+		--uespLog.DebugMsg("Not Stats: Result: "..tostring(result)..",  sourceType: "..tostring(sourceType)..",  damageType: "..tostring(damageType)..",  name: "..tostring(abilityName)..",  hitValue: "..tostring(hitValue))
+		return
+	end
+	
+	local gameTime = (GetGameTimeMilliseconds() - uespLog.baseTrackStatGameTime) / 1000 
+	local gameTimeStr = string.format("%7.3f", gameTime)
+	
+	if (result == 64) then
+		uespLog.MsgColor(color, tostring(gameTimeStr) .. ": -"..tostring(hitValue).." "..typeString.." from "..tostring(abilityName))
+	elseif (hitValue > 0) then
+		uespLog.MsgColor(color, tostring(gameTimeStr) .. ": +"..tostring(hitValue).." "..typeString.." from "..tostring(abilityName))
+	end
+	
+	--uespLog.DebugMsg("Result: "..tostring(result)..",  sourceType: "..tostring(sourceType)..",  damageType: "..tostring(damageType)..",  slotType: "..tostring(abilityActionSlotType)..",  powerType: "..powerType..", id: "..abilityId)
 end
 
 
 function uespLog.OnPowerUpdate (eventCode, unitTag, powerIndex, powerType, powerValue, powerMax, powerEffectiveMax)
 	--EVENT_POWER_UPDATE (string unitTag, luaindex powerIndex, integer powerType, integer powerValue, integer powerMax, integer powerEffectiveMax)
-	local gameTime = (GetGameTimeMilliseconds() - uespLog.baseTrackStatGameTime) / 1000 
-	
+		
 	if (unitTag ~= "player") then
 		return
 	end
 	
+	local gameMS = GetGameTimeMilliseconds()
+	local gameTime = (gameMS - uespLog.baseTrackStatGameTime) / 1000 
 	local diff = 0
 	local typeString = ""
 	local display = false
 	local color = uespLog.defaultColor
+	local currentValue = 0
+	local combatRegen = 0
+	local idleRegen = 0
 	
 	if (powerType == POWERTYPE_HEALTH) then
 		diff = powerValue - uespLog.lastPlayerHP
 		uespLog.lastPlayerHP = GetUnitPower("player", POWERTYPE_HEALTH)
+		currentValue = uespLog.lastPlayerHP
 		typeString = "health"
 		if (uespLog.GetTrackStat(POWERTYPE_HEALTH)) then display = true end
 		color = uespLog.trackStatHeaColor
+		
+		combatRegen = GetPlayerStat(STAT_HEALTH_REGEN_COMBAT, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+		idleRegen = GetPlayerStat(STAT_HEALTH_REGEN_IDLE, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+		
 	elseif (powerType == POWERTYPE_MAGICKA) then
 		diff = powerValue - uespLog.lastPlayerMG
 		uespLog.lastPlayerMG = GetUnitPower("player", POWERTYPE_MAGICKA)
+		currentValue = uespLog.lastPlayerMG
 		typeString = "magicka"
 		if (uespLog.GetTrackStat(POWERTYPE_MAGICKA)) then display = true end
 		color = uespLog.trackStatMagColor
+		
+		combatRegen = GetPlayerStat(STAT_MAGICKA_REGEN_COMBAT, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+		idleRegen = GetPlayerStat(STAT_MAGICKA_REGEN_IDLE, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+		
 	elseif (powerType == POWERTYPE_STAMINA) then
 		diff = powerValue - uespLog.lastPlayerST
 		uespLog.lastPlayerST = GetUnitPower("player", POWERTYPE_STAMINA)
+		currentValue = uespLog.lastPlayerST
 		typeString = "stamina"
 		if (uespLog.GetTrackStat(POWERTYPE_STAMINA)) then display = true end
 		color = uespLog.trackStatStaColor
+		
+		combatRegen = GetPlayerStat(STAT_STAMINA_REGEN_COMBAT, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+		idleRegen = GetPlayerStat(STAT_STAMINA_REGEN_IDLE, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+		
 	elseif (powerType == POWERTYPE_ULTIMATE) then
 		diff = powerValue - uespLog.lastPlayerUT
 		uespLog.lastPlayerUT = GetUnitPower("player", POWERTYPE_ULTIMATE)
+		currentValue = uespLog.lastPlayerUT
 		typeString = "ultimate"
 		if (uespLog.GetTrackStat(POWERTYPE_ULTIMATE)) then display = true end
 		color = uespLog.trackStatUltColor
+		
+		combatRegen = -10000
+		idleRegen = -10000
+		
 	else
 		return
 	end
 	
 	local gameTimeStr = string.format("%7.3f", gameTime)
+	local isInCombat = IsUnitInCombat("player")
+	local sourceName = "unknown"
+	
+	if (not isInCombat) then
+		if (diff == idleRegen) then
+			sourceName = "idle regen"
+		elseif (diff > 0 and diff < idleRegen and currentValue == powerMax) then
+			sourceName = "idle regen"
+		end
+	else
+		if (diff == combatRegen) then
+			sourceName = "combat regen"
+		elseif (diff > 0 and diff < combatRegen and currentValue == powerMax) then
+			sourceName = "combat regen"
+		end
+	end
 	
 	if (diff < 0) then
 		diff = math.abs(diff)
 		
 		if (display) then
-			uespLog.MsgColor(color, tostring(gameTimeStr) .. ": -"..tostring(diff).." "..typeString)
+			--uespLog.MsgColor(color, tostring(gameTimeStr) .. ": -"..tostring(diff).." "..typeString..",  "..powerValue.."/"..currentValue..",  "..gameMS/1000)
+			uespLog.MsgColor(color, tostring(gameTimeStr) .. ": -"..tostring(diff).." "..typeString.." from "..sourceName)
 		end
 		
-		uespLog.DebugExtraMsg("Lost "..tostring(diff).." "..typeString)
+		--uespLog.DebugExtraMsg("Lost "..tostring(diff).." "..typeString)
 	elseif (diff > 0) then
 		
 		if (display) then
-			uespLog.MsgColor(color, tostring(gameTimeStr) .. ": +"..tostring(diff).." "..typeString)
+			--uespLog.MsgColor(color, tostring(gameTimeStr) .. ": +"..tostring(diff).." "..typeString..",  "..powerValue.."/"..currentValue..",  "..gameMS/1000)
+			uespLog.MsgColor(color, tostring(gameTimeStr) .. ": +"..tostring(diff).." "..typeString.." from "..sourceName)
 		end
 		
-		uespLog.DebugExtraMsg("Gained "..tostring(diff).." "..typeString)
+		--uespLog.DebugExtraMsg("Gained "..tostring(diff).." "..typeString)
 	else
 		--uespLog.DebugExtraMsg("powerIndex = "..tostring(powerIndex)..", type="..tostring(powerType)..", value="..tostring(powerValue)..", max="..tostring(powerMax)..", effMax="..tostring(powerEffectiveMax))
 		--uespLog.DebugExtraMsg("Lost "..tostring(diff).." "..typeString)
@@ -4851,7 +4964,8 @@ function uespLog.OnFoundSkyshard ()
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetCurrentTargetData(), uespLog.GetTimeData())
 	
-	uespLog.MsgType(uespLog.MSG_OTHER, "Found skyshard!")
+		-- Message is already output in OnSkillPointsChanged event
+	--uespLog.MsgType(uespLog.MSG_OTHER, "UESP: Found skyshard!")
 end
 
 
@@ -4863,7 +4977,7 @@ function uespLog.OnFoundTreasure (name)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetCurrentTargetData(), uespLog.GetTimeData())
 	
-	uespLog.MsgType(uespLog.MSG_OTHER, "Found "..tostring(name).."!")
+	uespLog.MsgType(uespLog.MSG_OTHER, "UESP: Found "..tostring(name).."!")
 
 	uespLog.lastLootTargetName = name
 end
@@ -4876,7 +4990,7 @@ function uespLog.OnFoundFish ()
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetCurrentTargetData(), uespLog.GetTimeData())
 	
-	uespLog.MsgType(uespLog.MSG_OTHER, "Found fishing hole!")
+	uespLog.MsgType(uespLog.MSG_OTHER, "UESP: Found fishing hole!")
 end
 
 
@@ -10231,7 +10345,7 @@ function uespLog.LogQuestItemLink(journalIndex, stepIndex, conditionIndex, quest
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
 	itemLink = GetQuestItemLink(journalIndex, stepIndex, conditionIndex, LINK_STYLE_BRACKETS)
-	uespLog.MsgType(uespLog.MSG_QUEST, "UESP: Logged quest item link "..tostring(itemLink))
+	uespLog.DebugExtraMsg("UESP: Logged quest item link "..tostring(itemLink))
 end
 
 
@@ -10255,7 +10369,7 @@ function uespLog.LogQuestToolItemLink(journalIndex, toolIndex, questName)
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
 	itemLink = GetQuestToolLink(journalIndex, toolIndex, LINK_STYLE_BRACKETS)
-	uespLog.MsgType(uespLog.MSG_QUEST, "UESP: Logged quest tool item link "..tostring(itemLink))
+	uespLog.DebugExtraMsg("UESP: Logged quest tool item link "..tostring(itemLink))
 end
 
 

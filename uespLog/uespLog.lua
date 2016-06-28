@@ -689,6 +689,7 @@ uespLog.dumpIgnoreObjects = {
 uespLog.MSG_LOOT = "loot"
 uespLog.MSG_NPC = "npc"
 uespLog.MSG_QUEST = "quest"
+uespLog.MSG_XP = "xp"
 uespLog.MSG_MISC = "misc"
 uespLog.MSG_OTHER = uespLog.MSG_MISC
 
@@ -1284,6 +1285,7 @@ uespLog.DEFAULT_SETTINGS =
 			[uespLog.MSG_LOOT] = false,
 			[uespLog.MSG_QUEST] = false,
 			[uespLog.MSG_NPC] = false,
+			[uespLog.MSG_XP] = false,
 			[uespLog.MSG_MISC] = false,
 		},		
 	}
@@ -2437,6 +2439,7 @@ function uespLog.Initialize( self, addOnName )
 		
 		if (uespLog.IsDebug()) then
 			uespLog.savedVars.settings.data.messageDisplay.npc = true
+			uespLog.savedVars.settings.data.messageDisplay.xp = true
 			uespLog.savedVars.settings.data.messageDisplay.loot = true
 			uespLog.savedVars.settings.data.messageDisplay.quest = true
 			uespLog.savedVars.settings.data.messageDisplay.other = true
@@ -3831,22 +3834,18 @@ function uespLog.OnExperienceGain (eventCode, reason, level, previousExperience,
 	if (logData.xpGained == 0) then
 		return
 	elseif (reason == -1) then
-		uespLog.DebugExtraMsg("UESP: You gained "..tostring(logData.xpGained).." xp for unknown reason.")
+		uespLog.MsgColorType(uespLog.MSG_XP, uespLog.xpColor, "You gained "..tostring(logData.xpGained).." xp for unknown reason.")
 		return
 	end
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	--if (GetUnitChampionPoints("player") <= 0) then
-	uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.xpColor, "You gained "..tostring(logData.xpGained).." xp for "..uespLog.GetXPReasonStr(reason)..".")
-	--end
+	uespLog.MsgColorType(uespLog.MSG_XP, uespLog.xpColor, "You gained "..tostring(logData.xpGained).." xp for "..uespLog.GetXPReasonStr(reason)..".")
 end
 
 
 function uespLog.OnExperienceUpdate (eventCode, unitTag, currentExp, maxExp, reason)
 	local logData = { }
-	
-	 --if ( unitTag ~= 'player' ) then return end
 	
 	logData.event = "ExperienceUpdate"
 	logData.unit = unitTag
@@ -3859,14 +3858,14 @@ function uespLog.OnExperienceUpdate (eventCode, unitTag, currentExp, maxExp, rea
 	if (logData.xpGained == 0) then
 		return
 	elseif (reason == -1) then
-		uespLog.DebugExtraMsg("UESP: You gained "..tostring(logData.xpGained).." xp for unknown reason.")
+		uespLog.MsgColorType(uespLog.MSG_XP, uespLog.xpColor, "You gained "..tostring(logData.xpGained).." xp for unknown reason.")
 		return
 	end
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
 	if (unitTag == "player") then
-		uespLog.MsgType(uespLog.MSG_OTHER, uespLog.xpColor, "You gained "..tostring(logData.xpGained).." xp for "..uespLog.GetXPReasonStr(reason)..".")
+		uespLog.MsgColorType(uespLog.MSG_XP, uespLog.xpColor, "You gained "..tostring(logData.xpGained).." xp for "..uespLog.GetXPReasonStr(reason)..".")
 	end
 end
 
@@ -3884,7 +3883,7 @@ function uespLog.OnAlliancePointsUpdate (eventCode, alliancePoints, playSound, d
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.MsgType(uespLog.MSG_OTHER, uespLog.xpColor, "You gained "..tostring(logData.xpGained).." alliance points.")
+	uespLog.MsgColorType(uespLog.MSG_XP, uespLog.xpColor, "You gained "..tostring(logData.xpGained).." alliance points.")
 end
 
 
@@ -4615,6 +4614,7 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 	local itemLink = GetItemLink(bagId, slotIndex, LINK_STYLE_BRACKETS)
 	
 	uespLog.DebugExtraMsg("UESP: Inventory slot("..tostring(bagId)..","..tostring(slotIndex)..") update for "..itemName..", isNew "..tostring(isNewItem)..", reason "..tostring(updateReason)..", sound "..tostring(itemSoundCategory))
+	uespLog.DebugExtraMsg("LastTarget: "..tostring(uespLog.lastTargetData.name))
 
 		-- Skip durability updates or items already logged
 	if (updateReason == INVENTORY_UPDATE_REASON_DURABILITY_CHANGE) then
@@ -4644,10 +4644,14 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 	local usedItemType = GetItemLinkItemType(uespLog.lastItemUsed)
 	local itemType = GetItemLinkItemType(itemLink)
 	
-	if (usedItemType == ITEMTYPE_FISH and itemType == ITEMTYPE_INGREDIENT and usedDeltaTime < 2500) then
+		-- Update receiving items from Shadowy Supplier
+	if (updateReason == 0 and isNewItem and uespLog.lastTargetData.name == "Remains-Silent") then
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You received "..tostring(itemLink).." from "..tostring(uespLog.lastTargetData.name).."!")
+	
+	elseif (usedItemType == ITEMTYPE_FISH and itemType == ITEMTYPE_INGREDIENT and usedDeltaTime < 2500) then
 		-- if (itemSoundCategory == ITEM_SOUND_CATEGORY_ANIMAL_COMPONENT) then
 		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You created "..itemLink.." from "..tostring(uespLog.lastItemUsed).."!")
-		
+	
 		-- Update creation of glass motif chapter
 	elseif (uespLog.UsedMerethicResin) then
 	
@@ -4656,10 +4660,6 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 		end
 		
 		uespLog.UsedMerethicResin = false
-		
-		-- Update receiving items from Shadowy Supplier
-	elseif (reason == 0 and isNewItem and uespLog.lastTargetData.name == "Remains-Silent") then
-		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You received "..itemLink.." from "..tostring(uespLog.lastTargetData.name).."!")
 	end
 	
 	uespLog.LogInventoryItem(bagId, slotIndex, "SlotUpdate")
@@ -4767,6 +4767,96 @@ function uespLog.OnEffectChanged (eventCode, changeType, effectSlot, effectName,
 end
 
 
+uespLog.EVENT_TYPE_IGNORE = 0
+uespLog.EVENT_TYPE_DAMAGE = 1
+uespLog.EVENT_TYPE_HEAL = 2
+uespLog.EVENT_TYPE_DAMAGE_DEFLECTED = 3
+uespLog.EVENT_TYPE_OTHER = 4
+uespLog.EVENT_TYPE_DRAIN = 5
+uespLog.EVENT_TYPE_ENERGIZE = 6
+
+
+function uespLog.GetCombatEventDetails(result, isError, hitValue, powerType, damageType)
+	-- Returns: eventType, hitCount, critCount, dotCount, dotCritCount 
+
+	if ( isError ) then
+		return uespLog.EVENT_TYPE_IGNORE, 0, 0, 0, 0
+	end
+
+	if ( hitValue == 0 ) then
+		return uespLog.EVENT_TYPE_IGNORE, 0, 0, 0, 0
+	end
+
+	if ( powerType == POWERTYPE_INVALID or powerType == POWERTYPE_MOUNT_STAMINA ) then
+		return uespLog.EVENT_TYPE_IGNORE, 0, 0, 0, 0
+	end
+
+	if ( damageType == DAMAGE_TYPE_NONE ) then
+		return uespLog.EVENT_TYPE_OTHER, 0, 0, 0, 0
+	end
+
+	if ( result == ACTION_RESULT_HEAL ) then
+		return uespLog.EVENT_TYPE_HEAL, 1, 0, 0, 0
+	end
+
+	if ( result == ACTION_RESULT_CRITICAL_HEAL ) then
+		return uespLog.EVENT_TYPE_HEAL, 1, 1, 0, 0
+	end
+
+	if ( result == ACTION_RESULT_HOT_TICK ) then
+		return uespLog.EVENT_TYPE_HEAL, 0, 0, 1, 0
+	end
+
+	if ( result == ACTION_RESULT_HOT_TICK_CRITICAL ) then
+		return uespLog.EVENT_TYPE_HEAL, 0, 0, 1, 1
+	end
+
+	if ( result == ACTION_RESULT_BLOCKED or
+		 result == ACTION_RESULT_DAMAGE_SHIELDED or
+		 result == ACTION_RESULT_PARRIED or
+		 result == ACTION_RESULT_REFLECTED or
+		 result == ACTION_RESULT_IMMUNE ) then
+		 
+		return uespLog.EVENT_TYPE_DAMAGE, 0, 0, 0, 0
+	end
+
+	if ( result == ACTION_RESULT_ABSORBED or
+		 result == ACTION_RESULT_BLOCKED_DAMAGE or
+		 result == ACTION_RESULT_FALL_DAMAGE or
+		 result == ACTION_RESULT_PARTIAL_RESIST or
+		 result == ACTION_RESULT_PRECISE_DAMAGE or
+		 result == ACTION_RESULT_WRECKING_DAMAGE ) then
+		return uespLog.EVENT_TYPE_DAMAGE, 0, 0, 0, 0
+	end
+
+	if ( result == ACTION_RESULT_DAMAGE) then
+		return uespLog.EVENT_TYPE_DAMAGE, 1, 0, 0, 0
+	end
+
+	if ( result == ACTION_RESULT_CRITICAL_DAMAGE) then
+		return uespLog.EVENT_TYPE_DAMAGE, 1, 1, 0, 0
+	end
+
+	if ( result == ACTION_RESULT_DOT_TICK) then
+		return uespLog.EVENT_TYPE_DAMAGE, 0, 0, 1, 0
+	end
+
+	if ( result == ACTION_RESULT_DOT_TICK_CRITICAL) then
+		return uespLog.EVENT_TYPE_DAMAGE, 0, 0, 1, 1
+	end
+	
+	if ( result == ACTION_RESULT_POWER_DRAIN ) then
+		return uespLog.EVENT_TYPE_DRAIN, 0, 0, 0, 0
+	end
+	
+	if ( result == ACTION_RESULT_POWER_ENERGIZE ) then
+		return uespLog.EVENT_TYPE_ENERGIZE, 0, 0, 0, 0
+	end
+	
+	return uespLog.EVENT_TYPE_IGNORE, 0, 0, 0, 0
+end
+
+
 function uespLog.OnCombatEvent (eventCode, result, isError, abilityName, abilityGraphic, abilityActionSlotType, sourceName, sourceType, targetName, targetType, hitValue, powerType, damageType, isLogged, sourceUnitId, targetUnitId, abilityId)
 
 	if (sourceType ~= COMBAT_UNIT_TYPE_PLAYER and targetType ~= COMBAT_UNIT_TYPE_PLAYER) then
@@ -4779,30 +4869,19 @@ function uespLog.OnCombatEvent (eventCode, result, isError, abilityName, ability
 	local typeString = ""
 	local currentValue = 0
 	
-	if (targetType == COMBAT_UNIT_TYPE_PLAYER) then
-		--uespLog.DebugMsg("PlayerTarget....Result: "..tostring(result)..",  sourceType: "..tostring(sourceType)..",  damageType: "..tostring(damageType)..",  slotType: "..tostring(abilityActionSlotType)..",  powerType: "..powerType..", id: "..abilityId..",  name: "..abilityName..",  hitValue: "..hitValue..",  target: "..targetName..",  source: "..sourceName)
+	local eventType, hitCount, critCount, dotCount, dotCritCount = uespLog.GetCombatEventDetails(result, isError, hitValue, powerType, damageType)
 	
-		if (result == ACTION_RESULT_DOT_TICK or result == ACTION_RESULT_DOT_TICK_CRITICAL) then
-			powerType = POWERTYPE_HEALTH
-			hitValue = -hitValue
-			abilityName = targetName .. " " .. abilityName
-		elseif (result == ACTION_RESULT_DAMAGE or result == ACTION_RESULT_CRITICAL_DAMAGE) then
-			powerType = POWERTYPE_HEALTH
-			hitValue = -hitValue
-			abilityName = targetName .. " " .. abilityName
-		else
-			powerType = -100
-		end
+	hitValue = tonumber(hitValue)
 	
-	elseif (sourceType == COMBAT_UNIT_TYPE_PLAYER) then
-	
-		if (result == ACTION_RESULT_HEAL or result == ACTION_RESULT_CRITICAL_HEAL or 
-			result == ACTION_RESULT_HOT_TICK or result == ACTION_RESULT_HOT_TICK_CRITICAL) then
-			powerType = POWERTYPE_HEALTH
-		elseif (result == ACTION_RESULT_DOT_TICK or result == ACTION_RESULT_DOT_TICK_CRITICAL or 
-				result == ACTION_RESULT_DAMAGE or result == ACTION_RESULT_CRITICAL_DAMAGE) then
-			powerType = -100
-		end
+	if (eventType == uespLog.EVENT_TYPE_IGNORE) then
+		return
+	elseif (eventType == uespLog.EVENT_TYPE_DAMAGE) then
+		hitValue = -tonumber(hitValue)
+		powerType = POWERTYPE_HEALTH
+	elseif (eventType == uespLog.EVENT_TYPE_HEAL) then
+		powerType = POWERTYPE_HEALTH
+	elseif (eventType == uespLog.EVENT_TYPE_DRAIN) then
+		hitValue = -tonumber(hitValue)
 	end
 	
 	if (powerType == POWERTYPE_STAMINA and uespLog.GetTrackStat(POWERTYPE_STAMINA)) then
@@ -4831,7 +4910,7 @@ function uespLog.OnCombatEvent (eventCode, result, isError, abilityName, ability
 		color = uespLog.trackStatUltColor
 	end
 	
-	if (not display) then
+	if (not display or hitValue == 0) then
 		--uespLog.DebugMsg("Not Stats: Result: "..tostring(result)..",  sourceType: "..tostring(sourceType)..",  damageType: "..tostring(damageType)..",  name: "..tostring(abilityName)..",  hitValue: "..tostring(hitValue))
 		return
 	end
@@ -4839,10 +4918,10 @@ function uespLog.OnCombatEvent (eventCode, result, isError, abilityName, ability
 	local gameTime = (GetGameTimeMilliseconds() - uespLog.baseTrackStatGameTime) / 1000 
 	local gameTimeStr = string.format("%7.3f", gameTime)
 	
-	if (result == 64) then
-		uespLog.MsgColor(color, tostring(gameTimeStr) .. ": -"..tostring(hitValue).." "..typeString.." from "..tostring(abilityName))
-	elseif (hitValue > 0) then
+	if (hitValue > 0) then
 		uespLog.MsgColor(color, tostring(gameTimeStr) .. ": +"..tostring(hitValue).." "..typeString.." from "..tostring(abilityName))
+	else
+		uespLog.MsgColor(color, tostring(gameTimeStr) .. ": "..tostring(hitValue).." "..typeString.." from "..tostring(abilityName))
 	end
 	
 	--uespLog.DebugMsg("Result: "..tostring(result)..",  sourceType: "..tostring(sourceType)..",  damageType: "..tostring(damageType)..",  slotType: "..tostring(abilityActionSlotType)..",  powerType: "..powerType..", id: "..abilityId)
@@ -11668,11 +11747,13 @@ function uespLog.ShowMessageStatus()
 	local lootMsg = uespLog.BoolToOnOff(uespLog.GetMessageDisplay(uespLog.MSG_LOOT))
 	local npcMsg = uespLog.BoolToOnOff(uespLog.GetMessageDisplay(uespLog.MSG_NPC))
 	local questMsg = uespLog.BoolToOnOff(uespLog.GetMessageDisplay(uespLog.MSG_QUEST))
+	local xpMsg = uespLog.BoolToOnOff(uespLog.GetMessageDisplay(uespLog.MSG_XP))
 	local miscMsg = uespLog.BoolToOnOff(uespLog.GetMessageDisplay(uespLog.MSG_MISC))
 	
 	uespLog.Msg("Loot messages are "..lootMsg)
 	uespLog.Msg("NPC messages are "..npcMsg)
 	uespLog.Msg("Quest messages are "..questMsg)
+	uespLog.Msg("Experience messages are "..xpMsg)
 	uespLog.Msg("Other messages are "..miscMsg)
 end
 
@@ -11696,6 +11777,7 @@ function uespLog.MessageCommand(cmds)
 	if (firstCmd == "on") then
 		uespLog.SetMessageDisplay(uespLog.MSG_LOOT, true)
 		uespLog.SetMessageDisplay(uespLog.MSG_NPC, true)
+		uespLog.SetMessageDisplay(uespLog.MSG_XP, true)
 		uespLog.SetMessageDisplay(uespLog.MSG_QUEST, true)
 		uespLog.SetMessageDisplay(uespLog.MSG_MISC, true)
 		uespLog.ShowMessageStatus()
@@ -11703,11 +11785,15 @@ function uespLog.MessageCommand(cmds)
 		uespLog.SetMessageDisplay(uespLog.MSG_LOOT, false)
 		uespLog.SetMessageDisplay(uespLog.MSG_NPC, false)
 		uespLog.SetMessageDisplay(uespLog.MSG_QUEST, false)
+		uespLog.SetMessageDisplay(uespLog.MSG_XP, false)
 		uespLog.SetMessageDisplay(uespLog.MSG_MISC, false)
 		uespLog.ShowMessageStatus()
 	elseif (firstCmd == "npc") then
 		uespLog.SetMessageDisplay(uespLog.MSG_NPC, secondCmd)
 		uespLog.Msg("Display of NPC messages is "..uespLog.BoolToOnOff(secondCmd))
+	elseif (firstCmd == "xp") then
+		uespLog.SetMessageDisplay(uespLog.MSG_XP, secondCmd)
+		uespLog.Msg("Display of experience messages is "..uespLog.BoolToOnOff(secondCmd))
 	elseif (firstCmd == "loot") then
 		uespLog.SetMessageDisplay(uespLog.MSG_LOOT, secondCmd)
 		uespLog.Msg("Display of loot messages is "..uespLog.BoolToOnOff(secondCmd))
@@ -11722,6 +11808,7 @@ function uespLog.MessageCommand(cmds)
 		uespLog.Msg(".    /uespmsg [on||off]              Turns all messages on/off")
 		uespLog.Msg(".    /uespmsg loot [on||off]       Turns loot messages on/off")
 		uespLog.Msg(".    /uespmsg npc [on||off]       Turns npc messages on/off")
+		uespLog.Msg(".    /uespmsg xp [on||off]        Turns experience messages on/off")
 		uespLog.Msg(".    /uespmsg quest [on||off]    Turns quest messages on/off")
 		uespLog.Msg(".    /uespmsg other [on||off]     Turns other messages on/off")
 		uespLog.ShowMessageStatus()

@@ -4622,7 +4622,7 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 		return
 	end
 	
-	if (ITEM_SOUND_CATEGORY_BOOSTER) then
+	if (itemSoundCategory == ITEM_SOUND_CATEGORY_BOOSTER) then
 		uespLog.LogInventoryItem(bagId, slotIndex, "SlotUpdate")
 		return
 	end

@@ -42,7 +42,7 @@ function uespLog.InitOptionControlsData()
 	uespLog.optionControlsData:insert({
 		type = "checkbox",
 		name = "Log Data",
-		tooltip = "Enable/disable the logging of data using the add-on\n     /uesplog on/off",
+		tooltip = "Enable/disable the logging of data using the add-on.\n     /uesplog on/off",
 		getFunc = function() return uespLog.IsLogData() end,
 		setFunc = function(flag) return uespLog.SetLogData(flag) end,
 	})
@@ -51,7 +51,7 @@ function uespLog.InitOptionControlsData()
 		type = "dropdown",
 		name = "Logging Output",
 		choices = { "off", "on", "extra" },
-		tooltip = "Set the console notification level for the add-on\n     /uespdebug on/off/extra",
+		tooltip = "Set the console notification level for the add-on's debug messages.\n     /uespdebug on/off/extra",
 		getFunc = 	function() 
 						if (uespLog.IsDebugExtra() and uespLog.IsDebug) then return "extra" end
 						if (uespLog.IsDebug()) then return "on" end
@@ -75,7 +75,7 @@ function uespLog.InitOptionControlsData()
 	uespLog.optionControlsData:insert({
 		type = "checkbox",
 		name = "Use Color",
-		tooltip = "Enable/disable the use of colored console messages\n     /uespcolor on/off",
+		tooltip = "Enable/disable the use of colored console messages.\n     /uespcolor on/off",
 		getFunc = function() return uespLog.IsColor() end,
 		setFunc = function(flag) return uespLog.SetColor(flag) end,
 		disabled = function() return not uespLog.IsLogData() end
@@ -84,7 +84,7 @@ function uespLog.InitOptionControlsData()
 	uespLog.optionControlsData:insert({
 		type = "checkbox",
 		name = "Mail Delete Prompt",
-		tooltip = "Enable/disable the prompt when deleting an in-game mail\n     /uespmail deletenotify on/off",
+		tooltip = "Enable/disable the prompt when deleting an in-game mail.\n     /uespmail deletenotify on/off",
 		getFunc = function() return uespLog.IsMailDeleteNotify() end,
 		setFunc = function(flag) return uespLog.SetMailDeleteNotify(flag) end,
 	})
@@ -92,7 +92,7 @@ function uespLog.InitOptionControlsData()
 	uespLog.optionControlsData:insert({
 		type = "checkbox",
 		name = "PVP Update",
-		tooltip = "Show PVP/campaign updates in the chat window\n     /uesppvp on/off",
+		tooltip = "Show PVP/campaign updates in the chat window.\n     /uesppvp on/off",
 		getFunc = function() return uespLog.IsPvpUpdate() end,
 		setFunc = function(flag) return uespLog.SetPvpUpdate(flag) end,
 	})
@@ -115,7 +115,7 @@ function uespLog.InitOptionControlsData()
 	
 	uespLog.optionControlsData:insert({
 		type = "checkbox",
-		name = "Container Autoloot", 
+		name = "Inventory Container Autoloot", 
 		tooltip = "When enabled you will autoloot containers you open in your inventory.\n      /uespcontloot on/off", 
 		getFunc = uespLog.GetContainerAutoLoot,
 		setFunc = uespLog.SetContainerAutoLoot,
@@ -152,6 +152,14 @@ function uespLog.InitOptionControlsData()
 		tooltip = "Enables the display of all NPC related messages in the chat window.\n      /uespmsg npc on/off", 
 		getFunc = function () return uespLog.GetMessageDisplay(uespLog.MSG_NPC) end,
 		setFunc = function (value) uespLog.SetMessageDisplay(uespLog.MSG_NPC, value) end
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "checkbox",
+		name = "Show Experience Messages", 
+		tooltip = "Enables the display of all experience related messages in the chat window.\n      /uespmsg xp on/off", 
+		getFunc = function () return uespLog.GetMessageDisplay(uespLog.MSG_XP) end,
+		setFunc = function (value) uespLog.SetMessageDisplay(uespLog.MSG_XP, value) end
 	})
 	
 	uespLog.optionControlsData:insert({

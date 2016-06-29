@@ -710,6 +710,8 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		uespLog.SkillCoefAddCharSkills()
 	elseif (cmd1 == "addmissing") then
 		uespLog.SkillCoefAddMissingSkills()
+	elseif (cmd1 == "addall") then
+		uespLog.SkillCoefAddAllSkills()
 	elseif (cmd1 == "savelist") then
 		uespLog.SkillCoefSaveSkillList()
 	elseif (cmd1 == "loadlist") then
@@ -1130,8 +1132,39 @@ function uespLog.SkillCoefAddMissingSkills()
 		if (isNew) then newSkills = newSkills + 1 end
 	end
 	
-	uespLog.Msg("Addded "..newSkills.." missing skills to tracked data!")
+	uespLog.Msg("Added "..newSkills.." missing skills to tracked data!")
 		
+end
+
+
+function uespLog.SkillCoefAddAllSkills()
+	local abilityId
+	local endId =  80000
+	local validAbilityCount = 0
+	local newSkills = 0
+	local logData = { }
+	
+	uespLog.Msg("Checking all skills for coefficient tracking...")
+	
+	for abilityId = 1, endId do
+		if (DoesAbilityExist(abilityId)) then
+			validAbilityCount = validAbilityCount + 1
+			local desc = GetAbilityDescription(abilityId)
+			
+			if (desc ~= "") then
+				local matchResult = desc:match("%d")
+
+				if (matchResult ~= nil) then
+					local result, isNew = uespLog.InitSkillCoefData(abilityId, 0)
+					if (isNew) then newSkills = newSkills + 1 end
+				end
+			end
+
+		end
+	end
+
+	uespLog.Msg("Added "..newSkills.." missing skills out of "..tostring(validAbilityCount).." possible skills to tracked data!")
+	return true
 end
 
 

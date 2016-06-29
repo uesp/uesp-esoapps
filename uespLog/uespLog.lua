@@ -2622,9 +2622,9 @@ function uespLog.Initialize( self, addOnName )
 		
 	uespLog.AddCharacterWindowStats()
 	
-	uespLog.Old_ZO_InventorySlot_DoPrimaryAction = ZO_InventorySlot_DoPrimaryAction
-	ZO_InventorySlot_DoPrimaryAction = uespLog.ZO_InventorySlot_DoPrimaryAction
-	
+	uespLog.Old_IsItemUsable = IsItemUsable
+	IsItemUsable = uespLog.IsItemUsable
+			
 	uespLog.Old_ActionButton_HandleRelease = ActionButton.HandleRelease
 	ActionButton.HandleRelease = uespLog.ActionButton_HandleRelease
 	
@@ -4565,8 +4565,9 @@ end
 
 function uespLog.OnInventoryItemUsed (eventCode, itemSoundCategory)
 
-	uespLog.OnUseItem(eventCode, uespLog.lastItemLinkUsed_BagId, uespLog.lastItemLinkUsed_SlotIndex, uespLog.lastItemLinkUsed, itemSoundCategory)
 	uespLog.DebugExtraMsg("UESP: OnInventoryItemUsed sound="..tostring(itemSoundCategory))
+
+	uespLog.OnUseItem(eventCode, uespLog.lastItemLinkUsed_BagId, uespLog.lastItemLinkUsed_SlotIndex, uespLog.lastItemLinkUsed, itemSoundCategory)
 	
 	uespLog.lastItemLinkUsed = ""
 	uespLog.lastItemLinkUsed_BagId = -1
@@ -4632,7 +4633,7 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 		return
 	end
 	
-	if (itemSoundCategory == ITEM_SOUND_CATEGORY_LURE and bagId == BAG_BACKPACK and not isNewItem) then
+	if (itemSoundCategory == ITEM_SOUND_CATEGORY_LURE and (bagId == BAG_BACKPACK or bagId == BAG_VIRTUAL) and not isNewItem) then
 		local action, name = GetGameCameraInteractableActionInfo()
 		
         if (action == GetString(SI_GAMECAMERAACTIONTYPE17) and name == uespLog.FISHING_HOLE and not SCENE_MANAGER:IsInUIMode()) then
@@ -5074,7 +5075,7 @@ function uespLog.OnFoundFish ()
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetCurrentTargetData(), uespLog.GetTimeData())
 	
-	uespLog.MsgType(uespLog.MSG_OTHER, "UESP: Found fishing hole!")
+	uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.fishingColor, "Found fishing hole!")
 end
 
 
@@ -10321,33 +10322,16 @@ function uespLog.trim(s)
 end
 
 
-function uespLog.ZO_InventorySlot_DoPrimaryAction(inventorySlot)
-	local buttonPart = inventorySlot
-    local controlType = inventorySlot:GetType()
+function uespLog.IsItemUsable(bagId, slotIndex)
+	local itemLink = GetItemLink(bagId, slotIndex)
+	uespLog.lastItemLinkUsed = itemLink
+	uespLog.lastItemLinkUsed_BagId = bagId
+	uespLog.lastItemLinkUsed_SlotIndex = slotIndex
 	
-    if (controlType == CT_CONTROL and buttonPart.slotControlType and buttonPart.slotControlType == "listSlot") then
-		inventorySlot = inventorySlot:GetNamedChild("Button")
-	end
+	--uespLog.DebugExtraMsg("IsItemUsable: "..tostring(bagId)..", "..tostring(slotIndex))
 	
-	uespLog.lastItemLinkUsed = ""
-	uespLog.lastItemLinkUsed_BagId = -1
-	uespLog.lastItemLinkUsed_SlotIndex = -1
-	
-	if (inventorySlot ~= nil) then
-		local bagId = inventorySlot.bagId
-		local slotIndex = inventorySlot.slotIndex
-		
-		if (bagId ~= nil and slotIndex ~= nil) then
-			local itemLink = GetItemLink(bagId, slotIndex)
-			uespLog.lastItemLinkUsed = itemLink
-			uespLog.lastItemLinkUsed_BagId = bagId
-			uespLog.lastItemLinkUsed_SlotIndex = slotIndex
-		end
-
-	end
-	
-	return uespLog.Old_ZO_InventorySlot_DoPrimaryAction(inventorySlot)
-end
+	return uespLog.Old_IsItemUsable(bagId, slotIndex)
+end	
 
 
 function uespLog.ActionButton_HandleRelease(self)
@@ -10836,7 +10820,7 @@ function uespLog.FishingCommand(cmd)
 	else
 		uespLog.Msg("Turns fishing related features on/off. Command format is:")
 		uespLog.Msg(".       /uespfish [on||off]")
-		uespLog.Msg(".   Fishing is currently set to "..tostring(uespLog.GetFishingFlag())..".")
+		uespLog.Msg(".   Fishing is currently set to "..uespLog.BoolToOnOff(uespLog.GetFishingFlag())..".")
 	end
 	
 end
@@ -10866,6 +10850,11 @@ function uespLog.OnFishingReelInReady(eventCode, itemLink, itemName, bagId, slot
 	
 	local count = GetItemTotalCount(bagId, slotIndex)
 	local msg
+	
+	if (bagId == BAG_VIRTUAL) then
+		local icon
+		icon, count = GetItemInfo(bagId, slotIndex)
+	end
 	
 	if (count == 0) then
 		msg = "no more "..tostring(itemLink).." left"

@@ -544,7 +544,7 @@
 --			  This should give you skill coefficients for all skills in one calculation.
 --
 --
---		- v0.71 -- 
+--		- v0.80 -- August 2016
 --			- "/uespstyle" now works with the 3 new styles added in DB.
 --			- "/usc addcharskills" now also adds CP passive abilities to coefficient tracking.
 --			- Improving items will show the correct improved item link in the chat window now.
@@ -571,6 +571,10 @@
 --						/uespmsg other [on|off]    Turns all other messages on/off
 --            Now "/uespdebug" only controls the display of less useful debug related messages. Initially all
 --			  new messages are off unless you have "/uespdebug on" set in which case they are initially turned on.
+--
+--			- Shadows of the Hist Updates
+--				- API updated to 100016.
+--				- Added the 4 new styles.
 --
 --
 --		Future Versions (Works in Progress)
@@ -599,8 +603,8 @@
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "0.71"
-uespLog.releaseDate = "31 May 2016"
+uespLog.version = "0.80"
+uespLog.releaseDate = "1 August 2016"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -1168,7 +1172,7 @@ uespLog.mineItemLastReloadTimeMS = GetGameTimeMilliseconds()
 uespLog.MINEITEM_AUTORELOAD_DELTATIMEMS = 260000  -- Default value, use uespLog.minedItemReloadDelay instead
 uespLog.mineItemAutoRestart = false
 uespLog.mineItemAutoRestartOutputEnd = false
-uespLog.MINEITEM_AUTO_MAXITEMID = 100000
+uespLog.MINEITEM_AUTO_MAXITEMID = 110000
 uespLog.mineItemOnlySubType = -1
 uespLog.mineItemOnlyLevel = -1
 uespLog.MINEITEM_QUALITYMAP_ITEMID = 47000
@@ -3702,7 +3706,7 @@ uespLog.ITEMSTYLES = {
 	[13] = "Malacath",
 	[14] = "Dwemer",
 	[15] = "Ancient Elf",
-	[16] = "Imperial (area)",
+	[16] = "Akatosh",
 	[17] = "Reach (Barbaric)",
 	[18] = "Bandit",
 	[19] = "Primitive (Primal)",
@@ -3724,8 +3728,9 @@ uespLog.ITEMSTYLES = {
 	[35] = "Yokudan",
 	[36] = "Universal",
 	[37] = "Reach Winter",
-	[36] = "Universal",
+	[39] = "Minotaur",
 	[41] = "Abah's Watch",
+	[45] = "Dro-m'Athra",
 	[46] = "Assassin's League",
 	[47] = "Outlaw",
 }
@@ -8088,7 +8093,13 @@ function uespLog.MineItemIteratePotionData (effectIndex, realItemId, potionItemI
 		end
 	end
 	
-	uespLog.MsgColor(uespLog.mineColor, "UESP: Auto-mined "..tostring(setCount).." potion data, "..
+	local typeMsg = "potion"
+	
+	if (realItemId == uespLog.MINEITEM_POISON_ITEMID) then
+		typeMsg = "poison"
+	end
+	
+	uespLog.MsgColor(uespLog.mineColor, "UESP: Auto-mined "..tostring(setCount).." "..typeMsg.." data, "..
 				tostring(badCount).." bad, effect "..tostring(effectIndex)..
 				" (total "..tostring(uespLog.mineItemCount).." items)")	
 
@@ -9029,6 +9040,18 @@ uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
 	["abahs_watch"] = ITEMSTYLE_ORG_ABAHS_WATCH,
 	["abahs"] = ITEMSTYLE_ORG_ABAHS_WATCH,
 	["abah"] = ITEMSTYLE_ORG_ABAHS_WATCH,
+	
+		-- Shadows of the Hist
+	["akatosh"] = 16,
+	["dark brotherhood"] = 12,
+	["dark_brotherhood"] = 12,
+	["db"] = 12,
+	["dro-m'athra"] = 45,
+	["dro m athra"] = 45,
+	["dromathra"] = 45,
+	["dro_mathra"] = 45,
+	["dro"] = 45,
+	["minotaur"] = 39,
 }
 
 
@@ -9096,6 +9119,18 @@ uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
 	["abahs_watch"]   = {74540, 74541, 74542, 74543, 74544, 74545, 74546, 74547, 74548, 74549, 74550, 74551, 74552, 74553}, -- 74539, 74554
 	["abahs"]         =	{74540, 74541, 74542, 74543, 74544, 74545, 74546, 74547, 74548, 74549, 74550, 74551, 74552, 74553}, -- 74539, 74554
 	["abah"]          = {74540, 74541, 74542, 74543, 74544, 74545, 74546, 74547, 74548, 74549, 74550, 74551, 74552, 74553}, -- 74539, 74554
+	
+		-- Shadows of the Hist
+	["akatosh"] = { 82088, 82089, 82090, 82091, 82092, 82093, 82094, 82095, 82096, 82097, 82098, 82099, 82100, 82101 }, -- 82087, 82102 
+	["dark brotherhood"] = { 82055, 82056, 82057, 82058, 82059, 82060, 82061, 82062, 82063, 82064, 82065, 82066, 82067, 82068 }, -- 82054, 82069
+	["dark_brotherhood"] = { 82055, 82056, 82057, 82058, 82059, 82060, 82061, 82062, 82063, 82064, 82065, 82066, 82067, 82068 }, -- 82054, 82069
+	["db"] = { 82055, 82056, 82057, 82058, 82059, 82060, 82061, 82062, 82063, 82064, 82065, 82066, 82067, 82068 }, -- 82054, 82069
+	["dro-m'athra"] =  { 74653, 74654, 74655, 74656, 74657, 74658, 74659, 74660, 74661, 74662, 74663, 74664, 74665, 74666 }, -- 74652, 75667  
+	["dro m athra"] = { 74653, 74654, 74655, 74656, 74657, 74658, 74659, 74660, 74661, 74662, 74663, 74664, 74665, 74666 }, -- 74652, 75667  
+	["dromathra"] = { 74653, 74654, 74655, 74656, 74657, 74658, 74659, 74660, 74661, 74662, 74663, 74664, 74665, 74666 }, -- 74652, 75667  
+	["dro_mathra"] = { 74653, 74654, 74655, 74656, 74657, 74658, 74659, 74660, 74661, 74662, 74663, 74664, 74665, 74666 }, -- 74652, 75667  
+	["dro"] = { 74653, 74654, 74655, 74656, 74657, 74658, 74659, 74660, 74661, 74662, 74663, 74664, 74665, 74666 }, -- 74652, 75667  
+	["minotaur"] =  { 82072, 82073, 82074, 82075, 82076, 82077, 82078, 82079, 82080, 82081, 82082, 82083, 82084, 82085 }, -- 82071, 82086
 }
 
 

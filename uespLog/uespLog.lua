@@ -571,10 +571,12 @@
 --						/uespmsg other [on|off]    Turns all other messages on/off
 --            Now "/uespdebug" only controls the display of less useful debug related messages. Initially all
 --			  new messages are off unless you have "/uespdebug on" set in which case they are initially turned on.
+--			- A little better support for other languages. If you are using a non-English version and are
+--			  having problems or wish to help test things let me know.
 --
 --			- Shadows of the Hist Updates
 --				- API updated to 100016.
---				- Added the 4 new styles.
+--				- Added the 4 new styles (Dark Brotherhood, Akatosh, Dro-m'Artha, Minotaur).
 --
 --
 --		Future Versions (Works in Progress)
@@ -612,20 +614,6 @@ uespLog.MAX_LOGSTRING_LENGTH = 1900
 
 uespLog.TAB_CHARACTER = "\t"
 uespLog.MIN_TARGET_CHANGE_TIMEMS = 2000
-uespLog.ACTION_UNLOCK = GetString(SI_GAMECAMERAACTIONTYPE12)
-uespLog.ACTION_USE = GetString(SI_GAMECAMERAACTIONTYPE5)
-uespLog.ACTION_FISH = GetString(SI_GAMECAMERAACTIONTYPE16)
-uespLog.ACTION_OPEN = GetString(SI_GAMECAMERAACTIONTYPE13)
-uespLog.ACTION_SEARCH = GetString(SI_GAMECAMERAACTIONTYPE1)
-uespLog.ACTION_HARVEST = GetString(SI_GAMECAMERAACTIONTYPE3)
-uespLog.ACTION_MINE = GetString(SI_KEEPRESOURCEPROVIDERTYPE3)
-uespLog.ACTION_CUT = "Cut"
-uespLog.ACTION_COLLECT = "Collect"
-uespLog.ACTION_STEALFROM = GetString(SI_GAMECAMERAACTIONTYPE20)
-uespLog.ACTION_STEAL = GetString(SI_GAMECAMERAACTIONTYPE19)
-uespLog.FISHING_HOLE = "Fishing Hole"
-uespLog.SPELL_PENETRATION_TEXT = "Spell Penetration"
-uespLog.PHYSICAL_PENETRATION_TEXT = "Physical Penetration"
 
 uespLog.currentHarvestTarget = nil
 uespLog.lastHarvestTarget = { }

@@ -3892,7 +3892,8 @@ function uespLog.OnSkillPointsChanged (eventCode, pointsBefore, pointsNow, isSky
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
 	if (pointsBefore > pointsNow) then
-		uespLog.MsgType(uespLog.MSG_OTHER, "You lost ".. tostring(logData.points) .." skill points!")
+		local points = -logData.points
+		uespLog.MsgType(uespLog.MSG_OTHER, "You lost ".. tostring(points) .." skill points!")
 	elseif (isSkyShard and pointsBefore == pointsNow) then
 		uespLog.MsgType(uespLog.MSG_OTHER, "You found a Skyshard ("..GetNumSkyShards().."/3 pieces)!")
 	elseif (isSkyShard and logData.points == 1) then

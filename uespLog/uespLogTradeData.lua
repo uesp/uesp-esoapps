@@ -72,6 +72,8 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[39] 							 = "uespLog/images/minotaur.dds",			-- Oxblood Fungus, Minotaur, 39, /esoui/art/icons/crafting_style_item_minotaur_r2.dds
 	[16] 							 = "uespLog/images/akatosh.dds",			-- Pearl Sand, Akatosh, 16, /esoui/art/icons/crafting_style_item_orderoth_r2.dds
 	[45] 							 = "uespLog/images/dromothra.dds",			-- Defiled Whiskers, Dro-m'Athra, 45, /esoui/art/icons/crafting_style_item_dromothra_r2.dds
+	[57]							 = "uespLog/images/grimarlequin.dds",		-- Grinstone, Grim Arlequin, 57, /esoui/art/icons/crafting_style_item_harlequin_r2.dds
+	[59]							 = "uespLog/images/hollowjack.dds",			-- Amber Marble, Hollowjack, 59, /esoui/art/icons/crafting_style_item_hollowjack_r2.dds
 }
 
 
@@ -112,6 +114,8 @@ uespLog.STYLE_ICON_DATA = {
 	[39] 							 = "/esoui/art/icons/crafting_style_item_minotaur_r2.dds",
 	[16] 							 = "/esoui/art/icons/crafting_style_item_orderoth_r2.dds",
 	[45] 							 = "/esoui/art/icons/crafting_style_item_dromothra_r2.dds",
+	[57]							 = "/esoui/art/icons/crafting_style_item_harlequin_r2.dds",
+	[59]							 = "/esoui/art/icons/crafting_style_item_hollowjack_r2.dds",
 }
 
 

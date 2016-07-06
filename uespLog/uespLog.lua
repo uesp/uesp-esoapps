@@ -576,7 +576,7 @@
 --
 --			- Shadows of the Hist Updates
 --				- API updated to 100016.
---				- Added the 4 new styles (Dark Brotherhood, Akatosh, Dro-m'Artha, Minotaur).
+--				- Added the 5 new styles (Dark Brotherhood, Akatosh, Dro-m'Artha, Minotaur, Grim Arlequin, Hollowjack).
 --
 --
 --		Future Versions (Works in Progress)
@@ -3721,6 +3721,8 @@ uespLog.ITEMSTYLES = {
 	[45] = "Dro-m'Athra",
 	[46] = "Assassin's League",
 	[47] = "Outlaw",
+	[57] = "Grim Arlequin",
+	[59] = "Hollowjack",
 }
 
 
@@ -9042,6 +9044,12 @@ uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
 	["dro_mathra"] = 45,
 	["dro"] = 45,
 	["minotaur"] = 39,
+	
+		-- Witches Festival
+	["grim arlequin"] = 57,
+	["grim_arlequin"] = 57,
+	["grim"] = 57,
+	["hollowjack"] = 59,
 }
 
 
@@ -9121,6 +9129,12 @@ uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
 	["dro_mathra"] = { 74653, 74654, 74655, 74656, 74657, 74658, 74659, 74660, 74661, 74662, 74663, 74664, 74665, 74666 }, -- 74652, 75667  
 	["dro"] = { 74653, 74654, 74655, 74656, 74657, 74658, 74659, 74660, 74661, 74662, 74663, 74664, 74665, 74666 }, -- 74652, 75667  
 	["minotaur"] =  { 82072, 82073, 82074, 82075, 82076, 82077, 82078, 82079, 82080, 82081, 82082, 82083, 82084, 82085 }, -- 82071, 82086
+	
+			-- Witches Festival
+	["grim arlequin"] = { 82039, 82040, 82041, 82042, 82043, 82044, 82045, 82046, 82047, 82048, 82049, 82050, 82051, 82052 }, -- 82038, 82053
+	["grim_arlequin"] = { 82039, 82040, 82041, 82042, 82043, 82044, 82045, 82046, 82047, 82048, 82049, 82050, 82051, 82052 }, -- 82038, 82053
+	["grim"] = { 82039, 82040, 82041, 82042, 82043, 82044, 82045, 82046, 82047, 82048, 82049, 82050, 82051, 82052 }, -- 82038, 82053
+	["hollowjack"] = { 82023, 82024, 82025, 82026, 82027, 82028, 82029, 82030, 82031, 82032, 82033, 82034, 82035, 82036 }, -- 82022, 82037
 }
 
 

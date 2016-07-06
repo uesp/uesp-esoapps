@@ -4043,7 +4043,7 @@ function uespLog.UpdateLootWindow(eventCode)
 		local isAutoloot = GetSetting(SETTING_TYPE_LOOT, LOOT_SETTING_AUTO_LOOT) == "1"
 		local isStolenAutoLoot = GetSetting(SETTING_TYPE_LOOT, LOOT_SETTING_AUTO_LOOT_STOLEN) == "1"
 		
-		if (targetType == INTERACT_TARGET_TYPE_ITEM and ((isOwned == false and isStolenAutoLoot) or (isOwned and isAutoloot))) then
+		if (targetType == INTERACT_TARGET_TYPE_ITEM and ((isOwned and isStolenAutoLoot) or (not isOwned and isAutoloot))) then
 			useDefaultLoot = false
 			LOOT_SHARED:LootAllItems()
 		end

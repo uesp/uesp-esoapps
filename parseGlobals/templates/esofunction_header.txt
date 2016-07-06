@@ -6,5 +6,6 @@
 		<script type="text/javascript" src="${resourcePath}/jquery.js"></script>
 	</head>
 <body>
+<a href="${homeUrl}">Back to Home</a>
 <h1>ESO Function Data v${parseVersion}</h1>
 <h2>${name}</h2>

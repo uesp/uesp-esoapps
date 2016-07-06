@@ -25,6 +25,7 @@ class CEsoEnvironment:
     def __init__(self, searchEngineID = ""):
         self.globalData = CEsoGlobals()
         self.luaFiles = []
+        self.otherFiles = {}
         self.functionInfos = CEsoFunctionInfo()
         self.functionCallInfos = CEsoFunctionCallInfo()
         self.functionDb = CEsoFunctionDb()
@@ -337,6 +338,8 @@ class CEsoEnvironment:
 
     def LoadLuaFiles(self, path):
         self.luaFiles = EsoLuaFile.LoadAllFiles(path, path)
+
+        self.otherFiles = self.FindOtherFiles(path)
         
         self.functionInfos = EsoFunctionInfo.FindAllFunctions(self.luaFiles)
         self.functionCallInfos = EsoFunctionInfo.FindAllFunctionCalls(self.luaFiles)
@@ -358,6 +361,7 @@ class CEsoEnvironment:
         templateVars['types'] = ", ".join(types) if types else "all"
         templateVars['googleSearchEngineID'] = self.googleSearchEngineID
         templateVars["resourcePath"] = ""
+        templateVars["homeUrl"] = "/" + self.globalData.parseVersion
 
         return templateVars
 
@@ -370,6 +374,7 @@ class CEsoEnvironment:
         templateVars["creationDate"] = luaFile.creationDate
         templateVars["numTokens"] = str(len(luaFile.tokenizer.tokens))
         templateVars["resourcePath"] = ""
+        templateVars["homeUrl"] = "/" + self.globalData.parseVersion
 
         return templateVars
         
@@ -513,6 +518,37 @@ class CEsoEnvironment:
     def SetOutputPath(self, outputPath):
         self.luaFileOutputPath = os.path.join(outputPath, "src", "").replace("\\", "/")
         self.functionOutputPath = os.path.join(outputPath, "data", "").replace("\\", "/")
+        
+
+    def FindOtherFiles(self, path):
+        otherFiles = {}
+
+        print "Finding other files from", path, "..."
+    
+        for root, dirs, files in os.walk(path):
+            rootFiles = otherFiles
+            basePath = root[len(path):]
+            print "Root = ", basePath
+            print "Dirs = ", dirs
+            # print "Files = ", files
+
+            thisDirs = basePath.split("/")
+
+            for dirName in thisDirs:
+                if (not dirName in rootFiles):
+                    rootFiles[dirName] = {}
+                    
+                rootFiles = rootFiles[dirName]
+
+            if (not "__files" in rootFiles):
+                rootFiles["__files"] = []
+            
+            for filename in files:
+                if (filename.endswith(".xml") or filename.endswith(".txt")):
+                    rootFiles["__files"].append(filename)
+
+        # print "\tFound {0} other files!".format(len(otherFiles))
+        return otherFiles
         
 
     def OutputLuaFilesDirTree(self, root, outputBasePath, parentPath):

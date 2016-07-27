@@ -6267,7 +6267,7 @@ end
 
 function uespLog.DumpSkillsStart(note)
 	local abilityId
-	local endId =  80000
+	local endId =  110000
 	local validAbilityCount = 0
 	local logData = { }
 	

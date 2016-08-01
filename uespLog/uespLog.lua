@@ -544,7 +544,7 @@
 --			  This should give you skill coefficients for all skills in one calculation.
 --
 --
---		- v0.80 -- August 2016
+--		- v0.80 -- 1 August 2016
 --			- "/uespstyle" now works with the 3 new styles added in DB.
 --			- "/usc addcharskills" now also adds CP passive abilities to coefficient tracking.
 --			- Improving items will show the correct improved item link in the chat window now.

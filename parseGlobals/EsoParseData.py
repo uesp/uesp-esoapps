@@ -5,7 +5,7 @@ import json
 
     # Modify below constants to point to relevant files/paths
 INPUT_GLOBAL_FILENAME = "/cygdrive/d/esoexport/gamemnf-11pts/globals.txt"
-INPUT_LUA_PATH = "/cygdrive/d/esoexport/gamemnf-11pts/esoui/"
+INPUT_LUA_PATH = "/cygdrive/d/esoexport/gamemnf-11/esoui/"
 OUTPUT_PATH = "/cygdrive/d/esoexport/apidata/output/100016/"
 
     # Set to your specific Google CSE ID if you want site search

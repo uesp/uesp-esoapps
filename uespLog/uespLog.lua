@@ -543,7 +543,6 @@
 --					9. To reset saved parameters but keep the list of tracked skills use "/usc resetsaved"
 --			  This should give you skill coefficients for all skills in one calculation.
 --
---
 --		- v0.80 -- 1 August 2016
 --			- "/uespstyle" now works with the 3 new styles added in DB.
 --			- "/usc addcharskills" now also adds CP passive abilities to coefficient tracking.
@@ -578,6 +577,8 @@
 --				- API updated to 100016.
 --				- Added the 5 new styles (Dark Brotherhood, Akatosh, Dro-m'Artha, Minotaur, Grim Arlequin, Hollowjack).
 --
+--		- v0.81 -- 
+--		
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -588,14 +589,16 @@
 --			  can enable tracking of one or more stats and any change will be displayed in the chat window
 --			  along with a game time reference. Warning that this command results in a lot of messages as you
 --			  might expect.
---					/uesptrackstat						Shows command help and current status of tracking.
---					/uesptrackstat health   [on/off]	Turns Health tracking on/off.
---					/uesptrackstat magicka  [on/off]	Turns Magicka tracking on/off.
---					/uesptrackstat stamina  [on/off]	Turns Stamina tracking on/off.
---					/uesptrackstat ultimate [on/off]	Turns Ultimate tracking on/off.
---					/uesptrackstat all					Start tracking all stats.
---					/uesptrackstat none					Turns off all tracking.
---					/uesptrackstat resettime			Resets the game time display to 0.
+--					/uesptrackstat                        Shows command help and current status of tracking.
+--					/uesptrackstat health[on/off]         Turns Health tracking on/off.
+--					/uesptrackstat magicka [on/off]       Turns Magicka tracking on/off.
+--					/uesptrackstat stamina [on/off]       Turns Stamina tracking on/off.
+--					/uesptrackstat ultimate [on/off]      Turns Ultimate tracking on/off.
+--					/uesptrackstat weapondamage [on/off]  Turns Weapon Damage tracking on/off.
+--					/uesptrackstat spelldamage [on/off]	  Turns Spell Damage tracking on/off.
+--					/uesptrackstat all					  Start tracking all stats.
+--					/uesptrackstat none					  Turns off all tracking.
+--					/uesptrackstat resettime			  Resets the game time display to 0.
 --			   Note that this feature is currently not working perfectly as the EVENT_POWER_UPDATE seems to
 --			   "miss" some stat updates. In the future this will be changed to use EVENT_COMBAT_EVENT instead.
 --
@@ -605,7 +608,7 @@
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "0.80"
+uespLog.version = "0.81"
 uespLog.releaseDate = "1 August 2016"
 uespLog.DATA_VERSION = 3
 

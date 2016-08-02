@@ -1139,7 +1139,7 @@ end
 
 function uespLog.SkillCoefAddAllSkills()
 	local abilityId
-	local endId =  80000
+	local endId =  100000
 	local validAbilityCount = 0
 	local newSkills = 0
 	local logData = { }

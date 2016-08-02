@@ -10675,7 +10675,7 @@ function uespLog.BuyPassives(putPointInNextUpgrade, charOnly)
 	local abilityIndex
 	local purchaseCount = 0
 	local nextTimeDelay = 10
-	local timeDelayStep = 100
+	local timeDelayStep = 200
 	
 	EVENT_MANAGER:UnregisterForEvent("uespLog", EVENT_SKILL_POINTS_CHANGED)
 	

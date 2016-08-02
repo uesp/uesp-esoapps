@@ -4,7 +4,7 @@ import EsoFunctionInfo
 import json
 
     # Modify below constants to point to relevant files/paths
-INPUT_GLOBAL_FILENAME = "/cygdrive/d/esoexport/gamemnf-11pts/globals.txt"
+INPUT_GLOBAL_FILENAME = "/cygdrive/d/esoexport/gamemnf-11/globals.txt"
 INPUT_LUA_PATH = "/cygdrive/d/esoexport/gamemnf-11/esoui/"
 OUTPUT_PATH = "/cygdrive/d/esoexport/apidata/output/100016/"
 
@@ -12,13 +12,12 @@ OUTPUT_PATH = "/cygdrive/d/esoexport/apidata/output/100016/"
 GOOGLE_SEARCH_ENGINE_ID = "012503365948233236492:dsuicagnjii"
 
 esoEnvironment = EsoEnvironment.CEsoEnvironment(GOOGLE_SEARCH_ENGINE_ID)
-#esoEnvironment.LoadGlobals(INPUT_GLOBAL_FILENAME)
-#esoEnvironment.LoadLuaFiles(INPUT_LUA_PATH)
-#esoEnvironment.CreateAll(OUTPUT_PATH)
+esoEnvironment.LoadGlobals(INPUT_GLOBAL_FILENAME)
+esoEnvironment.LoadLuaFiles(INPUT_LUA_PATH)
+esoEnvironment.CreateAll(OUTPUT_PATH)
 
-otherFiles = esoEnvironment.FindOtherFiles(INPUT_LUA_PATH)
-
-print json.dumps(otherFiles, sort_keys=True, indent=4)
+#otherFiles = esoEnvironment.FindOtherFiles(INPUT_LUA_PATH)
+#print json.dumps(otherFiles, sort_keys=True, indent=4)
 
 # TODO
 # - Automatically create/update API version page

@@ -1267,6 +1267,8 @@ uespLog.DEFAULT_SETTINGS =
 			[POWERTYPE_HEALTH] = false,
 			[POWERTYPE_STAMINA] = false,
 			[POWERTYPE_ULTIMATE] = false,
+			["Weapon Damage"] = false,
+			["Spell Damage"] = false,
 		},
 		["containerAutoLoot"] = false,
 		["customStatDisplay"] = false,
@@ -2399,6 +2401,14 @@ function uespLog.Initialize( self, addOnName )
 		return 
 	end
 	
+	uespLog.lastPlayerHP = GetUnitPower("player", POWERTYPE_HEALTH)
+	uespLog.lastPlayerMG = GetUnitPower("player", POWERTYPE_MAGICKA)
+	uespLog.lastPlayerST = GetUnitPower("player", POWERTYPE_STAMINA)
+	uespLog.lastPlayerUT = GetUnitPower("player", POWERTYPE_ULTIMATE)
+	
+	uespLog.lastPlayerSpellDamage = GetPlayerStat(STAT_SPELL_POWER, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+	uespLog.lastPlayerWeaponDamage = GetPlayerStat(STAT_POWER, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+	 	
 	if (uespLog.origLoreBookLearnedFunction == nil) then
 		uespLog.origLoreBookLearnedFunction = ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED]
 	end
@@ -2653,11 +2663,6 @@ function uespLog.Initialize( self, addOnName )
 	--EVENT_START_KEEP_GUILD_RELEASE_INTERACTION (integer eventCode)
 	--EVENT_GUILD_KEEP_CLAIM_UPDATED (integer eventCode, integer guildId)
 		
-	uespLog.lastPlayerHP = GetUnitPower("player", POWERTYPE_HEALTH)
-	uespLog.lastPlayerMG = GetUnitPower("player", POWERTYPE_MAGICKA)
-	uespLog.lastPlayerST = GetUnitPower("player", POWERTYPE_STAMINA)
-	uespLog.lastPlayerUT = GetUnitPower("player", POWERTYPE_ULTIMATE)
-	 	
 	uespLog.fillInfoData()
 	uespLog.Msg("Initialized uespLog...")
 	
@@ -4861,14 +4866,42 @@ function uespLog.OnCombatEvent (eventCode, result, isError, abilityName, ability
 		return
 	end
 	
+	hitValue = tonumber(hitValue)
+	
 	local display = false
 	local color = uespLog.defaultColor
 	local typeString = ""
 	local currentValue = 0
 	
-	local eventType, hitCount, critCount, dotCount, dotCritCount = uespLog.GetCombatEventDetails(result, isError, hitValue, powerType, damageType)
+	local gameTime = (GetGameTimeMilliseconds() - uespLog.baseTrackStatGameTime) / 1000 
+	local gameTimeStr = string.format("%7.3f", gameTime)
 	
-	hitValue = tonumber(hitValue)
+	local spellDamage = GetPlayerStat(STAT_SPELL_POWER, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+	local weaponDamage = GetPlayerStat(STAT_POWER, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
+
+	if (uespLog.lastPlayerSpellDamage ~= spellDamage and uespLog.GetTrackStat("Spell Damage")) then
+		local value = spellDamage - uespLog.lastPlayerSpellDamage
+		uespLog.lastPlayerSpellDamage = spellDamage
+		
+		if (value > 0) then
+			uespLog.MsgColor(color, tostring(gameTimeStr) .. ": +"..tostring(value).." Spell Damage")
+		else
+			uespLog.MsgColor(color, tostring(gameTimeStr) .. ": "..tostring(value).." Spell Damage")
+		end
+	end
+	
+	if (uespLog.lastPlayerWeaponDamage ~= weaponDamage and uespLog.GetTrackStat("Weapon Damage")) then
+		local value = weaponDamage - uespLog.lastPlayerWeaponDamage
+		uespLog.lastPlayerWeaponDamage = weaponDamage
+		
+		if (value > 0) then
+			uespLog.MsgColor(color, tostring(gameTimeStr) .. ": +"..tostring(value).." Weapon Damage")
+		else
+			uespLog.MsgColor(color, tostring(gameTimeStr) .. ": "..tostring(value).." Weapon Damage")
+		end
+	end
+	
+	local eventType, hitCount, critCount, dotCount, dotCritCount = uespLog.GetCombatEventDetails(result, isError, hitValue, powerType, damageType)
 	
 	if (eventType == uespLog.EVENT_TYPE_IGNORE) then
 		return
@@ -4911,9 +4944,6 @@ function uespLog.OnCombatEvent (eventCode, result, isError, abilityName, ability
 		--uespLog.DebugMsg("Not Stats: Result: "..tostring(result)..",  sourceType: "..tostring(sourceType)..",  damageType: "..tostring(damageType)..",  name: "..tostring(abilityName)..",  hitValue: "..tostring(hitValue))
 		return
 	end
-	
-	local gameTime = (GetGameTimeMilliseconds() - uespLog.baseTrackStatGameTime) / 1000 
-	local gameTimeStr = string.format("%7.3f", gameTime)
 	
 	if (hitValue > 0) then
 		uespLog.MsgColor(color, tostring(gameTimeStr) .. ": +"..tostring(hitValue).." "..typeString.." from "..tostring(abilityName))
@@ -8712,6 +8742,8 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems idcheck [note]")
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems quick [on/off]")
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems potion [on/off]")
+		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems reloaddelay [number]")
+		
 		return
 	end
 	
@@ -10997,6 +11029,10 @@ function uespLog.DoTrackStatCommand(cmd)
 		setPowerType = POWERTYPE_HEALTH
 	elseif (firstCmd == "ultimate") then
 		setPowerType = POWERTYPE_ULTIMATE
+	elseif (firstCmd == "spelldamage" or firstCmd == "sd") then
+		setPowerType = "Spell Damage"
+	elseif (firstCmd == "weapondamage" or firstCmd == "wd") then
+		setPowerType = "Weapon Damage"
 	elseif (firstCmd == "resettime") then
 		uespLog.baseTrackStatGameTime = GetGameTimeMilliseconds()
 		uespLog.Msg("Game time for stat tracking reset to 0.")

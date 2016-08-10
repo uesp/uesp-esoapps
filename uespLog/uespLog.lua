@@ -578,6 +578,8 @@
 --				- Added the 5 new styles (Dark Brotherhood, Akatosh, Dro-m'Artha, Minotaur, Grim Arlequin, Hollowjack).
 --
 --		- v0.81 -- 
+--				- Hireling logged data now includes the crafting and hireling passive levels.
+--				- Added the "/uespmsg inspiration [on|off]" command.
 --		
 --
 --		Future Versions (Works in Progress)
@@ -687,6 +689,7 @@ uespLog.MSG_QUEST = "quest"
 uespLog.MSG_XP = "xp"
 uespLog.MSG_MISC = "misc"
 uespLog.MSG_OTHER = uespLog.MSG_MISC
+uespLog.MSG_INSPIRATION = "inspiration"
 
 uespLog.lastConversationOption = { }
 uespLog.lastConversationOption.Text = ""
@@ -1143,7 +1146,7 @@ uespLog.MINEITEM_LEVELS_SHORT_SAFE = {
 }
 
 uespLog.MINEITEM_ITEMCOUNTESTIMATE = 32000
-
+uespLog.MINEITEM_SHIELDARMORFACTOR = 1.0/1.75
 uespLog.MINEITEM_ONLYSUBTYPE = 366
 uespLog.MINEITEM_ONLYLEVEL = 50
 
@@ -1284,6 +1287,7 @@ uespLog.DEFAULT_SETTINGS =
 			[uespLog.MSG_NPC] = false,
 			[uespLog.MSG_XP] = false,
 			[uespLog.MSG_MISC] = false,
+			[uespLog.MSG_INSPIRATION] = false,
 		},		
 	}
 }
@@ -2447,8 +2451,13 @@ function uespLog.Initialize( self, addOnName )
 			uespLog.savedVars.settings.data.messageDisplay.xp = true
 			uespLog.savedVars.settings.data.messageDisplay.loot = true
 			uespLog.savedVars.settings.data.messageDisplay.quest = true
+			uespLog.savedVars.settings.data.messageDisplay.inspiration = true
 			uespLog.savedVars.settings.data.messageDisplay.other = true
 		end
+	end
+	
+	if (uespLog.savedVars.settings.data.messageDisplay.inspiration == nil) then
+		uespLog.savedVars.settings.data.messageDisplay.inspiration = true
 	end
 	
 	if (uespLog.savedVars.settings.data.targetResistance == nil) then
@@ -4528,8 +4537,8 @@ function uespLog.OnCraftCompleted (eventCode, craftSkill)
 	
 	uespLog.AddTotalInspiration(inspiration)
 	
-	if (inspiration > 0) then
-		uespLog.MsgType(uespLog.MSG_OTHER, "Craft completed with "..tostring(inspiration).." xp ("..tostring(uespLog.GetTotalInspiration()).." since last reset).")
+	if (inspiration > 0 and uespLog.GetMessageDisplay(uespLog.MSG_INSPIRATION)) then
+		uespLog.MsgType(uespLog.MSG_OTHER, "Craft completed with " .. tostring(inspiration) .. " xp ("..tostring(uespLog.GetTotalInspiration()).." since last reset).")
 	end
 	
     for i = 1, numItemsGained do
@@ -5146,6 +5155,35 @@ function uespLog.OnMailMessageTakeAttachedMoney (eventCode, mailId)
 end
 
 
+ function uespLog.GetHirelingLevel(tradeType)
+	local hirelingLevel, craftLevel
+	
+	hirelingLevel = 0
+	craftLevel = 0
+	
+	if (tradeType == CRAFTING_TYPE_ALCHEMY) then
+		craftLevel = GetSkillAbilityUpgradeInfo(8, 1, 1)
+	elseif (tradeType == CRAFTING_TYPE_BLACKSMITHING) then
+		craftLevel = GetSkillAbilityUpgradeInfo(8, 2, 1)
+		hirelingLevel = GetSkillAbilityUpgradeInfo(8, 2, 3)
+	elseif (tradeType == CRAFTING_TYPE_ENCHANTING) then
+		craftLevel = GetSkillAbilityUpgradeInfo(8, 4, 2)
+		hirelingLevel = GetSkillAbilityUpgradeInfo(8, 4, 4)
+	elseif (tradeType == CRAFTING_TYPE_CLOTHIER) then
+		craftLevel = GetSkillAbilityUpgradeInfo(8, 3, 1)
+		hirelingLevel = GetSkillAbilityUpgradeInfo(8, 3, 3)
+	elseif (tradeType == CRAFTING_TYPE_PROVISIONING) then
+		craftLevel = GetSkillAbilityUpgradeInfo(8, 5, 2)
+		hirelingLevel = GetSkillAbilityUpgradeInfo(8, 5, 7)
+	elseif (tradeType == CRAFTING_TYPE_WOODWORKING) then
+		craftLevel = GetSkillAbilityUpgradeInfo(8, 6, 1)
+		hirelingLevel = GetSkillAbilityUpgradeInfo(8, 6, 3)
+	end
+	
+	return hirelingLevel, craftLevel
+ end
+
+
 function uespLog.OnMailMessageTakeAttachedItem (eventCode, mailId)
 	local senderDisplayName, senderCharacterName, subject, icon, unread, fromSystem, fromCustomerService, returned, numAttachments, attachedMoney, codAmount, expiresInDays, secsSinceReceived = GetMailItemInfo(mailId)
 	local tradeType = CRAFTING_TYPE_INVALID
@@ -5175,7 +5213,7 @@ function uespLog.OnMailMessageTakeAttachedItem (eventCode, mailId)
 		tradeType = CRAFTING_TYPE_INVALID
 	end
 	
-	for attachIndex = 1,  #uespLog.lastMailItems do
+	for attachIndex = 1, #uespLog.lastMailItems do
 		--local itemLink = GetAttachedItemLink(mailId, attachIndex)
 		--local icon, stack, creatorName = GetAttachedItemInfo(mailId, attachIndex) 
 		local lastItem = uespLog.lastMailItems[attachIndex]
@@ -5188,6 +5226,8 @@ function uespLog.OnMailMessageTakeAttachedItem (eventCode, mailId)
 		logData.icon = lastItem.icon
 		logData.sender = senderDisplayName
 		logData.subject = subject
+		logData.characterName = GetUnitName("player")
+		logData.hirelingLevel, logData.craftLevel = uespLog.GetHirelingLevel(tradeType)
 		
 		uespLog.AppendDataToLog("all", logData, timeData)
 		
@@ -6759,6 +6799,10 @@ function uespLog.CreateItemLinkLog (itemLink)
 	logData.reqCP = GetItemLinkRequiredChampionPoints(itemLink)
 	logData.value = GetItemLinkValue(itemLink, false)
 	logData.condition = GetItemLinkCondition(itemLink)
+		
+	if (uespLog.MINEITEM_SHIELDARMORFACTOR ~= nil and uespLog.MINEITEM_SHIELDARMORFACTOR ~= 1 and logData.weaponType == 14) then
+		logData.armorRating = logData.armorRating * uespLog.MINEITEM_SHIELDARMORFACTOR
+	end
 	
 	hasArmorDecay = DoesItemLinkHaveArmorDecay(itemLink)
 	if (hasArmorDecay) then flagString = flagString .. "ArmorDecay " end
@@ -11815,11 +11859,13 @@ function uespLog.ShowMessageStatus()
 	local questMsg = uespLog.BoolToOnOff(uespLog.GetMessageDisplay(uespLog.MSG_QUEST))
 	local xpMsg = uespLog.BoolToOnOff(uespLog.GetMessageDisplay(uespLog.MSG_XP))
 	local miscMsg = uespLog.BoolToOnOff(uespLog.GetMessageDisplay(uespLog.MSG_MISC))
+	local inspirationMsg = uespLog.BoolToOnOff(uespLog.GetMessageDisplay(uespLog.MSG_INSPIRATION))
 	
 	uespLog.Msg("Loot messages are "..lootMsg)
 	uespLog.Msg("NPC messages are "..npcMsg)
 	uespLog.Msg("Quest messages are "..questMsg)
 	uespLog.Msg("Experience messages are "..xpMsg)
+	uespLog.Msg("Inspiration messages are "..inspirationMsg)
 	uespLog.Msg("Other messages are "..miscMsg)
 end
 
@@ -11846,6 +11892,7 @@ function uespLog.MessageCommand(cmds)
 		uespLog.SetMessageDisplay(uespLog.MSG_XP, true)
 		uespLog.SetMessageDisplay(uespLog.MSG_QUEST, true)
 		uespLog.SetMessageDisplay(uespLog.MSG_MISC, true)
+		uespLog.SetMessageDisplay(uespLog.MSG_INSPIRATION, true)
 		uespLog.ShowMessageStatus()
 	elseif (firstCmd == "off") then
 		uespLog.SetMessageDisplay(uespLog.MSG_LOOT, false)
@@ -11853,7 +11900,11 @@ function uespLog.MessageCommand(cmds)
 		uespLog.SetMessageDisplay(uespLog.MSG_QUEST, false)
 		uespLog.SetMessageDisplay(uespLog.MSG_XP, false)
 		uespLog.SetMessageDisplay(uespLog.MSG_MISC, false)
+		uespLog.SetMessageDisplay(uespLog.MSG_INSPIRATION, false)
 		uespLog.ShowMessageStatus()
+	elseif (firstCmd == "inspiration") then
+		uespLog.SetMessageDisplay(uespLog.MSG_INSPIRATION, secondCmd)
+		uespLog.Msg("Display of inspiration messages is "..uespLog.BoolToOnOff(secondCmd))
 	elseif (firstCmd == "npc") then
 		uespLog.SetMessageDisplay(uespLog.MSG_NPC, secondCmd)
 		uespLog.Msg("Display of NPC messages is "..uespLog.BoolToOnOff(secondCmd))
@@ -11871,12 +11922,13 @@ function uespLog.MessageCommand(cmds)
 		uespLog.Msg("Display of other messages is "..uespLog.BoolToOnOff(secondCmd))
 	else
 		uespLog.Msg("Turns specific uespLog chat messages on/off. Command format is:")
-		uespLog.Msg(".    /uespmsg [on||off]              Turns all messages on/off")
-		uespLog.Msg(".    /uespmsg loot [on||off]       Turns loot messages on/off")
-		uespLog.Msg(".    /uespmsg npc [on||off]       Turns npc messages on/off")
-		uespLog.Msg(".    /uespmsg xp [on||off]        Turns experience messages on/off")
-		uespLog.Msg(".    /uespmsg quest [on||off]    Turns quest messages on/off")
-		uespLog.Msg(".    /uespmsg other [on||off]     Turns other messages on/off")
+		uespLog.Msg(".    /uespmsg [on||off]                 Turns all messages on/off")
+		uespLog.Msg(".    /uespmsg loot [on||off]          Turns loot messages on/off")
+		uespLog.Msg(".    /uespmsg npc [on||off]          Turns npc messages on/off")
+		uespLog.Msg(".    /uespmsg xp [on||off]           Turns experience messages on/off")
+		uespLog.Msg(".    /uespmsg quest [on||off]       Turns quest messages on/off")
+		uespLog.Msg(".    /uespmsg inspiration [on||off]  Turns inspiration messages on/off")
+		uespLog.Msg(".    /uespmsg other [on||off]        Turns other messages on/off")
 		uespLog.ShowMessageStatus()
 	end
 	

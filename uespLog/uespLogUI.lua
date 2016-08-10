@@ -164,6 +164,14 @@ function uespLog.InitOptionControlsData()
 	
 	uespLog.optionControlsData:insert({
 		type = "checkbox",
+		name = "Show Inspiration Messages", 
+		tooltip = "Enables the display of all crafting inspiration  related messages in the chat window.\n      /uespmsg inspiration on/off", 
+		getFunc = function () return uespLog.GetMessageDisplay(uespLog.MSG_INSPIRATION) end,
+		setFunc = function (value) uespLog.SetMessageDisplay(uespLog.MSG_INSPIRATION, value) end
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "checkbox",
 		name = "Show Other Messages", 
 		tooltip = "Enables the display of other messages in the chat window.\n      /uespmsg other on/off", 
 		getFunc = function () return uespLog.GetMessageDisplay(uespLog.MSG_MISC) end,

@@ -580,6 +580,7 @@
 --		- v0.81 -- 
 --				- Hireling logged data now includes the crafting and hireling passive levels.
 --				- Added the "/uespmsg inspiration [on|off]" command.
+--				- Crafting writ footlockers now log the character's crafting level.
 --		
 --
 --		Future Versions (Works in Progress)
@@ -4594,6 +4595,24 @@ function uespLog.OnUseItem(eventCode, bagId, slotIndex, itemLink, itemSoundCateg
 	uespLog.lastItemUsedGameTime = GetGameTimeMilliseconds()
 
 	if (itemSoundCategory == ITEM_SOUND_CATEGORY_FOOTLOCKER) then
+		local itemName = GetItemLinkName(itemLink)
+		logData.tradeType = CRAFTING_TYPE_INVALID
+		
+		if (uespLog.BeginsWith(itemName, "Alchemist's")) then
+			logData.tradeType = CRAFTING_TYPE_ALCHEMY
+		elseif (uespLog.BeginsWith(itemName, "Clothier's")) then
+			logData.tradeType = CRAFTING_TYPE_CLOTHIER
+		elseif (uespLog.BeginsWith(itemName, "Blacksmith's")) then
+			logData.tradeType = CRAFTING_TYPE_BLACKSMITHING
+		elseif (uespLog.BeginsWith(itemName, "Enchanter's")) then
+			logData.tradeType = CRAFTING_TYPE_ENCHANTING
+		elseif (uespLog.BeginsWith(itemName, "Provisioner's")) then
+			logData.tradeType = CRAFTING_TYPE_PROVISIONING
+		elseif (uespLog.BeginsWith(itemName, "Woodworker's")) then
+			logData.tradeType = CRAFTING_TYPE_WOODWORKING
+		end
+		
+		logData.hirelingLevel, logData.craftLevel = uespLog.GetHirelingLevel(logData.tradeType)
 		logData.event = "OpenFootLocker"
 		logData.sound = itemSoundCategory
 		logData.itemLink = itemLink

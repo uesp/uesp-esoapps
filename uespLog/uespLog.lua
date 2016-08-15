@@ -4614,6 +4614,7 @@ function uespLog.OnUseItem(eventCode, bagId, slotIndex, itemLink, itemSoundCateg
 		
 		logData.hirelingLevel, logData.craftLevel = uespLog.GetHirelingLevel(logData.tradeType)
 		logData.event = "OpenFootLocker"
+		logData.itemName = itemName
 		logData.sound = itemSoundCategory
 		logData.itemLink = itemLink
 		uespLog.AppendDataToLog("all", logData)

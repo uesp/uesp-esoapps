@@ -3590,6 +3590,7 @@ function uespLog.OnBuyReceipt (eventCode, itemLink, entryType, entryQuantity, mo
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
 	uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "Bought "..niceLink.." for "..tostring(money).."gp")
+	uespLog.TrackLoot(itemLink, entryQuantity, "bought")
 end
 
 
@@ -3609,6 +3610,8 @@ function uespLog.OnSellReceipt (eventCode, itemLink, itemQuantity, money)
 	else
 		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "Sold "..niceLink.." (x"..tostring(itemQuantity)..") for "..tostring(money).."gp")
 	end
+	
+	uespLog.TrackLoot("gold", money, "sold")
 end
 
 
@@ -4612,6 +4615,7 @@ function uespLog.OnCraftCompleted (eventCode, craftSkill)
 		local itemText, itemColor, itemData, niceName, niceLink = uespLog.ParseLink(itemLink)
 	
 		uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "You crafted item ".. tostring(itemLink) .." (x"..tostring(stack)..").")
+		uespLog.TrackLoot(itemLink, stack, "crafted")
 	end
 	
 	if (numItemsGained == 0) then
@@ -12037,18 +12041,23 @@ function uespLog.TrackLootCommand(cmds)
 		uespLog.UpdateTrackLootTime()
 		uespLog.SetTrackLoot(false)
 		uespLog.Msg("Loot tracking is now off!")
-	elseif (firstCmd == "show") then
+	elseif (firstCmd == "show" or firstCmd == "items") then
 		uespLog.UpdateTrackLootTime()
 		uespLog.ShowTrackLoot(cmds[2])
+	elseif (firstCmd == "sources" or firstCmd == "src") then
+		uespLog.UpdateTrackLootTime()
+		uespLog.ShowTrackLootSources(cmds[2])
 	elseif (firstCmd == "reset") then
 		uespLog.InitializeTrackLootData(true)
 		uespLog.Msg("Reset loot tracking data!")
 	else
 		uespLog.Msg("Turns the tracking of loot on/off and displays tracked loot stats. This command does not alter what data is logged.")
-		uespLog.Msg(".     /uesptrackloot [on||off]      Turns loot tracking on/off")
-		uespLog.Msg(".     /uesptrackloot show        Displays the current loot stats")
-		uespLog.Msg(".     /uesptrackloot show [name]   Displays any matching loot stats")
-		uespLog.Msg(".     /uesptrackloot reset         Reset all tracked loot stats")
+		uespLog.Msg(".     /uesptrackloot [on||off]             Turns loot tracking on/off")
+		uespLog.Msg(".     /uesptrackloot show               Displays all items looted")
+		uespLog.Msg(".     /uesptrackloot show [name]      Displays any matching loot items")
+		uespLog.Msg(".     /uesptrackloot sources             Displays all loot sources")
+		uespLog.Msg(".     /uesptrackloot sources [name]   Displays any matching loot sources")
+		uespLog.Msg(".     /uesptrackloot reset                Reset all tracked loot stats")
 		uespLog.Msg("Loot tracking is currently "..uespLog.BoolToOnOff(uespLog.GetTrackLoot()))
 	end
 	
@@ -12127,6 +12136,117 @@ function uespLog.TrackLoot(itemLink, qnt, source)
 end
 
 
+function uespLog.GetMMItemLinkValue(itemLink)
+
+	if (MasterMerchant == nil) then
+		return 0
+	end
+	
+	local mmData = MasterMerchant:itemStats(itemLink, false)
+	
+	if (mmData == nil or mmData.avgPrice == nil) then
+		return 0
+	end
+	
+	return mmData.avgPrice
+end
+
+
+
+uespLog.TRACK_LOOT_TEMPER_BLACKSMITHING = 
+{
+	["|H0:item:54170:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = 0.0147,
+	["|H0:item:54171:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = 0.0126,
+	["|H0:item:54172:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = 0.0078,
+	["|H0:item:54173:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = 0.0054,
+}
+
+
+uespLog.TRACK_LOOT_TEMPER_CLOTHING = 
+{
+	["|H0:item:54174:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = 0.0147,
+	["|H0:item:54175:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = 0.0126,
+	["|H0:item:54176:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = 0.0078,
+	["|H0:item:54177:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = 0.0054,
+}
+
+
+uespLog.TRACK_LOOT_TEMPER_WOODWORKING = 
+{
+	["|H0:item:54178:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = 0.0147,
+	["|H0:item:54179:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = 0.0126,
+	["|H0:item:54180:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = 0.0078,
+	["|H0:item:54181:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = 0.0054,
+}
+
+
+uespLog.REFINE_RAW_MATERIAL_CHANCE = 0.85
+
+
+uespLog.TRACK_LOOT_TRANSFORM = 
+{
+	["|H0:item:71239:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = 	-- Rubedo Hide Scraps
+		{
+			["items"] = { ["|H0:item:64506:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+		},
+	
+	["|H0:item:71200:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = 	-- Raw Ancestor Silk
+		{
+			["items"] = { ["|H0:item:64504:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+		},
+	
+	["|H0:item:71198:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = 	-- Rubedite Ore
+		{
+			["items"] = { ["|H0:item:64489:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_BLACKSMITHING,
+		},
+		
+	["|H0:item:71199:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = 	-- Rough Ruby Ash
+		{
+			["items"] = { ["|H0:item:64502:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_WOODWORKING,
+		},
+}
+
+
+function uespLog.GetTrackLootTransformValue(itemLink, qnt)
+	local transformData = uespLog.TRACK_LOOT_TRANSFORM[itemLink]
+	local totalValue = 0
+	
+	if (transformData == nil) then
+		return 0
+	end
+	
+	for itemLink, chance in pairs(transformData.items) do
+		local itemValue = GetItemLinkValue(itemLink)
+		local itemMMValue = uespLog.GetMMItemLinkValue(itemLink)
+		
+		if (itemMMValue == 0) then
+			totalValue = totalValue + itemValue * chance
+		else
+			totalValue = totalValue + itemMMValue * chance
+		end
+		
+	end
+	
+	for itemLink, chance in pairs(transformData.tempers) do
+		local itemValue = GetItemLinkValue(itemLink)
+		local itemMMValue = uespLog.GetMMItemLinkValue(itemLink)
+		
+		if (itemMMValue == 0) then
+			totalValue = totalValue + itemValue * chance
+		else
+			totalValue = totalValue + itemMMValue * chance
+		end
+		
+	end
+	
+	return totalValue * qnt
+end
+
+
 function uespLog.ShowTrackLoot(itemMatch)
 	local items = uespLog.savedVars.charInfo.data.trackedLoot.items
 	local sources = uespLog.savedVars.charInfo.data.trackedLoot.sources
@@ -12134,12 +12254,15 @@ function uespLog.ShowTrackLoot(itemMatch)
 	local i = 1
 	local totalItems = 0
 	local totalSources = 0
+	local totalVendorValue = 0
+	local totalMMValue = 0
+	local totalValue = 0
 	
 	if (itemMatch ~= nil) then
 		itemMatch = itemMatch:lower()
 		uespLog.Msg("Showing items matching '"..tostring(itemMatch).."'...")
 	else
-		uespLog.Msg("Showing all items looted in current data...")
+		uespLog.Msg("Showing all items current loot data...")
 	end
 	
 	for itemLink, qnt in pairs(items) do
@@ -12152,11 +12275,40 @@ function uespLog.ShowTrackLoot(itemMatch)
 		end
 	
 		if (itemMatch == nil or itemName:find(itemMatch) ~= nil) then
-		
+			local itemValue = 0
+					
 			if (isSpecial) then
 				uespLog.Msg(".   "..tostring(i)..") "..tostring(qnt).." "..itemName)
+				
+				if (itemName == "gold") then
+					totalVendorValue = totalVendorValue + qnt
+					totalMMValue = totalMMValue + qnt
+					totalValue = totalValue + qnt
+					itemValue = qnt
+				end
 			else
-				uespLog.Msg(".   "..tostring(i)..") "..tostring(itemLink).." x"..tostring(qnt))
+				local itemVendorValue = GetItemLinkValue(itemLink) * qnt
+				local itemMMValue = uespLog.GetMMItemLinkValue(itemLink) * qnt
+				local transformValue = uespLog.GetTrackLootTransformValue(itemLink, qnt)
+				
+				if (transformValue ~= 0) then
+					itemMMValue = transformValue
+				end
+				
+				totalVendorValue = totalVendorValue + itemVendorValue
+				totalMMValue = totalMMValue + itemMMValue
+				
+				if (itemMMValue == 0) then
+					itemMMValue = "?"
+					totalValue = totalValue + itemVendorValue
+					itemValue = itemVendorValue
+				else
+					itemMMValue = string.format("%0.1f", itemMMValue)
+					totalValue = totalValue + itemMMValue
+					itemValue = itemMMValue
+				end
+				
+				uespLog.Msg(".   "..tostring(i)..") "..tostring(itemLink).." x"..tostring(qnt).." (" .. tostring(itemValue).." gold)")
 			end
 			
 			i = i + 1
@@ -12168,13 +12320,55 @@ function uespLog.ShowTrackLoot(itemMatch)
 	for source, qnt in pairs(sources) do
 		totalSources = totalSources + 1
 	end
+		
+	totalMMValue = math.floor(totalMMValue)
+	totalValue = math.floor(totalValue)
 	
 	if (i == 1) then
-		uespLog.Msg(".    No items found!")
+		uespLog.Msg(".       No items found!")
+	else
+		uespLog.Msg(".       Total value of "..tostring(totalValue).." gold")
+	end
+	
+	
+	uespLog.Msg("You looted "..tostring(totalItems).." unique items from "..tostring(totalSources).." different sources over "..tostring(math.floor(seconds)).." seconds!")	
+end
+
+
+function uespLog.ShowTrackLootSources(sourceMatch)
+	local items = uespLog.savedVars.charInfo.data.trackedLoot.items
+	local sources = uespLog.savedVars.charInfo.data.trackedLoot.sources
+	local seconds = uespLog.savedVars.charInfo.data.trackedLoot.secondsPassed
+	local i = 1
+	local totalItems = 0
+	local totalSources = 0
+	
+	if (sourceMatch ~= nil) then
+		sourceMatch = sourceMatch:lower()
+		uespLog.Msg("Showing sources matching '"..tostring(sourceMatch).."'...")
+	else
+		uespLog.Msg("Showing all sources in current loot data...")
+	end
+	
+	for source, qnt in pairs(sources) do
+	
+		if (sourceMatch == nil or source:find(sourceMatch) ~= nil) then
+			uespLog.Msg(".   "..tostring(i)..") "..tostring(source).." x"..tostring(qnt))
+			i = i + 1
+		end	
+
+		totalSources = totalSources + 1		
+	end
+	
+	for itemLink, qnt in pairs(items) do
+		totalItems = totalItems + 1
+	end
+	
+	if (i == 1) then
+		uespLog.Msg(".    No sources found!")
 	end
 	
 	uespLog.Msg("You looted "..tostring(totalItems).." unique items from "..tostring(totalSources).." different sources over "..tostring(math.floor(seconds)).." seconds!")
-	
 end
 
 

@@ -1229,6 +1229,7 @@ uespLog.DEFAULT_CHARDATA =
 	data = {}
 }
 
+
 uespLog.DEFAULT_SETTINGS = 
 {
 	data = {
@@ -1290,6 +1291,7 @@ uespLog.DEFAULT_SETTINGS =
 			[uespLog.MSG_MISC] = false,
 			[uespLog.MSG_INSPIRATION] = false,
 		},		
+		["trackLoot"] = false,
 	}
 }
 
@@ -1618,6 +1620,34 @@ function uespLog.SetTrackStat(powerType, flag)
 	end
 	
 	uespLog.savedVars.settings.data.trackStat[powerType] = flag
+end
+
+
+function uespLog.GetTrackLoot()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.trackLoot == nil) then
+		uespLog.savedVars.settings.data.trackLoot = uespLog.DEFAULT_SETTINGS.trackLoot
+	end
+	
+	return uespLog.savedVars.settings.data.trackLoot
+end
+
+
+function uespLog.SetTrackLoot(flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.trackLoot == nil) then
+		uespLog.savedVars.settings.data.trackLoot = uespLog.DEFAULT_SETTINGS.trackLoot
+	end
+	
+	uespLog.savedVars.settings.data.trackLoot = flag
 end
 
 
@@ -2457,6 +2487,8 @@ function uespLog.Initialize( self, addOnName )
 		end
 	end
 	
+	uespLog.InitializeTrackLootData(false)
+	
 	if (uespLog.savedVars.settings.data.messageDisplay.inspiration == nil) then
 		uespLog.savedVars.settings.data.messageDisplay.inspiration = true
 	end
@@ -2473,25 +2505,25 @@ function uespLog.Initialize( self, addOnName )
 		uespLog.savedVars.settings.data.targetCritResistFlat = uespLog.DEFAULT_SETTINGS.data.targetCritResistFlat
 	end
 		
-	if (uespLog.savedVars["charInfo"].data.lastFoodEaten ~= nil) then
-		uespLog.charDataLastFoodEaten = uespLog.savedVars["charInfo"].data.lastFoodEaten 
+	if (uespLog.savedVars.charInfo.data.lastFoodEaten ~= nil) then
+		uespLog.charDataLastFoodEaten = uespLog.savedVars.charInfo.data.lastFoodEaten 
 	end
-	
-	if (uespLog.savedVars["charInfo"].data.actionBar ~= nil) then
-		uespLog.charData_ActionBarData = uespLog.savedVars["charInfo"].data.actionBar 
+		
+	if (uespLog.savedVars.charInfo.data.actionBar ~= nil) then
+		uespLog.charData_ActionBarData = uespLog.savedVars.charInfo.data.actionBar 
 		
 		if (uespLog.charData_ActionBarData[3] == nil) then
 			uespLog.charData_ActionBarData[3] = {}
 		end
 	end
 	
-	if (uespLog.savedVars["charInfo"].data.stats ~= nil) then
-		uespLog.charData_StatsData = uespLog.savedVars["charInfo"].data.stats 
+	if (uespLog.savedVars.charInfo.data.stats ~= nil) then
+		uespLog.charData_StatsData = uespLog.savedVars.charInfo.data.stats 
 	end
 	
-	if (uespLog.savedVars["charInfo"].data.skills ~= nil) then
-		-- uespLog.charData_SkillsData = uespLog.savedVars["charInfo"].data.skills 
-		uespLog.savedVars["charInfo"].data.skills = nil
+	if (uespLog.savedVars.charInfo.data.skills ~= nil) then
+		-- uespLog.charData_SkillsData = uespLog.savedVars.charInfo.data.skills 
+		uespLog.savedVars.charInfo.data.skills = nil
 	end
 	
 	if (uespLog.savedVars.settings.data.charDataPassword == nil) then
@@ -3835,6 +3867,7 @@ end
 
 function uespLog.OnExperienceGain (eventCode, reason, level, previousExperience, currentExperience)
 	local logData = { }
+	local reasonStr = uespLog.GetXPReasonStr(reason)
 	
 	logData.event = "ExperienceUpdate"
 	logData.unit = "player"
@@ -3848,17 +3881,20 @@ function uespLog.OnExperienceGain (eventCode, reason, level, previousExperience,
 		return
 	elseif (reason == -1) then
 		uespLog.MsgColorType(uespLog.MSG_XP, uespLog.xpColor, "You gained "..tostring(logData.xpGained).." xp for unknown reason.")
+		uespLog.TrackLoot("xp", logData.xpGained, "unknown")
 		return
 	end
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.MsgColorType(uespLog.MSG_XP, uespLog.xpColor, "You gained "..tostring(logData.xpGained).." xp for "..uespLog.GetXPReasonStr(reason)..".")
+	uespLog.MsgColorType(uespLog.MSG_XP, uespLog.xpColor, "You gained "..tostring(logData.xpGained).." xp for "..reasonStr..".")
+	uespLog.TrackLoot("xp", logData.xpGained, reasonStr)
 end
 
 
 function uespLog.OnExperienceUpdate (eventCode, unitTag, currentExp, maxExp, reason)
 	local logData = { }
+	local reasonStr = uespLog.GetXPReasonStr(reason)
 	
 	logData.event = "ExperienceUpdate"
 	logData.unit = unitTag
@@ -3872,6 +3908,7 @@ function uespLog.OnExperienceUpdate (eventCode, unitTag, currentExp, maxExp, rea
 		return
 	elseif (reason == -1) then
 		uespLog.MsgColorType(uespLog.MSG_XP, uespLog.xpColor, "You gained "..tostring(logData.xpGained).." xp for unknown reason.")
+		uespLog.TrackLoot("xp", logData.xpGained, "unknown")
 		return
 	end
 	
@@ -3879,7 +3916,9 @@ function uespLog.OnExperienceUpdate (eventCode, unitTag, currentExp, maxExp, rea
 	 
 	if (unitTag == "player") then
 		uespLog.MsgColorType(uespLog.MSG_XP, uespLog.xpColor, "You gained "..tostring(logData.xpGained).." xp for "..uespLog.GetXPReasonStr(reason)..".")
+		uespLog.TrackLoot("xp", logData.xpGained, reasonStr)
 	end
+	
 end
 
 
@@ -3897,6 +3936,7 @@ function uespLog.OnAlliancePointsUpdate (eventCode, alliancePoints, playSound, d
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
 	uespLog.MsgColorType(uespLog.MSG_XP, uespLog.xpColor, "You gained "..tostring(logData.xpGained).." alliance points.")
+	uespLog.TrackLoot("ap", logData.xpGained, "unknown")
 end
 
 
@@ -4021,6 +4061,8 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData())
 		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You looted "..tostring(uespLog.lastMoneyChange).." gold"..lootMsg..".")
 		
+		uespLog.TrackLoot("gold", uespLog.lastMoneyChange, posData.lastTarget)
+		
 		-- 4 = quest reward
 	elseif (reason == 4) then
 		logData.event = "QuestMoney"
@@ -4029,6 +4071,8 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData())
 		uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "Quest reward "..tostring(uespLog.lastMoneyChange).." gold"..lootMsg..".")
 		
+		uespLog.TrackLoot("gold", uespLog.lastMoneyChange, "quest")
+		
 		-- 62 = Stolen
 	elseif (reason == 62) then
 		logData.event = "Stolen"
@@ -4036,6 +4080,8 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 
 		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData())
 		uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "You stole "..tostring(uespLog.lastMoneyChange).." gold"..lootMsg..".")
+		
+		uespLog.TrackLoot("gold", uespLog.lastMoneyChange, posData.lastTarget)
 	else
 		uespLog.DebugExtraMsg("UESP: Money Change, New="..tostring(newMoney)..",  Old="..tostring(oldMoney)..",  Diff="..tostring(uespLog.lastMoneyChange)..",  Reason="..tostring(reason))
 	end	
@@ -4223,6 +4269,8 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 			else
 				uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You "..rcvType.." "..niceLink.." (x"..tostring(quantity)..")"..lootMsg..".")
 			end
+			
+			uespLog.TrackLoot(itemLink, quantity, posData.lastTarget)
 		end
 		
 		local money, stolenMoney = GetLootMoney()
@@ -10465,6 +10513,7 @@ end
 
 function uespLog.Quit()
 	uespLog.OnLogoutAutoSaveCharData()
+	uespLog.UpdateTrackLootTime()
 	
 	return uespLog.Old_Quit()
 end
@@ -10472,6 +10521,7 @@ end
 
 function uespLog.Logout()
 	uespLog.OnLogoutAutoSaveCharData()
+	uespLog.UpdateTrackLootTime()
 	
 	return uespLog.Old_Logout()
 end
@@ -10479,6 +10529,7 @@ end
 
 function uespLog.ReloadUI(guiName)
 	uespLog.OnLogoutAutoSaveCharData()
+	uespLog.UpdateTrackLootTime()
 	
 	return uespLog.Old_ReloadUI(guiName)
 end
@@ -11973,6 +12024,159 @@ end
 
 
 SLASH_COMMANDS["/uespshowbuffs"] = uespLog.ShowBuffsCommand
+
+
+function uespLog.TrackLootCommand(cmds)
+	local cmds, firstCmd = uespLog.SplitCommands(cmds)
+	
+	if (firstCmd == "on") then
+		uespLog.SetTrackLoot(true)
+		uespLog.savedVars.charInfo.data.trackedLoot.lastCheckGameTime = GetGameTimeMilliseconds()
+		uespLog.Msg("Loot tracking is now on!")
+	elseif (firstCmd == "off") then
+		uespLog.UpdateTrackLootTime()
+		uespLog.SetTrackLoot(false)
+		uespLog.Msg("Loot tracking is now off!")
+	elseif (firstCmd == "show") then
+		uespLog.UpdateTrackLootTime()
+		uespLog.ShowTrackLoot(cmds[2])
+	elseif (firstCmd == "reset") then
+		uespLog.InitializeTrackLootData(true)
+		uespLog.Msg("Reset loot tracking data!")
+	else
+		uespLog.Msg("Turns the tracking of loot on/off and displays tracked loot stats. This command does not alter what data is logged.")
+		uespLog.Msg(".     /uesptrackloot [on||off]      Turns loot tracking on/off")
+		uespLog.Msg(".     /uesptrackloot show        Displays the current loot stats")
+		uespLog.Msg(".     /uesptrackloot show [name]   Displays any matching loot stats")
+		uespLog.Msg(".     /uesptrackloot reset         Reset all tracked loot stats")
+		uespLog.Msg("Loot tracking is currently "..uespLog.BoolToOnOff(uespLog.GetTrackLoot()))
+	end
+	
+end
+
+
+SLASH_COMMANDS["/uesptrackloot"] = uespLog.TrackLootCommand
+
+
+function uespLog.InitializeTrackLootData(forceInit)
+	
+	if (uespLog.savedVars.charInfo.data.trackedLoot == nil) then
+		uespLog.savedVars.charInfo.data.trackedLoot = {}
+	end
+	
+	if (forceInit or uespLog.savedVars.charInfo.data.trackedLoot.items == nil) then
+		uespLog.savedVars.charInfo.data.trackedLoot.items = {}
+	end
+	
+	if (forceInit or uespLog.savedVars.charInfo.data.trackedLoot.sources == nil) then
+		uespLog.savedVars.charInfo.data.trackedLoot.sources = {}
+	end
+	
+	if (forceInit or uespLog.savedVars.charInfo.data.trackedLoot.secondsPassed == nil) then
+		uespLog.savedVars.charInfo.data.trackedLoot.secondsPassed = 0
+	end
+	
+	uespLog.savedVars.charInfo.data.trackedLoot.lastCheckGameTime = GetGameTimeMilliseconds()
+end
+
+
+function uespLog.UpdateTrackLootTime()
+
+	if (not uespLog.GetTrackLoot()) then
+		return false
+	end
+	
+	local currentGameTime = GetGameTimeMilliseconds()
+	local deltaTime = (currentGameTime - uespLog.savedVars.charInfo.data.trackedLoot.lastCheckGameTime) / 1000
+	
+	uespLog.savedVars.charInfo.data.trackedLoot.secondsPassed = uespLog.savedVars.charInfo.data.trackedLoot.secondsPassed + deltaTime
+	
+	uespLog.savedVars.charInfo.data.trackedLoot.lastCheckGameTime = currentGameTime
+end
+
+
+
+function uespLog.TrackLoot(itemLink, qnt, source)
+	--uespLog.savedVars.charInfo.data.trackedLoot
+
+	if (not uespLog.GetTrackLoot()) then
+		return false
+	end
+	
+	qnt = qnt or 1
+	source = source or ""
+		
+	if (uespLog.savedVars.charInfo.data.trackedLoot.items[itemLink] == nil) then
+		uespLog.savedVars.charInfo.data.trackedLoot.items[itemLink] = 0
+	end
+	
+	uespLog.savedVars.charInfo.data.trackedLoot.items[itemLink] = uespLog.savedVars.charInfo.data.trackedLoot.items[itemLink] + qnt
+	
+	if (source == nil or source == "") then
+		source = "unknown"
+	end
+	
+	if (uespLog.savedVars.charInfo.data.trackedLoot.sources[source] == nil) then
+		uespLog.savedVars.charInfo.data.trackedLoot.sources[source] = 0
+	end
+		
+	uespLog.savedVars.charInfo.data.trackedLoot.sources[source] = uespLog.savedVars.charInfo.data.trackedLoot.sources[source] + 1
+		
+	uespLog.UpdateTrackLootTime()
+	return true
+end
+
+
+function uespLog.ShowTrackLoot(itemMatch)
+	local items = uespLog.savedVars.charInfo.data.trackedLoot.items
+	local sources = uespLog.savedVars.charInfo.data.trackedLoot.sources
+	local seconds = uespLog.savedVars.charInfo.data.trackedLoot.secondsPassed
+	local i = 1
+	local totalItems = 0
+	local totalSources = 0
+	
+	if (itemMatch ~= nil) then
+		itemMatch = itemMatch:lower()
+		uespLog.Msg("Showing items matching '"..tostring(itemMatch).."'...")
+	else
+		uespLog.Msg("Showing all items looted in current data...")
+	end
+	
+	for itemLink, qnt in pairs(items) do
+		local itemName = GetItemLinkName(itemLink):lower()
+		local isSpecial = false
+		
+		if (itemName == "") then
+			itemName = itemLink:lower()
+			isSpecial = true
+		end
+	
+		if (itemMatch == nil or itemName:find(itemMatch) ~= nil) then
+		
+			if (isSpecial) then
+				uespLog.Msg(".   "..tostring(i)..") "..tostring(qnt).." "..itemName)
+			else
+				uespLog.Msg(".   "..tostring(i)..") "..tostring(itemLink).." x"..tostring(qnt))
+			end
+			
+			i = i + 1
+		end	
+
+		totalItems = totalItems + 1		
+	end
+	
+	for source, qnt in pairs(sources) do
+		totalSources = totalSources + 1
+	end
+	
+	if (i == 1) then
+		uespLog.Msg(".    No items found!")
+	end
+	
+	uespLog.Msg("You looted "..tostring(totalItems).." unique items from "..tostring(totalSources).." different sources over "..tostring(math.floor(seconds)).." seconds!")
+	
+end
+
 
 -- Item subtypes that crash with GetItemLinkTraitOnUseAbilityInfo() in update 10
 uespLog.BAD_TRAIT_ITEMTYPES = {

@@ -12065,12 +12065,12 @@ function uespLog.TrackLootCommand(cmds)
 		uespLog.Msg("Reset loot tracking data!")
 	else
 		uespLog.Msg("Turns the tracking of loot on/off and displays tracked loot stats. This command does not alter what data is logged.")
-		uespLog.Msg(".     /uesptrackloot [on||off]             Turns loot tracking on/off")
-		uespLog.Msg(".     /uesptrackloot show               Displays all items looted")
-		uespLog.Msg(".     /uesptrackloot show [name]      Displays any matching loot items")
-		uespLog.Msg(".     /uesptrackloot sources             Displays all loot sources")
+		uespLog.Msg(".     /uesptrackloot [on||off]                 Turns loot tracking on/off")
+		uespLog.Msg(".     /uesptrackloot show                   Displays all items looted")
+		uespLog.Msg(".     /uesptrackloot show [name]       Displays any matching loot items")
+		uespLog.Msg(".     /uesptrackloot sources               Displays all loot sources")
 		uespLog.Msg(".     /uesptrackloot sources [name]   Displays any matching loot sources")
-		uespLog.Msg(".     /uesptrackloot reset                Reset all tracked loot stats")
+		uespLog.Msg(".     /uesptrackloot reset                    Reset all tracked loot stats")
 		uespLog.Msg("Loot tracking is currently "..uespLog.BoolToOnOff(uespLog.GetTrackLoot()))
 	end
 	

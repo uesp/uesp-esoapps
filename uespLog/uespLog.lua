@@ -2763,6 +2763,7 @@ function uespLog.SetupSlashCommands()
 	uespLog.SetSlashCommand("/afk", uespLog.AfkCommand)
 	uespLog.SetSlashCommand("/away", uespLog.AwayCommand)
 	uespLog.SetSlashCommand("/back", uespLog.BackCommand)
+	uespLog.SetSlashCommand("/utl", SLASH_COMMANDS["/uesptrackloot"])
 end
 
 
@@ -4035,6 +4036,10 @@ function uespLog.OnTelvarStoneUpdate (eventCode, newStones, oldStones, reason)
 	end
 	
 	uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You "..msg.." "..tostring(logData.qnt).." telvar stones ("..tostring(newStones).." total)")
+	
+	if (logData.qnt > 0) then
+		uespLog.TrackLoot("telvar", logData.qnt, "loot")
+	end
 end
 
 
@@ -4615,11 +4620,13 @@ function uespLog.OnCraftCompleted (eventCode, craftSkill)
 		local itemText, itemColor, itemData, niceName, niceLink = uespLog.ParseLink(itemLink)
 	
 		uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "You crafted item ".. tostring(itemLink) .." (x"..tostring(stack)..").")
-		uespLog.TrackLoot(itemLink, stack, "crafted")
+		uespLog.TrackLoot(itemLink, stack)
 	end
 	
 	if (numItemsGained == 0) then
 		uespLog.MsgType(uespLog.MSG_OTHER, "No items crafted")
+	else
+		uespLog.TrackLootSource("crafted")
 	end	
 end
 
@@ -4675,7 +4682,7 @@ function uespLog.OnUseItem(eventCode, bagId, slotIndex, itemLink, itemSoundCateg
 		uespLog.lastTargetData.action = "opened"
 		local x, y, z, zone = uespLog.GetUnitPosition(unitTag)
 		
-		uespLog.lastTargetData.x = x
+		uespLog.lastTargetData.x = x	
 		uespLog.lastTargetData.y = y
 		uespLog.lastTargetData.zone = zone
 		uespLog.lastTargetData.name = "footlocker"
@@ -5308,6 +5315,12 @@ function uespLog.OnMailMessageTakeAttachedItem (eventCode, mailId)
 		else
 			uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You received mail item "..tostring(logData.itemLink).." (x"..tostring(lastItem.stack)..")")
 		end
+		
+		uespLog.TrackLoot(lastItem.itemLink, lastItem.stack)
+	end
+	
+	if (#uespLog.lastMailItems > 0) then
+		uespLog.TrackLootSource("mail")
 	end
 	
 	uespLog.lastMailItems = { }
@@ -12121,6 +12134,17 @@ function uespLog.TrackLoot(itemLink, qnt, source)
 	
 	uespLog.savedVars.charInfo.data.trackedLoot.items[itemLink] = uespLog.savedVars.charInfo.data.trackedLoot.items[itemLink] + qnt
 	
+	if (source ~= nil) then
+		uespLog.TrackLootSource(source)
+	else
+		uespLog.UpdateTrackLootTime()
+	end
+	return true
+end
+
+
+function uespLog.TrackLootSource(source)
+
 	if (source == nil or source == "") then
 		source = "unknown"
 	end
@@ -12185,35 +12209,224 @@ uespLog.REFINE_RAW_MATERIAL_CHANCE = 0.85
 
 uespLog.TRACK_LOOT_TRANSFORM = 
 {
-	["|H0:item:71239:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = 	-- Rubedo Hide Scraps
+	["rubedo hide scraps"] = 	-- |H0:item:71239:30:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h
 		{
 			["items"] = { ["|H0:item:64506:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
 		},
+	["shadowhide scraps"] = 	-- |H0:item:4478:30:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h
+		{
+			["items"] = { ["|H0:item:46138:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+		},	
+	["superb hide scraps"] =
+		{
+			["items"] = { ["|H0:item:46137:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+		},	
+	["thick leather scraps"] =
+		{
+			["items"] = { ["|H0:item:23100:30:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+		},	
+	["fell hide scraps"] =
+		{
+			["items"] = { ["|H0:item:23101:30:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+		},	
+	["topgrain hide scraps"] =
+		{
+			["items"] = { ["|H0:item:46135:30:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+		},	
+	["leather scraps"] =
+		{
+			["items"] = { ["|H0:item:23099:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+		},	
+	["iron hide scraps"] =
+		{
+			["items"] = { ["|H0:item:46136:30:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+		},	
+	["hide scraps"] =
+		{
+			["items"] = { ["|H0:item:4447:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+		},	
+	["rawhide scraps"] =
+		{
+			["items"] = { ["|H0:item:794:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+		},	
 	
-	["|H0:item:71200:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = 	-- Raw Ancestor Silk
+	["raw ancestor silk"] = 	-- |H0:item:71200:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h
 		{
 			["items"] = { ["|H0:item:64504:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
 		},
+	["raw void bloom"] =
+		{
+			["items"] = { ["|H0:item:46134:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+		},
+	["raw spidersilk"] =
+		{
+			["items"] = { ["|H0:item:23126:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+		},
+	["raw flax"] =
+		{
+			["items"] = { ["|H0:item:4463:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+		},
+	["raw ebonthread"] =
+		{
+			["items"] = { ["|H0:item:23127:30:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+		},
+	["raw silverweed"] =
+		{
+			["items"] = { ["|H0:item:46133:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+		},
+	["raw ironweed"] =
+		{
+			["items"] = { ["|H0:item:46132:30:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+		},
+	["raw kreshweed"] =
+		{
+			["items"] = { ["|H0:item:46131:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+		},
+	["raw cotton"] =
+		{
+			["items"] = { ["|H0:item:23125:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+		},
+	["raw jute"] =
+		{
+			["items"] = { ["|H0:item:811:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+		},
 	
-	["|H0:item:71198:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = 	-- Rubedite Ore
+	["rubedite ore"] = 		-- |H0:item:71198:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h
 		{
 			["items"] = { ["|H0:item:64489:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_BLACKSMITHING,
 		},
+	["voidstone ore"] =		-- |H0:item:23135:30:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h
+		{
+			["items"] = { ["|H0:item:46130:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_BLACKSMITHING,
+		},
+	["quicksilver ore"] =
+		{
+			["items"] = { ["|H0:item:46129:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_BLACKSMITHING,
+		},
+	["orichalcum ore"] =
+		{
+			["items"] = { ["|H0:item:23107:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_BLACKSMITHING,
+		},
+	["galatite ore"] =
+		{
+			["items"] = { ["|H0:item:46128:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_BLACKSMITHING,
+		},
+	["calcinium ore"] =
+		{
+			["items"] = { ["|H0:item:46127:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_BLACKSMITHING,
+		},
+	["ebony ore"] =
+		{
+			["items"] = { ["|H0:item:6001:30:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_BLACKSMITHING,
+		},
+	["dwarven ore"] =
+		{
+			["items"] = { ["|H0:item:6000:30:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_BLACKSMITHING,
+		},
+	["high iron ore"] =
+		{
+			["items"] = { ["|H0:item:4487:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_BLACKSMITHING,
+		},
+	["iron ore"] =
+		{
+			["items"] = { ["|H0:item:5413:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_BLACKSMITHING,
+		},
 		
-	["|H0:item:71199:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = 	-- Rough Ruby Ash
+	["rough ruby ash"] = 	-- |H0:item:71199:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h
 		{
 			["items"] = { ["|H0:item:64502:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_WOODWORKING,
 		},
+	["rough nightwood"] = 	-- |H0:item:23138:30:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h
+		{
+			["items"] = { ["|H0:item:46142:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_WOODWORKING,
+		},
+	["rough ash"] = 
+		{
+			["items"] = { ["|H0:item:46140:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_WOODWORKING,
+		},
+	["rough beech"] = 
+		{
+			["items"] = { ["|H0:item:23121:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_WOODWORKING,
+		},
+	["rough birch"] = 
+		{
+			["items"] = { ["|H0:item:46139:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_WOODWORKING,
+		},
+	["rough hickory"] = 
+		{
+			["items"] = { ["|H0:item:23122:30:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_WOODWORKING,
+		},
+	["rough mahogany"] = 
+		{
+			["items"] = { ["|H0:item:46141:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_WOODWORKING,
+		},
+	["rough maple"] = 
+		{
+			["items"] = { ["|H0:item:803:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_WOODWORKING,
+		},
+	["rough oak"] = 
+		{
+			["items"] = { ["|H0:item:533:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_WOODWORKING,
+		},
+	["rough yew"] = 
+		{
+			["items"] = { ["|H0:item:23123:30:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
+			["tempers"] = uespLog.TRACK_LOOT_TEMPER_WOODWORKING,
+		},
+
 }
 
 
-function uespLog.GetTrackLootTransformValue(itemLink, qnt)
-	local transformData = uespLog.TRACK_LOOT_TRANSFORM[itemLink]
+function uespLog.GetTrackLootTransformValue(itemName, qnt)
+	local transformData = nil
 	local totalValue = 0
+	
+	if (itemName:sub(1, 1) == "|") then
+		itemName = GetItemLinkName(itemName):gsub("%^.*", "")
+	end
+	
+	itemName = itemName:lower()
+	
+	transformData = uespLog.TRACK_LOOT_TRANSFORM[itemName]
 	
 	if (transformData == nil) then
 		return 0
@@ -12247,6 +12460,11 @@ function uespLog.GetTrackLootTransformValue(itemLink, qnt)
 end
 
 
+function uespLog.TrackLootItemNameKeySort(a, b)
+	return a.name < b.name
+end
+
+
 function uespLog.ShowTrackLoot(itemMatch)
 	local items = uespLog.savedVars.charInfo.data.trackedLoot.items
 	local sources = uespLog.savedVars.charInfo.data.trackedLoot.sources
@@ -12257,6 +12475,7 @@ function uespLog.ShowTrackLoot(itemMatch)
 	local totalVendorValue = 0
 	local totalMMValue = 0
 	local totalValue = 0
+	local itemNameKeys = {}
 	
 	if (itemMatch ~= nil) then
 		itemMatch = itemMatch:lower()
@@ -12264,9 +12483,17 @@ function uespLog.ShowTrackLoot(itemMatch)
 	else
 		uespLog.Msg("Showing all items current loot data...")
 	end
+
+	for itemLink in pairs(items) do
+		table.insert(itemNameKeys, { name = GetItemLinkName(itemLink):lower(), ["itemLink"] = itemLink })
+	end
 	
-	for itemLink, qnt in pairs(items) do
-		local itemName = GetItemLinkName(itemLink):lower()
+	table.sort(itemNameKeys, uespLog.TrackLootItemNameKeySort)
+	
+	for _, itemData in pairs(itemNameKeys) do
+		local itemName = itemData.name
+		local itemLink = itemData.itemLink
+		local qnt = items[itemLink]
 		local isSpecial = false
 		
 		if (itemName == "") then
@@ -12330,7 +12557,6 @@ function uespLog.ShowTrackLoot(itemMatch)
 		uespLog.Msg(".       Total value of "..tostring(totalValue).." gold")
 	end
 	
-	
 	uespLog.Msg("You looted "..tostring(totalItems).." unique items from "..tostring(totalSources).." different sources over "..tostring(math.floor(seconds)).." seconds!")	
 end
 
@@ -12342,6 +12568,7 @@ function uespLog.ShowTrackLootSources(sourceMatch)
 	local i = 1
 	local totalItems = 0
 	local totalSources = 0
+	local sourceNameKeys = {}
 	
 	if (sourceMatch ~= nil) then
 		sourceMatch = sourceMatch:lower()
@@ -12350,9 +12577,16 @@ function uespLog.ShowTrackLootSources(sourceMatch)
 		uespLog.Msg("Showing all sources in current loot data...")
 	end
 	
-	for source, qnt in pairs(sources) do
+	for source in pairs(sources) do
+		table.insert(sourceNameKeys, source)
+	end
 	
-		if (sourceMatch == nil or source:find(sourceMatch) ~= nil) then
+	table.sort(sourceNameKeys)
+	
+	for _, source in pairs(sourceNameKeys) do
+		local qnt = sources[source]
+	
+		if (sourceMatch == nil or source:lower():find(sourceMatch) ~= nil) then
 			uespLog.Msg(".   "..tostring(i)..") "..tostring(source).." x"..tostring(qnt))
 			i = i + 1
 		end	

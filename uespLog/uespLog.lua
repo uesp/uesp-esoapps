@@ -581,6 +581,8 @@
 --				- Hireling logged data now includes the crafting and hireling passive levels.
 --				- Added the "/uespmsg inspiration [on|off]" command.
 --				- Crafting writ footlockers now log the character's crafting level.
+--				- Fixed logged dye data from achievements not matching the achievement. Also all data within
+--				  an achievement line is now logged.
 --		
 --
 --		Future Versions (Works in Progress)
@@ -7785,8 +7787,33 @@ function uespLog.CountAchievements()
 end
 
 
-function uespLog.DumpAchievementPriv (categoryIndex, subCategoryIndex, achievementIndex)
+
+function uespLog.DumpAchievementLinePriv (categoryIndex, subCategoryIndex, achievementIndex)
 	local achievementId = GetAchievementId(categoryIndex, subCategoryIndex, achievementIndex)
+	local firstId = GetFirstAchievementInLine(achievementId)
+	local nextId = GetNextAchievementInLine(achievementId)
+	local prevId = GetPreviousAchievementInLine(achievementId)
+	local rewardCount = 0
+	local criteriaCount = 0
+	local currentId = firstId
+	
+	if (currentId == 0 or currentId == nil) then
+		currentId = achievementId
+	end
+	
+	while (currentId ~= nil and currentId > 0) do
+		local rc, cc = uespLog.DumpAchievementPriv(currentId, categoryIndex, subCategoryIndex, achievementIndex)
+		rewardCount = rewardCount + rc
+		criteriaCount = criteriaCount + cc
+		
+		currentId = GetNextAchievementInLine(currentId)
+	end
+	
+	return rewardCount, criteriaCount
+end
+
+
+function uespLog.DumpAchievementPriv (achievementId, categoryIndex, subCategoryIndex, achievementIndex)
 	local achName, achDescription, achPoints, achIcon, achCompleted, achDate, achTime = GetAchievementInfo(achievementId)
 	local numRewards = GetAchievementNumRewards(achievementId)	
 	local numCriteria = GetAchievementNumCriteria(achievementId)
@@ -7799,7 +7826,13 @@ function uespLog.DumpAchievementPriv (categoryIndex, subCategoryIndex, achieveme
 	logData.subCategoryIndex = subCategoryIndex
 	logData.achievementIndex = achievementIndex
 	logData.categoryName = GetAchievementCategoryInfo(categoryIndex)
-	logData.subCategoryName = GetAchievementSubCategoryInfo(categoryIndex, subCategoryIndex)
+	
+	if (subCategoryIndex == nil) then
+		logData.subCategoryName = "General"
+	else
+		logData.subCategoryName = GetAchievementSubCategoryInfo(categoryIndex, subCategoryIndex)
+	end
+	
 	logData.name = achName
 	logData.description = achDescription
 	logData.id = achievementId
@@ -7810,6 +7843,7 @@ function uespLog.DumpAchievementPriv (categoryIndex, subCategoryIndex, achieveme
 	logData.itemLink = GetAchievementItemLink(achievementId)
 	logData.link = GetAchievementLink(achievementId)
 	logData.firstId = GetFirstAchievementInLine(achievementId)
+	logData.nextId = GetNextAchievementInLine(achievementId)
 	logData.prevId = GetPreviousAchievementInLine(achievementId)
 	logData.points = GetAchievementRewardPoints(achievementId)
 	
@@ -7819,7 +7853,7 @@ function uespLog.DumpAchievementPriv (categoryIndex, subCategoryIndex, achieveme
 	logData.hasCollectibleReward, logData.collectibleId = GetAchievementRewardCollectible(achievementId)
 	
 	if (logData.hasDyeReward) then
-		logData.dyeName, _, logData.dyeRarity, logData.dyeHue, _, logData.dyeR, logData.dyeG, logData.dyeB, logData.dyeSortKey = GetDyeInfo(logData.dyeIndex)
+		logData.dyeName, _, logData.dyeRarity, logData.dyeHue, _, logData.dyeR, logData.dyeG, logData.dyeB, logData.dyeSortKey = GetDyeInfoById(logData.dyeIndex)
 		rewardCount = rewardCount + 1
 	end
 	
@@ -7899,7 +7933,7 @@ function uespLog.DumpAchievements (note)
 			categoryCount = categoryCount + 1
 			
 			for achievementIndex = 1, numSubCateAchievements do
-				local rc, cc = uespLog.DumpAchievementPriv(categoryIndex, subCategoryIndex, achievementIndex)
+				local rc, cc = uespLog.DumpAchievementLinePriv(categoryIndex, subCategoryIndex, achievementIndex)
 				rewardCount = rewardCount + rc
 				criteriaCount = criteriaCount + cc
 				outputCount = outputCount + 1
@@ -7907,7 +7941,7 @@ function uespLog.DumpAchievements (note)
 		end
 		
 		for achievementIndex = 1, numCateAchievements do
-			local rc, cc = uespLog.DumpAchievementPriv(categoryIndex, nil, achievementIndex)
+			local rc, cc = uespLog.DumpAchievementLinePriv(categoryIndex, nil, achievementIndex)
 			rewardCount = rewardCount + rc
 			criteriaCount = criteriaCount + cc
 			outputCount = outputCount + 1
@@ -8943,6 +8977,7 @@ SLASH_COMMANDS["/uespreset"] = function (cmd)
 		uespLog.ClearRootSavedVar()
 		uespLog.ClearBuildData()
 		uespLog.ClearCharData()
+		uespLog.InitializeTrackLootData(true)
 		uespLog.SkillCoefResetSkillList()
 		uespLog.Msg("Reset all logged data")
 	elseif (cmd == "builddata") then
@@ -8967,6 +9002,9 @@ SLASH_COMMANDS["/uespreset"] = function (cmd)
 	elseif (cmd == "inspiration") then
 		uespLog.SetTotalInspiration(0)
 		uespLog.Msg("Reset crafting inspiration total")
+	elseif (cmd == "lootdata" or cmd == "trackloot") then
+		uespLog.InitializeTrackLootData(true)
+		uespLog.Msg("Reset loot tracking data!")
 	else
 		uespLog.Msg("Expected command format is one of")
 		uespLog.Msg(".       /uespreset log                         Collected log information")
@@ -12143,7 +12181,13 @@ function uespLog.TrackLoot(itemLink, qnt, source)
 end
 
 
+uespLog.lastTrackLootSource = ""
+uespLog.lastTrackLootSourceGameTime = 0
+
+
 function uespLog.TrackLootSource(source)
+	local gameTime = GetGameTimeMilliseconds()
+	local gameTimeDelta = gameTime - uespLog.lastTrackLootSourceGameTime
 
 	if (source == nil or source == "") then
 		source = "unknown"
@@ -12152,8 +12196,15 @@ function uespLog.TrackLootSource(source)
 	if (uespLog.savedVars.charInfo.data.trackedLoot.sources[source] == nil) then
 		uespLog.savedVars.charInfo.data.trackedLoot.sources[source] = 0
 	end
+	
+	if (uespLog.lastTrackLootSource == source and gameTimeDelta <= 99) then
+		return false
+	end
 		
 	uespLog.savedVars.charInfo.data.trackedLoot.sources[source] = uespLog.savedVars.charInfo.data.trackedLoot.sources[source] + 1
+	
+	uespLog.lastTrackLootSource = source
+	uespLog.lastTrackLootSourceGameTime = gameTime
 		
 	uespLog.UpdateTrackLootTime()
 	return true

@@ -7849,11 +7849,11 @@ function uespLog.DumpAchievementPriv (achievementId, categoryIndex, subCategoryI
 	
 	logData.hasItemReward, logData.itemName, logData.itemIcon, logData.itemQuality = GetAchievementRewardItem(achievementId)
 	logData.hasTitleReward, logData.title = GetAchievementRewardTitle(achievementId)
-	logData.hasDyeReward, logData.dyeIndex = GetAchievementRewardDye(achievementId)
+	logData.hasDyeReward, logData.dyeId = GetAchievementRewardDye(achievementId)
 	logData.hasCollectibleReward, logData.collectibleId = GetAchievementRewardCollectible(achievementId)
 	
 	if (logData.hasDyeReward) then
-		logData.dyeName, _, logData.dyeRarity, logData.dyeHue, _, logData.dyeR, logData.dyeG, logData.dyeB, logData.dyeSortKey = GetDyeInfoById(logData.dyeIndex)
+		logData.dyeName, _, logData.dyeRarity, logData.dyeHue, _, logData.dyeR, logData.dyeG, logData.dyeB, logData.dyeSortKey = GetDyeInfoById(logData.dyeId)
 		rewardCount = rewardCount + 1
 	end
 	

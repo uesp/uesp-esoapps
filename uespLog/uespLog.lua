@@ -583,6 +583,9 @@
 --				- Crafting writ footlockers now log the character's crafting level.
 --				- Fixed logged dye data from achievements not matching the achievement. Also all data within
 --				  an achievement line is now logged.
+--			One Tamriel Changes
+--				- Increased API to 100017.
+--				- Increased item mining max ID to 130000.
 --		
 --
 --		Future Versions (Works in Progress)
@@ -1169,7 +1172,7 @@ uespLog.mineItemLastReloadTimeMS = GetGameTimeMilliseconds()
 uespLog.MINEITEM_AUTORELOAD_DELTATIMEMS = 260000  -- Default value, use uespLog.minedItemReloadDelay instead
 uespLog.mineItemAutoRestart = false
 uespLog.mineItemAutoRestartOutputEnd = false
-uespLog.MINEITEM_AUTO_MAXITEMID = 110000
+uespLog.MINEITEM_AUTO_MAXITEMID = 130000
 uespLog.mineItemOnlySubType = -1
 uespLog.mineItemOnlyLevel = -1
 uespLog.MINEITEM_QUALITYMAP_ITEMID = 47000
@@ -12264,212 +12267,257 @@ uespLog.TRACK_LOOT_TRANSFORM =
 		{
 			["items"] = { ["|H0:item:64506:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+			["itemLink"] = "|H0:item:71239:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["shadowhide scraps"] = 	-- |H0:item:4478:30:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h
 		{
 			["items"] = { ["|H0:item:46138:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+			["itemLink"] = "|H0:item:4478:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},	
 	["superb hide scraps"] =
 		{
 			["items"] = { ["|H0:item:46137:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+			["itemLink"] = "|H0:item:800:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},	
 	["thick leather scraps"] =
 		{
 			["items"] = { ["|H0:item:23100:30:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+			["itemLink"] = "|H0:item:6020:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},	
 	["fell hide scraps"] =
 		{
 			["items"] = { ["|H0:item:23101:30:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+			["itemLink"] = "|H0:item:23097:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},	
 	["topgrain hide scraps"] =
 		{
 			["items"] = { ["|H0:item:46135:30:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+			["itemLink"] = "|H0:item:23142:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},	
 	["leather scraps"] =
 		{
 			["items"] = { ["|H0:item:23099:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+			["itemLink"] = "|H0:item:23095:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},	
 	["iron hide scraps"] =
 		{
 			["items"] = { ["|H0:item:46136:30:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+			["itemLink"] = "|H0:item:23143:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},	
 	["hide scraps"] =
 		{
 			["items"] = { ["|H0:item:4447:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+			["itemLink"] = "|H0:item:4448:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},	
 	["rawhide scraps"] =
 		{
 			["items"] = { ["|H0:item:794:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+			["itemLink"] = "|H0:item:793:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},	
 	
 	["raw ancestor silk"] = 	-- |H0:item:71200:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h
 		{
 			["items"] = { ["|H0:item:64504:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+			["itemLink"] = "|H0:item:71200:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["raw void bloom"] =
 		{
 			["items"] = { ["|H0:item:46134:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+			["itemLink"] = "|H0:item:33220:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["raw spidersilk"] =
 		{
 			["items"] = { ["|H0:item:23126:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+			["itemLink"] = "|H0:item:23130:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["raw flax"] =
 		{
 			["items"] = { ["|H0:item:4463:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+			["itemLink"] = "|H0:item:4464:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["raw ebonthread"] =
 		{
 			["items"] = { ["|H0:item:23127:30:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+			["itemLink"] = "|H0:item:23131:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["raw silverweed"] =
 		{
 			["items"] = { ["|H0:item:46133:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+			["itemLink"] = "|H0:item:33219:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["raw ironweed"] =
 		{
 			["items"] = { ["|H0:item:46132:30:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+			["itemLink"] = "|H0:item:33218:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["raw kreshweed"] =
 		{
 			["items"] = { ["|H0:item:46131:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+			["itemLink"] = "|H0:item:33217:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["raw cotton"] =
 		{
 			["items"] = { ["|H0:item:23125:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+			["itemLink"] = "|H0:item:23129:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["raw jute"] =
 		{
 			["items"] = { ["|H0:item:811:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_CLOTHING,
+			["itemLink"] = "|H0:item:812:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	
 	["rubedite ore"] = 		-- |H0:item:71198:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h
 		{
 			["items"] = { ["|H0:item:64489:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_BLACKSMITHING,
+			["itemLink"] = "|H0:item:71198:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["voidstone ore"] =		-- |H0:item:23135:30:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h
 		{
 			["items"] = { ["|H0:item:46130:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_BLACKSMITHING,
+			["itemLink"] = "|H0:item:23135:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["quicksilver ore"] =
 		{
 			["items"] = { ["|H0:item:46129:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_BLACKSMITHING,
+			["itemLink"] = "|H0:item:23134:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["orichalcum ore"] =
 		{
 			["items"] = { ["|H0:item:23107:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_BLACKSMITHING,
+			["itemLink"] = "|H0:item:23103:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["galatite ore"] =
 		{
 			["items"] = { ["|H0:item:46128:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_BLACKSMITHING,
+			["itemLink"] = "|H0:item:23133:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["calcinium ore"] =
 		{
 			["items"] = { ["|H0:item:46127:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_BLACKSMITHING,
+			["itemLink"] = "|H0:item:4482:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["ebony ore"] =
 		{
 			["items"] = { ["|H0:item:6001:30:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_BLACKSMITHING,
+			["itemLink"] = "|H0:item:23105:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["dwarven ore"] =
 		{
 			["items"] = { ["|H0:item:6000:30:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_BLACKSMITHING,
+			["itemLink"] = "|H0:item:23104:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["high iron ore"] =
 		{
 			["items"] = { ["|H0:item:4487:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_BLACKSMITHING,
+			["itemLink"] = "|H0:item:5820:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["iron ore"] =
 		{
 			["items"] = { ["|H0:item:5413:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_BLACKSMITHING,
+			["itemLink"] = "|H0:item:808:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
+	
 		
 	["rough ruby ash"] = 	-- |H0:item:71199:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h
 		{
 			["items"] = { ["|H0:item:64502:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_WOODWORKING,
+			["itemLink"] = "|H0:item:71199:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["rough nightwood"] = 	-- |H0:item:23138:30:50:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h
 		{
 			["items"] = { ["|H0:item:46142:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_WOODWORKING,
+			["itemLink"] = "|H0:item:23138:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["rough ash"] = 
 		{
 			["items"] = { ["|H0:item:46140:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_WOODWORKING,
+			["itemLink"] = "|H0:item:4439:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["rough beech"] = 
 		{
 			["items"] = { ["|H0:item:23121:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_WOODWORKING,
+			["itemLink"] = "|H0:item:23117:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["rough birch"] = 
 		{
 			["items"] = { ["|H0:item:46139:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_WOODWORKING,
+			["itemLink"] = "|H0:item:818:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["rough hickory"] = 
 		{
 			["items"] = { ["|H0:item:23122:30:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_WOODWORKING,
+			["itemLink"] = "|H0:item:23118:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["rough mahogany"] = 
 		{
 			["items"] = { ["|H0:item:46141:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_WOODWORKING,
+			["itemLink"] = "|H0:item:23137:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["rough maple"] = 
 		{
 			["items"] = { ["|H0:item:803:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_WOODWORKING,
+			["itemLink"] = "|H0:item:802:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["rough oak"] = 
 		{
 			["items"] = { ["|H0:item:533:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_WOODWORKING,
+			["itemLink"] = "|H0:item:521:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
 	["rough yew"] = 
 		{
 			["items"] = { ["|H0:item:23123:30:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"] = uespLog.REFINE_RAW_MATERIAL_CHANCE },
 			["tempers"] = uespLog.TRACK_LOOT_TEMPER_WOODWORKING,
+			["itemLink"] = "|H0:item:23119:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",
 		},
-
+	
 }
 
 
-function uespLog.GetTrackLootTransformValue(itemName, qnt)
+function uespLog.GetTrackLootTransformValue(itemName, qnt, ignoreRefinedPrice)
 	local transformData = nil
 	local totalValue = 0
+	
+	if (ignoreRefinedPrice == nil) then 
+		ignoreRefinedPrice = false 
+	end
 	
 	if (itemName:sub(1, 1) == "|") then
 		itemName = GetItemLinkName(itemName):gsub("%^.*", "")
@@ -12483,16 +12531,18 @@ function uespLog.GetTrackLootTransformValue(itemName, qnt)
 		return 0
 	end
 	
-	for itemLink, chance in pairs(transformData.items) do
-		local itemValue = GetItemLinkValue(itemLink)
-		local itemMMValue = uespLog.GetMMItemLinkValue(itemLink)
-		
-		if (itemMMValue == 0) then
-			totalValue = totalValue + itemValue * chance
-		else
-			totalValue = totalValue + itemMMValue * chance
+	if (not ignoreRefinedPrice) then
+	
+		for itemLink, chance in pairs(transformData.items) do
+			local itemValue = GetItemLinkValue(itemLink)
+			local itemMMValue = uespLog.GetMMItemLinkValue(itemLink)
+			
+			if (itemMMValue == 0) then
+				totalValue = totalValue + itemValue * chance
+			else
+				totalValue = totalValue + itemMMValue * chance
+			end
 		end
-		
 	end
 	
 	for itemLink, chance in pairs(transformData.tempers) do
@@ -12654,6 +12704,79 @@ function uespLog.ShowTrackLootSources(sourceMatch)
 	end
 	
 	uespLog.Msg("You looted "..tostring(totalItems).." unique items from "..tostring(totalSources).." different sources over "..tostring(math.floor(seconds)).." seconds!")
+end
+
+
+function uespLog.CompareRawPrices (materialMatch)
+	local sellData = {}
+
+	if (MasterMerchant == nil) then
+		uespLog.Msg("This feature needs the MasterMerchant addon to be installed!")
+		return 0
+	end
+	
+	if (materialMatch == nil) then
+		materialMatch = ""
+		uespLog.Msg("Outputting prices for all raw materials:")
+	elseif (materialMatch == "base") then
+		uespLog.ShowBaseRawPrices()
+		return
+	else
+		materialMatch = materialMatch:lower()
+		uespLog.Msg("Outputting prices for all raw materials matching '"..materialMatch.."':")
+	end
+	
+	for itemName, itemData in pairs(uespLog.TRACK_LOOT_TRANSFORM) do
+		local itemLink = itemData.itemLink
+		local itemName = GetItemLinkName(itemLink)
+		
+		if (materialMatch == "" or itemName:lower():find(materialMatch) ~= nil) then
+			local transformValue = uespLog.GetTrackLootTransformValue(itemLink, 1)
+			local itemMMValue = uespLog.GetMMItemLinkValue(itemLink)
+			local profit = transformValue - itemMMValue
+		
+			table.insert(sellData, { itemLink = itemLink, profit = profit, mmValue = itemMMValue, transformValue = transformValue})
+		end
+	end
+	
+	table.sort(sellData, uespLog.CompareRawPriceData)
+	
+	for _, itemData in pairs(sellData) do
+		local transformValue = string.format("%0.1f", itemData.transformValue)
+		local itemMMValue = string.format("%0.1f", itemData.mmValue)
+		local profit = string.format("%0.1f", itemData.profit)
+		
+		uespLog.Msg(".   "..tostring(itemData.itemLink)..": "..tostring(profit).." gold ("..tostring(transformValue).." - "..tostring(itemMMValue)..")")
+	end
+		
+end
+
+
+SLASH_COMMANDS["/uesprawprice"] = uespLog.CompareRawPrices
+
+
+function uespLog.CompareRawPriceData(a, b)
+	return a.profit < b.profit
+end
+
+
+function uespLog.ShowBaseRawPrices()
+	local silkValue = uespLog.GetTrackLootTransformValue("Raw Ancestor Silk", 1, true)
+	local leatherValue = uespLog.GetTrackLootTransformValue("Rubedo Hide Scraps", 1, true)
+	local oreValue = uespLog.GetTrackLootTransformValue("Rubedite Ore", 1, true)
+	local woodValue = uespLog.GetTrackLootTransformValue("Rough Ruby Ash", 1, true)
+	
+	silkValue = string.format("%0.1f", silkValue)
+	leatherValue = string.format("%0.1f", leatherValue)
+	oreValue = string.format("%0.1f", oreValue)
+	woodValue = string.format("%0.1f", woodValue)
+	
+	uespLog.Msg("Showing base raw material prices:")
+	uespLog.Msg(".          Silk: "..tostring(silkValue).." gold")
+	uespLog.Msg(".    Leather: "..tostring(leatherValue).." gold")
+	uespLog.Msg(".          Ore: "..tostring(oreValue).." gold")
+	uespLog.Msg(".      Wood: "..tostring(woodValue).." gold")
+	
 end
 
 

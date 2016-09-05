@@ -59,7 +59,7 @@
  *						EsoExtractData.exe -i file.id.txt -t -x file.lang.txt
  *				Using a PO TEXT file to new LANG file:
  *						EsoExtractData.exe -i file.id.txt -p -t -x file.lang.txt -o newfile.lang
- *
+ * 
  * v0.25 -- 18 August 2015
  *		- Added the "-d" option for comparing LANG/CSV/TXT files:
  *				EsoExtractData.exe -d file1.lang file2.lang
@@ -87,6 +87,9 @@
  *
  * v0.28 -- 8 March 2016
  *		- Fixed a crash when extracting Game.Mnf data from the Thieves Guild DLC release.
+ *
+ * v0.29 -- 5 September 2016
+ *		- Fixed an infinite loop due to a truncated compressed file in file eso0002.dat from the update 12 PTS.
  *
  */
 
@@ -286,6 +289,7 @@ bool InflateSubFile (esosubfile_t& SubFile, FILE* pInputFile, const long FileSiz
 			case Z_DATA_ERROR:
 			case Z_MEM_ERROR:
 			case Z_STREAM_ERROR:
+			//case Z_BUF_ERROR:
 				inflateEnd(&Stream);
 				PrintError("Error: Failed to uncompress data stream!");
 				return false;
@@ -475,6 +479,7 @@ bool ProcessZOSFT (const TCHAR* pFilename, const char* pOutputPath)
 				case Z_DATA_ERROR:
 				case Z_MEM_ERROR:
 				case Z_STREAM_ERROR:
+				//case Z_BUF_ERROR:
 					goto ENDDEFLATE;
 					inflateEnd(&Stream);					
 					PrintError("Error: Failed to uncompress data stream!");
@@ -755,6 +760,7 @@ bool ExportESODataFile (const TCHAR* pFilename, const TCHAR* pOutputPath)
 				case Z_DATA_ERROR:
 				case Z_MEM_ERROR:
 				case Z_STREAM_ERROR:
+				//case Z_BUF_ERROR:
 					(void)inflateEnd(&Stream);
 					PrintError("Error: Failed to uncompress data stream!");
 					fclose(pDestFile);
@@ -1588,7 +1594,7 @@ cmdparamdef_t g_Cmds[] =
 };
 
 const char g_AppDescription[] = "\
-ExportMnf v0.28 is a simple command line application to load and export files\n\
+ExportMnf v0.29 is a simple command line application to load and export files\n\
 from ESO's MNF and DAT files. Created by Daveh (dave@uesp.net).\n\
 \n\
 WARNING: This app is in early development and is fragile. User discretion is\n\

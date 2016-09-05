@@ -157,11 +157,15 @@ bool InflateZlibBlock (byte* pOutputData, size_t &OutputSize, const size_t MaxOu
 		Result = inflate(&Stream, Z_NO_FLUSH);
 
 		switch (Result) {
+			case Z_BUF_ERROR:
+				if (Stream.avail_in == 0) Result = Z_STREAM_END;
+				break;
 			case Z_NEED_DICT:
 				Result = Z_DATA_ERROR;     /* and fall through */
 			case Z_DATA_ERROR:
 			case Z_MEM_ERROR:
 			case Z_STREAM_ERROR:
+			//case Z_BUF_ERROR:
 				OutputSize = Stream.total_out;
 				inflateEnd(&Stream);
 				return Quiet ? false : PrintError("Error: Failed to uncompress data stream!");

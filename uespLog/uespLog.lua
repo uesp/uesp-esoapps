@@ -577,15 +577,19 @@
 --				- API updated to 100016.
 --				- Added the 5 new styles (Dark Brotherhood, Akatosh, Dro-m'Artha, Minotaur, Grim Arlequin, Hollowjack).
 --
---		- v0.81 -- 
+--		- v0.90 -- ? October 2016
 --				- Hireling logged data now includes the crafting and hireling passive levels.
 --				- Added the "/uespmsg inspiration [on|off]" command.
 --				- Crafting writ footlockers now log the character's crafting level.
 --				- Fixed logged dye data from achievements not matching the achievement. Also all data within
 --				  an achievement line is now logged.
---			One Tamriel Changes
+--			One Tamriel Changes (Update 12)
 --				- Increased API to 100017.
 --				- Increased item mining max ID to 130000.
+--				- Fixed a bug related to the new stat comparison feature on the inventory menu. If you still run into
+--				  issues you can disable custom stats with the "/uespcustomstats off" command.
+--				- Shortened the labels for custom stats to make room for the stat comparison feature. Note that 
+--				  comparison of custom stats is not yet available.
 --		
 --
 --		Future Versions (Works in Progress)
@@ -616,8 +620,8 @@
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "0.81"
-uespLog.releaseDate = "1 August 2016"
+uespLog.version = "0.90"
+uespLog.releaseDate = "? October 2016"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -5826,7 +5830,7 @@ SLASH_COMMANDS["/uespcharinfo"] = function (cmd)
 		
 	uespLog.DisplayStat(STAT_CRITICAL_STRIKE, "Critical Strike")
 	uespLog.DisplayStat(STAT_WEAPON_AND_SPELL_DAMAGE, "Weapon Power")
-	uespLog.DisplayStat(STAT_SPELL_POWER, "Spell Power")
+	uespLog.Dat(STAT_SPELL_POWER, "Spell Power")
 	uespLog.DisplayStat(STAT_SPELL_CRITICAL, "Spell Critical")
 	uespLog.DisplayStat(STAT_SPELL_PENETRATION, "Spell Penetration")
 	uespLog.DisplayStat(STAT_POWER, "Power")
@@ -6032,6 +6036,7 @@ function uespLog.DumpSkills(opt1, opt2)
 		uespLog.DumpSkillTypes(opt2)
 		uespLog.DumpSkillsProgression(opt2)
 		uespLog.DumpLearnedAbilities(opt2)
+		uespLog.DumpSkillMissing(opt2)
 		return true
 	elseif (opt1 == "class") then
 		uespLog.DumpSkillTypes(opt2, true)
@@ -10893,7 +10898,7 @@ function uespLog.BuyPassives(putPointInNextUpgrade, charOnly)
 							zo_callLater(function() PutPointIntoSkillAbility(skillType, skillIndex, abilityIndex, putPointInNextUpgrade) end, nextTimeDelay)
 							nextTimeDelay = nextTimeDelay + timeDelayStep
 							purchaseCount = purchaseCount + 1
-						elseif (not  putPointInNextUpgrade and level < 1) then
+						elseif (not putPointInNextUpgrade and level < 1) then
 							zo_callLater(function() PutPointIntoSkillAbility(skillType, skillIndex, abilityIndex, putPointInNextUpgrade) end, nextTimeDelay)
 							nextTimeDelay = nextTimeDelay + timeDelayStep
 							purchaseCount = purchaseCount + 1
@@ -11504,10 +11509,10 @@ uespLog.STAT_EFFECTIVE_SPELL_POWER = -100
 uespLog.STAT_EFFECTIVE_WEAPON_POWER = -101
 uespLog.STAT_SPELL_CRITICAL_DAMAGE = -102
 uespLog.STAT_WEAPON_CRITICAL_DAMAGE = -103
-uespLog.EFFECTIVE_SPELL_POWER_TEXT = "Effective Spell Power"
-uespLog.EFFECTIVE_WEAPON_POWER_TEXT = "Effective Weapon Power"
-uespLog.SPELL_CRITICAL_DAMAGE_TEXT = "Spell Critical Damage"
-uespLog.WEAPON_CRITICAL_DAMAGE_TEXT = "Weapon Critical Damage"
+uespLog.EFFECTIVE_SPELL_POWER_TEXT = "Eff Spell Power"
+uespLog.EFFECTIVE_WEAPON_POWER_TEXT = "Eff Weapon Power"
+uespLog.SPELL_CRITICAL_DAMAGE_TEXT = "Spell Crit Dmg"
+uespLog.WEAPON_CRITICAL_DAMAGE_TEXT = "Weapon Crit Dmg"
 
 
 function uespLog.GetActiveWeaponTypes()
@@ -12778,6 +12783,75 @@ function uespLog.ShowBaseRawPrices()
 	uespLog.Msg(".      Wood: "..tostring(woodValue).." gold")
 	
 end
+
+
+-- Begin Overridden functions from esoui\ingame\characterwindow\keyboard\characterwindow_keyboard.lua
+-- TODO: Is there a way to not override/copy these functions?
+-- ZO_CharacterWindowStatsScrollScrollChildStatEntry25
+function ZO_CharacterWindowStats_ShowComparisonValues(bagId, slotId)
+    local statDeltaLookup = ZO_GetStatDeltaLookupFromItemComparisonReturns(CompareBagItemToCurrentlyEquipped(bagId, slotId))
+	
+    for _, statGroup in ipairs(ZO_INVENTORY_STAT_GROUPS) do
+        for _, stat in ipairs(statGroup) do
+            local statDelta = statDeltaLookup[stat]
+			
+            if statDelta then
+                --local statControl = CHARACTER_STAT_CONTROLS[stat]
+				local statControl = _G['ZO_CharacterWindowStatsScrollScrollChildStatEntry' .. tostring(stat)]
+				
+				if (statControl ~= nil) then
+					statControl.statEntry:ShowComparisonValue(statDelta)
+				end
+            end
+        end
+    end
+	
+end
+
+function ZO_CharacterWindowStats_HideComparisonValues()
+
+    for _, statGroup in ipairs(ZO_INVENTORY_STAT_GROUPS) do
+        for _, stat in ipairs(statGroup) do
+            --local statControl = CHARACTER_STAT_CONTROLS[stat]
+			local statControl = _G['ZO_CharacterWindowStatsScrollScrollChildStatEntry' .. tostring(stat)]
+			
+			if (statControl ~= nil) then
+				statControl.statEntry:HideComparisonValue()
+			end
+        end
+    end
+	
+end
+-- End of Overridden functions from esoui\ingame\characterwindow\keyboard\characterwindow_keyboard.lua
+
+
+-- Begin Overridden function from esoui\ingame\stats\keyboard\zo_statentry_keyboard.lua
+-- TODO: Is there a way to not override/copy this function?
+function ZO_StatEntry_Keyboard:ShowComparisonValue(statDelta)
+    if statDelta and statDelta ~= 0 then
+        local comparisonStatValue = self:GetValue() + statDelta
+        local color
+        local icon
+        if statDelta > 0 then
+            color = ZO_SUCCEEDED_TEXT
+            icon = "EsoUI/Art/Buttons/Gamepad/gp_upArrow.dds"
+        else
+            color = ZO_ERROR_COLOR
+            icon = "EsoUI/Art/Buttons/Gamepad/gp_downArrow.dds"
+        end
+
+        --comparisonValueString = "" .. color:Colorize(self:GetDisplayValue(statDelta) .. " " .. zo_iconFormatInheritColor(icon, 24, 24)) .. self:GetDisplayValue(self:GetValue())
+		comparisonValueString = "" .. color:Colorize(self:GetDisplayValue(statDelta).. " " .. zo_iconFormatInheritColor(icon, 24, 24)) .. self:GetDisplayValue(comparisonStatValue)
+		
+		--comparisonValueString = zo_iconFormatInheritColor(icon, 24, 24) .. self:GetDisplayValue(comparisonStatValue)
+        --comparisonValueString = color:Colorize(comparisonValueString)
+
+        self.control.value:SetHidden(true)
+        self.control.comparisonValue:SetHidden(false)
+        self.control.comparisonValue:SetText(comparisonValueString)
+    end
+end
+--End of Overridden function from esoui\ingame\stats\keyboard\zo_statentry_keyboard.lua
 
 
 -- Item subtypes that crash with GetItemLinkTraitOnUseAbilityInfo() in update 10

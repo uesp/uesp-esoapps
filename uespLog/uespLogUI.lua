@@ -122,12 +122,40 @@ function uespLog.InitOptionControlsData()
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "checkbox",
+		type = "dropdown",
 		name = "Show Custom Stats", 
+		choices = { "off", "on", "custom" },
 		tooltip = "Enables the display of extra stats in the character and inventory windows.\n      /uespcustomstats on/off", 
 		warning = "Requires the UI to be reloaded to take effect.",
-		getFunc = uespLog.GetCustomStatDisplay,
-		setFunc = uespLog.SetCustomStatDisplay,
+		
+		getFunc = 	function() 
+						if (uespLog.GetInventoryStatsConfig() == "custom") then return "custom" end
+						return uespLog.GetCustomStatDisplay()
+					end,
+		setFunc = 	function(choice) 
+						if (choice == "custom") then 
+							uespLog.GetInventoryStatsConfig("custom")
+							
+							if (uespLog.GetInventoryStatsConfig() == "off") then
+								uespLog.SetInventoryStatsConfig("on")
+								uespLog.ModifyInventoryStatsWindow()
+							end
+						elseif (choice == "on") then
+							uespLog.SetCustomStatDisplay(true)
+							
+							if (uespLog.GetInventoryStatsConfig() == "off") then
+								uespLog.SetInventoryStatsConfig("on")
+								uespLog.ModifyInventoryStatsWindow()
+							end
+						else
+							uespLog.SetCustomStatDisplay(false)
+							
+							if (uespLog.GetInventoryStatsConfig() ~= "off") then
+								uespLog.SetInventoryStatsConfig("off")
+								--uespLog.ModifyInventoryStatsWindow()
+							end
+						end
+					end,
 	})
 	
 	uespLog.optionControlsData:insert({

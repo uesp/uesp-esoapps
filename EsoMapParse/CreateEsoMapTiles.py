@@ -7,10 +7,11 @@ import math
 import errno
 import csv
 
-BasePathIndex = "-11"
-INPUTPATH = "d:\\esoexport\\goodimages" + BasePathIndex + "\\combinedmaps\\"
-OUTPUTPATH = "d:\\esoexport\\goodimages" + BasePathIndex + "\\maps\\"
-DEFAULTNULLTILE = "d:\\esoexport\\goodimages" + BasePathIndex + "\\maps\\blacknulltile.jpg"
+BasePathIndex = "-12pts"
+INPUTPATH = "e:\\esoexport\\goodimages" + BasePathIndex + "\\combinedmaps\\"
+OUTPUTPATH = "e:\\esoexport\\goodimages" + BasePathIndex + "\\maps\\"
+DEFAULTNULLTILE = "e:\\esoexport\\goodimages" + BasePathIndex + "\\maps\\blacknulltile.jpg"
+
 MAPEXTENSION = ".jpg"
 MAXZOOMLEVEL = 10
 MAXZOOM_OUTPUT = 11

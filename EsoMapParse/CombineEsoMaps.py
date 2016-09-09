@@ -6,9 +6,10 @@ from PIL import Image
 import shutil
 import fnmatch
 
-BasePathIndex = "-11"
-InputPath  = 'd:\\esoexport\\esomnf' + BasePathIndex + '\\art\\maps\\'
-OutputPath = 'd:\\esoexport\\goodimages' + BasePathIndex + '\\combinedmaps\\'
+BasePathIndex = "-12pts"
+InputPath  = 'e:\\esoexport\\esomnf' + BasePathIndex + '\\art\\maps\\'
+OutputPath = 'e:\\esoexport\\goodimages' + BasePathIndex + '\\combinedmaps\\'
+
 OutputMapList = OutputPath + 'maplist.txt'
 MapImageRE  = re.compile('.*[0-9]+\.png')
 MapImageBaseRE = re.compile('.*_base_[0-9]+\.png')

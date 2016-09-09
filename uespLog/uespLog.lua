@@ -577,7 +577,7 @@
 --				- API updated to 100016.
 --				- Added the 5 new styles (Dark Brotherhood, Akatosh, Dro-m'Artha, Minotaur, Grim Arlequin, Hollowjack).
 --
---		- v0.90 -- ? October 2016
+--		- v0.90 -- 5 October 2016
 --				- Hireling logged data now includes the crafting and hireling passive levels.
 --				- Added the "/uespmsg inspiration [on|off]" command.
 --				- Crafting writ footlockers now log the character's crafting level.
@@ -590,6 +590,8 @@
 --				  issues you can disable custom stats with the "/uespcustomstats off" command.
 --				- Shortened the labels for custom stats to make room for the stat comparison feature. Note that 
 --				  comparison of custom stats is not yet available.
+--				- Added the "/uespcustomstats custom" option. This displays the change in stat value for the new
+--				  statistic comparison feature in the inventory stats window.
 --		
 --
 --		Future Versions (Works in Progress)
@@ -621,7 +623,7 @@
 uespLog = { }
 
 uespLog.version = "0.90"
-uespLog.releaseDate = "? October 2016"
+uespLog.releaseDate = "5 October 2016"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -1301,6 +1303,7 @@ uespLog.DEFAULT_SETTINGS =
 			[uespLog.MSG_INSPIRATION] = false,
 		},		
 		["trackLoot"] = false,
+		["inventoryStats"] = "off",
 	}
 }
 
@@ -1658,6 +1661,35 @@ function uespLog.SetTrackLoot(flag)
 	
 	uespLog.savedVars.settings.data.trackLoot = flag
 end
+
+
+function uespLog.GetInventoryStatsConfig()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.inventoryStats == nil) then
+		uespLog.savedVars.settings.data.inventoryStats = uespLog.DEFAULT_SETTINGS.inventoryStats
+	end
+	
+	return uespLog.savedVars.settings.data.inventoryStats
+end
+
+
+function uespLog.SetInventoryStatsConfig(value)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.inventoryStats == nil) then
+		uespLog.savedVars.settings.data.inventoryStats = uespLog.DEFAULT_SETTINGS.inventoryStats
+	end
+	
+	uespLog.savedVars.settings.data.inventoryStats = value
+end
+
 
 
 function uespLog.GetFishingFlag()
@@ -2671,8 +2703,19 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_KEEP_UNDER_ATTACK_CHANGED, uespLog.OnKeepUnderAttack)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_KEEP_GATE_STATE_CHANGED, uespLog.OnKeepGateStateChanged)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_GUILD_KEEP_CLAIM_UPDATED, uespLog.OnGuildKeepClaimUpdated)	
+	
+	uespLog.Old_ZO_CharacterWindowStats_ShowComparisonValues = ZO_CharacterWindowStats_ShowComparisonValues
+	uespLog.Old_ZO_CharacterWindowStats_HideComparisonValues = ZO_CharacterWindowStats_HideComparisonValues
+	uespLog.Old_ZO_StatEntry_Keyboard_ShowComparisonValue = ZO_StatEntry_Keyboard.ShowComparisonValue
+	
+	if (uespLog.GetCustomStatDisplay()) then
+		if (uespLog.GetInventoryStatsConfig() == "off") then
+			uespLog.SetInventoryStatsConfig("on")
+		end
+	end
 		
 	uespLog.AddCharacterWindowStats()
+	uespLog.ModifyInventoryStatsWindow()
 	
 	uespLog.Old_IsItemUsable = IsItemUsable
 	IsItemUsable = uespLog.IsItemUsable
@@ -2784,6 +2827,21 @@ function uespLog.SetSlashCommand(cmd, func)
 	
 	SLASH_COMMANDS[cmd] = func
 	return true
+end
+
+
+function uespLog.ModifyInventoryStatsWindow()
+
+	if (uespLog.GetInventoryStatsConfig() ~= "off") then
+		ZO_CharacterWindowStats_ShowComparisonValues = uespLog.ZO_CharacterWindowStats_ShowComparisonValues
+		ZO_CharacterWindowStats_HideComparisonValues = uespLog.ZO_CharacterWindowStats_HideComparisonValues
+		ZO_StatEntry_Keyboard.ShowComparisonValue = uespLog.ZO_StatEntry_Keyboard_ShowComparisonValue
+	else
+		ZO_CharacterWindowStats_ShowComparisonValues = uespLog.Old_ZO_CharacterWindowStats_ShowComparisonValues
+		ZO_CharacterWindowStats_HideComparisonValues = uespLog.Old_ZO_CharacterWindowStats_HideComparisonValues
+		ZO_StatEntry_Keyboard.ShowComparisonValue = uespLog.Old_ZO_StatEntry_Keyboard_ShowComparisonValue
+	end
+	
 end
 
 
@@ -11490,13 +11548,38 @@ function uespLog.CustomStatsCommand(cmd)
 	if (firstCmd == "on") then
 		uespLog.SetCustomStatDisplay(true)
 		uespLog.Msg("Turned custom stat display on (reload UI to take effect)")
+		
+		if (uespLog.GetInventoryStatsConfig() == "off") then
+			uespLog.SetInventoryStatsConfig("on")
+			uespLog.ModifyInventoryStatsWindow()
+		end
+		
 	elseif (firstCmd == "off") then
 		uespLog.SetCustomStatDisplay(false)
 		uespLog.Msg("Turned custom stat display off (reload UI to take effect)")
+		
+		if (uespLog.GetInventoryStatsConfig() ~= "off") then
+			uespLog.SetInventoryStatsConfig("off")
+			--uespLog.ModifyInventoryStatsWindow()
+		end
+		
+	elseif (firstCmd == "custom") then
+		uespLog.SetCustomStatDisplay(true)
+		uespLog.Msg("Turned custom stat display to custom (reload UI to take effect)")
+		
+		if (uespLog.GetInventoryStatsConfig() ~= "custom") then
+			uespLog.SetInventoryStatsConfig("custom")
+			uespLog.ModifyInventoryStatsWindow()
+		end
 	else
-		uespLog.Msg("Command Format: /uespcustomstats [on||off]")
+		uespLog.Msg("Command Format: /uespcustomstats [on||off||custom]")
 		uespLog.Msg("Changes to this setting require you to reload the UI to take effect.")
-		uespLog.Msg("Custom stat display is "..uespLog.BoolToOnOff(uespLog.GetCustomStatDisplay()))
+		
+		if (uespLog.GetInventoryStatsConfig() == "custom") then
+			uespLog.Msg("Custom stat display is on (custom)")
+		else
+			uespLog.Msg("Custom stat display is "..uespLog.BoolToOnOff(uespLog.GetCustomStatDisplay()))
+		end
 	end
 	
 end
@@ -12788,7 +12871,7 @@ end
 -- Begin Overridden functions from esoui\ingame\characterwindow\keyboard\characterwindow_keyboard.lua
 -- TODO: Is there a way to not override/copy these functions?
 -- ZO_CharacterWindowStatsScrollScrollChildStatEntry25
-function ZO_CharacterWindowStats_ShowComparisonValues(bagId, slotId)
+function uespLog.ZO_CharacterWindowStats_ShowComparisonValues(bagId, slotId)
     local statDeltaLookup = ZO_GetStatDeltaLookupFromItemComparisonReturns(CompareBagItemToCurrentlyEquipped(bagId, slotId))
 	
     for _, statGroup in ipairs(ZO_INVENTORY_STAT_GROUPS) do
@@ -12808,7 +12891,7 @@ function ZO_CharacterWindowStats_ShowComparisonValues(bagId, slotId)
 	
 end
 
-function ZO_CharacterWindowStats_HideComparisonValues()
+function uespLog.ZO_CharacterWindowStats_HideComparisonValues()
 
     for _, statGroup in ipairs(ZO_INVENTORY_STAT_GROUPS) do
         for _, stat in ipairs(statGroup) do
@@ -12827,7 +12910,7 @@ end
 
 -- Begin Overridden function from esoui\ingame\stats\keyboard\zo_statentry_keyboard.lua
 -- TODO: Is there a way to not override/copy this function?
-function ZO_StatEntry_Keyboard:ShowComparisonValue(statDelta)
+function uespLog:ZO_StatEntry_Keyboard_ShowComparisonValue(statDelta)
     if statDelta and statDelta ~= 0 then
         local comparisonStatValue = self:GetValue() + statDelta
         local color
@@ -12840,11 +12923,14 @@ function ZO_StatEntry_Keyboard:ShowComparisonValue(statDelta)
             icon = "EsoUI/Art/Buttons/Gamepad/gp_downArrow.dds"
         end
 
-        --comparisonValueString = "" .. color:Colorize(self:GetDisplayValue(statDelta) .. " " .. zo_iconFormatInheritColor(icon, 24, 24)) .. self:GetDisplayValue(self:GetValue())
-		comparisonValueString = "" .. color:Colorize(self:GetDisplayValue(statDelta).. " " .. zo_iconFormatInheritColor(icon, 24, 24)) .. self:GetDisplayValue(comparisonStatValue)
+		if (uespLog.GetInventoryStatsConfig() == "custom") then
+			comparisonValueString = "" .. color:Colorize(self:GetDisplayValue(statDelta).. " " .. zo_iconFormatInheritColor(icon, 24, 24) .. self:GetDisplayValue(comparisonStatValue))
+		else
+			comparisonValueString = zo_iconFormatInheritColor(icon, 24, 24) .. self:GetDisplayValue(comparisonStatValue)
+			comparisonValueString = color:Colorize(comparisonValueString)	
+		end
 		
-		--comparisonValueString = zo_iconFormatInheritColor(icon, 24, 24) .. self:GetDisplayValue(comparisonStatValue)
-        --comparisonValueString = color:Colorize(comparisonValueString)
+		--comparisonValueString = "" .. color:Colorize(self:GetDisplayValue(statDelta) .. " " .. zo_iconFormatInheritColor(icon, 24, 24) .. self:GetDisplayValue(self:GetValue()))
 
         self.control.value:SetHidden(true)
         self.control.comparisonValue:SetHidden(false)

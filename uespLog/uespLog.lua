@@ -583,6 +583,7 @@
 --				- Crafting writ footlockers now log the character's crafting level.
 --				- Fixed logged dye data from achievements not matching the achievement. Also all data within
 --				  an achievement line is now logged.
+--				- Dye stamp data for item links is now logged.
 --			One Tamriel Changes (Update 12)
 --				- Increased API to 100017.
 --				- Increased item mining max ID to 130000.

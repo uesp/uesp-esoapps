@@ -7151,6 +7151,27 @@ function uespLog.CreateItemLinkLog (itemLink)
 		logData.tags = tagString
 	end	
 	
+	logData.primaryDyeId, logData.secondaryDyeId, logData.accentDyeId = GetItemLinkDyeIds(itemLink)
+	logData.dyeStampId = GetItemLinkDyeStampId(itemLink)
+	
+	if (logData.primaryDyeId > 0) then
+		local r, g, b = GetDyeColorsById(logData.primaryDyeId)
+		logData.primaryDyeColor = string.format("%.2x%.2x%.2x", math.floor(r * 255), math.floor(g * 255), math.floor(b * 255))
+		logData.primaryDyeName = GetDyeInfoById(logData.primaryDyeId)
+	end
+	
+	if (logData.secondaryDyeId > 0) then
+		local r, g, b = GetDyeColorsById(logData.secondaryDyeId)
+		logData.secondaryDyeColor = string.format("%.2x%.2x%.2x", math.floor(r * 255), math.floor(g * 255), math.floor(b * 255))
+		logData.secondaryDyeName = GetDyeInfoById(logData.secondaryDyeId)
+	end
+	
+	if (logData.accentDyeId > 0) then
+		local r, g, b = GetDyeColorsById(logData.accentDyeId)
+		logData.accentDyeColor = string.format("%.2x%.2x%.2x", math.floor(r * 255), math.floor(g * 255), math.floor(b * 255))
+		logData.accentDyeName = GetDyeInfoById(logData.accentDyeId)
+	end
+
 	return logData
 end
 

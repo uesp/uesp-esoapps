@@ -3829,7 +3829,7 @@ uespLog.ITEMSTYLES = {
 	[24] = "Ebonheart",
 	[25] = "Aldmeri",
 	[26] = "Healer",
-	[27] = "Battlemage",
+	[27] = "Celestial",
 	[28] = "Nightblade",
 	[29] = "Ranger",
 	[30] = "Soul-Shriven",
@@ -3845,7 +3845,7 @@ uespLog.ITEMSTYLES = {
 	[45] = "Dro-m'Athra",
 	[46] = "Assassin's League",
 	[47] = "Outlaw",
-	[57] = "Grim Arlequin",
+	[58] = "Grim Arlequin",
 	[59] = "Hollowjack",
 }
 

@@ -51,7 +51,6 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[ITEMSTYLE_ENEMY_DAEDRIC] 		 = "uespLog\\images\\styledaedric.dds",		-- Daedra Heart, Daedric, 46151, ITEMSTYLE_ENEMY_DAEDRIC=20, /esoui/art/icons/crafting_walking_dead_mort_heart.dds
 	[ITEMSTYLE_AREA_ANCIENT_ELF] 	 = "uespLog\\images\\styleancientelf.dds",	-- Palladium, Ancient Elf, 46152, ITEMSTYLE_AREA_ANCIENT_ELF=15, /esoui/art/icons/crafting_ore_palladuim.dds
 	[ITEMSTYLE_AREA_DWEMER] 	     = "uespLog\\images\\styledwemer.dds",		-- Dwemer Frame, Dwemer, 57587, ITEMSTYLE_AREA_DWEMER=14, /esoui/art/icons/crafting_dwemer_shiny_tube.dds
-	[ITEMSTYLE_AREA_YOKUDAN] 		 = "uespLog/images/yicon.dds",				-- Yokudan, 35
 	[ITEMSTYLE_AREA_AKAVIRI] 		 = "uespLog/images/aicon.dds", 				-- Akaviri, 33
 	[ITEMSTYLE_GLASS]		 		 = "uespLog/images/malachite.dds", 			-- Glass, 28
 	[ITEMSTYLE_AREA_XIVKYN] 		 = "uespLog/images/charcoal.dds", 			-- Xivkyn, 29
@@ -72,8 +71,11 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[39] 							 = "uespLog/images/minotaur.dds",			-- Oxblood Fungus, Minotaur, 39, /esoui/art/icons/crafting_style_item_minotaur_r2.dds
 	[16] 							 = "uespLog/images/akatosh.dds",			-- Pearl Sand, Akatosh, 16, /esoui/art/icons/crafting_style_item_orderoth_r2.dds
 	[45] 							 = "uespLog/images/dromothra.dds",			-- Defiled Whiskers, Dro-m'Athra, 45, /esoui/art/icons/crafting_style_item_dromothra_r2.dds
-	[57]							 = "uespLog/images/grimarlequin.dds",		-- Grinstone, Grim Arlequin, 57, /esoui/art/icons/crafting_style_item_harlequin_r2.dds
+	[58]							 = "uespLog/images/grimarlequin.dds",		-- Grinstone, Grim Arlequin, 57, /esoui/art/icons/crafting_style_item_harlequin_r2.dds
 	[59]							 = "uespLog/images/hollowjack.dds",			-- Amber Marble, Hollowjack, 59, /esoui/art/icons/crafting_style_item_hollowjack_r2.dds
+	[ITEMSTYLE_AREA_YOKUDAN] 		 = "uespLog/images/yokudan.dds",			-- Yokudan, Ferrous Salts, 35, /esoui/art/icons/crafting_humanoid_daedra_void_salts.dds
+	[27]							 = "uespLog/images/celestial.dds",			-- Celestial, Star Sapphires, 27, /esoui/art/icons/crafting_style_item_celestial_r2.dds
+	[31]							 = "uespLog/images/draugr.dds",				-- Draugr, Pristine Shrouds, 31, /esoui/art/icons/crafting_style_item_draugr_r2.dds	
 }
 
 
@@ -93,7 +95,6 @@ uespLog.STYLE_ICON_DATA = {
 	[ITEMSTYLE_ENEMY_DAEDRIC] 		 = "/esoui/art/icons/crafting_walking_dead_mort_heart.dds",
 	[ITEMSTYLE_AREA_ANCIENT_ELF] 	 = "/esoui/art/icons/crafting_ore_palladuim.dds",
 	[ITEMSTYLE_AREA_DWEMER] 	     = "/esoui/art/icons/crafting_dwemer_shiny_tube.dds",
-	[ITEMSTYLE_AREA_YOKUDAN] 		 = "uespLog/images/yicon.dds",
 	[ITEMSTYLE_AREA_AKAVIRI]		 = "uespLog/images/aicon.dds",
 	[ITEMSTYLE_GLASS]		 		 = "uespLog/images/malachite.dds",
 	[ITEMSTYLE_AREA_XIVKYN] 		 = "uespLog/images/charcoal.dds",
@@ -114,8 +115,11 @@ uespLog.STYLE_ICON_DATA = {
 	[39] 							 = "/esoui/art/icons/crafting_style_item_minotaur_r2.dds",
 	[16] 							 = "/esoui/art/icons/crafting_style_item_orderoth_r2.dds",
 	[45] 							 = "/esoui/art/icons/crafting_style_item_dromothra_r2.dds",
-	[57]							 = "/esoui/art/icons/crafting_style_item_harlequin_r2.dds",
+	[58]							 = "/esoui/art/icons/crafting_style_item_harlequin_r2.dds",
 	[59]							 = "/esoui/art/icons/crafting_style_item_hollowjack_r2.dds",
+	[ITEMSTYLE_AREA_YOKUDAN] 		 = "/esoui/art/icons/crafting_humanoid_daedra_void_salts.dds",
+	[27]							 = "/esoui/art/icons/crafting_style_item_celestial_r2.dds",
+	[31]							 = "/esoui/art/icons/crafting_style_item_draugr_r2.dds",
 }
 
 

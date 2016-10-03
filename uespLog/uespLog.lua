@@ -584,6 +584,7 @@
 --				- Fixed logged dye data from achievements not matching the achievement. Also all data within
 --				  an achievement line is now logged.
 --				- Dye stamp data for item links is now logged.
+--				- Fixed the Grim Harlequin style ID.
 --			One Tamriel Changes (Update 12)
 --				- Increased API to 100017.
 --				- Increased item mining max ID to 130000.
@@ -593,6 +594,7 @@
 --				  comparison of custom stats is not yet available.
 --				- Added the "/uespcustomstats custom" option. This displays the change in stat value for the new
 --				  statistic comparison feature in the inventory stats window.
+--				- Added the 3 new styles (Celestial, Yokudan, Draugr).
 --		
 --
 --		Future Versions (Works in Progress)
@@ -9287,8 +9289,7 @@ uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
 	["wood_elf"] = 8,
 	["khajiit"] = 9,
 	["orc"] = 3,
-	["yokudan"] = 35,
-	
+		
 			-- Thieves Guild
 	["outlaw"] = 47,
 	["malacath"] = 13,
@@ -9336,10 +9337,15 @@ uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
 	["minotaur"] = 39,
 	
 		-- Witches Festival
-	["grim arlequin"] = 57,
-	["grim_arlequin"] = 57,
-	["grim"] = 57,
+	["grim arlequin"] = 58,
+	["grim_arlequin"] = 58,
+	["grim"] = 58,
 	["hollowjack"] = 59,
+	
+		-- One Tamriel
+	["yokudan"] = 35,
+	["celestial"] = 27,
+	["draugr"] = 31,
 }
 
 
@@ -9425,6 +9431,11 @@ uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
 	["grim_arlequin"] = { 82039, 82040, 82041, 82042, 82043, 82044, 82045, 82046, 82047, 82048, 82049, 82050, 82051, 82052 }, -- 82038, 82053
 	["grim"] = { 82039, 82040, 82041, 82042, 82043, 82044, 82045, 82046, 82047, 82048, 82049, 82050, 82051, 82052 }, -- 82038, 82053
 	["hollowjack"] = { 82023, 82024, 82025, 82026, 82027, 82028, 82029, 82030, 82031, 82032, 82033, 82034, 82035, 82036 }, -- 82022, 82037
+		
+			-- One Tamriel
+	["yokudan"] = { 57606, 57607, 57608, 57609, 57610, 57611, 57612, 57613, 57614, 57615, 57616, 57617, 57618, 57619 }, -- 57605, 64555
+	["celestial"] = { 82007, 82008, 82009, 82010, 82011, 82012, 82013, 82014, 82015, 82016, 82017, 82018, 82019, 82020 }, -- 82006, 82021
+	["draugr"] = { 76895, 76896, 76897, 76898, 76899, 76900, 76901, 76902, 76903, 76904, 76905, 76906, 76907, 76908 }, -- 76894, 76909
 }
 
 

@@ -595,6 +595,8 @@
 --				- Added the "/uespcustomstats custom" option. This displays the change in stat value for the new
 --				  statistic comparison feature in the inventory stats window.
 --				- Added the 3 new styles (Celestial, Yokudan, Draugr).
+--
+--		- v0.91 -- ?
 --		
 --
 --		Future Versions (Works in Progress)
@@ -625,7 +627,7 @@
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "0.90"
+uespLog.version = "0.91"
 uespLog.releaseDate = "5 October 2016"
 uespLog.DATA_VERSION = 3
 

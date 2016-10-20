@@ -599,6 +599,7 @@
 --		- v0.91 -- ?
 --				- Mined item data for recipes now includes the information needed to duplicate the in-game
 --				  tool-tip displayed for recipes.
+--				- Fixed the stacking of Major Force in the Critical Damage stat display.
 --		
 --
 --		Future Versions (Works in Progress)
@@ -11857,6 +11858,7 @@ end
 
 function uespLog.GetPlayerBaseCriticalDamage()
 	local critDamage = 0.50
+	local majorForce = 0
 	local mundus1, mundus2 = uespLog.GetPlayerMundus()
 	
 		-- Templar:Piercing Spear 31698/44046, 5/10%
@@ -11899,13 +11901,13 @@ function uespLog.GetPlayerBaseCriticalDamage()
 		if (buffName == "Minor Force") then
 			critDamage = critDamage + 0.12
 		elseif (buffName == "Major Force") then
-			critDamage = critDamage + 0.30
+			majorForce = 0.30
 		elseif (buffName == "Aggressive Horn") then		-- Doesn't seem to have its own seperate buff for Major Force
 			local currentTime = GetGameTimeMilliseconds()/1000
 			local deltaTime = currentTime - timeStarted
 			
 			if (deltaTime <= 9.5) then
-				critDamage = critDamage + 0.30
+				majorForce = 0.30
 			end
 		end
 	end
@@ -11916,7 +11918,7 @@ function uespLog.GetPlayerBaseCriticalDamage()
 		critDamage = critDamage + 0.12 * (1 + Divines)
 	end
 	
-	return critDamage
+	return critDamage * (1 + majorForce)
 end
 
 

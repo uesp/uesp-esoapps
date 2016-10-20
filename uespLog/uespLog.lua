@@ -597,6 +597,8 @@
 --				- Added the 3 new styles (Celestial, Yokudan, Draugr).
 --
 --		- v0.91 -- ?
+--				- Mined item data for recipes now includes the information needed to duplicate the in-game
+--				  tool-tip displayed for recipes.
 --		
 --
 --		Future Versions (Works in Progress)
@@ -6935,6 +6937,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 	local craftSkill
 	local siegeType
 	local hasCharges, hasEnchant, hasUseAbility, hasArmorDecay, isSetItem, isCrafted, isVendorTrash, isUnique, isUniqueEquipped
+	local hasScaling, minLevel, maxLevel, isChampionPoints
 	local isConsumable, isRune
 	local flagString = ""
 	local flavourText
@@ -6978,12 +6981,20 @@ function uespLog.CreateItemLinkLog (itemLink)
 		logData.enchantDesc = enchantDesc
 	end
 			
-	hasUseAbility, useAbilityName, useAbilityDesc, cooldown = GetItemLinkOnUseAbilityInfo(itemLink)
+	hasUseAbility, useAbilityName, useAbilityDesc, cooldown, hasScaling, minLevel, maxLevel, isChampionPoints = GetItemLinkOnUseAbilityInfo(itemLink)
+	
+	if (isChampionPoints) then
+		minLevel = 50 + math.floor(minLevel/10)
+		maxLevel = 50 + math.floor(maxLevel/10)
+	end
 	
 	if (hasUseAbility) then
 		logData.useAbilityName = useAbilityName
 		logData.useAbilityDesc = useAbilityDesc
 		logData.useCooldown = cooldown
+		logData.hasScaling = hasScaling
+		logData.minLevel = minLevel
+		logData.maxLevel = maxLevel
 	end
 	
 	logData.trait, logData.traitDesc = GetItemLinkTraitInfo(itemLink)
@@ -7063,6 +7074,21 @@ function uespLog.CreateItemLinkLog (itemLink)
 	
 	if (resultItemLink ~= nil and resultItemLink ~= "") then
 		logData.recipeLink = resultItemLink
+		
+		local resultHasUseAbility, resultUuseAbilityName, resultUseAbilityDesc, resultCooldown, resultHasScaling, resultMinLevel, resultMaxLevel, resultIsChampionPoints = GetItemLinkOnUseAbilityInfo(resultItemLink)
+	
+		if (resultIsChampionPoints) then
+			resultMinLevel = 50 + math.floor(resultMinLevel/10)
+			resultMaxLevel = 50 + math.floor(resultMaxLevel/10)
+		end
+		
+		logData.resultUseAbility = resultUseAbilityDesc
+		logData.resultCooldown = resultCooldown
+		logData.resultMinLevel = resultMinLevel
+		logData.resultMaxLevel = resultMaxLevel
+		
+		logData.recipeRank = GetItemLinkRecipeRankRequirement(itemLink)
+		logData.recipeQuality = GetItemLinkRecipeQualityRequirement(itemLink)
 	end
 	
 	refinedItemLink = GetItemLinkRefinedMaterialItemLink(itemLink)
@@ -7078,11 +7104,15 @@ function uespLog.CreateItemLinkLog (itemLink)
 	end
 		
 	local numIngredients = GetItemLinkRecipeNumIngredients(itemLink)
+	local ingrList = {}
 	
 	for i = 1, numIngredients do
 		local ingredientName, numOwned = GetItemLinkRecipeIngredientInfo(itemLink, i)
 		logData["ingrName"..tostring(i)] = ingredientName
+		ingrList[#ingrList + 1] = ingredientName
 	end
+	
+	logData.recipeIngredients = table.concat(ingrList, ", ")
 		
 	--logData.isBound = IsItemLinkBound(itemLink)
 	logData.bindType = GetItemLinkBindType(itemLink)
@@ -13080,4 +13110,35 @@ uespLog.BAD_TRAIT_ITEMTYPES = {
 	
 	
 	
+function uespLog.testDumpRecipes()
+	local logData
+	local recipeCount = 0
 	
+	uespLog.Msg("Logging all recipe data...")
+	
+	logData = {}
+	logData.event = "mineItem::Start"
+	logData.note = "Only recipe data"
+	uespLog.AppendDataToLog("all", logData)
+	
+	for itemId = 1, 115000 do
+		local itemLink = uespLog.MakeItemLink(itemId, 1, 1)
+		local itemType = GetItemLinkItemType(itemLink)
+		
+		if (itemType == 29) then
+			logData = uespLog.CreateItemLinkLog(itemLink)
+			
+			logData.event = "mineItem"
+			uespLog.AppendDataToLog("all", logData)
+			
+			uespLog.Msg(".        Logged data for "..itemLink.."...")
+			recipeCount = recipeCount + 1
+		end
+	end
+	
+	logData = {}
+	logData.event = "mineItem::End"
+	uespLog.AppendDataToLog("all", logData)
+	
+	uespLog.Msg("Found and logged "..recipeCount.." recipes!")
+end

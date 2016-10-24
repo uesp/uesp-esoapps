@@ -676,7 +676,7 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 	
 	if (recipeName ~= nil) then
 		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
-			if (uespLog.IsRecipeKnown(recipeName)) then
+			if (IsItemLinkRecipeKnown(itemLink)) then
 				iconControl:SetHidden(false)		
 				iconControl:SetTexture(uespLog.TRADE_KNOWN_TEXTURE)
 				iconControl:SetColor(unpack(uespLog.TRADE_KNOWN_COLOR))
@@ -1696,7 +1696,7 @@ function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
 	
 	if (recipeName ~= nil) then
 		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
-			if (uespLog.IsRecipeKnown(recipeName)) then
+			if (IsItemLinkRecipeKnown(itemLink)) then
 				iconControl:SetHidden(false)		
 				iconControl:SetTexture(uespLog.TRADE_KNOWN_TEXTURE)
 				iconControl:SetColor(unpack(uespLog.TRADE_KNOWN_COLOR))

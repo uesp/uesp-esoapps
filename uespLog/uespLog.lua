@@ -600,6 +600,7 @@
 --				- Mined item data for recipes now includes the information needed to duplicate the in-game
 --				  tool-tip displayed for recipes.
 --				- Fixed the stacking of Major Force in the Critical Damage stat display.
+--				- Fixed the display of a known recipes that shows as unknown in your inventory (Ghastly Eye-Bowl Recipe).
 --		
 --
 --		Future Versions (Works in Progress)

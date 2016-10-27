@@ -601,6 +601,7 @@
 --				  tool-tip displayed for recipes.
 --				- Fixed the stacking of Major Force in the Critical Damage stat display.
 --				- Fixed the display of a known recipes that shows as unknown in your inventory (Ghastly Eye-Bowl Recipe).
+--				- Fixed the custom Effective Weapon/Spell Power stats for characters not at max level.
 --		
 --
 --		Future Versions (Works in Progress)
@@ -11705,7 +11706,7 @@ function uespLog.GetAttackSpellMitigation()
 	-- AttackMitigation = (((Target.SpellResist)*(1 - Skill2.SpellPenetration) - SpellPenetration)*(-1/(Level * 1000)) + 1)*(1 - Target.DefenseBonus)
 	AttackMitigation = uespLog.savedVars.settings.data.targetResistance * (1 - PenetrationFactor)
 	AttackMitigation = AttackMitigation - Penetration
-	AttackMitigation = 1 + AttackMitigation * (-1 / (Level * 1000))
+	AttackMitigation = 1 + AttackMitigation * (-1 / (EffectiveLevel * 1000))
 	AttackMitigation = AttackMitigation * (1 - TargetDefenseBonus)
 	
 	if (AttackMitigation > 1) then AttackMitigation = 1 end
@@ -11752,7 +11753,7 @@ function uespLog.GetAttackPhysicalMitigation()
 	-- AttackMitigation = (((Target.PhysicalResist)*(1 - Skill2.PhysicalPenetration) - PhysicalPenetration)*(-1/(Level * 1000)) + 1)*(1 - Target.DefenseBonus)
 	AttackMitigation = uespLog.savedVars.settings.data.targetResistance * (1 - PenetrationFactor)
 	AttackMitigation = AttackMitigation - Penetration
-	AttackMitigation = 1 + AttackMitigation * (-1 / (Level * 1000))
+	AttackMitigation = 1 + AttackMitigation * (-1 / (EffectiveLevel * 1000))
 	AttackMitigation = AttackMitigation * (1 - TargetDefenseBonus)
 	
 	if (AttackMitigation > 1) then AttackMitigation = 1 end

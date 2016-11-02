@@ -11133,7 +11133,7 @@ function uespLog.DoCommand(text)
 				ExecuteChatCommand(text)
           else
 				uespLog.MsgColor(uespLog.errorColor, "Warning: Invalid chat command '"..command.."'!")
-				ZO_Alert(UI_ALERT_CATEGORY_ALERT, nil, SI_ERROR_INVALID_COMMAND)
+				--ZO_Alert(UI_ALERT_CATEGORY_ALERT, nil, SI_ERROR_INVALID_COMMAND)
           end
     end
 	

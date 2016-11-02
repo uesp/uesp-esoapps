@@ -653,7 +653,7 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 	styleIconControl:ClearAnchors()
 	styleIconControl:SetAnchor(CENTER, rowControl, CENTER, 85 + iconOffset)
 	
-	if (itemStyleIcon ~= nil and (itemType == 1 or itemType == 2) and (equipType ~= 12 and equipType ~= 2) and uespLog.IsCraftDisplay()) then
+	if (itemStyleIcon ~= nil and (itemType == 1 or itemType == 2) and (equipType ~= 12 and equipType ~= 2) and uespLog.IsCraftStyleDisplay()) then
 		styleIconControl:SetHidden(false)		
 		styleIconControl:SetTexture(itemStyleIcon)
 		--iconControl:SetColor(unpack(uespLog.TRADE_KNOWN_COLOR))

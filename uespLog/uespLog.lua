@@ -602,13 +602,13 @@
 --				- Fixed the stacking of Major Force in the Critical Damage stat display.
 --				- Fixed the display of a known recipes that shows as unknown in your inventory (Ghastly Eye-Bowl Recipe).
 --				- Fixed the custom Effective Weapon/Spell Power stats for characters not at max level.
---				- TODO: Fix item style display toggle.
+--				- Fixed item style display toggle.
 --				- Fix effective spell/weapon power calculation.
+--				- A warning is displayed in the chat window if you use an unknown slash command.
 --		
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
---			- A warning is displayed in chat if you use an unknown slash command.
 --			- Fishing notifications (turn on with /uespfish on)
 --			- Daily quest tracking (/uespdaily)
 --			- Added the /uesptrackstat command for tracking changes to Health/Magicka/Stamina/Ultimate. You
@@ -2744,9 +2744,13 @@ function uespLog.Initialize( self, addOnName )
 	Logout = uespLog.Logout
 	ReloadUI = uespLog.ReloadUI
 	
-	--uespLog.Old_DoCommand = DoCommand
-	--DoCommand = uespLog.DoCommand
+	uespLog.Old_DoCommand = DoCommand
+	DoCommand = uespLog.DoCommand
+	CHAT_SYSTEM.commandPrefixes[47] = uespLog.DoCommand
 	
+	--uespLog.Old_ZO_Alert = ZO_Alert
+	--ZO_Alert = uespLog.ZO_Alert
+		
 	--uespLog.Old_ZO_ChatTextEntry_Execute = ZO_ChatTextEntry_Execute
 	--ZO_ChatTextEntry_Execute = uespLog.ZO_ChatTextEntry_Execute
 		
@@ -11102,6 +11106,17 @@ end
 SLASH_COMMANDS["/uespbuypassive"] = uespLog.BuyPassiveCommand
 
 
+function uespLog.ZO_Alert(category, soundId, msg, ...)
+
+	if (category == UI_ALERT_CATEGORY_ALERT and msg == SI_ERROR_INVALID_COMMAND) then
+		--uespLog.Msg("Warning: Invalid chat command received!")
+		--return
+	end
+	
+	return uespLog.Old_ZO_Alert(category, soundId, msg, ...)
+end
+
+
 	-- The native DoCommand() function never appears to be used
 function uespLog.DoCommand(text)
     local command, arguments = zo_strmatch(text, "^(/%S+)%s?(.*)")
@@ -11111,13 +11126,15 @@ function uespLog.DoCommand(text)
     command = zo_strlower(command or "")
     local fn = SLASH_COMMANDS[command]
 	
-	if (command ~= "" and fn == nil) then
-		uespLog.Msg("Warning: Invalid chat command '"..command.."'!")
-		ExecuteChatCommand(text)
-    elseif (fn) then
+	if(fn) then
         fn(arguments or "")
     else
-        ExecuteChatCommand(text)
+          if IsInternalBuild() then
+				ExecuteChatCommand(text)
+          else
+				uespLog.MsgColor(uespLog.errorColor, "Warning: Invalid chat command '"..command.."'!")
+				ZO_Alert(UI_ALERT_CATEGORY_ALERT, nil, SI_ERROR_INVALID_COMMAND)
+          end
     end
 	
 end

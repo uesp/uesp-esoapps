@@ -602,6 +602,8 @@
 --				- Fixed the stacking of Major Force in the Critical Damage stat display.
 --				- Fixed the display of a known recipes that shows as unknown in your inventory (Ghastly Eye-Bowl Recipe).
 --				- Fixed the custom Effective Weapon/Spell Power stats for characters not at max level.
+--				- TODO: Fix item style display toggle.
+--				- Fix effective spell/weapon power calculation.
 --		
 --
 --		Future Versions (Works in Progress)
@@ -844,6 +846,7 @@ uespLog.lastTargetData = {
 	gameTime = "",
 	timeStamp = "",
 	level = "",
+	effectiveLevel = "",
 	race = "",
 	class = "",
 	maxHp = "",
@@ -4875,6 +4878,7 @@ function uespLog.OnTargetChange (eventCode)
 		uespLog.lastTargetData.maxMg = maxMg
 		uespLog.lastTargetData.maxSt = maxSt
 		uespLog.lastTargetData.level = level
+		uespLog.lastTargetData.effectiveLevel = GetUnitEffectiveLevel(unitTag)
 		uespLog.lastTargetData.race = race
 		uespLog.lastTargetData.class = class
 		uespLog.lastTargetData.type = unitType		
@@ -4908,6 +4912,7 @@ function uespLog.OnTargetChange (eventCode)
 		uespLog.lastOnTargetChange = ""
 	elseif (unitType ~= 0) then
 		uespLog.lastTargetData.level = ""
+		uespLog.lastTargetData.effectiveLevel = ""
 		uespLog.lastTargetData.race = ""
 		uespLog.lastTargetData.class = ""
 		uespLog.lastTargetData.type = unitType		
@@ -11691,7 +11696,7 @@ function uespLog.GetAttackSpellMitigation()
 	local Level = GetUnitLevel("player")
 	local EffectiveLevel = GetUnitEffectiveLevel("player")
 	local TargetDefenseBonus = 0
-	local currentRank = GetSkillAbilityUpgradeInfo(2, 5, 7)		-- 5/10%
+	local currentRank = GetSkillAbilityUpgradeInfo(2, 5, 8)		-- 5/10%
 	local weaponType1, weaponType2 = uespLog.GetActiveWeaponTypes()
 	
 		-- Destruction Staff: Penetrating Magic Passive
@@ -11723,8 +11728,8 @@ function uespLog.GetAttackPhysicalMitigation()
 	local Level = GetUnitLevel("player")
 	local EffectiveLevel = GetUnitEffectiveLevel("player")
 	local TargetDefenseBonus = 0
-	local currentRank2H = GetSkillAbilityUpgradeInfo(2, 1, 7)		-- 10/20%
-	local currentRankDW = GetSkillAbilityUpgradeInfo(2, 3, 10)		-- 5/10% x1/2
+	local currentRank2H = GetSkillAbilityUpgradeInfo(2, 1, 8)		-- 10/20%
+	local currentRankDW = GetSkillAbilityUpgradeInfo(2, 3, 11)		-- 5/10% x1/2
 	local activeWeaponType = 1
 	local weaponType1, weaponType2 = uespLog.GetActiveWeaponTypes()
 	
@@ -11980,7 +11985,7 @@ function uespLog.GetEffectiveSpellPower()
 	local AttackCrit = SpellCrit - TargetCritResistFactor - (TargetCritResistFlat)*(0.035/250)
 	local result = 0
 
-	SpellCrit = math.floor(AttackCrit / (2 * EffectiveLevel * (100 + EffectiveLevel)) * 1000 + 100 + 0.5)/1000;
+	SpellCrit = math.floor(AttackCrit / (2 * EffectiveLevel * (100 + EffectiveLevel)) * 1000 + 0.5)/1000;
 	
 		-- EffectiveSpellPower = (round(Magicka/10.5) + SpellDamage)*(1 + AttackSpellCrit*SpellCritDamage)*(AttackSpellMitigation)
 	result = math.floor(Magicka/10.5 + 0.5) + SpellDamage
@@ -12004,7 +12009,7 @@ function uespLog.GetEffectiveWeaponPower()
 	local AttackCrit = WeaponCrit - TargetCritResistFactor - (TargetCritResistFlat)*(0.035/250)
 	local result = 0
 	
-	WeaponCrit = math.floor(AttackCrit / (2 * EffectiveLevel * (100 + EffectiveLevel)) * 1000 + 100 + 0.5)/1000;
+	WeaponCrit = math.floor(AttackCrit / (2 * EffectiveLevel * (100 + EffectiveLevel)) * 1000 + 0.5)/1000;
 	
 		--EffectiveWeaponPower = (round(Stamina/10.5) + WeaponDamage)*(1 + AttackWeaponCrit*WeaponCritDamage)*(AttackPhysicalMitigation)
 	result = math.floor(Stamina/10.5 + 0.5) + WeaponDamage

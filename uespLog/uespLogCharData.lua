@@ -102,6 +102,18 @@ uespLog.CHARDATA_CRAFTSTYLE_NAMES = {
 	[26] = 'Aldmeri',
 	[27] = 'Ebonheart',
 	[28] = 'Soul Shriven',
+	[29] = 'Minotaur',
+	[30] = "Dro-m'athra",
+	[31] = 'Order of the Hour',
+	[32] = 'Thieves Guild',
+	[33] = "Assassins League",
+	[34] = 'Celestial',
+	[35] = 'Hollowjack',
+	[36] = 'Grim Arlequin',
+	[37] = 'Dark Brotherhood',
+	[38] = "Abah's Watch",
+	[39] = 'Draugr',
+	[40] = 'Akatosh',
 }
 
 

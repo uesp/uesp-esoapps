@@ -4913,7 +4913,7 @@ function uespLog.OnTargetChange (eventCode)
 		
 		uespLog.AppendDataToLog("all", logData, uespLog.GetLastTargetData(), uespLog.GetTimeData())
 		
-		uespLog.MsgType(uespLog.MSG_NPC, "UESP: Found Npc "..name)
+		uespLog.MsgType(uespLog.MSG_NPC, "UESP: Found Npc "..name.." ("..maxHp.." HP)")
 	elseif (unitType == COMBAT_UNIT_TYPE_PLAYER) then
 		uespLog.lastOnTargetChange = ""
 	elseif (unitType ~= 0) then

@@ -4911,8 +4911,9 @@ function uespLog.OnTargetChange (eventCode)
         local x, y, z, zone = uespLog.GetUnitPosition(unitTag)
 		local gameTime = GetGameTimeMilliseconds()
 		local diffTime = gameTime - uespLog.lastOnTargetChangeGameTime
+		local active = IsPlayerInteractingWithObject()
 		
-        if (name == nil or name == "" or x <= 0 or y <= 0) then
+        if (name == nil or name == "" or x <= 0 or y <= 0 or active) then
             return
         end
 				
@@ -5524,8 +5525,8 @@ function uespLog.OnUpdate ()
     if IsGameCameraUIModeActive() then
         return
     end
-
-    local action, name, interactionBlocked, additionalInfo, context = GetGameCameraInteractableActionInfo()
+	
+	local action, name, interactionBlocked, additionalInfo, context = GetGameCameraInteractableActionInfo()
 	local active = IsPlayerInteractingWithObject()
 	local interactionType = GetInteractionType()
 	local x, y, z, zone
@@ -5554,6 +5555,11 @@ function uespLog.OnUpdate ()
     end
 	
 	if (not active) then
+	
+		--if (uespLog.lastTargetData.name ~= name) then
+			--uespLog.DebugMsg("Last Target Change: "..tostring(name)..", "..tostring(active)..", "..tostring(action)..", "..tostring(IsInteracting()))
+		--end
+		
 		uespLog.lastTargetData.name = name
 		uespLog.lastTargetData.x = uespLog.currentTargetData.x
 		uespLog.lastTargetData.y = uespLog.currentTargetData.y
@@ -5590,11 +5596,17 @@ function uespLog.OnUpdate ()
     if (action == nil or name == "" or name == uespLog.currentTargetData.name) then
         return
     end
+		
+	--uespLog.DebugMsg("Update: "..tostring(active)..", "..tostring(action))
 	
 	if (DoesUnitExist("reticleover")) then
 		x, y, z, zone = uespLog.GetUnitPosition("reticleover")
+		--uespLog.DebugMsg("UnitPos: "..tostring(x)..", "..tostring(y))
 	else
+		--local x1, y1 = uespLog.GetUnitPosition("reticleover")
 		x, y, z, zone = uespLog.GetPlayerPosition()
+		--uespLog.DebugMsg("PlayerPos: "..tostring(x)..", "..tostring(y))
+		--uespLog.DebugMsg("UnitPos: "..tostring(x1)..", "..tostring(y1))
 	end
 	
 	uespLog.currentTargetData.name = name
@@ -13276,12 +13288,12 @@ end
 
 
 function uespLog.OnUnitCreated(eventCode, unitTag)
-	uespLog.DebugMsg("OnUnitCreated: "..tostring(unitTag))
+	uespLog.DebugExtraMsg("OnUnitCreated: "..tostring(unitTag))
 end
 
 
 function uespLog.OnUnitDestroyed(eventCode, unitTag)
-	uespLog.DebugMsg("OnUnitDestroyed: "..tostring(unitTag))
+	uespLog.DebugExtraMsg("OnUnitDestroyed: "..tostring(unitTag))
 end
 
 
@@ -13303,7 +13315,6 @@ end
 
 
 function uespLog.ClearTargetHealthData()
-	uespLog.DebugMsg("ClearTargetHealthData")
 	uespLog.TargetHealthData = {}
 end
 
@@ -13337,7 +13348,7 @@ function uespLog.UpdateFightTargetDeath(targetId, targetName)
 		end
 	end
 	
-	uespLog.DebugMsg("UpdateFightTargetDeath: "..tostring(targetName).." ("..tostring(targetId)..")")	
+	uespLog.DebugExtraMsg("UpdateFightTargetDeath: "..tostring(targetName).." ("..tostring(targetId)..")")	
 	
 	if (uespLog.FightKillData[targetName] == nil) then
 		uespLog.FightKillData[targetName] = {}

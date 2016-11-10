@@ -191,7 +191,9 @@ end
 
 
 function uespLog.OnPlayerDeactivated (eventCode)
-	uespLog.DebugExtraMsg("OnPlayerDeactivated")
+	uespLog.DebugMsg("OnPlayerDeactivated")
+	
+	uespLog.ClearTargetHealthData()
 end
 
 
@@ -561,7 +563,7 @@ end
 
 
 function uespLog.OnZoneChanged(eventCode, zoneName, subZoneName, newSubzone, zoneId, subZoneId)
-	uespLog.DebugExtraMsg("OnZoneChanged")
+	uespLog.DebugExtraMsg("OnZoneChanged: "..tostring(newSubzone))
 	--uespLog.DebugMsg("UESP: OnZoneChanged "..tostring(zoneName)..", "..tostring(subZoneName)..", "..tostring(newSubzone)..", "..tostring(zoneId)..", "..tostring(subZoneId))
 	
 	local diffTime = GetTimeStamp() - uespLog.charDataLastSaveTimestamp
@@ -569,6 +571,7 @@ function uespLog.OnZoneChanged(eventCode, zoneName, subZoneName, newSubzone, zon
 	if (uespLog.GetAutoSaveCharData() and uespLog.GetAutoSaveZoneCharData() and diffTime > uespLog.CHARDATA_MINTIMESTAMP_DIFF) then
 		uespLog.SaveCharData()
 	end
+
 end
 
 

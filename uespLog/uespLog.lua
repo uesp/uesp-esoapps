@@ -627,8 +627,11 @@
 --					/uesptrackstat all					  Start tracking all stats.
 --					/uesptrackstat none					  Turns off all tracking.
 --					/uesptrackstat resettime			  Resets the game time display to 0.
---			   Note that this feature is currently not working perfectly as the EVENT_POWER_UPDATE seems to
---			   "miss" some stat updates. In the future this will be changed to use EVENT_COMBAT_EVENT instead.
+--			- Added the /uespkills command to tracking basic kill statistics of NPCs (number and total health).
+--			  Data is tracked per character and is saved between sessions.
+--					/uespkills on/off					Turns the feature on and off (default is off).
+--					/uespkills reset					Clears the current data.
+--					/uespkills show						Lists all the current kill data.
 --
 --
 
@@ -787,7 +790,7 @@ uespLog.ignoredNPCs = {
 	Chicken = 1,
 	Dog = 1,
 	Rabbit = 1,
-	Clannfear = 1,
+	-- Clannfear = 1,	-- Some of these are actual mobs as opposed to the Sorcerer pets
 	Frog = 1,
 	Deer = 1,
 	Spider = 1,
@@ -1319,6 +1322,7 @@ uespLog.DEFAULT_SETTINGS =
 			[uespLog.MSG_INSPIRATION] = false,
 		},		
 		["trackLoot"] = false,
+		["trackFights"] = false,
 		["inventoryStats"] = "off",
 	}
 }
@@ -1676,6 +1680,34 @@ function uespLog.SetTrackLoot(flag)
 	end
 	
 	uespLog.savedVars.settings.data.trackLoot = flag
+end
+
+
+function uespLog.GetTrackFights()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.trackFights == nil) then
+		uespLog.savedVars.settings.data.trackFights = uespLog.DEFAULT_SETTINGS.trackFights
+	end
+	
+	return uespLog.savedVars.settings.data.trackFights
+end
+
+
+function uespLog.SetTrackFights(flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.trackFights == nil) then
+		uespLog.savedVars.settings.data.trackFights = uespLog.DEFAULT_SETTINGS.trackFights
+	end
+	
+	uespLog.savedVars.settings.data.trackFights = flag
 end
 
 
@@ -2544,6 +2576,12 @@ function uespLog.Initialize( self, addOnName )
 		end
 	end
 	
+	if (uespLog.savedVars.charInfo.data.fightData == nil) then
+		uespLog.savedVars.charInfo.data.fightData = {}
+	end
+	
+	uespLog.FightKillData = uespLog.savedVars.charInfo.data.fightData
+	
 	uespLog.InitializeTrackLootData(false)
 	
 	if (uespLog.savedVars.settings.data.messageDisplay.inspiration == nil) then
@@ -2628,7 +2666,8 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_PLAYER_DEACTIVATED, uespLog.OnPlayerDeactivated)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOGOUT_DISALLOWED, uespLog.OnLogoutDisallowed)	 
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ZONE_CHANGED, uespLog.OnZoneChanged)	
-	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ZONE_UPDATE, uespLog.OnZoneUpdate)	
+		
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_QUEST_CONDITION_COUNTER_CHANGED, uespLog.OnQuestCounterChanged)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_QUEST_ADDED, uespLog.OnQuestAdded)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_QUEST_REMOVED, uespLog.OnQuestRemoved)
@@ -2672,7 +2711,11 @@ function uespLog.Initialize( self, addOnName )
 	
 		-- Note: This event is called up to 40-50 time for each kill with some weapons (Destruction Staff)
 	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOT_UPDATED, uespLog.OnActionSlotUpdated)	
-	
+		
+	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_UNIT_DESTROYED, uespLog.OnUnitDestroyed)
+	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_UNIT_CREATED, uespLog.OnUnitCreated)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_PLAYER_COMBAT_STATE, uespLog.OnPlayerCombatState)
+	 	
 	ZO_InteractWindow:UnregisterForEvent(EVENT_CHATTER_BEGIN)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CONVERSATION_UPDATED, uespLog.OnConversationUpdated)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_QUEST_OFFERED, uespLog.OnQuestOffered)
@@ -4889,10 +4932,12 @@ function uespLog.OnTargetChange (eventCode)
 		uespLog.lastTargetData.class = class
 		uespLog.lastTargetData.type = unitType		
 		
+		uespLog.UpdateTargetHealthData(name, unitTag, maxHp)
+		
 		if (uespLog.IsIgnoredNPC(name)) then
 			return
 		end
-		
+				
 		if (name == uespLog.lastOnTargetChange or diffTime < uespLog.MIN_TARGET_CHANGE_TIMEMS) then
 			return
 		end
@@ -5042,8 +5087,21 @@ end
 function uespLog.OnCombatEvent (eventCode, result, isError, abilityName, abilityGraphic, abilityActionSlotType, sourceName, sourceType, targetName, targetType, hitValue, powerType, damageType, isLogged, sourceUnitId, targetUnitId, abilityId)
 
 	if (sourceType ~= COMBAT_UNIT_TYPE_PLAYER and targetType ~= COMBAT_UNIT_TYPE_PLAYER) then
-		--uespLog.DebugMsg("Not Player: Result: "..tostring(result)..",  sourceType: "..tostring(sourceType)..",  damageType: "..tostring(damageType)..",  name: "..tostring(abilityName)..",  hitValue: "..tostring(hitValue))
+	
+		if (result == 2262) then
+			--uespLog.DebugMsg("Death Not Player: Result: "..tostring(result)..",  sourceType: "..tostring(sourceType)..",  damageType: "..tostring(damageType)..",  name: "..tostring(abilityName)..",  hitValue: "..tostring(hitValue).."  srcId: "..tostring(sourceUnitId).." ("..tostring(sourceName)..")".."  tarId: "..tostring(targetUnitId).." w("..tostring(targetName)..")")
+			uespLog.UpdateFightTargetDeath(targetUnitId, targetName)
+		end
+		
 		return
+	end
+
+	if (result == 2262 and sourceType == COMBAT_UNIT_TYPE_PLAYER) then
+		--uespLog.DebugMsg("Death: "..tostring(result)..",  sourceType: "..tostring(sourceType)..",  damageType: "..tostring(damageType)..",  name: "..tostring(abilityName)..",  hitValue: "..tostring(hitValue).."  srcId: "..tostring(sourceUnitId).." ("..tostring(sourceName)..")".."  tarId: "..tostring(targetUnitId).." ("..tostring(targetName)..")")
+		uespLog.UpdateFightTargetDeath(targetUnitId, targetName)
+	else
+		uespLog.UpdateRecentFightTargetId(targetUnitId, targetName)
+		--uespLog.DebugMsg("CE Player: Result: "..tostring(result)..",  sourceType: "..tostring(sourceType)..",  damageType: "..tostring(damageType)..",  name: "..tostring(abilityName)..",  hitValue: "..tostring(hitValue).."  srcId: "..tostring(sourceUnitId).." ("..tostring(sourceName)..")".."  tarId: "..tostring(targetUnitId).." ("..tostring(targetName)..")")
 	end
 	
 	hitValue = tonumber(hitValue)
@@ -13193,3 +13251,170 @@ function uespLog.testDumpRecipes()
 	
 	uespLog.Msg("Found and logged "..recipeCount.." recipes!")
 end
+
+
+function uespLog.OnPlayerCombatState(eventCode, inCombat)
+	--uespLog.DebugMsg("OnPlayerCombatState: "..tostring(inCombat))
+	
+	if (not inCombat) then
+		zo_callLater(uespLog.ClearRecentFightData, 500) 
+	end
+end
+
+
+function uespLog.OnUnitCreated(eventCode, unitTag)
+	uespLog.DebugMsg("OnUnitCreated: "..tostring(unitTag))
+end
+
+
+function uespLog.OnUnitDestroyed(eventCode, unitTag)
+	uespLog.DebugMsg("OnUnitDestroyed: "..tostring(unitTag))
+end
+
+
+uespLog.RecentFightTargetIds = {}
+uespLog.RecentFightTargetData = {}
+uespLog.TargetHealthData = {}
+uespLog.FightKillData = {}
+
+
+function uespLog.ClearRecentFightData()
+	uespLog.RecentFightTargetIds = {}
+	uespLog.RecentFightTargetData = {}
+end
+
+
+function uespLog.UpdateTargetHealthData(targetName, unitTag, maxHealth)
+	uespLog.TargetHealthData[targetName] = maxHealth
+end
+
+
+function uespLog.ClearTargetHealthData()
+	uespLog.DebugMsg("ClearTargetHealthData")
+	uespLog.TargetHealthData = {}
+end
+
+
+function uespLog.UpdateRecentFightTargetId(targetId, targetName)
+
+	if (targetId == 0 or targetName == "") then
+		return
+	end
+
+	uespLog.RecentFightTargetIds[targetId] = targetName
+end
+
+
+function uespLog.UpdateFightTargetDeath(targetId, targetName)
+
+	if (not uespLog.GetTrackFights()) then
+		return
+	end
+	
+	if (targetId == 0 and targetName == "") then
+		return
+	end
+		
+	if (targetName == "") then
+		targetName = uespLog.RecentFightTargetIds[targetId]
+		
+		if (targetName == nil) then
+			uespLog.DebugMsg("UpdateFightTargetDeath: No targetName found for "..tostring(targetId).."!")
+			return
+		end
+	end
+	
+	uespLog.DebugMsg("UpdateFightTargetDeath: "..tostring(targetName).." ("..tostring(targetId)..")")	
+	
+	if (uespLog.FightKillData[targetName] == nil) then
+		uespLog.FightKillData[targetName] = {}
+		uespLog.FightKillData[targetName].count = 0
+		uespLog.FightKillData[targetName].health = 0
+	end
+	
+	
+	if (uespLog.FightKillData[targetName].health == 0) then
+		uespLog.FightKillData[targetName].health = uespLog.TargetHealthData[targetName] or 0
+	end
+	
+	uespLog.FightKillData[targetName].count = uespLog.FightKillData[targetName].count + 1
+end
+
+
+function uespLog.OnZoneUpdate(eventCode, unitTag, newZoneName)
+	uespLog.DebugExtraMsg("OnZoneUpdate: "..tostring(unitTag)..", "..tostring(newZoneName))
+end
+
+
+function uespLog.ClearFightData()
+	uespLog.ClearTargetHealthData()
+	uespLog.ClearRecentFightData()
+	
+	uespLog.savedVars.charInfo.data.fightData = {}
+	uespLog.FightKillData = uespLog.savedVars.charInfo.data.fightData
+end
+
+
+function uespLog.ShowFightData()
+	local i = 0
+	local totalKills = 0
+	local totalHealth = 0
+	local nameKeys = {}
+	
+	uespLog.Msg("Showing all current fight kill data:")
+	
+	for name in pairs(uespLog.FightKillData) do
+		table.insert(nameKeys, name)
+	end
+	
+	table.sort(nameKeys)
+
+	for _, name in ipairs(nameKeys) do
+		local data = uespLog.FightKillData[name]
+		
+		if (data.health == 0) then 
+			data.health = uespLog.TargetHealthData[targetName] or 0
+		end
+		
+		local health = data.health
+		if (health == 0) then health = "?" end
+		
+		i = i + 1
+		
+		uespLog.Msg(".    "..tostring(i)..") "..tostring(name).." x"..tostring(data.count).." ("..tostring(data.health).." Health)")
+		
+		totalKills = totalKills + data.count
+		totalHealth = totalHealth + data.health * data.count
+	end
+	
+	uespLog.Msg("Found "..tostring(totalKills).." kills with a total of "..tostring(totalHealth).." Health.")
+end
+
+
+function uespLog.FightDataCommand(cmd)
+	local cmds, firstCmd = uespLog.SplitCommands(cmd)
+	
+	if (firstCmd == "reset" or firstCmd == "clear") then
+		uespLog.ClearFightData()
+		uespLog.Msg("Cleared kill data!")
+	elseif (firstCmd == "show" or firstCmd == "list") then
+		uespLog.ShowFightData()
+	elseif (firstCmd == "on") then
+		uespLog.SetTrackFights(true)
+		uespLog.Msg("Turning kill data tracking on.")
+	elseif (firstCmd == "off") then
+		uespLog.SetTrackFights(false)
+		uespLog.Msg("Turning kill data tracking off.")
+	else
+		uespLog.Msg("Collects and views data related to killing NPCs:")
+		uespLog.Msg(".     /uespkills on||off")
+		uespLog.Msg(".     /uespkills reset")
+		uespLog.Msg(".     /uespkills show")
+		
+		uespLog.Msg("Kill data tracking is currently "..uespLog.BoolToOnOff(uespLog.GetTrackFights())..".")
+	end
+	
+end
+
+
+SLASH_COMMANDS["/uespkills"] = uespLog.FightDataCommand

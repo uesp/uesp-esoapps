@@ -607,6 +607,7 @@
 --				- A warning is displayed in the chat window if you use an unknown slash command.
 --				- Added some missing/extra style names for the "/uespstyle" command.
 --				- Added 12 missing styles to the saved character data.
+--				- Fixed bug where uespLog thought you ate/drank something you actually didn't.
 --		
 --
 --		Future Versions (Works in Progress)
@@ -4762,14 +4763,9 @@ end
 
 
 function uespLog.OnInventoryItemUsed (eventCode, itemSoundCategory)
-
-	uespLog.DebugExtraMsg("UESP: OnInventoryItemUsed sound="..tostring(itemSoundCategory))
+	--uespLog.DebugExtraMsg("UESP: OnInventoryItemUsed sound="..tostring(itemSoundCategory))
 
 	uespLog.OnUseItem(eventCode, uespLog.lastItemLinkUsed_BagId, uespLog.lastItemLinkUsed_SlotIndex, uespLog.lastItemLinkUsed, itemSoundCategory)
-	
-	uespLog.lastItemLinkUsed = ""
-	uespLog.lastItemLinkUsed_BagId = -1
-	uespLog.lastItemLinkUsed_SlotIndex = -1
 end
 
 
@@ -4816,9 +4812,17 @@ function uespLog.OnUseItem(eventCode, bagId, slotIndex, itemLink, itemSoundCateg
 		uespLog.lastTargetData.y = y
 		uespLog.lastTargetData.zone = zone
 		uespLog.lastTargetData.name = "footlocker"
+		
+		uespLog.lastItemLinkUsed = ""
+		uespLog.lastItemLinkUsed_BagId = -1
+		uespLog.lastItemLinkUsed_SlotIndex = -1
 		return true
 	elseif (bagId == BAG_BACKPACK and itemLink ~= nil and (itemType == ITEMTYPE_FOOD or itemType == ITEMTYPE_DRINK)) then
 		uespLog.OnEatDrinkItem(itemLink)
+		
+		uespLog.lastItemLinkUsed = ""
+		uespLog.lastItemLinkUsed_BagId = -1
+		uespLog.lastItemLinkUsed_SlotIndex = -1
 		return true
 	end
 	
@@ -4829,6 +4833,9 @@ function uespLog.OnUseItem(eventCode, bagId, slotIndex, itemLink, itemSoundCateg
 		uespLog.UsedMerethicResin = true
 	end
 	
+	uespLog.lastItemLinkUsed = ""
+	uespLog.lastItemLinkUsed_BagId = -1
+	uespLog.lastItemLinkUsed_SlotIndex = -1
 end
 
 
@@ -4962,6 +4969,9 @@ function uespLog.OnTargetChange (eventCode)
 	elseif (unitType == COMBAT_UNIT_TYPE_PLAYER) then
 		uespLog.lastOnTargetChange = ""
 	elseif (unitType ~= 0) then
+		--local name = GetUnitName(unitTag)
+		--uespLog.DebugMsg("Other Target: "..tostring(name))
+		
 		uespLog.lastTargetData.level = ""
 		uespLog.lastTargetData.effectiveLevel = ""
 		uespLog.lastTargetData.race = ""
@@ -10789,6 +10799,9 @@ function uespLog.OnQuickSlotUsed(slotNum)
 		uespLog.OnEatDrinkItem(itemLink)
 	end
 	
+	uespLog.lastItemLinkUsed = ""
+	uespLog.lastItemLinkUsed_BagId = -1
+	uespLog.lastItemLinkUsed_SlotIndex = -1
 end
 
 
@@ -13328,13 +13341,15 @@ function uespLog.UpdateFightTargetDeath(targetId, targetName)
 	
 	if (uespLog.FightKillData[targetName] == nil) then
 		uespLog.FightKillData[targetName] = {}
+		uespLog.FightKillData[targetName].fullName = targetName
+		uespLog.FightKillData[targetName].name = targetName:gsub("%^.*", "")
 		uespLog.FightKillData[targetName].count = 0
 		uespLog.FightKillData[targetName].health = 0
 	end
 	
 	
 	if (uespLog.FightKillData[targetName].health == 0) then
-		uespLog.FightKillData[targetName].health = uespLog.TargetHealthData[targetName] or 0
+		uespLog.FightKillData[targetName].health = uespLog.TargetHealthData[uespLog.FightKillData[targetName].name] or 0
 	end
 	
 	uespLog.FightKillData[targetName].count = uespLog.FightKillData[targetName].count + 1
@@ -13373,7 +13388,7 @@ function uespLog.ShowFightData()
 		local data = uespLog.FightKillData[name]
 		
 		if (data.health == 0) then 
-			data.health = uespLog.TargetHealthData[targetName] or 0
+			data.health = uespLog.TargetHealthData[data.name] or 0
 		end
 		
 		local health = data.health
@@ -13381,7 +13396,7 @@ function uespLog.ShowFightData()
 		
 		i = i + 1
 		
-		uespLog.Msg(".    "..tostring(i)..") "..tostring(name).." x"..tostring(data.count).." ("..tostring(data.health).." Health)")
+		uespLog.Msg(".    "..tostring(i)..") "..tostring(data.name).." x"..tostring(data.count).." ("..tostring(data.health).." Health)")
 		
 		totalKills = totalKills + data.count
 		totalHealth = totalHealth + data.health * data.count

@@ -628,11 +628,11 @@
 --					/uesptrackstat all					  Start tracking all stats.
 --					/uesptrackstat none					  Turns off all tracking.
 --					/uesptrackstat resettime			  Resets the game time display to 0.
---			- Added the /uespkills command to tracking basic kill statistics of NPCs (number and total health).
+--			- Added the /uespkilldata command to tracking basic kill statistics of NPCs (number and total health).
 --			  Data is tracked per character and is saved between sessions.
---					/uespkills on/off					Turns the feature on and off (default is off).
---					/uespkills reset					Clears the current data.
---					/uespkills show						Lists all the current kill data.
+--					/uespkilldata on/off				Turns the feature on and off (default is off).
+--					/uespkilldata reset					Clears the current data.
+--					/uespkilldata show					Lists all the current kill data.
 --
 --
 
@@ -2880,6 +2880,7 @@ function uespLog.SetupSlashCommands()
 	uespLog.SetSlashCommand("/away", uespLog.AwayCommand)
 	uespLog.SetSlashCommand("/back", uespLog.BackCommand)
 	uespLog.SetSlashCommand("/utl", SLASH_COMMANDS["/uesptrackloot"])
+	uespLog.SetSlashCommand("/ukd", SLASH_COMMANDS["/uespkilldata"])
 end
 
 
@@ -5107,7 +5108,7 @@ function uespLog.OnCombatEvent (eventCode, result, isError, abilityName, ability
 		return
 	end
 
-	if (result == 2262 and sourceType == COMBAT_UNIT_TYPE_PLAYER) then
+	if ((result == 2262 or result == 2260) and sourceType == COMBAT_UNIT_TYPE_PLAYER) then
 		--uespLog.DebugMsg("Death: "..tostring(result)..",  sourceType: "..tostring(sourceType)..",  damageType: "..tostring(damageType)..",  name: "..tostring(abilityName)..",  hitValue: "..tostring(hitValue).."  srcId: "..tostring(sourceUnitId).." ("..tostring(sourceName)..")".."  tarId: "..tostring(targetUnitId).." ("..tostring(targetName)..")")
 		uespLog.UpdateFightTargetDeath(targetUnitId, targetName)
 	else
@@ -13348,7 +13349,7 @@ function uespLog.UpdateFightTargetDeath(targetId, targetName)
 		end
 	end
 	
-	uespLog.DebugExtraMsg("UpdateFightTargetDeath: "..tostring(targetName).." ("..tostring(targetId)..")")	
+	uespLog.DebugMsg("UpdateFightTargetDeath: "..tostring(targetName).." ("..tostring(targetId)..")")	
 	
 	if (uespLog.FightKillData[targetName] == nil) then
 		uespLog.FightKillData[targetName] = {}
@@ -13433,9 +13434,9 @@ function uespLog.FightDataCommand(cmd)
 		uespLog.Msg("Turning kill data tracking off.")
 	else
 		uespLog.Msg("Collects and views data related to killing NPCs:")
-		uespLog.Msg(".     /uespkills on||off")
-		uespLog.Msg(".     /uespkills reset")
-		uespLog.Msg(".     /uespkills show")
+		uespLog.Msg(".     /uespkilldata on||off")
+		uespLog.Msg(".     /uespkilldata reset")
+		uespLog.Msg(".     /uespkilldata show")
 		
 		uespLog.Msg("Kill data tracking is currently "..uespLog.BoolToOnOff(uespLog.GetTrackFights())..".")
 	end
@@ -13443,4 +13444,4 @@ function uespLog.FightDataCommand(cmd)
 end
 
 
-SLASH_COMMANDS["/uespkills"] = uespLog.FightDataCommand
+SLASH_COMMANDS["/uespkilldata"] = uespLog.FightDataCommand

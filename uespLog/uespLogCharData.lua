@@ -191,7 +191,7 @@ end
 
 
 function uespLog.OnPlayerDeactivated (eventCode)
-	uespLog.DebugMsg("OnPlayerDeactivated")
+	--uespLog.DebugMsg("OnPlayerDeactivated")
 	
 	uespLog.ClearTargetHealthData()
 end

@@ -4803,6 +4803,7 @@ function uespLog.OnUseItem(eventCode, bagId, slotIndex, itemLink, itemSoundCateg
 		logData.itemName = itemName
 		logData.sound = itemSoundCategory
 		logData.itemLink = itemLink
+		logData.characterName = GetUnitName("player")
 		uespLog.AppendDataToLog("all", logData)
 		uespLog.MsgType(uespLog.MSG_LOOT, "Footlocker "..tostring(itemLink).." opened.")
 		
@@ -4891,6 +4892,8 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 		end
 		
 		uespLog.UsedMerethicResin = false
+	elseif (itemType == ITEMTYPE_CONTAINER) then
+		uespLog.CheckAutoOpenContainer(bagId, slotIndex)
 	end
 	
 	uespLog.LogInventoryItem(bagId, slotIndex, "SlotUpdate")
@@ -13445,3 +13448,43 @@ end
 
 
 SLASH_COMMANDS["/uespkilldata"] = uespLog.FightDataCommand
+
+
+function uespLog.CheckAutoOpenContainer(bagId, slotIndex)
+	local itemName = GetItemName(bagId, slotIndex)
+	local itemLink = GetItemLink(bagId, slotIndex)
+	
+	--uespLog.DebugMsg("CheckAutoOpenContainer: "..tostring(bagId)..", "..tostring(slotIndex))
+	
+	--("|H(.-):(.-):(.-):(.-):(.-):(.-)|h(.-)|h")
+	--.("Crafting Motifs ([%d]+), [%a%.]+ ([%d]+): ([%a%s]+) ([%a]+)")
+		
+	local craftType, container, level = itemName:match("^(%S+) (%S+) (%S+)")
+	--uespLog.DebugMsg(".     "..tostring(craftType)..", "..tostring(container)..", "..tostring(level))
+	
+	if (craftType ~= nil and container ~= nil) then
+	
+		if (container == "Pack" or container == "Crate" or container == "Coffer" or 
+			container == "Case" or container == "Satchel" or container == "Vessel") then
+			
+			--uespLog.DebugMsg("Automatically opening writ reward...")
+		elseif (craftType == "Shipment" and container == "of") then
+			--uespLog.DebugMsg("Automatically opening material shipment...")
+		end
+	end
+	
+	--if (itemName:match("^.+ Pack [VIX]") ~= nil) then
+		--uespLog.DebugMsg("Opening writ reward...")
+	--elseif (itemName:match("^.+ Crate [VIX]") ~= nil) then
+		--uespLog.DebugMsg("Opening writ reward...")
+	--elseif (itemName:match("^.+ Coffer [VIX]") ~= nil) then
+		--uespLog.DebugMsg("Opening writ reward...")
+	--elseif (itemName:match("^.+ Case [VIX]") ~= nil) then
+		--uespLog.DebugMsg("Opening writ reward...")
+	--elseif (itemName:match("^.+ Satchel [VIX]") ~= nil) then
+		--uespLog.DebugMsg("Opening writ reward...")
+	--elseif (itemName:match("^.+ Vessel [VIX]") ~= nil) then
+		--uespLog.DebugMsg("Opening writ reward...")		
+	--end
+	
+end

@@ -2839,7 +2839,7 @@ function uespLog.Initialize( self, addOnName )
 	--uespLog.Old_ItemOnAddGameData = ZO_ItemIconTooltip_ItemOnAddGameData
 	--ZO_ItemIconTooltip_ItemOnAddGameData = uespLog.new_ItemOnAddGameData
 	
-    --PopupTooltip:SetHandler("OnMouseUp", uespLog.OnTooltipMouseUp)
+    PopupTooltip:SetHandler("OnMouseUp", uespLog.OnTooltipMouseUp)
     --self.resultTooltip:GetNamedChild("Icon"):SetHandler("OnMouseUp", uespLog.OnTooltipMouseUp)
 	uespLog.Orig_ZO_LinkHandler_OnLinkMouseUp = ZO_LinkHandler_OnLinkMouseUp
 	ZO_LinkHandler_OnLinkMouseUp = uespLog.ZO_LinkHandler_OnLinkMouseUp
@@ -3077,6 +3077,7 @@ function uespLog.OnTooltipMouseUp (control, button, upInside)
 		local link = PopupTooltip.lastLink
 		
 		if link ~= "" then
+			PopupTooltip:GetOwningWindow():SetDrawTier(ZO_Menus:GetDrawTier() - 1)
 			ClearMenu()
 
 			local function AddLink()

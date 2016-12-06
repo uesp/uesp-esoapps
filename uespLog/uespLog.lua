@@ -608,6 +608,8 @@
 --				- Added some missing/extra style names for the "/uespstyle" command.
 --				- Added 12 missing styles to the saved character data.
 --				- Fixed bug where uespLog thought you ate/drank something you actually didn't.
+--				- Fixed the item link tooltip "Show Item Info" to work with other addons that modify the same context
+--				  menu (like MasterMerchant).
 --		
 --
 --		Future Versions (Works in Progress)
@@ -2710,6 +2712,10 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_FISHING_LURE_CLEARED, uespLog.OnFishingLureCleared)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_FISHING_LURE_SET, uespLog.OnFishingLureSet)	
 	
+	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_EFFECT_CHANGED, uespLog.OnEffectChanged)	
+	
+	
 		-- Note: This event is called up to 40-50 time for each kill with some weapons (Destruction Staff)
 	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOT_UPDATED, uespLog.OnActionSlotUpdated)	
 		
@@ -2833,14 +2839,17 @@ function uespLog.Initialize( self, addOnName )
 	--uespLog.Old_ItemOnAddGameData = ZO_ItemIconTooltip_ItemOnAddGameData
 	--ZO_ItemIconTooltip_ItemOnAddGameData = uespLog.new_ItemOnAddGameData
 	
-    PopupTooltip:SetHandler("OnMouseUp", uespLog.OnTooltipMouseUp)
+    --PopupTooltip:SetHandler("OnMouseUp", uespLog.OnTooltipMouseUp)
     --self.resultTooltip:GetNamedChild("Icon"):SetHandler("OnMouseUp", uespLog.OnTooltipMouseUp)
+	uespLog.Orig_ZO_LinkHandler_OnLinkMouseUp = ZO_LinkHandler_OnLinkMouseUp
+	ZO_LinkHandler_OnLinkMouseUp = uespLog.ZO_LinkHandler_OnLinkMouseUp
+	
 	SMITHING.creationPanel.resultTooltip:SetHandler("OnMouseUp", uespLog.SmithingCreationOnTooltipMouseUp)
 	SMITHING.improvementPanel.resultTooltip:SetHandler("OnMouseUp", uespLog.SmithingImprovementOnTooltipMouseUp)
 	ALCHEMY.tooltip:SetHandler("OnMouseUp", uespLog.AlchemyOnTooltipMouseUp)
-	ALCHEMY.tooltip:GetNamedChild("Icon"):SetHandler("OnMouseUp", OnTooltipMouseUp)
+	ALCHEMY.tooltip:GetNamedChild("Icon"):SetHandler("OnMouseUp", uespLog.OnTooltipMouseUp)
 	ENCHANTING.resultTooltip:SetHandler("OnMouseUp", uespLog.EnchantingOnTooltipMouseUp)
-	ENCHANTING.resultTooltip:GetNamedChild("Icon"):SetHandler("OnMouseUp", OnTooltipMouseUp)
+	ENCHANTING.resultTooltip:GetNamedChild("Icon"):SetHandler("OnMouseUp", uespLog.OnTooltipMouseUp)
 	
 	uespLog.Old_NotifyDeleteMailAdded = MAIL_INBOX.Delete
 	MAIL_INBOX.Delete = uespLog.NotifyDeleteMailAdded 
@@ -3084,6 +3093,24 @@ function uespLog.OnTooltipMouseUp (control, button, upInside)
 			ShowMenu(PopupTooltip)
 		end
 	end
+	
+end
+
+
+function uespLog.ZO_LinkHandler_OnLinkMouseUp (link, button, control)
+
+    if (type(link) == 'string' and #link > 0) then
+		local handled = LINK_HANDLER:FireCallbacks(LINK_HANDLER.LINK_MOUSE_UP_EVENT, link, button, ZO_LinkHandler_ParseLink(link))
+		
+		if (not handled) then
+            uespLog.Orig_ZO_LinkHandler_OnLinkMouseUp(link, button, control)
+			
+            if (button == 2 and link ~= '') then				
+	            AddMenuItem("Show Item Info", function() uespLog.ShowItemInfo(link) end)
+                ShowMenu(control)
+            end
+        end
+    end
 	
 end
 
@@ -12953,6 +12980,26 @@ function uespLog.ShowTrackLoot(itemMatch)
 end
 
 
+uespLog.CONTAINER_SOURCES = {
+	["Apple Basket"] = 1,
+	["Backpack"] = 1,
+	["Bag"] = 1,
+	["Barrel"] = 1,
+	["Barrels"] = 1,
+	["Basket"] = 1,
+	["Corn Basket"] = 1,
+	["Crate"] = 1,
+	["Crates"] = 1,
+	["Dresser"] = 1,
+	["Flour Sack"] = 1,
+	["Millet Sack"] = 1,
+	["Sack"] = 1,
+	["Trunk"] = 1,
+	["Urn"] = 1,
+	["Wardrobe"] = 1,
+}
+
+
 function uespLog.ShowTrackLootSources(sourceMatch)
 	local items = uespLog.savedVars.charInfo.data.trackedLoot.items
 	local sources = uespLog.savedVars.charInfo.data.trackedLoot.sources
@@ -12961,6 +13008,9 @@ function uespLog.ShowTrackLootSources(sourceMatch)
 	local totalItems = 0
 	local totalSources = 0
 	local sourceNameKeys = {}
+	local totalHeavySacks = sources["Heavy Sack"] or 0
+	local totalChests = sources["Chest"] or 0
+	local totalContainers = 0
 	
 	if (sourceMatch ~= nil) then
 		sourceMatch = sourceMatch:lower()
@@ -12982,6 +13032,10 @@ function uespLog.ShowTrackLootSources(sourceMatch)
 			uespLog.Msg(".   "..tostring(i)..") "..tostring(source).." x"..tostring(qnt))
 			i = i + 1
 		end	
+		
+		if (uespLog.CONTAINER_SOURCES[source] ~= nil) then
+			totalContainers = totalContainers + qnt
+		end
 
 		totalSources = totalSources + 1		
 	end
@@ -12995,6 +13049,7 @@ function uespLog.ShowTrackLootSources(sourceMatch)
 	end
 	
 	uespLog.Msg("You looted "..tostring(totalItems).." unique items from "..tostring(totalSources).." different sources over "..tostring(math.floor(seconds)).." seconds!")
+	uespLog.Msg("You found "..tostring(totalChests).." chests, "..tostring(totalHeavySacks).." heavy sacks, and "..tostring(totalContainers).." containers.")
 end
 
 
@@ -13487,4 +13542,13 @@ function uespLog.CheckAutoOpenContainer(bagId, slotIndex)
 		--uespLog.DebugMsg("Opening writ reward...")		
 	--end
 	
+end
+
+
+function uespLog.OnEffectChanged(e, change, slot, auraName, unitTag, start, finish, stack, icon, buffType, effectType, abilityType, statusType, unitName, unitID, abilityID)
+
+	--if (auraName == "Ritual of Retribution" or auraName == "Blazing Spear") then
+		--uespLog.DebugMsg("EffectChanged: "..tostring(unitTag)..", "..tostring(abilityType)..", "..tostring(abilityID))
+	--end
+
 end

@@ -610,6 +610,7 @@
 --				- Fixed bug where uespLog thought you ate/drank something you actually didn't.
 --				- Fixed the item link tooltip "Show Item Info" to work with other addons that modify the same context
 --				  menu (like MasterMerchant).
+--				- Added the "/uespstyle summary" and "/uespstyle all" commands to show a summary of all styles known.
 --		
 --
 --		Future Versions (Works in Progress)
@@ -9647,9 +9648,10 @@ function uespLog.GetStyleKnown(styleName)
 	local cmpStyleName = string.lower(styleName)
 	local itemStyle = uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE[cmpStyleName] or 0
 	local motifId = uespLog.CRAFTSTYLENAME_TO_MOTIFID[cmpStyleName] or false
+	local knownCount = 0
 		
 	if (cmpStyleName == "" or itemStyle <= 0 or not motifId) then
-		return nil
+		return nil, 0
 	end
 	
 	if (type(motifId) == "table") then
@@ -9658,22 +9660,30 @@ function uespLog.GetStyleKnown(styleName)
 		for i = 1,14 do
 			local itemLink = uespLog.MakeItemLink(motifId[i], 1, 1)
 			known[i] = uespLog.IsItemLinkBookKnown(itemLink)
+			
+			if (known[i]) then
+				knownCount = knownCount + 1
+			end
+			
 			knowAll = knowAll and known[i]
 			unknownAll = unknownAll and not known[i]
 		end
 		
 		if (knowAll) then
 			known = true
+			knownCount = 14
 		elseif (unknownAll) then
 			known = false
+			knownCount = 0
 		end
 	else
 		local itemLink = uespLog.MakeItemLink(motifId)
 		known = uespLog.IsItemLinkBookKnown(itemLink)
 		knowAll = known	
+		knownCount = 14
 	end
 	
-	return known
+	return known, knownCount
 end
 
 
@@ -9772,6 +9782,32 @@ function uespLog.ListValidStyles()
 end
 
 
+function uespLog.ShowStyleSummary()
+	local numStyles = GetNumSmithingStyleItems()
+	local totalKnown = 0
+	local totalUnknown = 0
+	local validStyles = 0
+			
+	uespLog.MsgColor(uespLog.craftColor, "Showing summary for all styles:")
+	
+	for i = 1, numStyles do
+		local styleItemName, _, _, _, itemStyle = GetSmithingStyleItemInfo(i)
+		local styleName = GetString("SI_ITEMSTYLE", itemStyle);
+		local known, knownCount = uespLog.GetStyleKnown(styleName)
+		
+		if (styleItemName ~= "" and styleName ~= "") then 
+			totalKnown = totalKnown + knownCount
+			totalUnknown = totalUnknown + 14 - knownCount
+			validStyles = validStyles + 1
+		
+			uespLog.Msg(".    "..itemStyle..") "..tostring(styleName).." = "..knownCount.."/14")			
+		end
+	end
+	
+	uespLog.Msg("You know a total of "..totalKnown.."/"..tostring(14*validStyles).." possible style chapters")
+end
+
+
 SLASH_COMMANDS["/uespstyle"] = function (cmd)
 	local cmds, firstCmd = uespLog.SplitCommands(cmd)
 	
@@ -9780,8 +9816,11 @@ SLASH_COMMANDS["/uespstyle"] = function (cmd)
 		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle [stylename]            Shows which chapters you know")
 		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle long [stylename]    Shows chapters in old long format")
 		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle list                          Lists all valid styles")
+		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle summary                     Displays a summary of all styles")
 	elseif (firstCmd == "liststyles" or firstCmd == "list") then
 		uespLog.ListValidStyles()
+	elseif (firstCmd == "summary" or firstCmd == "all") then
+		uespLog.ShowStyleSummary()
 	elseif (firstCmd == "long") then
 		uespLog.ShowStyles(uespLog.implodeOrder(cmds, " ", 2), true)
 	else
@@ -12977,6 +13016,7 @@ function uespLog.ShowTrackLoot(itemMatch)
 		uespLog.Msg(".       Total value of "..tostring(totalValue).." gold")
 	end
 	
+	uespLog.Msg("You looted "..tostring(totalItems).." unique items from "..tostring(totalSources).." different sources over "..tostring(math.floor(seconds)).." seconds!")	
 	uespLog.Msg("You looted "..tostring(totalItems).." unique items from "..tostring(totalSources).." different sources over "..tostring(math.floor(seconds)).." seconds!")	
 end
 

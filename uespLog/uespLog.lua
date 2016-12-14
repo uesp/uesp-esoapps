@@ -13017,7 +13017,6 @@ function uespLog.ShowTrackLoot(itemMatch)
 	end
 	
 	uespLog.Msg("You looted "..tostring(totalItems).." unique items from "..tostring(totalSources).." different sources over "..tostring(math.floor(seconds)).." seconds!")	
-	uespLog.Msg("You looted "..tostring(totalItems).." unique items from "..tostring(totalSources).." different sources over "..tostring(math.floor(seconds)).." seconds!")	
 end
 
 

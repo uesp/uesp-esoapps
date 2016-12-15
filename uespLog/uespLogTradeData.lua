@@ -76,6 +76,8 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[ITEMSTYLE_AREA_YOKUDAN] 		 = "uespLog/images/yokudan.dds",			-- Yokudan, Ferrous Salts, 35, /esoui/art/icons/crafting_humanoid_daedra_void_salts.dds
 	[27]							 = "uespLog/images/celestial.dds",			-- Celestial, Star Sapphires, 27, /esoui/art/icons/crafting_style_item_celestial_r2.dds
 	[31]							 = "uespLog/images/draugr.dds",				-- Draugr, Pristine Shrouds, 31, /esoui/art/icons/crafting_style_item_draugr_r2.dds	
+	[42]							 = "uespLog/images/skinchanger.dds",		-- Skinchanger, Wolfsbane Incense, 42, /esoui/art/icons/crafting_style_item_wolfsbane_r2.dds	
+	[53]							 = "uespLog/images/stalhrim.dds",			-- Stalhrim Frostcaster, Stalhrim Shard, 53, /esoui/art/icons/crafting_runecrafter_armor__standard_r_003.dds	
 }
 
 
@@ -120,6 +122,8 @@ uespLog.STYLE_ICON_DATA = {
 	[ITEMSTYLE_AREA_YOKUDAN] 		 = "/esoui/art/icons/crafting_humanoid_daedra_void_salts.dds",
 	[27]							 = "/esoui/art/icons/crafting_style_item_celestial_r2.dds",
 	[31]							 = "/esoui/art/icons/crafting_style_item_draugr_r2.dds",
+	[42]							 = "/esoui/art/icons/crafting_style_item_wolfsbane_r2.dds",
+	[53]							 = "/esoui/art/icons/crafting_runecrafter_armor__standard_r_003.dds",
 }
 
 

@@ -611,6 +611,7 @@
 --				- Fixed the item link tooltip "Show Item Info" to work with other addons that modify the same context
 --				  menu (like MasterMerchant).
 --				- Added the "/uespstyle summary" and "/uespstyle all" commands to show a summary of all styles known.
+--				- Added the 2 new styles from the New Life Festival (Skinchanger and Stalhrim Frostcaster).
 --		
 --
 --		Future Versions (Works in Progress)
@@ -3933,9 +3934,11 @@ uespLog.ITEMSTYLES = {
 	[37] = "Reach Winter",
 	[39] = "Minotaur",
 	[41] = "Abah's Watch",
+	[42] = "Skinchanger",
 	[45] = "Dro-m'Athra",
 	[46] = "Assassins League",
 	[47] = "Outlaw",
+	[53] = "Stalhrim Frostcaster",
 	[58] = "Grim Arlequin",
 	[59] = "Hollowjack",
 }
@@ -9517,6 +9520,15 @@ uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
 	["yokudan"] = 35,
 	["celestial"] = 27,
 	["draugr"] = 31,
+	
+		-- New Life Festival
+	["skinchanger"] = 42,
+	["skin"] = 42,
+	["stalhrim frostcaster"] = 53,
+	["stalhrim"] = 53,
+	["stal"] = 53,
+	["frostcaster"] = 53,
+	["frost"] = 53,
 }
 
 
@@ -9618,6 +9630,15 @@ uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
 	["yokudan"] = { 57606, 57607, 57608, 57609, 57610, 57611, 57612, 57613, 57614, 57615, 57616, 57617, 57618, 57619 }, -- 57605, 64555
 	["celestial"] = { 82007, 82008, 82009, 82010, 82011, 82012, 82013, 82014, 82015, 82016, 82017, 82018, 82019, 82020 }, -- 82006, 82021
 	["draugr"] = { 76895, 76896, 76897, 76898, 76899, 76900, 76901, 76902, 76903, 76904, 76905, 76906, 76907, 76908 }, -- 76894, 76909
+	
+		-- New Life Festival
+	["skinchanger"] = { 73855, 73856, 73857, 73858, 73859, 73860, 73861, 73862, 73863, 73864, 73865, 73866, 73867, 73868 }, -- 73854, 73869
+	["skin"] = { 73855, 73856, 73857, 73858, 73859, 73860, 73861, 73862, 73863, 73864, 73865, 73866, 73867, 73868 }, -- 73854, 73869
+	["stalhrim frostcaster"] = 96954,
+	["stalhrim"] = 96954,
+	["stal"] = 96954,
+	["frostcaster"] = 96954, 
+	["frost"] = 96954,
 }
 
 
@@ -9792,7 +9813,7 @@ function uespLog.ShowStyleSummary()
 	
 	for i = 1, numStyles do
 		local styleItemName, _, _, _, itemStyle = GetSmithingStyleItemInfo(i)
-		local styleName = GetString("SI_ITEMSTYLE", itemStyle);
+		local styleName = GetString("SI_ITEMSTYLE", itemStyle)
 		local known, knownCount = uespLog.GetStyleKnown(styleName)
 		
 		if (styleItemName ~= "" and styleName ~= "") then 

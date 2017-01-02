@@ -13577,10 +13577,15 @@ SLASH_COMMANDS["/uespkilldata"] = uespLog.FightDataCommand
 
 
 function uespLog.CheckAutoOpenContainer(bagId, slotIndex)
+
+	uespLog.DebugExtraMsg("CheckAutoOpenContainer: "..tostring(bagId)..", "..tostring(slotIndex))
+
+	if (true) then
+		return
+	end
+	
 	local itemName = GetItemName(bagId, slotIndex)
 	local itemLink = GetItemLink(bagId, slotIndex)
-	
-	--uespLog.DebugMsg("CheckAutoOpenContainer: "..tostring(bagId)..", "..tostring(slotIndex))
 	
 	--("|H(.-):(.-):(.-):(.-):(.-):(.-)|h(.-)|h")
 	--.("Crafting Motifs ([%d]+), [%a%.]+ ([%d]+): ([%a%s]+) ([%a]+)")
@@ -13593,9 +13598,11 @@ function uespLog.CheckAutoOpenContainer(bagId, slotIndex)
 		if (container == "Pack" or container == "Crate" or container == "Coffer" or 
 			container == "Case" or container == "Satchel" or container == "Vessel") then
 			
-			--uespLog.DebugMsg("Automatically opening writ reward...")
+			uespLog.DebugMsg("Automatically opening writ reward...")
+			uespLog.OpenInventoryContainer(bagId, slotIndex, itemLink)
 		elseif (craftType == "Shipment" and container == "of") then
-			--uespLog.DebugMsg("Automatically opening material shipment...")
+			uespLog.DebugMsg("Automatically opening material shipment..."..tostring(bagId)..","..tostring(slotIndex))
+			zo_callLater(function() uespLog.OpenInventoryContainer(bagId, slotIndex, itemLink) end, 1000)
 		end
 	end
 	
@@ -13613,6 +13620,21 @@ function uespLog.CheckAutoOpenContainer(bagId, slotIndex)
 		--uespLog.DebugMsg("Opening writ reward...")		
 	--end
 	
+end
+
+
+function uespLog.OpenInventoryContainer(bagId, slotIndex, itemLink)
+
+	uespLog.OnUseItem("", bagId, slotIndex, itemLink, -1)
+
+	if IsProtectedFunction("UseItem") then
+		CallSecureProtected("UseItem", bagId, slotIndex)
+	else
+		UseItem(bagId, slotIndex)
+	end
+	
+	SCENE_MANAGER:Hide("inventory")
+	--zo_callLater(function() SCENE_MANAGER:Hide("inventory") end, 100)
 end
 
 

@@ -596,7 +596,7 @@
 --				  statistic comparison feature in the inventory stats window.
 --				- Added the 3 new styles (Celestial, Yokudan, Draugr).
 --
---		- v0.91 -- ?
+--		- v1.00 -- February 2017
 --				- Mined item data for recipes now includes the information needed to duplicate the in-game
 --				  tool-tip displayed for recipes.
 --				- Fixed the stacking of Major Force in the Critical Damage stat display.
@@ -612,7 +612,13 @@
 --				  menu (like MasterMerchant).
 --				- Added the "/uespstyle summary" and "/uespstyle all" commands to show a summary of all styles known.
 --				- Added the 2 new styles from the New Life Festival (Skinchanger and Stalhrim Frostcaster).
---		
+--			Update 13 Changes
+--				- API updated to 100018.
+--				- Added the new special item type to logged item data.
+--				- Added ingredient quantities to logged recipe data.
+--				- Added furniture category data to logged item data.
+--				- Updated item logging with change to multiple tradeskill requirements.
+--		 
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -644,8 +650,8 @@
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "0.91"
-uespLog.releaseDate = "5 October 2016"
+uespLog.version = "1.00"
+uespLog.releaseDate = "5 February 2017"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -3270,7 +3276,7 @@ function uespLog.ShowItemInfo (itemLink)
 	
 	itemName = GetItemLinkName(itemLink)
 	
-	local itemType = GetItemLinkItemType(itemLink)
+	local itemType, specialItemType = GetItemLinkItemType(itemLink)
 	local weaponPower = GetItemLinkWeaponPower(itemLink)
 	local armorRating = GetItemLinkArmorRating(itemLink, false)
 	local reqLevel = GetItemLinkRequiredLevel(itemLink)
@@ -3306,7 +3312,6 @@ function uespLog.ShowItemInfo (itemLink)
 	local bookTitle = GetItemLinkBookTitle(itemLink)
 	local isBookKnown = IsItemLinkBookKnown(itemLink)
 	local craftSkillRank = GetItemLinkRequiredCraftingSkillRank(itemLink)
-	local recipeRank = GetItemLinkRecipeRankRequirement(itemLink)
 	local recipeQuality = GetItemLinkRecipeQualityRequirement(itemLink)
 	local resultItemLink = GetItemLinkRecipeResultItemLink(itemLink)
 	local refinedItemLink = GetItemLinkRefinedMaterialItemLink(itemLink)
@@ -3331,7 +3336,7 @@ function uespLog.ShowItemInfo (itemLink)
 	
 	uespLog.MsgColor(uespLog.itemColor, "Information for "..tostring(itemNiceLink))
 	uespLog.MsgColor(uespLog.itemColor, ".    Data: "..tostring(itemData))
-	uespLog.MsgColor(uespLog.itemColor, ".    Type: ".. uespLog.GetItemTypeStr(itemType) .." ("..tostring(itemType)..")      Equip: "..equipTypeStr.." ("..tostring(equipType)..")")
+	uespLog.MsgColor(uespLog.itemColor, ".    Type: ".. uespLog.GetItemTypeStr(itemType) .." ("..tostring(itemType).." / "..tostring(specialItemType)..")      Equip: "..equipTypeStr.." ("..tostring(equipType)..")")
 	
 	if (glyphMinLevel ~= nil) then
 		glyphLevelString = tostring(glyphMinLevel)
@@ -3420,8 +3425,17 @@ function uespLog.ShowItemInfo (itemLink)
 		uespLog.MsgColor(uespLog.itemColor, ".    Craft: "..tostring(craftSkill).."   Rank: "..tostring(craftSkillRank))
 	end
 	
+	local numTradeskills = GetItemLinkRecipeNumTradeskillRequirements(itemLink)
+
+	if (numTradeskills > 0) then
+		for i = 1, numTradeskills do
+			local tradeskill, reqLevel = GetItemLinkRecipeTradeskillRequirement(itemLink, i)
+			uespLog.MsgColor(uespLog.itemColor, ".    Requires: "..GetCraftingSkillName(tradeskill).." "..tostring(reqLevel))
+		end
+	end
+	
 	if (recipeQuality ~= nil and recipeQuality > 0) then
-		uespLog.MsgColor(uespLog.itemColor, ".    Recipe Rank: "..tostring(recipeRank).."   Quality: "..tostring(recipeQuality))
+		uespLog.MsgColor(uespLog.itemColor, ".    Recipe Quality: "..tostring(recipeQuality))
 	end
 	
 	if (resultItemLink ~= nil and resultItemLink ~= "") then
@@ -3436,8 +3450,8 @@ function uespLog.ShowItemInfo (itemLink)
 	
 	if (numIngredients ~= nil) then
 		for i = 1, numIngredients do
-			local ingredientName, numOwned = GetItemLinkRecipeIngredientInfo(itemLink, i)
-			uespLog.MsgColor(uespLog.itemColor, ".    Ingredient "..tostring(i)..":  "..tostring(ingredientName))
+			local ingredientName, numOwned, numReq = GetItemLinkRecipeIngredientInfo(itemLink, i)
+			uespLog.MsgColor(uespLog.itemColor, ".    Ingredient "..tostring(i)..":  "..tostring(ingredientName).." x"..tostring(numReq))
 		end
 	end
 		
@@ -3463,6 +3477,14 @@ function uespLog.ShowItemInfo (itemLink)
 	
 	if (tagString ~= "") then
 		uespLog.MsgColor(uespLog.itemColor, ".    Tags: "..tostring(tagString))
+	end
+	
+	if (itemType == ITEMTYPE_FURNISHING) then
+		local furnDataID = GetItemLinkFurnitureDataId(itemLink)
+		local furnCate, furnSubCate = GetFurnitureDataCategoryInfo(furnDataID)
+		local furnCateName = GetFurnitureCategoryName(furnCate)
+		local furnSubCateName = GetFurnitureCategoryName(furnSubCate)
+		uespLog.MsgColor(uespLog.itemColor, ".    Furniture: "..tostring(furnCateName).." / "..tostring(furnSubCateName))
 	end
 		
 	if (flavourText ~= "") then
@@ -7074,13 +7096,13 @@ function uespLog.CreateItemLinkLog (itemLink)
 	local flavourText
 	local logData = { }
 	local _, _, itemId, internalLevel, _, _, _, internalSubType  = uespLog.ParseLinkID(itemLink)
-		
+				
 	logData.itemLink = itemLink
 		
 	logData.name = GetItemLinkName(itemLink)
 	local isGunnySack = string.lower(logData.name) == "wet gunny sack"
 	
-	logData.type = GetItemLinkItemType(itemLink)
+	logData.type, logData.specialType = GetItemLinkItemType(itemLink)
 	logData.icon, _, _, _, logData.itemStyle = GetItemLinkInfo(itemLink)
 	logData.equipType = GetItemLinkEquipType(itemLink)
 	logData.weaponType = GetItemLinkWeaponType(itemLink)
@@ -7091,9 +7113,17 @@ function uespLog.CreateItemLinkLog (itemLink)
 	logData.reqCP = GetItemLinkRequiredChampionPoints(itemLink)
 	logData.value = GetItemLinkValue(itemLink, false)
 	logData.condition = GetItemLinkCondition(itemLink)
+	logData.recipeRank = -1
 		
 	if (uespLog.MINEITEM_SHIELDARMORFACTOR ~= nil and uespLog.MINEITEM_SHIELDARMORFACTOR ~= 1 and logData.weaponType == 14) then
 		logData.armorRating = logData.armorRating * uespLog.MINEITEM_SHIELDARMORFACTOR
+	end
+	
+	if (logData.type == ITEMTYPE_FURNISHING) then
+		logData.furnDataID = GetItemLinkFurnitureDataId(itemLink)
+		logData.furnCate, logData.furnSubCate = GetFurnitureDataCategoryInfo(logData.furnDataID)
+		logData.furnCateName = GetFurnitureCategoryName(logData.furnCate)
+		logData.furnSubCateName = GetFurnitureCategoryName(logData.furnSubCate)
 	end
 	
 	hasArmorDecay = DoesItemLinkHaveArmorDecay(itemLink)
@@ -7190,15 +7220,28 @@ function uespLog.CreateItemLinkLog (itemLink)
 	end
 	
 	requiredQuality = GetItemLinkRecipeQualityRequirement(itemLink)
+	logData.recipeQuality = requiredQuality
 	
-	if (requiredQuality > 0) then
-		logData.recipeQuality = requiredQuality
-	end
-	
-	requiredRank = GetItemLinkRecipeRankRequirement(itemLink)
-	
-	if (requiredRank > 0) then
-		logData.recipeRank = requiredRank
+	local numTradeskills = GetItemLinkRecipeNumTradeskillRequirements(itemLink)
+
+	if (numTradeskills > 0) then
+		logData.reqNumTrades = numTradeskills
+		local tmp = {}
+		
+		for i = 1, numTradeskills do
+			local tradeskill, reqLevel = GetItemLinkRecipeTradeskillRequirement(itemLink, i)
+			
+			logData["reqTrade"..tostring(i)] = tradeskill
+			logData["reqRank"..tostring(i)] = reqLevel
+			
+			tmp[i] = GetCraftingSkillName(tradeskill) .. " " .. tostring(reqLevel)
+			
+			if (tradeskill == 5) then
+				logData.recipeRank = reqLevel
+			end
+		end
+		
+		logData.reqTrades = uespLog.implodeOrder(tmp, ",")
 	end
 	
 	resultItemLink = GetItemLinkRecipeResultItemLink(itemLink)
@@ -7217,9 +7260,6 @@ function uespLog.CreateItemLinkLog (itemLink)
 		logData.resultCooldown = resultCooldown
 		logData.resultMinLevel = resultMinLevel
 		logData.resultMaxLevel = resultMaxLevel
-		
-		logData.recipeRank = GetItemLinkRecipeRankRequirement(itemLink)
-		logData.recipeQuality = GetItemLinkRecipeQualityRequirement(itemLink)
 	end
 	
 	refinedItemLink = GetItemLinkRefinedMaterialItemLink(itemLink)
@@ -7230,7 +7270,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 	
 	craftSkillRank = GetItemLinkRequiredCraftingSkillRank(itemLink)
 	
-	if (craftSkillRank ~= nil and requiredRank > 0) then
+	if (craftSkillRank ~= nil and logData.recipeRank > 0) then
 		logData.craftSkillRank = craftSkillRank
 	end
 		
@@ -7238,9 +7278,10 @@ function uespLog.CreateItemLinkLog (itemLink)
 	local ingrList = {}
 	
 	for i = 1, numIngredients do
-		local ingredientName, numOwned = GetItemLinkRecipeIngredientInfo(itemLink, i)
+		local ingredientName, numOwned, numReq = GetItemLinkRecipeIngredientInfo(itemLink, i)
 		logData["ingrName"..tostring(i)] = ingredientName
-		ingrList[#ingrList + 1] = ingredientName
+		logData["ingrQnt"..tostring(i)] = numReq
+		ingrList[#ingrList + 1] = tostring(ingredientName).." x"..tostring(numReq)
 	end
 	
 	logData.recipeIngredients = table.concat(ingrList, ", ")
@@ -7357,6 +7398,7 @@ function uespLog.LogItemLink (itemLink, event, extraData)
 end
 
 
+-- NOTE: Not currently used except for testing
 function uespLog.LogItemLinkShort (itemLink, event, extraData)
 	local enchantName, enchantDesc
 	local useAbilityName, useAbilityDesc, cooldown
@@ -13645,3 +13687,5 @@ function uespLog.OnEffectChanged(e, change, slot, auraName, unitTag, start, fini
 	--end
 
 end
+
+

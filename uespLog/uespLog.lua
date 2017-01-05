@@ -7281,7 +7281,12 @@ function uespLog.CreateItemLinkLog (itemLink)
 		local ingredientName, numOwned, numReq = GetItemLinkRecipeIngredientInfo(itemLink, i)
 		logData["ingrName"..tostring(i)] = ingredientName
 		logData["ingrQnt"..tostring(i)] = numReq
-		ingrList[#ingrList + 1] = tostring(ingredientName).." x"..tostring(numReq)
+		
+		if (numReq <= 1) then
+			ingrList[#ingrList + 1] = tostring(ingredientName)
+		else
+			ingrList[#ingrList + 1] = tostring(ingredientName).." ("..tostring(numReq)..")"
+		end
 	end
 	
 	logData.recipeIngredients = table.concat(ingrList, ", ")

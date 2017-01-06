@@ -1336,6 +1336,30 @@ uespLog.DEFAULT_SETTINGS =
 		["trackLoot"] = false,
 		["trackFights"] = false,
 		["inventoryStats"] = "off",
+		["salesData"] = {
+			["saveSales"] = true,
+			["lastTimestamp"] = 0,
+			[1] = {
+				["guildName"] = "",
+				["lastTimestamp"] = 0,
+			},
+			[2] = {
+				["guildName"] = "",
+				["lastTimestamp"] = 0,
+			},
+			[3] = {
+				["guildName"] = "",
+				["lastTimestamp"] = 0,
+			},
+			[4] = {
+				["guildName"] = "",
+				["lastTimestamp"] = 0,
+			},
+			[5] = {
+				["guildName"] = "",
+				["lastTimestamp"] = 0,
+			},
+		},
 	}
 }
 
@@ -2672,6 +2696,7 @@ function uespLog.Initialize( self, addOnName )
 	uespLog.InitSettingsMenu()
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog", EVENT_PLAYER_ACTIVATED, uespLog.outputInitMessage)
+	EVENT_MANAGER:RegisterForEvent( "uespLog-sales", EVENT_PLAYER_ACTIVATED, uespLog.OnActivateSalesData)
 			
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_RETICLE_TARGET_CHANGED, uespLog.OnTargetChange)
 	
@@ -3530,6 +3555,7 @@ function uespLog.fillInfoData ()
 	data["accountName"] = GetDisplayName()
 	data["serverCharName"] = serverCharName
 	data["characterName"] = charName
+	data["server"] = GetWorldName()
 	
 	data["startGameTime"] = uespLog.startGameTime
 	data["startTimeStamp"] = uespLog.startTimeStamp

@@ -23,6 +23,7 @@ libs/LibAddonMenu-2.0/controls/texture.lua
 
 uespLog.lua
 uespLogTradeData.lua
+uespLogSalesData.lua
 uespLogUI.lua
 uespLogCharData.lua
 uespSkillCoef.lua

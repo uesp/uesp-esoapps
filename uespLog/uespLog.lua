@@ -618,6 +618,7 @@
 --				- Added ingredient quantities to logged recipe data.
 --				- Added furniture category data to logged item data.
 --				- Updated item logging with change to multiple tradeskill requirements.
+--				- Fixed UI error with autolooting enabled in some cases.
 --		 
 --
 --		Future Versions (Works in Progress)
@@ -2691,7 +2692,7 @@ function uespLog.Initialize( self, addOnName )
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTIVE_QUEST_TOOL_CHANGED, uespLog.OnQuestToolChanged)	
 		
-	EVENT_MANAGER:UnregisterForEvent( "LOOT_SHARED" , EVENT_LOOT_UPDATED)
+	--EVENT_MANAGER:UnregisterForEvent( "LOOT_SHARED" , EVENT_LOOT_UPDATED)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOOT_UPDATED, uespLog.OnLootUpdated)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOOT_RECEIVED, uespLog.OnLootGained)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOOT_CLOSED, uespLog.OnLootClosed)
@@ -4283,7 +4284,7 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 end
 
 
--- NOTE: Copied from original API local function in /ingame/zo_loot/loot_shared.lua.html
+-- NOTE: Copied from original API local function in /ingame/zo_loot/loot_shared.lua
 function uespLog.UpdateLootWindow(eventCode)
 	local name, targetType, actionName, isOwned = GetLootTargetInfo()
 	local useDefaultLoot = true
@@ -4306,6 +4307,7 @@ function uespLog.UpdateLootWindow(eventCode)
 		if (targetType == INTERACT_TARGET_TYPE_ITEM and ((isOwned and isStolenAutoLoot) or (not isOwned and isAutoloot))) then
 			useDefaultLoot = false
 			LOOT_SHARED:LootAllItems()
+			return
 		end
 	end
 	
@@ -4819,7 +4821,7 @@ end
 
 function uespLog.OnInventoryItemUsed (eventCode, itemSoundCategory)
 	--uespLog.DebugExtraMsg("UESP: OnInventoryItemUsed sound="..tostring(itemSoundCategory))
-
+	
 	uespLog.OnUseItem(eventCode, uespLog.lastItemLinkUsed_BagId, uespLog.lastItemLinkUsed_SlotIndex, uespLog.lastItemLinkUsed, itemSoundCategory)
 end
 

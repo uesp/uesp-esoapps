@@ -618,7 +618,7 @@
 --				- Added ingredient quantities to logged recipe data.
 --				- Added furniture category data to logged item data.
 --				- Updated item logging with change to multiple tradeskill requirements.
---				- Fixed UI error with autolooting enabled in some cases.
+--				- Fixed UI error with autolooting containers enabled.
 --		 
 --
 --		Future Versions (Works in Progress)

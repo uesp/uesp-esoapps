@@ -3,10 +3,9 @@
 --
 --	EVENT_TRADING_HOUSE_PENDING_ITEM_UPDATE
 --	EVENT_TRADING_HOUSE_RESPONSE_RECEIVED
---	EVENT_TRADING_HOUSE_PENDING_ITEM_UPDATE
---	EVENT_TRADING_HOUSE_RESPONSE_RECEIVED
 --	EVENT_PLAYER_ACTIVATED
--- 		guild remove/add?
+--  EVENT_GUILD_SELF_JOINED_GUILD
+--	EVENT_GUILD_SELF_LEFT_GUILD
 --
 
 
@@ -16,7 +15,11 @@ uespLog.NewGuildSales = 0
 uespLog.SalesCurrentGuildIndex = 1
 uespLog.SalesStartEventIndex = 1
 uespLog.SalesScanCurrentLastTimestamp = -1
+uespLog.SalesScanSingleGuild = false
 uespLog.MAX_GUILD_INDEX = 5
+uespLog.SalesCurrentListingData = {}
+uespLog.SALES_MAX_LISTING_TIME = 30*86400
+uespLog.GuildHistoryLastReceivedTimestamp = GetTimeStamp()
 
 
 function uespLog.GetSalesDataConfig()
@@ -50,6 +53,7 @@ function uespLog.SaveNewSalesData()
 	uespLog.SalesCurrentGuildIndex = 1
 	uespLog.SalesStartEventIndex = 1
 	uespLog.SalesScanCurrentLastTimestamp = -1
+	uespLog.SalesScanSingleGuild = false
 
 	if (not uespLog.IsSalesDataSave()) then
 		return
@@ -62,8 +66,6 @@ function uespLog.SaveNewSalesData()
 	end
 	
 	uespLog.StartGuildSalesScan(1)
-
-	--uespLog.DebugMsg("UESP: Found and saved "..tostring(newSales).." new guild sales!")
 end
 
 
@@ -78,6 +80,7 @@ function uespLog.StartGuildSalesScan(guildIndex)
 	
 	local guildId = GetGuildId(guildIndex)
 	local requested = RequestGuildHistoryCategoryNewest(guildId, GUILD_HISTORY_STORE)
+	uespLog.GuildHistoryLastReceivedTimestamp = GetTimeStamp()
 	
 	uespLog.SalesStartEventIndex = 1
 	uespLog.SalesCurrentGuildIndex = guildIndex
@@ -94,7 +97,13 @@ function uespLog.StartGuildSalesScanMore(guildIndex)
 	local hasMore = DoesGuildHistoryCategoryHaveMoreEvents(guildId, GUILD_HISTORY_STORE)
 		
 	if (not hasMore) then
-		uespLog.StartGuildSalesScan(guildIndex + 1)
+	
+		if (uespLog.SalesScanSingleGuild) then
+			uespLog.SalesScanSingleGuild = false
+		else
+			uespLog.StartGuildSalesScan(guildIndex + 1)
+		end
+		
 		return true
 	end
 		
@@ -103,9 +112,9 @@ function uespLog.StartGuildSalesScanMore(guildIndex)
 	
 	uespLog.DebugExtraMsg("UESP: Loading more sales for guild #"..tostring(guildIndex)..", starting at event #"..tostring(uespLog.SalesStartEventIndex))
 	
+	uespLog.GuildHistoryLastReceivedTimestamp = GetTimeStamp()
 	local requested = RequestGuildHistoryCategoryOlder(guildId, GUILD_HISTORY_STORE)
-	uespLog.DebugMsg(".     Requested = "..tostring(requested))
-	
+			
 	zo_callLater(function() uespLog.ScanGuildSales(guildIndex) end, uespLog.SALES_SCAN_DELAY)
 	
 	return true
@@ -118,7 +127,7 @@ function uespLog.ScanGuildSales(guildIndex)
 	local lastTimestamp = salesConfig.lastTimestamp
 	local guildId = GetGuildId(guildIndex)
 	local requested = false
-	local currentTimestamp = GetTimeStamp()
+	local currentTimestamp = uespLog.GuildHistoryLastReceivedTimestamp
 	
 	if (guildConfig.lastTimestamp < lastTimestamp) then
 		lastTimestamp = guildConfig.lastTimestamp
@@ -138,6 +147,8 @@ function uespLog.ScanGuildSales(guildIndex)
 	
 	if (scanMore) then
 		uespLog.StartGuildSalesScanMore(guildIndex)
+	elseif (uespLog.SalesScanSingleGuild) then
+		uespLog.SalesScanSingleGuild = false
 	else
 		uespLog.StartGuildSalesScan(guildIndex + 1)
 	end
@@ -171,6 +182,7 @@ end
 
 
 function uespLog.SaveGuildSummary(guildIndex)
+	local salesConfig = uespLog.GetSalesDataConfig()
 	local logData = {}
 	
 	logData.event = "GuildSummary"
@@ -189,6 +201,9 @@ function uespLog.SaveGuildSummary(guildIndex)
 	logData.kiosk = GetGuildOwnedKioskInfo(guildId)
 	logData.server = GetWorldName()
 	
+	salesConfig[guildIndex].guildName = logData.name
+	salesConfig[guildIndex].guildId = logData.guildId
+	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 end
 
@@ -201,8 +216,8 @@ function uespLog.SaveGuildPurchase(guildId, eventIndex)
 	
 	logData.event = "GuildSale"
 	logData.type = eventType
-	logData.timestamp = currentTimestamp - seconds
-	logData.eventId = Id64ToString(eventId)
+	logData.saleTimestamp = tostring(currentTimestamp - seconds)
+	logData.eventId = tostring(eventId)
 	logData.seller = seller
 	logData.buyer = buyer
 	logData.qnt = qnt
@@ -223,4 +238,339 @@ function uespLog.ResetNewSalesDataTimestamps()
 	for i = 1, 5 do
 		salesConfig[i].lastTimestamp = 0
 	end
+end
+
+
+function uespLog.OnJoinedGuild (event, guildId, guildName)
+
+	if (not uespLog.IsSalesDataSave()) then
+		return
+	end
+
+	for i = 1, uespLog.MAX_GUILD_INDEX do
+		local id = GetGuildId(i)
+		
+		if (id == guildId) then
+			uespLog.SaveGuildSummary(i)
+			uespLog.SalesScanSingleGuild = true
+			uespLog.StartGuildSalesScan(i)
+			return
+		end
+	end
+	
+end
+
+
+function uespLog.OnLeftGuild (event, guildId, guildName)
+	local salesConfig = uespLog.GetSalesDataConfig()
+	local oldGuildIndex = -1
+
+	if (not uespLog.IsSalesDataSave()) then
+		return
+	end
+	
+	for i = 1, uespLog.MAX_GUILD_INDEX do
+		
+		if (salesConfig[i].guildName == guildName) then
+			uespLog.DeleteGuildSalesData(i)
+			return
+		end
+	end
+end
+
+
+function uespLog.DeleteGuildSalesData(guildIndex)
+	local salesConfig = uespLog.GetSalesDataConfig()
+
+	for i = guildIndex, uespLog.MAX_GUILD_INDEX - 1 do
+		salesConfig[i] = salesConfig[i + 1]
+	end
+	
+	salesConfig[uespLog.MAX_GUILD_INDEX - 1] = 
+	{
+		["guildName"] = "",
+		["guildId"] = 1,
+		["lastTimestamp"] = 0,
+	}
+
+end
+
+
+function uespLog.OnTradingHouseSearchResultsReceived (eventCode, guildId, numItemsOnPage, currentPage, hasMorePages)
+
+	if (uespLog.IsSalesDataSave()) then
+		uespLog.SaveTradingHouseSalesData(guildId, numItemsOnPage, currentPage)	
+	end
+
+end
+
+
+function uespLog.SaveTradingHouseSalesData(guildId, numItemsOnPage, currentPage)
+	local currentTimestamp = GetTimeStamp()
+	local logData = {}
+	
+	uespLog.DebugMsg("UESP: Saving guild sales search results...")
+	
+	logData.event = "GuildSaleSearchInfo"
+	logData.guildId = guildId
+	logData.guild = GetGuildName(guildId)
+	logData.server = GetWorldName()	
+	logData.zone = uespLog.lastTargetData.zone
+	logData.lastTarget = uespLog.lastTargetData.name
+	logData.kiosk = GetGuildOwnedKioskInfo(guildId)
+	
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+
+	for i = 1, numItemsOnPage do
+		uespLog.SaveTradingHouseSalesItem(guildId, i, currentTimestamp)
+	end
+	
+end
+
+
+function uespLog.SaveTradingHouseSalesItem(guildId, itemIndex, currentTimestamp, extraData)
+	local logData = {}
+	
+	logData.event = "GuildSaleSearchEntry"
+	logData.guildId = guildId
+	logData.guild = GetGuildName(guildId)
+	logData.server = GetWorldName()
+	logData.icon, logData.item, logData.quality, logData.qnt, logData.seller, logData.timeRemaining, logData.price, logData.currency = GetTradingHouseSearchResultItemInfo(itemIndex)
+	logData.itemLink = GetTradingHouseSearchResultItemLink(itemIndex)
+	logData.listTimestamp = tostring(currentTimestamp + logData.timeRemaining - uespLog.SALES_MAX_LISTING_TIME)
+	
+	logData.timeRemaining = nil
+	logData.stack = nil
+	logData.currency = nil
+	
+	if (logData.itemLink == "") then
+		return
+	end
+		
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData(), extraData)
+end
+
+
+function uespLog.OnTradingHouseResponseReceived(event, responseType, result)
+	--TRADING_HOUSE_RESULT_CANCEL_SALE_PENDING
+	--TRADING_HOUSE_RESULT_PURCHASE_PENDING
+	--TRADING_HOUSE_RESULT_POST_PENDING
+	--TRADING_HOUSE_RESULT_LISTINGS_PENDING
+	
+	uespLog.DebugExtraMsg("UESP: OnTradingHouseResponseReceived "..tostring(responseType).. " - "..tostring(result))
+	
+	if (result ~= TRADING_HOUSE_RESULT_SUCCESS) then
+		return
+	end
+		
+	if (responseType == TRADING_HOUSE_RESULT_LISTINGS_PENDING) then
+		uespLog.OnTradingHouseListingUpdate()
+	elseif (responseType == TRADING_HOUSE_RESULT_CANCEL_SALE_PENDING) then
+		uespLog.OnTradingHouseListingCancel()
+	elseif (responseType == TRADING_HOUSE_RESULT_POST_PENDING) then
+		uespLog.OnTradingHouseListingNew()
+	end
+	
+end
+
+
+function uespLog.OnTradingHouseListingNew()
+
+	if (uespLog.IsSalesDataSave()) then
+		uespLog.SaveTradingHouseListingData()
+	end
+	
+end
+
+
+function uespLog.OnTradingHouseListingCancel()
+
+	if (uespLog.IsSalesDataSave()) then
+		uespLog.SaveTradingHouseListingCancelData()
+	end
+end
+
+
+function uespLog.OnTradingHouseListingUpdate()
+
+	if (uespLog.IsSalesDataSave()) then
+		uespLog.SaveTradingHouseListingData()
+	end
+	
+end
+
+
+function uespLog.SaveTradingHouseListingCancelData()
+	local newListingData = uespLog.MakeSalesListingData()
+	local cancelledListings = uespLog.FindMissingListingData(uespLog.SalesCurrentListingData, newListingData)
+	
+	uespLog.DebugExtraMsg("UESP: Saving "..tostring(#cancelledListings).." cancelled listing guild sales items...")
+	
+	for i = 1, #cancelledListings do
+		uespLog.SaveTradingHouseListingDataItem("GuildSaleListingEntry::Cancel", uespLog.SalesCurrentListingData[cancelledListings[i]])
+	end	
+	
+	uespLog.SalesCurrentListingData = newListingData
+end
+
+
+function uespLog.SaveTradingHouseListingDataItem(eventName, listingData)
+	local logData = {}
+	
+	if (listingData == nil or listingData.itemLink == nil or listingData.itemLink == "") then
+		return
+	end
+		
+	logData.event = eventName
+	logData.guildId, logData.guild = GetCurrentTradingHouseGuildDetails()
+	logData.server = GetWorldName()
+	logData.qnt = listingData.qnt
+	logData.seller = listingData.seller
+	logData.item = listingData.name
+	logData.quality = listingData.quality
+	logData.price = listingData.price
+	logData.itemLink = listingData.itemLink
+	logData.listTimestamp = tostring(listingData.listTimestamp)
+			
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+end
+
+
+function uespLog.MakeSalesListingId(listing)
+	return tostring(listing.listTimestamp) .. "-" .. tostring(listing.itemLink) .. "-" .. tostring(listing.qnt) .. "-"..tostring(listing.price)
+end
+
+
+function uespLog.FindMissingListingData(oldListing, newListing)
+	local itemMap = {}
+	local missingListing = {}
+	
+	for i = 1, #oldListing do
+		local listing = oldListing[i]
+		local id = uespLog.MakeSalesListingId(listing)
+		
+		itemMap[id] = 
+		{
+			["value"] = 1,
+			["index"] = i,
+		}
+	end
+	
+	for i = 1, #newListing do
+		local listing = newListing[i]
+		local id = uespLog.MakeSalesListingId(listing)
+		
+		if (itemMap[id] ~= nil) then
+			itemMap[id]["value"] = 0
+		end
+	end
+	
+	for id, data in pairs(itemMap) do
+	
+		if (data.value > 0) then
+			missingListing[#missingListing + 1] = data.index
+		end
+	end
+		
+	return missingListing
+end
+
+
+function uespLog.MakeSalesListingData()
+	local numListings = GetNumTradingHouseListings()
+	local data = {}
+	local currentTimestamp = GetTimeStamp()
+	
+	for i = 1, numListings do
+		local icon, name, quality, qnt, seller, timeRemaining, price = GetTradingHouseListingItemInfo(i)
+		local itemLink = GetTradingHouseListingItemLink(i)
+	
+		data[i] = 
+		{
+			["listTimestamp"] = currentTimestamp + timeRemaining - uespLog.SALES_MAX_LISTING_TIME,
+			["itemLink"] = itemLink,
+			["qnt"] = qnt,
+			["price"] = price,	
+			["name"] = name,		
+			["quality"] = quality,	
+			["seller"] = seller,
+		}
+	end
+	
+	return data
+end
+
+
+function uespLog.SaveTradingHouseListingData()
+	local guildId, guildName = GetCurrentTradingHouseGuildDetails()
+	local logData = {}
+	local numListings = GetNumTradingHouseListings()
+	local currentTimestamp = GetTimeStamp()
+	
+	uespLog.SalesCurrentListingData = {}
+
+	if (guildName == "" or numListings <= 0) then
+		return
+	end
+	
+	uespLog.DebugMsg("UESP: Saving guild sale listings...")
+	
+	logData.event = "GuildSaleListingInfo"
+	logData.guildId = guildId
+	logData.guild = guildName
+	logData.server = GetWorldName()	
+	logData.zone = uespLog.lastTargetData.zone
+	logData.lastTarget = uespLog.lastTargetData.name
+	logData.kiosk = GetGuildOwnedKioskInfo(guildId)
+	
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+
+	for i = 1, numListings do
+		uespLog.SaveTradingHouseListingItem(i, currentTimestamp)
+	end
+	
+	uespLog.SalesCurrentListingData = uespLog.MakeSalesListingData()
+end
+
+
+function uespLog.SaveTradingHouseListingItem(itemIndex, currentTimestamp)
+	local guildId, guildName = GetCurrentTradingHouseGuildDetails()
+	local logData = {}
+		
+	logData.event = "GuildSaleListingEntry"
+	logData.guildId = guildId
+	logData.guild = guildName
+	logData.server = GetWorldName()
+	logData.icon, logData.item, logData.quality, logData.qnt, logData.seller, logData.timeRemaining, logData.price = GetTradingHouseListingItemInfo(itemIndex)
+	logData.itemLink = GetTradingHouseListingItemLink(itemIndex)
+	logData.listTimestamp = tostring(currentTimestamp + logData.timeRemaining - uespLog.SALES_MAX_LISTING_TIME)
+	
+	logData.timeRemaining = nil
+	logData.stack = nil
+	
+	if (logData.itemLink == "") then
+		return
+	end
+			
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+end
+
+
+function uespLog.OnGuildHistoryResponseReceived(event)
+	uespLog.DebugExtraMsg("UESP: OnGuildHistoryResponseReceived")
+	uespLog.GuildHistoryLastReceivedTimestamp = GetTimeStamp()
+end
+
+
+function uespLog.OnTradingHouseConfirmPurchase(event, pendingPurchaseIndex)
+	local extraData = {}
+	local currentTimestamp = GetTimeStamp()
+	
+	uespLog.DebugExtraMsg("UESP: OnTradingHouseConfirmPurchase "..tostring(pendingPurchaseIndex))
+	
+	extraData.purchase = 1
+	extraData.buyer = GetDisplayName()
+	extraData.saleTimestamp = tostring(currentTimestamp)
+
+	uespLog.SaveTradingHouseSalesItem(GetSelectedTradingHouseGuildId(), pendingPurchaseIndex, currentTimestamp, extraData)
 end

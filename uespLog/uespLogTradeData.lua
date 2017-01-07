@@ -676,9 +676,7 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 		return
 	end
 	
-	local recipeName = uespLog.GetRecipeNameFromLink(itemLink)
-	
-	if (recipeName ~= nil) then
+	if (itemType == ITEMTYPE_RECIPE) then
 		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
 			if (IsItemLinkRecipeKnown(itemLink)) then
 				iconControl:SetHidden(false)		
@@ -1696,9 +1694,7 @@ function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
 		return
 	end
 	
-	local recipeName = uespLog.GetRecipeNameFromLink(itemLink)
-	
-	if (recipeName ~= nil) then
+	if (itemType == ITEMTYPE_RECIPE) then
 		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
 			if (IsItemLinkRecipeKnown(itemLink)) then
 				iconControl:SetHidden(false)		

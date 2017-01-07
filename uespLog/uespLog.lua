@@ -618,7 +618,10 @@
 --				- Added ingredient quantities to logged recipe data.
 --				- Added furniture category data to logged item data.
 --				- Updated item logging with change to multiple tradeskill requirements.
---				- Fixed UI error with autolooting containers enabled.
+--				- Fixed UI error with autolooting containers enabled. Note a small change in the behaviour of autolooting
+--				  containers when your inventory is full. It will autoloot as many items as your inventory can hold but
+--				  will no longer display the open container showing remaining items.
+--				- Fixed known/unknown display of recipes.
 --		 
 --
 --		Future Versions (Works in Progress)
@@ -1341,22 +1344,27 @@ uespLog.DEFAULT_SETTINGS =
 			["lastTimestamp"] = 0,
 			[1] = {
 				["guildName"] = "",
+				["guildId"] = 1,
 				["lastTimestamp"] = 0,
 			},
 			[2] = {
 				["guildName"] = "",
+				["guildId"] = 2,
 				["lastTimestamp"] = 0,
 			},
 			[3] = {
 				["guildName"] = "",
+				["guildId"] = 3,
 				["lastTimestamp"] = 0,
 			},
 			[4] = {
 				["guildName"] = "",
+				["guildId"] = 4,
 				["lastTimestamp"] = 0,
 			},
 			[5] = {
 				["guildName"] = "",
+				["guildId"] = 5,
 				["lastTimestamp"] = 0,
 			},
 		},
@@ -2372,8 +2380,10 @@ end
 
 function uespLog.GetTimeData()
 	local result = { }
+	local timestamp = GetTimeStamp()
 	
-	result.timeStamp = Id64ToString(GetTimeStamp())
+	result.timeStamp = Id64ToString(timestamp)
+	result.timeStamp1 = tostring(timestamp)
 	result.gameTime = GetGameTimeMilliseconds()
 	
 	return result
@@ -2719,6 +2729,12 @@ function uespLog.Initialize( self, addOnName )
 		
 	--EVENT_MANAGER:UnregisterForEvent( "LOOT_SHARED" , EVENT_LOOT_UPDATED)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOOT_UPDATED, uespLog.OnLootUpdated)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOOT_ITEM_FAILED, uespLog.OnLootItemFailed)
+	
+	uespLog.Old_ZO_Loot_UpdateLootWindow = ZO_Loot.UpdateLootWindow
+	uespLog.Old_LootWindow_IsControlHidden = LOOT_WINDOW.control.IsControlHidden
+	LOOT_WINDOW.control.IsControlHidden = uespLog.LootWindowIsControlHidden
+	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOOT_RECEIVED, uespLog.OnLootGained)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOOT_CLOSED, uespLog.OnLootClosed)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_MONEY_UPDATE, uespLog.OnMoneyUpdate)
@@ -2746,9 +2762,14 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_FISHING_LURE_CLEARED, uespLog.OnFishingLureCleared)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_FISHING_LURE_SET, uespLog.OnFishingLureSet)	
 	
-	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_GUILD_SELF_JOINED_GUILD, uespLog.OnJoinedGuild)	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_GUILD_SELF_LEFT_GUILD, uespLog.OnLeftGuild)	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_SEARCH_RESULTS_RECEIVED, uespLog.OnTradingHouseSearchResultsReceived)	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_RESPONSE_RECEIVED, uespLog.OnTradingHouseResponseReceived)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_GUILD_HISTORY_RESPONSE_RECEIVED, uespLog.OnGuildHistoryResponseReceived)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_CONFIRM_ITEM_PURCHASE, uespLog.OnTradingHouseConfirmPurchase)	
+
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_EFFECT_CHANGED, uespLog.OnEffectChanged)	
-	
 	
 		-- Note: This event is called up to 40-50 time for each kill with some weapons (Destruction Staff)
 	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOT_UPDATED, uespLog.OnActionSlotUpdated)	
@@ -3450,14 +3471,20 @@ function uespLog.ShowItemInfo (itemLink)
 	if (craftSkill ~= nil and craftSkill > 0) then
 		uespLog.MsgColor(uespLog.itemColor, ".    Craft: "..tostring(craftSkill).."   Rank: "..tostring(craftSkillRank))
 	end
-	
-	local numTradeskills = GetItemLinkRecipeNumTradeskillRequirements(itemLink)
 
-	if (numTradeskills > 0) then
-		for i = 1, numTradeskills do
-			local tradeskill, reqLevel = GetItemLinkRecipeTradeskillRequirement(itemLink, i)
-			uespLog.MsgColor(uespLog.itemColor, ".    Requires: "..GetCraftingSkillName(tradeskill).." "..tostring(reqLevel))
+	if (GetItemLinkRecipeNumTradeskillRequirements ~= nil) then
+		local numTradeskills = GetItemLinkRecipeNumTradeskillRequirements(itemLink)
+
+		if (numTradeskills > 0) then
+			for i = 1, numTradeskills do
+				local tradeskill, reqLevel = GetItemLinkRecipeTradeskillRequirement(itemLink, i)
+				uespLog.MsgColor(uespLog.itemColor, ".    Requires: "..GetCraftingSkillName(tradeskill).." "..tostring(reqLevel))
+			end
 		end
+		
+	elseif (GetItemLinkRecipeRankRequirement ~= nil) then
+		recipeRank = GetItemLinkRecipeRankRequirement(itemLink)
+		uespLog.MsgColor(uespLog.itemColor, ".    Recipe Rank: "..tostring(recipeRank))
 	end
 	
 	if (recipeQuality ~= nil and recipeQuality > 0) then
@@ -3477,6 +3504,7 @@ function uespLog.ShowItemInfo (itemLink)
 	if (numIngredients ~= nil) then
 		for i = 1, numIngredients do
 			local ingredientName, numOwned, numReq = GetItemLinkRecipeIngredientInfo(itemLink, i)
+			if (numReq == nil) then numReq = 1 end
 			uespLog.MsgColor(uespLog.itemColor, ".    Ingredient "..tostring(i)..":  "..tostring(ingredientName).." x"..tostring(numReq))
 		end
 	end
@@ -4313,7 +4341,8 @@ end
 -- NOTE: Copied from original API local function in /ingame/zo_loot/loot_shared.lua
 function uespLog.UpdateLootWindow(eventCode)
 	local name, targetType, actionName, isOwned = GetLootTargetInfo()
-	local useDefaultLoot = true
+	
+	--uespLog.DebugMsg("UESP: UpdateLootWindow")
 	
 	if (name ~= "") then
 	
@@ -4331,14 +4360,47 @@ function uespLog.UpdateLootWindow(eventCode)
 		local isStolenAutoLoot = GetSetting(SETTING_TYPE_LOOT, LOOT_SETTING_AUTO_LOOT_STOLEN) == "1"
 		
 		if (targetType == INTERACT_TARGET_TYPE_ITEM and ((isOwned and isStolenAutoLoot) or (not isOwned and isAutoloot))) then
-			useDefaultLoot = false
+			uespLog.lastLootAutoLoot = true
 			LOOT_SHARED:LootAllItems()
+			--EndInteraction(INTERACTION_LOOT)
+			--LootAll(false)
+			--LOOT_SHARED:Hide()
 			return
 		end
 	end
 	
-	if (useDefaultLoot) then
-		SYSTEMS:GetObject("loot"):UpdateLootWindow(name, actionName, isOwned)
+	--SYSTEMS:GetObject("loot"):UpdateLootWindow(name, actionName, isOwned)
+end
+
+
+function uespLog:LootWindowIsControlHidden()
+	local name, targetType, actionName, isOwned = GetLootTargetInfo()
+	
+	--uespLog.DebugMsg("UESP: LootWindowIsControlHidden")
+	
+	local isAutoloot = GetSetting(SETTING_TYPE_LOOT, LOOT_SETTING_AUTO_LOOT) == "1"
+	local isStolenAutoLoot = GetSetting(SETTING_TYPE_LOOT, LOOT_SETTING_AUTO_LOOT_STOLEN) == "1"
+		
+	if (uespLog.GetContainerAutoLoot()) then
+		if (targetType == INTERACT_TARGET_TYPE_ITEM and ((isOwned and isStolenAutoLoot) or (not isOwned and isAutoloot))) then
+			return false
+		end	
+	end
+
+	return uespLog.Old_LootWindow_IsControlHidden(LOOT_WINDOW.control)
+end
+
+
+function uespLog.OnLootItemFailed(eventCode, reason)
+
+	--uespLog.DebugMsg("UESP: OnLootItemFailed")
+
+	if (reason == LOOT_ITEM_RESULT_INVENTORY_FULL or reason == LOOT_ITEM_RESULT_INVENTORY_FULL_LOOT_ALL) then
+	
+		if (uespLog.lastLootAutoLoot and not uespLog.lastLootFailed) then
+			uespLog.lastLootFailed = true
+			--LOOT_SHARED:LootAllItems()
+		end
 	end
 	
 end
@@ -4346,6 +4408,8 @@ end
 
 function uespLog.OnLootUpdated (eventCode)
 	
+	uespLog.lastLootFailed = false
+	uespLog.lastLootAutoLoot = false
 	uespLog.lastLootUpdateCount = GetNumLootItems()
 	uespLog.lastLootTargetName = uespLog.lastTargetData.name
 	
@@ -7250,26 +7314,30 @@ function uespLog.CreateItemLinkLog (itemLink)
 	requiredQuality = GetItemLinkRecipeQualityRequirement(itemLink)
 	logData.recipeQuality = requiredQuality
 	
-	local numTradeskills = GetItemLinkRecipeNumTradeskillRequirements(itemLink)
+	if (GetItemLinkRecipeNumTradeskillRequirements ~= nil) then
+		local numTradeskills = GetItemLinkRecipeNumTradeskillRequirements(itemLink)
 
-	if (numTradeskills > 0) then
-		logData.reqNumTrades = numTradeskills
-		local tmp = {}
-		
-		for i = 1, numTradeskills do
-			local tradeskill, reqLevel = GetItemLinkRecipeTradeskillRequirement(itemLink, i)
+		if (numTradeskills > 0) then
+			logData.reqNumTrades = numTradeskills
+			local tmp = {}
 			
-			logData["reqTrade"..tostring(i)] = tradeskill
-			logData["reqRank"..tostring(i)] = reqLevel
-			
-			tmp[i] = GetCraftingSkillName(tradeskill) .. " " .. tostring(reqLevel)
-			
-			if (tradeskill == 5) then
-				logData.recipeRank = reqLevel
+			for i = 1, numTradeskills do
+				local tradeskill, reqLevel = GetItemLinkRecipeTradeskillRequirement(itemLink, i)
+				
+				logData["reqTrade"..tostring(i)] = tradeskill
+				logData["reqRank"..tostring(i)] = reqLevel
+				
+				tmp[i] = GetCraftingSkillName(tradeskill) .. " " .. tostring(reqLevel)
+				
+				if (tradeskill == 5) then
+					logData.recipeRank = reqLevel
+				end
 			end
+			
+			logData.reqTrades = uespLog.implodeOrder(tmp, ",")
 		end
-		
-		logData.reqTrades = uespLog.implodeOrder(tmp, ",")
+	elseif (GetItemLinkRecipeRankRequirement ~= nil) then
+		logData.recipeRank = GetItemLinkRecipeRankRequirement(itemLink)
 	end
 	
 	resultItemLink = GetItemLinkRecipeResultItemLink(itemLink)
@@ -7307,6 +7375,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 	
 	for i = 1, numIngredients do
 		local ingredientName, numOwned, numReq = GetItemLinkRecipeIngredientInfo(itemLink, i)
+		if (numReq == nil) then numReq = 1 end
 		logData["ingrName"..tostring(i)] = ingredientName
 		logData["ingrQnt"..tostring(i)] = numReq
 		

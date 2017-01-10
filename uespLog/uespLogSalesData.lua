@@ -328,8 +328,7 @@ function uespLog.SaveTradingHouseSalesData(guildId, numItemsOnPage, currentPage)
 	uespLog.DebugMsg("UESP: Saving guild sales search results...")
 	
 	logData.event = "GuildSaleSearchInfo"
-	logData.guildId = guildId
-	logData.guild = GetGuildName(guildId)
+	logData.guildId, logData.guild = GetCurrentTradingHouseGuildDetails()
 	logData.server = GetWorldName()	
 	logData.zone = uespLog.lastTargetData.zone
 	logData.lastTarget = uespLog.lastTargetData.name
@@ -348,8 +347,7 @@ function uespLog.SaveTradingHouseSalesItem(guildId, itemIndex, currentTimestamp,
 	local logData = {}
 	
 	logData.event = "GuildSaleSearchEntry"
-	logData.guildId = guildId
-	logData.guild = GetGuildName(guildId)
+	logData.guildId, logData.guild = GetCurrentTradingHouseGuildDetails()
 	logData.server = GetWorldName()
 	logData.icon, logData.item, logData.quality, logData.qnt, logData.seller, logData.timeRemaining, logData.price, logData.currency = GetTradingHouseSearchResultItemInfo(itemIndex)
 	logData.itemLink = GetTradingHouseSearchResultItemLink(itemIndex)

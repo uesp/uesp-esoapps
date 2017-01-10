@@ -20,6 +20,7 @@ uespLog.MAX_GUILD_INDEX = 5
 uespLog.SalesCurrentListingData = {}
 uespLog.SALES_MAX_LISTING_TIME = 30*86400
 uespLog.GuildHistoryLastReceivedTimestamp = GetTimeStamp()
+uespLog.IsSavingGuildSales = false
 
 
 function uespLog.GetSalesDataConfig()
@@ -43,6 +44,12 @@ end
 
 
 function uespLog.OnActivateSalesData()
+
+	if (uespLog.IsSavingGuildSales) then
+		return
+	end
+
+	uespLog.IsSavingGuildSales = true
 	zo_callLater(uespLog.SaveNewSalesData, uespLog.SALES_FIRSTSCAN_DELAYMS)
 end
 
@@ -56,6 +63,7 @@ function uespLog.SaveNewSalesData()
 	uespLog.SalesScanSingleGuild = false
 
 	if (not uespLog.IsSalesDataSave()) then
+		uespLog.IsSavingGuildSales = false
 		return
 	end	
 	
@@ -72,7 +80,14 @@ end
 function uespLog.StartGuildSalesScan(guildIndex)
 
 	if (guildIndex > uespLog.MAX_GUILD_INDEX) then
-		uespLog.DebugMsg("UESP: Found and saved "..tostring(uespLog.NewGuildSales).." new guild sales!")
+	
+		if (uespLog.NewGuildSales > 0) then
+			uespLog.DebugMsg("UESP: Found and saved "..tostring(uespLog.NewGuildSales).." new guild sales!")
+		else
+			uespLog.DebugExtraMsg("UESP: Found no new guild sales since last save!")
+		end
+		
+		uespLog.IsSavingGuildSales = false
 		return false
 	end
 		
@@ -198,7 +213,7 @@ function uespLog.SaveGuildSummary(guildIndex)
 	logData.numMembers, logData.numOnline, logData.leader = GetGuildInfo(logData.guildId)
 	--logData.description = GetGuildDescription(logData.guildId)
 	--logData.motd = GetGuildMotD(logData.guildId)
-	logData.kiosk = GetGuildOwnedKioskInfo(guildId)
+	logData.kiosk = GetGuildOwnedKioskInfo(logData.guildId)
 	logData.server = GetWorldName()
 	
 	salesConfig[guildIndex].guildName = logData.name
@@ -225,6 +240,7 @@ function uespLog.SaveGuildPurchase(guildId, eventIndex)
 	logData.taxes = taxes
 	logData.server = GetWorldName()
 	logData.guild = GetGuildName(guildId)
+	logData.itemLink = itemLink
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 end

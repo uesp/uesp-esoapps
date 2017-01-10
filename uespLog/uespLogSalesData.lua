@@ -328,7 +328,7 @@ function uespLog.SaveTradingHouseSalesData(guildId, numItemsOnPage, currentPage)
 	uespLog.DebugMsg("UESP: Saving guild sales search results...")
 	
 	logData.event = "GuildSaleSearchInfo"
-	logData.guildId, logData.guild = GetCurrentTradingHouseGuildDetails()
+	logData.guildId, logData.name = GetCurrentTradingHouseGuildDetails()
 	logData.server = GetWorldName()	
 	logData.zone = uespLog.lastTargetData.zone
 	logData.lastTarget = uespLog.lastTargetData.name
@@ -531,7 +531,7 @@ function uespLog.SaveTradingHouseListingData()
 	
 	logData.event = "GuildSaleListingInfo"
 	logData.guildId = guildId
-	logData.guild = guildName
+	logData.name= guildName
 	logData.server = GetWorldName()	
 	logData.zone = uespLog.lastTargetData.zone
 	logData.lastTarget = uespLog.lastTargetData.name

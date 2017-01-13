@@ -6,6 +6,7 @@
 --	EVENT_PLAYER_ACTIVATED
 --  EVENT_GUILD_SELF_JOINED_GUILD
 --	EVENT_GUILD_SELF_LEFT_GUILD
+--	EVENT_TRADING_HOUSE_CONFIRM_ITEM_PURCHASE
 --
 
 
@@ -21,6 +22,7 @@ uespLog.SalesCurrentListingData = {}
 uespLog.SALES_MAX_LISTING_TIME = 30*86400
 uespLog.GuildHistoryLastReceivedTimestamp = GetTimeStamp()
 uespLog.IsSavingGuildSales = false
+uespLog.SalesBadScanCount = 0
 
 
 function uespLog.GetSalesDataConfig()
@@ -61,13 +63,14 @@ function uespLog.SaveNewSalesData()
 	uespLog.SalesStartEventIndex = 1
 	uespLog.SalesScanCurrentLastTimestamp = -1
 	uespLog.SalesScanSingleGuild = false
+	uespLog.SalesBadScanCount = 0
 
 	if (not uespLog.IsSalesDataSave()) then
 		uespLog.IsSavingGuildSales = false
 		return
 	end	
 	
-	uespLog.DebugMsg("UESP: Looking for new guild sales data...")
+	uespLog.DebugExtraMsg("UESP: Looking for new guild sales data...")
 		
 	for i = 1, uespLog.MAX_GUILD_INDEX do
 		uespLog.SaveGuildSummary(i)
@@ -82,9 +85,9 @@ function uespLog.StartGuildSalesScan(guildIndex)
 	if (guildIndex > uespLog.MAX_GUILD_INDEX) then
 	
 		if (uespLog.NewGuildSales > 0) then
-			uespLog.DebugMsg("UESP: Found and saved "..tostring(uespLog.NewGuildSales).." new guild sales!")
+			uespLog.Msg("UESP: Found and saved "..tostring(uespLog.NewGuildSales).." new guild sales!")
 		else
-			uespLog.DebugExtraMsg("UESP: Found no new guild sales since last save!")
+			uespLog.DebugMsg("UESP: Found no new guild sales since last save!")
 		end
 		
 		uespLog.IsSavingGuildSales = false
@@ -100,6 +103,7 @@ function uespLog.StartGuildSalesScan(guildIndex)
 	uespLog.SalesStartEventIndex = 1
 	uespLog.SalesCurrentGuildIndex = guildIndex
 	uespLog.SalesScanCurrentLastTimestamp = -1
+	uespLog.SalesBadScanCount = 0
 	
 	zo_callLater(function() uespLog.ScanGuildSales(guildIndex) end, uespLog.SALES_SCAN_DELAY)
 	
@@ -121,7 +125,7 @@ function uespLog.StartGuildSalesScanMore(guildIndex)
 		
 		return true
 	end
-		
+	
 	uespLog.SalesStartEventIndex = GetNumGuildEvents(guildId, GUILD_HISTORY_STORE)
 	uespLog.SalesCurrentGuildIndex = guildIndex
 	
@@ -143,6 +147,20 @@ function uespLog.ScanGuildSales(guildIndex)
 	local guildId = GetGuildId(guildIndex)
 	local requested = false
 	local currentTimestamp = uespLog.GuildHistoryLastReceivedTimestamp
+	local numEvents = GetNumGuildEvents(guildId, GUILD_HISTORY_STORE)
+	
+	if (uespLog.SalesStartEventIndex >= numEvents and numEvents > 0) then
+		uespLog.SalesBadScanCount = uespLog.SalesBadScanCount + 1
+		uespLog.DebugExtraMsg("UESP: Bad guild sale scan "..guildIndex..":"..uespLog.SalesBadScanCount)
+		
+		if (uespLog.SalesBadScanCount > 10) then
+			uespLog.StartGuildSalesScan(guildIndex + 1)
+			return false
+		end
+		
+		uespLog.StartGuildSalesScanMore(guildIndex)	
+		return false
+	end
 	
 	if (guildConfig.lastTimestamp < lastTimestamp) then
 		lastTimestamp = guildConfig.lastTimestamp
@@ -168,6 +186,7 @@ function uespLog.ScanGuildSales(guildIndex)
 		uespLog.StartGuildSalesScan(guildIndex + 1)
 	end
 	
+	return true
 end
 
 
@@ -232,7 +251,7 @@ function uespLog.SaveGuildPurchase(guildId, eventIndex)
 	logData.event = "GuildSale"
 	logData.type = eventType
 	logData.saleTimestamp = tostring(currentTimestamp - seconds)
-	logData.eventId = tostring(eventId)
+	logData.eventId = Id64ToString(eventId)
 	logData.seller = seller
 	logData.buyer = buyer
 	logData.qnt = qnt
@@ -241,6 +260,9 @@ function uespLog.SaveGuildPurchase(guildId, eventIndex)
 	logData.server = GetWorldName()
 	logData.guild = GetGuildName(guildId)
 	logData.itemLink = itemLink
+	logData.trait = GetItemLinkTraitInfo(logData.itemLink)
+	logData.quality = GetItemLinkQuality(logData.itemLink)
+	logData.level = GetItemLinkRequiredLevel(logData.itemLink) + math.floor(GetItemLinkRequiredChampionPoints(logData.itemLink)/10)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 end
@@ -305,7 +327,7 @@ function uespLog.DeleteGuildSalesData(guildIndex)
 	salesConfig[uespLog.MAX_GUILD_INDEX - 1] = 
 	{
 		["guildName"] = "",
-		["guildId"] = 1,
+		["guildId"] = 0,
 		["lastTimestamp"] = 0,
 	}
 
@@ -324,9 +346,7 @@ end
 function uespLog.SaveTradingHouseSalesData(guildId, numItemsOnPage, currentPage)
 	local currentTimestamp = GetTimeStamp()
 	local logData = {}
-	
-	uespLog.DebugMsg("UESP: Saving guild sales search results...")
-	
+		
 	logData.event = "GuildSaleSearchInfo"
 	logData.guildId, logData.name = GetCurrentTradingHouseGuildDetails()
 	logData.server = GetWorldName()	
@@ -335,6 +355,12 @@ function uespLog.SaveTradingHouseSalesData(guildId, numItemsOnPage, currentPage)
 	logData.kiosk = GetGuildOwnedKioskInfo(guildId)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
+	if (numItemsOnPage == 0) then
+		return
+	end
+	
+	uespLog.DebugMsg("UESP: Saving "..tostring(numItemsOnPage).." sales from "..logData.name.."...")
 
 	for i = 1, numItemsOnPage do
 		uespLog.SaveTradingHouseSalesItem(guildId, i, currentTimestamp)
@@ -351,6 +377,9 @@ function uespLog.SaveTradingHouseSalesItem(guildId, itemIndex, currentTimestamp,
 	logData.server = GetWorldName()
 	logData.icon, logData.item, logData.quality, logData.qnt, logData.seller, logData.timeRemaining, logData.price, logData.currency = GetTradingHouseSearchResultItemInfo(itemIndex)
 	logData.itemLink = GetTradingHouseSearchResultItemLink(itemIndex)
+	logData.trait = GetItemLinkTraitInfo(logData.itemLink)
+	logData.quality = GetItemLinkQuality(logData.itemLink)
+	logData.level = GetItemLinkRequiredLevel(logData.itemLink) + math.floor(GetItemLinkRequiredChampionPoints(logData.itemLink)/10)
 	logData.listTimestamp = tostring(currentTimestamp + logData.timeRemaining - uespLog.SALES_MAX_LISTING_TIME)
 	
 	logData.timeRemaining = nil
@@ -391,6 +420,13 @@ end
 function uespLog.OnTradingHouseListingNew()
 
 	if (uespLog.IsSalesDataSave()) then
+		local numListings = GetNumTradingHouseListings()
+		
+		if (numListings == 0) then
+			RequestTradingHouseListings()
+			return
+		end
+		
 		uespLog.SaveTradingHouseListingData()
 	end
 	
@@ -444,6 +480,9 @@ function uespLog.SaveTradingHouseListingDataItem(eventName, listingData)
 	logData.quality = listingData.quality
 	logData.price = listingData.price
 	logData.itemLink = listingData.itemLink
+	logData.trait = GetItemLinkTraitInfo(logData.itemLink)
+	logData.quality = GetItemLinkQuality(logData.itemLink)
+	logData.level = GetItemLinkRequiredLevel(logData.itemLink) + math.floor(GetItemLinkRequiredChampionPoints(logData.itemLink)/10)
 	logData.listTimestamp = tostring(listingData.listTimestamp)
 			
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
@@ -527,11 +566,11 @@ function uespLog.SaveTradingHouseListingData()
 		return
 	end
 	
-	uespLog.DebugMsg("UESP: Saving guild sale listings...")
+	uespLog.DebugMsg("UESP: Saving "..tostring(numListings).." guild sale listings...")
 	
 	logData.event = "GuildSaleListingInfo"
 	logData.guildId = guildId
-	logData.name= guildName
+	logData.name = guildName
 	logData.server = GetWorldName()	
 	logData.zone = uespLog.lastTargetData.zone
 	logData.lastTarget = uespLog.lastTargetData.name
@@ -557,6 +596,9 @@ function uespLog.SaveTradingHouseListingItem(itemIndex, currentTimestamp)
 	logData.server = GetWorldName()
 	logData.icon, logData.item, logData.quality, logData.qnt, logData.seller, logData.timeRemaining, logData.price = GetTradingHouseListingItemInfo(itemIndex)
 	logData.itemLink = GetTradingHouseListingItemLink(itemIndex)
+	logData.trait = GetItemLinkTraitInfo(logData.itemLink)
+	logData.quality = GetItemLinkQuality(logData.itemLink)
+	logData.level = GetItemLinkRequiredLevel(logData.itemLink) + math.floor(GetItemLinkRequiredChampionPoints(logData.itemLink)/10)
 	logData.listTimestamp = tostring(currentTimestamp + logData.timeRemaining - uespLog.SALES_MAX_LISTING_TIME)
 	
 	logData.timeRemaining = nil
@@ -571,7 +613,7 @@ end
 
 
 function uespLog.OnGuildHistoryResponseReceived(event)
-	uespLog.DebugExtraMsg("UESP: OnGuildHistoryResponseReceived")
+	--uespLog.DebugExtraMsg("UESP: OnGuildHistoryResponseReceived")
 	uespLog.GuildHistoryLastReceivedTimestamp = GetTimeStamp()
 end
 

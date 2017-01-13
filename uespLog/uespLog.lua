@@ -13617,12 +13617,12 @@ function uespLog.UpdateFightTargetDeath(targetId, targetName)
 		targetName = uespLog.RecentFightTargetIds[targetId]
 		
 		if (targetName == nil) then
-			uespLog.DebugMsg("UpdateFightTargetDeath: No targetName found for "..tostring(targetId).."!")
+			uespLog.DebugExtraMsg("UpdateFightTargetDeath: No targetName found for "..tostring(targetId).."!")
 			return
 		end
 	end
 	
-	uespLog.DebugMsg("UpdateFightTargetDeath: "..tostring(targetName).." ("..tostring(targetId)..")")	
+	uespLog.DebugExtraMsg("UpdateFightTargetDeath: "..tostring(targetName).." ("..tostring(targetId)..")")	
 	
 	if (uespLog.FightKillData[targetName] == nil) then
 		uespLog.FightKillData[targetName] = {}

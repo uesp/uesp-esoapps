@@ -23,6 +23,7 @@ uespLog.SALES_MAX_LISTING_TIME = 30*86400
 uespLog.GuildHistoryLastReceivedTimestamp = GetTimeStamp()
 uespLog.IsSavingGuildSales = false
 uespLog.SalesBadScanCount = 0
+uespLog.GuildSalesLastListingTimestamp = 0
 
 
 function uespLog.GetSalesDataConfig()
@@ -407,6 +408,7 @@ function uespLog.OnTradingHouseResponseReceived(event, responseType, result)
 	end
 		
 	if (responseType == TRADING_HOUSE_RESULT_LISTINGS_PENDING) then
+		uespLog.GuildSalesLastListingTimestamp = GetTimeStamp()
 		uespLog.OnTradingHouseListingUpdate()
 	elseif (responseType == TRADING_HOUSE_RESULT_CANCEL_SALE_PENDING) then
 		uespLog.OnTradingHouseListingCancel()
@@ -427,7 +429,8 @@ function uespLog.OnTradingHouseListingNew()
 			return
 		end
 		
-		uespLog.SaveTradingHouseListingData()
+		--uespLog.SaveTradingHouseListingData()
+		uespLog.SaveTradingHouseListingNewData()
 	end
 	
 end
@@ -454,10 +457,32 @@ function uespLog.SaveTradingHouseListingCancelData()
 	local newListingData = uespLog.MakeSalesListingData()
 	local cancelledListings = uespLog.FindMissingListingData(uespLog.SalesCurrentListingData, newListingData)
 	
-	uespLog.DebugExtraMsg("UESP: Saving "..tostring(#cancelledListings).." cancelled listing guild sales items...")
+	if (#cancelledListings <= 0) then
+		return
+	end
+	
+	uespLog.DebugMsg("UESP: Saving "..tostring(#cancelledListings).." cancelled guild listings...")
 	
 	for i = 1, #cancelledListings do
 		uespLog.SaveTradingHouseListingDataItem("GuildSaleListingEntry::Cancel", uespLog.SalesCurrentListingData[cancelledListings[i]])
+	end	
+	
+	uespLog.SalesCurrentListingData = newListingData
+end
+
+
+function uespLog.SaveTradingHouseListingNewData()
+	local newListingData = uespLog.MakeSalesListingData()
+	local newListings = uespLog.FindMissingListingData(newListingData, uespLog.SalesCurrentListingData)
+	
+	if (#newListings <= 0) then
+		return
+	end
+	
+	uespLog.DebugMsg("UESP: Saving "..tostring(#newListings).." new guild listings ...")
+	
+	for i = 1, #newListings do
+		uespLog.SaveTradingHouseListingDataItem("GuildSaleListingEntry::Cancel", uespLog.SalesCurrentListingData[newListings[i]])
 	end	
 	
 	uespLog.SalesCurrentListingData = newListingData
@@ -532,7 +557,7 @@ end
 function uespLog.MakeSalesListingData()
 	local numListings = GetNumTradingHouseListings()
 	local data = {}
-	local currentTimestamp = GetTimeStamp()
+	local currentTimestamp = uespLog.GuildSalesLastListingTimestamp
 	
 	for i = 1, numListings do
 		local icon, name, quality, qnt, seller, timeRemaining, price = GetTradingHouseListingItemInfo(i)
@@ -558,7 +583,7 @@ function uespLog.SaveTradingHouseListingData()
 	local guildId, guildName = GetCurrentTradingHouseGuildDetails()
 	local logData = {}
 	local numListings = GetNumTradingHouseListings()
-	local currentTimestamp = GetTimeStamp()
+	local currentTimestamp = uespLog.GuildSalesLastListingTimestamp
 	
 	uespLog.SalesCurrentListingData = {}
 
@@ -566,7 +591,7 @@ function uespLog.SaveTradingHouseListingData()
 		return
 	end
 	
-	uespLog.DebugMsg("UESP: Saving "..tostring(numListings).." guild sale listings...")
+	uespLog.DebugMsg("UESP: Saving "..tostring(numListings).." guild listings...")
 	
 	logData.event = "GuildSaleListingInfo"
 	logData.guildId = guildId

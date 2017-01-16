@@ -274,6 +274,7 @@
     <Library Include="..\..\common\devil\lib\ILU.lib" />
     <Library Include="..\..\common\devil\lib\ILUT.lib" />
     <Library Include="..\..\common\zlib\zdll.lib" />
+    <Library Include="granny2.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

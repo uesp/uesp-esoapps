@@ -135,6 +135,8 @@ namespace eso {
 		bool ReadHeader (CBaseFile& File);
 		bool ReadBlocks (CBaseFile& File);
 
+		bool SaveSubFileZosft(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo);
+		bool SaveSubFileGR2(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo);
 		bool SaveSubFile (mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS = false, CFile* pFile = nullptr);
 
 

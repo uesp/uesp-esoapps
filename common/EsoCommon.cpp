@@ -296,6 +296,34 @@ std::string GuessFileExtension (const char* pOutputBuffer, const size_t OutputSi
 	{
 		Extension = "gr2";
 	}
+	else if (memcmp(pOutputBuffer, "\xE5\x9B\x49\x5E", 4) == 0)
+	{
+		Extension = "gr2";
+	}
+	else if (memcmp(pOutputBuffer, "\x29\x75\x31\x82", 4) == 0)
+	{
+		Extension = "gr2";
+	}
+	else if (memcmp(pOutputBuffer, "\x0E\x11\x95\xB5", 4) == 0)
+	{
+		Extension = "gr2";
+	}
+	else if (memcmp(pOutputBuffer, "\x0E\x74\xA2\x0A", 4) == 0)
+	{
+		Extension = "gr2";
+	}
+	else if (memcmp(pOutputBuffer, "\xE5\x2F\x4A\xE1", 4) == 0)
+	{
+		Extension = "gr2";
+	}
+	else if (memcmp(pOutputBuffer, "\x31\x95\xD4\xE3", 4) == 0)
+	{
+		Extension = "gr2";
+	}
+	else if (memcmp(pOutputBuffer, "\x31\xC2\x4E\x7C", 4) == 0)
+	{
+		Extension = "gr2";
+	}
 	else if (memcmp(pOutputBuffer, "RIFF", 4) == 0)
 	{
 		Extension = "riff";

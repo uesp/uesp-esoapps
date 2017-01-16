@@ -324,6 +324,18 @@ std::string GuessFileExtension (const char* pOutputBuffer, const size_t OutputSi
 	{
 		Extension = "gr2";
 	}
+	else if (memcmp(pOutputBuffer, "\x1E\0D\xB0\xCA", 4) == 0)
+	{
+		Extension = "hkx";
+	}
+	else if (memcmp(pOutputBuffer, "\xFA\xFA\xEB\xEB", 4) == 0)
+	{
+		Extension = "EsoFileData";
+	}
+	else if (memcmp(pOutputBuffer, "\xFB\xFB\xEC\xEC", 4) == 0)
+	{
+		Extension = "EsoIdData";
+	}
 	else if (memcmp(pOutputBuffer, "RIFF", 4) == 0)
 	{
 		Extension = "riff";

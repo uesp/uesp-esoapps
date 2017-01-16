@@ -105,5 +105,8 @@
     <Library Include="..\..\common\devil\lib\ILU.lib" />
     <Library Include="..\..\common\devil\lib\ILUT.lib" />
     <Library Include="..\..\common\devil\lib\DevIL.lib" />
+    <Library Include="granny2.lib">
+      <Filter>Source Files</Filter>
+    </Library>
   </ItemGroup>
 </Project>

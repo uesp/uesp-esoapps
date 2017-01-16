@@ -3,6 +3,7 @@
 
 #include "EsoMnfFile.h"
 #include "EsoLangFile.h"
+#include "granny.h"
 
 
 namespace eso {
@@ -464,6 +465,83 @@ namespace eso {
 	}
 
 
+	bool CMnfFile::SaveSubFileZosft (mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo)
+	{
+		std::string OutputFilename = AppendFilenameToPath(BasePath, FileEntry.pZosftEntry->Filename);
+		std::string OutputPath = RemoveFilename(OutputFilename);
+		CFile File;
+
+		if (!EnsurePathExists(OutputPath)) return false;
+
+		if (!File.Open(OutputFilename.c_str(), "wb")) return false;
+		if (!File.WriteBytes(DataInfo.pFileDataStart, DataInfo.FileDataSize)) return false;
+		File.Close();
+
+		if (ConvertDDS && StringEndsWith(OutputFilename, ".dds"))
+		{
+			ConvertDDStoPNG(DataInfo.pFileDataStart, DataInfo.FileDataSize, OutputFilename);
+		}
+		else if (StringEndsWith(OutputFilename, ".lang"))
+		{
+			CEsoLangFile LangFile;
+
+			if (LangFile.Load(OutputFilename))
+			{
+				std::string LangOutputFilename(OutputFilename);
+				LangOutputFilename += ".csv";
+				LangFile.DumpCsv(LangOutputFilename);
+			}
+		}
+
+		return true;
+	}
+
+
+	bool CMnfFile::SaveSubFileGR2 (mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo)
+	{
+		CFile File;
+		
+		GrannyFile_t* pGrannyFile = _GrannyReadEntireFileFromMemory(DataInfo.FileDataSize, DataInfo.pFileDataStart);
+
+		if (pGrannyFile == nullptr)
+		{
+			return PrintError("\tError: Failed to parse Granny file data (file %03u:%u)!", (dword)FileEntry.ArchiveIndex, FileEntry.FileIndex);
+		}
+
+		FileInfo_t* pGrannyInfo = _GrannyGetFileInfo(pGrannyFile);
+
+		if (pGrannyInfo == nullptr)
+		{
+			_GrannyFreeFile(pGrannyFile);
+			return PrintError("\tError: Failed to get Granny file info (file %03u:%u)!", (dword)FileEntry.ArchiveIndex, FileEntry.FileIndex);
+		}
+
+		std::string OrigFile = pGrannyInfo->FromFileName;
+
+		_GrannyFreeFile(pGrannyFile);
+
+		if (OrigFile == "")
+		{
+			return PrintError("\tWarning: No original file name found in Granny file data (file %03u:%u)!", (dword)FileEntry.ArchiveIndex, FileEntry.FileIndex);
+		}
+
+		size_t PathPos = OrigFile.find("\\", 0);
+		if (PathPos == std::string::npos) PathPos = -1;
+
+		std::string OutputFilename = BasePath + OrigFile.substr(PathPos + 1);
+		OutputFilename = RemoveFileExtension(OutputFilename) + ".gr2";
+		std::string OutputPath = RemoveFilename(OutputFilename);
+
+		if (!EnsurePathExists(OutputPath)) return false;
+
+		if (!File.Open(OutputFilename.c_str(), "wb")) return false;
+		if (!File.WriteBytes(DataInfo.pFileDataStart, DataInfo.FileDataSize)) return false;
+		File.Close();
+
+		return true;
+	}
+
+
 	bool CMnfFile::SaveSubFile (mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, CFile* pFile)
 	{
 		dat_subfileinfo_t DataInfo;
@@ -480,34 +558,19 @@ namespace eso {
 
 		if (DataInfo.pFileDataStart == nullptr) return PrintError("Error: No uncompressed data to write to file!");
 
+		std::string FileExtension = GuessFileExtension((char *)DataInfo.pFileDataStart, DataInfo.FileDataSize);
+		
 		if (FileEntry.pZosftEntry != nullptr && !FileEntry.pZosftEntry->Filename.empty())
 		{
-			OutputFilename = AppendFilenameToPath(BasePath, FileEntry.pZosftEntry->Filename);
-			OutputPath = RemoveFilename(OutputFilename);
-			if (!EnsurePathExists(OutputPath)) return false;
-
-			if (!File.Open(OutputFilename.c_str(), "wb")) return false;
-			if (!File.WriteBytes(DataInfo.pFileDataStart, DataInfo.FileDataSize)) return false;
-			File.Close();
-
-			if (ConvertDDS && StringEndsWith(OutputFilename, ".dds"))
-			{
-				ConvertDDStoPNG(DataInfo.pFileDataStart, DataInfo.FileDataSize, OutputFilename);
-			}
-			else if (StringEndsWith(OutputFilename, ".lang"))
-			{
-				CEsoLangFile LangFile;
-				
-				if (LangFile.Load(OutputFilename))
-				{
-					std::string LangOutputFilename(OutputFilename);
-					LangOutputFilename += ".csv";
-					LangFile.DumpCsv(LangOutputFilename);
-				}
-			}
+			SaveSubFileZosft(FileEntry, BasePath, ConvertDDS, DataInfo);
 		}
 
-		OutputFilename = CreateFilename(BasePath, "%03u\\%06u.%s", (dword)FileEntry.ArchiveIndex, FileEntry.Index, GuessFileExtension((char *)DataInfo.pFileDataStart, DataInfo.FileDataSize).c_str());
+		if (FileExtension == "gr2")
+		{
+			SaveSubFileGR2(FileEntry, BasePath, ConvertDDS, DataInfo);
+		}
+
+		OutputFilename = CreateFilename(BasePath, "%03u\\%06u.%s", (dword)FileEntry.ArchiveIndex, FileEntry.Index, FileExtension.c_str());
 		OutputPath = RemoveFilename(OutputFilename);
 		if (!EnsurePathExists(OutputPath)) return false;
 

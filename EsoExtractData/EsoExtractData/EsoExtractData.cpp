@@ -91,6 +91,12 @@
  * v0.29 -- 5 September 2016
  *		- Fixed an infinite loop due to a truncated compressed file in file eso0002.dat from the update 12 PTS.
  *
+ * v0.30 -- 17 January 2017
+ *		- Added more matching magic bytes for recognizing GR2 file format.
+ *		- GR2 (Granny) model/animation files are output acccording to their internal original path/filename in 
+ *		  addition to their ZOSFT filename (if it exists) and numeric file. The original path will be created
+ *		  relative to the base export path.
+ *
  */
 
 

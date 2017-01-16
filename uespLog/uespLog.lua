@@ -1368,6 +1368,7 @@ uespLog.DEFAULT_SETTINGS =
 				["lastTimestamp"] = 0,
 			},
 		},
+		["nirnSound"] = false,
 	}
 }
 
@@ -1724,6 +1725,34 @@ function uespLog.SetTrackLoot(flag)
 	end
 	
 	uespLog.savedVars.settings.data.trackLoot = flag
+end
+
+
+function uespLog.GetNirnSound()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.nirnSound == nil) then
+		uespLog.savedVars.settings.data.nirnSound = uespLog.DEFAULT_SETTINGS.nirnSound
+	end
+	
+	return uespLog.savedVars.settings.data.nirnSound
+end
+
+
+function uespLog.SetNirnSound(flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.nirnSound == nil) then
+		uespLog.savedVars.settings.data.nirnSound = uespLog.DEFAULT_SETTINGS.nirnSound
+	end
+	
+	uespLog.savedVars.settings.data.nirnSound = flag
 end
 
 
@@ -4563,6 +4592,10 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 		uespLog.DebugExtraMsg("UESP: LootMoney = "..tostring(money)..", stolen = "..tostring(stolenMoney))
 	else
 		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "Someone "..rcvType.." "..msgType.." "..niceLink.." (x"..tostring(quantity)..").")
+	end
+	
+	if (uespLog.IsNirncruxItem(itemLink)) then
+		uespLog.PlayNirncruxSound()
 	end
 	
 end
@@ -13790,4 +13823,45 @@ function uespLog.OnEffectChanged(e, change, slot, auraName, unitTag, start, fini
 
 end
 
+
+function uespLog.IsNirncruxItem(itemLink)
+	local _, _, itemId = uespLog.ParseLinkID(itemLink)
+	
+	if (itemId == "56863" or itemId == "56862") then
+		return true
+	end	
+	
+	return false
+end
+
+
+function uespLog.PlayNirncruxSound()
+
+	if (not uespLog.GetNirnSound()) then
+		return
+	end
+	
+	PlaySound(SOUNDS.ENCHANTING_EXTRACT_START_ANIM)
+end
+
+
+function uespLog.NirnSoundCommand(cmd)
+	local cmds, firstCmd = uespLog.SplitCommands(cmd)
+	
+	if (firstCmd == "on") then
+		uespLog.SetNirnSound(true)
+		uespLog.Msg("Playing of sound when looting Nirncrux is now On.")
+	elseif (firstCmd == "off") then
+		uespLog.SetNirnSound(false)
+		uespLog.Msg("Playing of sound when looting Nirncrux is now Odd.")
+	else
+		uespLog.MsgColor(uespLog.craftColor, "Toggles the playing of a sound when you loot a Nirncruz item.")
+		uespLog.MsgColor(uespLog.craftColor, ".       /uespnirnsound [on||off]")
+		uespLog.Msg("Playing of sound when looting Nirncrux is "..uespLog.BoolToOnOff(uespLog.GetNirnSound()))
+	end	
+	
+end
+
+
+SLASH_COMMANDS["/uespnirnsound"] = uespLog.NirnSoundCommand
 

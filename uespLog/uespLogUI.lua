@@ -205,6 +205,14 @@ function uespLog.InitOptionControlsData()
 		getFunc = function () return uespLog.GetMessageDisplay(uespLog.MSG_MISC) end,
 		setFunc = function (value) uespLog.SetMessageDisplay(uespLog.MSG_MISC, value) end
 	})
+	
+	uespLog.optionControlsData:insert({
+		type = "checkbox",
+		name = "Play Nirncrux Sound", 
+		tooltip = "Plays a sound when you loot a Potent or Fortified Nirncruz.\n      /uespnirnsound on/off", 
+		getFunc = function () return uespLog.GetNirnSound() end,
+		setFunc = function (value) uespLog.SetNirnSound(value) end
+	})
 		
 	uespLog.optionControlsData:insert({
 		type = "header",

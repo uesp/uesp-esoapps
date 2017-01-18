@@ -91,14 +91,43 @@
  * v0.29 -- 5 September 2016
  *		- Fixed an infinite loop due to a truncated compressed file in file eso0002.dat from the update 12 PTS.
  *
- * v0.30 -- 17 January 2017
+ * v0.30 -- 18 January 2017
  *		- Added more matching magic bytes for recognizing GR2 (Granny) files.
  *		- GR2 model/animation files are output acccording to their internal original path/filename in 
  *		  addition to their ZOSFT filename (if it exists) and numeric file index. The original path will be
- *		  created relative to the base export path.
+ *		  created under the "Granny" path in the base export path.
  *		- Recognize binary Havok files and assign them with the HKX extension.
  *		- Recognize file data containing compressed sub-files and assign them the EsoFileData extensions.
  *		- Recognize file data containing unknown ID data and assign them the EsoIdData extensions.
+ *		- Recognize file data for the PSB2 format (unsure exactly what it is though).
+ *		- Recognize file data containing more text data (including books) and give it the "TextData" extension.
+ *		- Recognize "FFX" file data.
+ *		- Recognize UTF-8 text files starting with the byte order mark EF BB BF and give the extension "TXT".
+ *		- Recognize the unknown XV4 file which seems to be just a DDS with 12 bytes of extra header data and
+ *		  4 bytes of extra footer. The original file and a DDS version without the extra header is saved.
+ *		- Added the "--extractsubfile" option for extracting compressed data from some file types:
+ *				--extractsubfile none		: Default, does nothing
+ *				--extractsubfile combined	: Outputs all compressed files in one large file.
+ *				--extractsubfile seperate	: Outputs files individually (Warning: This creates over
+ *											  1 million files and adds several hours to the extraction).
+ *
+ *		  The "combined" file format is output in the following format:
+ *				Header (same 16 bytes as original compressed file)
+ *					dword MagicBytes
+ *					dword Unknown1
+ *					dword NumRecords
+ *					dword Unknown2
+ *				x(0...N) Record Data (variable sized)
+ *					dword MagicBytes = "####"
+ *					dword Index
+ *					dword UncompressedSize1
+ *					dword UncompressedSize2
+ *					dword CompressedSize
+ *					dword Index					(from index file if found)
+ *					dword OrigFileOffset		(from index file if found)
+ *					dword UncompressedSize
+ *					byte UncompressedData[UncompressedSize]
+ *
  *
  */
 
@@ -1576,34 +1605,36 @@ bool DiffLangFiles (std::string OrigLangFilename, std::string OrigLangIdFilename
 
 cmdparamdef_t g_Cmds[] = 
 {
-	// VarName        Opt  LongOpt           Description													 Req   Option Value   Mult   Default
-	{ "mnffile",       "", "",				"Input MNF filename to load.",										false, false, 1, 0, false, "" },
-	{ "outputpath",    "", "",				"Path to save extracted data files to.",							false, false, 1, 0, false, "" },
-	{ "mnfft",        "m", "mnfft",			"Dump the MNF filetable to the specified text file.",				false, true,  1, 0, false, "" },
-	{ "zosft",        "z", "zosft",			"Dump the ZOS filetable to the specified text file.",				false, true,  1, 0, false, "" },
-	{ "startindex",   "s", "startindex",	"Start exporting sub-files at the given file index.",				false, true,  1, 0, false, "-1" },
-	{ "endindex",     "e", "endindex",	    "Stop exporting sub-files at the given file index.",				false, true,  1, 0, false, "-1" },
-	{ "archiveindex", "a", "archive",		"Only export MNF file with the given index.",						false, true,  1, 0, false, "-1" },
-	{ "beginarchive", "b", "beginarchive",	"start with the given MNF file index.",								false, true,  1, 0, false, "-1" },
-	{ "fileindex",    "f", "fileindex",		"Only export MNF the subfile with the given file index.",			false, true,  1, 0, false, "-1" },
-	{ "convertdds",   "c", "convertdds",    "(Doesn't Work Yet) Attempt to convert DDS files to PNG.",			false, true,  0, 0, false, "0" },
-	{ "skipsubfiles", "k", "skipsubfiles",	"Don't export subfiles from the MNF data.",							false, true,  0, 0, false, "0" },
-	{ "langfile",     "l", "lang",	        "Convert the given .lang file to a CSV.",							false, true,  1, 0, false, "" },
-	{ "createlang",   "x", "createlang",    "Convert the given language CSV file to a .LANG.",					false, true,  1, 0, false, "" },
-	{ "outputfile",   "o", "outputfile",    "Specify the output file for -l and -x.",							false, true,  1, 0, false, "" },
-	{ "pocsv",        "p", "pocsv",         "Import/Export the CSV/Text file in a PO compatible format.",		false, true,  0, 0, false, "0" },
-	{ "posourcetext",  "", "posourcetext",  "Use the source text when converting a PO-CSV file to a LANG.",		false, true,  0, 0, false, "0" },
-	{ "langtext",     "t", "langtext",      "Output the LANG file in plain text format.",		   	            false, true,  0, 0, false, "0" },
-	{ "idfile",       "i", "idfile",        "The ID file to use when converting a TXT file to LANG.",           false, true,  1, 0, false, "" },
-	{ "idfile1",      "i1","idfile1",       "The ID file to use for the first TXT file when comparing files.",  false, true,  1, 0, false, "" },
-	{ "idfile2",      "i2","idfile2",       "The ID file to use for the second TXT file when comparing files.", false, true,  1, 0, false, "" },
-	{ "difflang",     "d", "difflang",      "Compare two LANG/CSV/TXT files for differences.",                  false, true,  2, 0, false, "" },
-	{ "origlang",     "g", "origlang",      "Use this LANG/CSV/TXT file for source texts when comparing files.",false, true,  1, 0, false, "" },
+	// VarName        Opt  LongOpt           Description															 Req   Option Value   Mult   Default
+	{ "mnffile",		"",  "",				"Input MNF filename to load.",										false, false, 1, 0, false, "" },
+	{ "outputpath",		"",  "",				"Path to save extracted data files to.",							false, false, 1, 0, false, "" },
+	{ "mnfft",			"m", "mnfft",			"Dump the MNF filetable to the specified text file.",				false, true,  1, 0, false, "" },
+	{ "zosft",			"z", "zosft",			"Dump the ZOS filetable to the specified text file.",				false, true,  1, 0, false, "" },
+	{ "startindex",		"s", "startindex",		"Start exporting sub-files at the given file index.",				false, true,  1, 0, false, "-1" },
+	{ "endindex",		"e", "endindex",	    "Stop exporting sub-files at the given file index.",				false, true,  1, 0, false, "-1" },
+	{ "archiveindex",	"a", "archive",			"Only export MNF file with the given index.",						false, true,  1, 0, false, "-1" },
+	{ "beginarchive",	"b", "beginarchive",	"start with the given MNF file index.",								false, true,  1, 0, false, "-1" },
+	{ "fileindex",		"f", "fileindex",		"Only export MNF the subfile with the given file index.",			false, true,  1, 0, false, "-1" },
+	{ "convertdds",		"c", "convertdds",		"(Doesn't Work Yet) Attempt to convert DDS files to PNG.",			false, true,  0, 0, false, "0" },
+	{ "skipsubfiles",	"k", "skipsubfiles",	"Don't export subfiles from the MNF data.",							false, true,  0, 0, false, "0" },
+	{ "langfile",		"l", "lang",	        "Convert the given .lang file to a CSV.",							false, true,  1, 0, false, "" },
+	{ "createlang",		"x", "createlang",		"Convert the given language CSV file to a .LANG.",					false, true,  1, 0, false, "" },
+	{ "outputfile",		"o", "outputfile",		"Specify the output file for -l and -x.",							false, true,  1, 0, false, "" },
+	{ "pocsv",			"p", "pocsv",			"Import/Export the CSV/Text file in a PO compatible format.",		false, true,  0, 0, false, "0" },
+	{ "posourcetext",	"",  "posourcetext",	"Use the source text when converting a PO-CSV file to a LANG.",		false, true,  0, 0, false, "0" },
+	{ "langtext",		"t", "langtext",		"Output the LANG file in plain text format.",		   	            false, true,  0, 0, false, "0" },
+	{ "idfile",			"i", "idfile",			"The ID file to use when converting a TXT file to LANG.",           false, true,  1, 0, false, "" },
+	{ "idfile1",		"i1","idfile1",			"The ID file to use for the first TXT file when comparing files.",  false, true,  1, 0, false, "" },
+	{ "idfile2",		"i2","idfile2",			"The ID file to use for the second TXT file when comparing files.", false, true,  1, 0, false, "" },
+	{ "difflang",		"d", "difflang",		"Compare two LANG/CSV/TXT files for differences.",                  false, true,  2, 0, false, "" },
+	{ "origlang",		"g", "origlang",		"Use this LANG/CSV/TXT file for source texts when comparing files.",false, true,  1, 0, false, "" },
+	{ "extractsubfile",	"",	 "extractsubfile",	"Extract compressed subfile data (none/combined/seperate).",        false, true,  1, 0, false, "" },
+	{ "noparsegr2",		"",	 "noparsegr2",		"Don't parse GR2 files for their original filename.",               false, true,  0, 0, false, "" },
 	{ "",   "", "", "", false, false, false, false, "" }
 };
 
 const char g_AppDescription[] = "\
-ExportMnf v0.29 is a simple command line application to load and export files\n\
+ExportMnf v0.30 is a simple command line application to load and export files\n\
 from ESO's MNF and DAT files. Created by Daveh (dave@uesp.net).\n\
 \n\
 WARNING: This app is in early development and is fragile. User discretion is\n\
@@ -1673,6 +1704,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	ExportOptions.UseLangText = CmdParamHandler.HasParamValue("langtext");
 	ExportOptions.UsePOCSVFormat = CmdParamHandler.HasParamValue("pocsv");
 	ExportOptions.UsePOSourceText = CmdParamHandler.HasParamValue("posourcetext");
+	ExportOptions.NoParseGR2 = CmdParamHandler.HasParamValue("noparsegr2");
 	ExportOptions.LangFilename = CmdParamHandler.GetParamValue("langfile");
 	ExportOptions.CreateLangFilename = CmdParamHandler.GetParamValue("createlang");
 	ExportOptions.OutputFilename = CmdParamHandler.GetParamValue("outputfile");
@@ -1682,6 +1714,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	ExportOptions.IdFilename1 = CmdParamHandler.GetParamValue("idfile1", 0);
 	ExportOptions.IdFilename2 = CmdParamHandler.GetParamValue("idfile2", 0);
 	ExportOptions.OrigLangFilename = CmdParamHandler.GetParamValue("origlang");
+
+	ExportOptions.ExtractSubFileDataType = CmdParamHandler.GetParamValue("extractsubfile");
+	std::transform(ExportOptions.ExtractSubFileDataType.begin(), ExportOptions.ExtractSubFileDataType.end(), ExportOptions.ExtractSubFileDataType.begin(), ::tolower);
 
 		/* Handle a LANG file comparison */
 	if (!ExportOptions.DiffLangFilename1.empty() && !ExportOptions.DiffLangFilename2.empty())

@@ -4,6 +4,8 @@
 #include "EsoMnfFile.h"
 #include "EsoLangFile.h"
 #include "granny.h"
+#include <Windows.h>  
+#include <exception>  
 
 
 namespace eso {
@@ -35,6 +37,7 @@ namespace eso {
 		m_FileTable.clear();
 		m_FileHashMap.clear();
 		m_FileIndexMap.clear();
+		m_FileInternalIndexMap.clear();
 
 		m_Block0.Destroy();
 		m_Block3.Destroy();
@@ -140,11 +143,13 @@ namespace eso {
 	{
 		m_FileHashMap.clear();
 		m_FileIndexMap.clear();
+		m_FileInternalIndexMap.clear();
 
 		for (size_t i = 0; i < m_FileTable.size(); ++i)
 		{
 			m_FileHashMap[m_FileTable[i].Hash]       = &m_FileTable[i];
 			m_FileIndexMap[m_FileTable[i].FileIndex] = &m_FileTable[i];
+			m_FileInternalIndexMap[m_FileTable[i].Index] = &m_FileTable[i];
 		}
 
 
@@ -497,15 +502,93 @@ namespace eso {
 	}
 
 
+	bool CMnfFile::ExtractSubFileDataCombined (mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo)
+	{
+		CEsoSubFileDataFile SubFileData;
+		CEsoSubFileIndexFile SubFileIndex;
+		dat_subfileinfo_t IndexDataInfo;
+				
+		if (!SubFileData.Parse(DataInfo.pFileDataStart, DataInfo.FileDataSize)) return false;
+
+		if (m_FileInternalIndexMap.find(FileEntry.Index + 1) != m_FileInternalIndexMap.end())
+		{
+			mnf_filetable_t* pIndexFileEntry = m_FileInternalIndexMap[FileEntry.Index + 1];
+
+			if (ReadDataFile(*pIndexFileEntry, IndexDataInfo, nullptr))
+			{
+				if (SubFileIndex.Parse(IndexDataInfo.pFileDataStart, IndexDataInfo.FileDataSize))
+				{
+					SubFileData.UpdateIndex(SubFileIndex.GetRecords());
+				}
+			}
+		}
+
+		std::string Filename = CreateFilename(BasePath, "%03u\\%06u%s", (dword)FileEntry.ArchiveIndex, FileEntry.Index, "_Uncompressed.EsoFileData");
+		
+		if (!SubFileData.SaveCombinedFile(Filename)) return false;
+
+		return true;
+	}
+
+
+	bool CMnfFile::ExtractSubFileDataSeperate (mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo)
+	{
+		CEsoSubFileDataFile SubFileData;
+		CEsoSubFileIndexFile SubFileIndex;
+		dat_subfileinfo_t IndexDataInfo;
+
+		if (!SubFileData.Parse(DataInfo.pFileDataStart, DataInfo.FileDataSize)) return false;
+
+		if (m_FileInternalIndexMap.find(FileEntry.Index + 1) != m_FileInternalIndexMap.end())
+		{
+			mnf_filetable_t* pIndexFileEntry = m_FileInternalIndexMap[FileEntry.Index + 1];
+
+			if (ReadDataFile(*pIndexFileEntry, IndexDataInfo, nullptr))
+			{
+				if (SubFileIndex.Parse(IndexDataInfo.pFileDataStart, IndexDataInfo.FileDataSize))
+				{
+					SubFileData.UpdateIndex(SubFileIndex.GetRecords());
+				}
+			}
+		}
+
+		std::string OutputPath = CreateFilename(BasePath, "%03u\\%06u\\", (dword)FileEntry.ArchiveIndex, FileEntry.Index, "");
+
+		if (!EnsurePathExists(OutputPath)) return false;
+
+		if (!SubFileData.SaveFiles(OutputPath)) return false;
+
+		return true;
+	}
+
+	
+	GrannyFile_t* TryLoadGrannnyFile (mnf_filetable_t& FileEntry, dat_subfileinfo_t& DataInfo)
+	{
+		GrannyFile_t* pGrannyFile = nullptr;
+
+		__try
+		{
+			pGrannyFile = _GrannyReadEntireFileFromMemory(DataInfo.FileDataSize, DataInfo.pFileDataStart);
+		}
+		__except (1) {
+			PrintError("\tError: Expection occurred when parsing Granny file data (file %03u\\%06u.gr2)!", (dword)FileEntry.ArchiveIndex, FileEntry.Index);
+			return nullptr;
+		}
+
+		return pGrannyFile;
+	}
+
+
 	bool CMnfFile::SaveSubFileGR2 (mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo)
 	{
 		CFile File;
-		
-		GrannyFile_t* pGrannyFile = _GrannyReadEntireFileFromMemory(DataInfo.FileDataSize, DataInfo.pFileDataStart);
+		GrannyFile_t* pGrannyFile = nullptr;
 
+		pGrannyFile = TryLoadGrannnyFile(FileEntry, DataInfo);
+		
 		if (pGrannyFile == nullptr)
 		{
-			return PrintError("\tError: Failed to parse Granny file data (file %03u:%u)!", (dword)FileEntry.ArchiveIndex, FileEntry.FileIndex);
+			return PrintError("\tError: Failed to parse Granny file data (file %03u\\%06u.gr2)!", (dword)FileEntry.ArchiveIndex, FileEntry.Index);
 		}
 
 		FileInfo_t* pGrannyInfo = _GrannyGetFileInfo(pGrannyFile);
@@ -513,7 +596,7 @@ namespace eso {
 		if (pGrannyInfo == nullptr)
 		{
 			_GrannyFreeFile(pGrannyFile);
-			return PrintError("\tError: Failed to get Granny file info (file %03u:%u)!", (dword)FileEntry.ArchiveIndex, FileEntry.FileIndex);
+			return PrintError("\tError: Failed to get Granny file info (file %03u\\%06u.gr2)!", (dword)FileEntry.ArchiveIndex, FileEntry.Index);
 		}
 
 		std::string OrigFile = pGrannyInfo->FromFileName;
@@ -522,17 +605,19 @@ namespace eso {
 
 		if (OrigFile == "")
 		{
-			return PrintError("\tWarning: No original file name found in Granny file data (file %03u:%u)!", (dword)FileEntry.ArchiveIndex, FileEntry.FileIndex);
+			return PrintError("\tWarning: No original file name found in Granny file data (file %03u\\%06u.gr2)!", (dword)FileEntry.ArchiveIndex, FileEntry.Index);
 		}
-
+		
 		size_t PathPos = OrigFile.find("\\", 0);
 		if (PathPos == std::string::npos) PathPos = -1;
 
-		std::string OutputFilename = BasePath + OrigFile.substr(PathPos + 1);
+		std::string OutputFilename = BasePath + "Granny\\" + OrigFile.substr(PathPos + 1);
 		OutputFilename = RemoveFileExtension(OutputFilename) + ".gr2";
 		std::string OutputPath = RemoveFilename(OutputFilename);
 
 		if (!EnsurePathExists(OutputPath)) return false;
+
+		//PrintError("\tSaving GR2 file to '%s'...", OutputFilename.c_str());
 
 		if (!File.Open(OutputFilename.c_str(), "wb")) return false;
 		if (!File.WriteBytes(DataInfo.pFileDataStart, DataInfo.FileDataSize)) return false;
@@ -542,7 +627,32 @@ namespace eso {
 	}
 
 
-	bool CMnfFile::SaveSubFile (mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, CFile* pFile)
+	bool CMnfFile::SaveSubFileXV4(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo)
+	{
+		std::string OutputFilename;
+		std::string OutputPath;
+		CFile File;
+
+		if (DataInfo.FileDataSize <= 12) return false;
+
+		OutputFilename = CreateFilename(BasePath, "%03u\\%06u.%s", (dword)FileEntry.ArchiveIndex, FileEntry.Index, ".dds");
+		OutputPath = RemoveFilename(OutputFilename);
+		if (!EnsurePathExists(OutputPath)) return false;
+
+		if (!File.Open(OutputFilename.c_str(), "wb")) return false;
+		if (!File.WriteBytes(DataInfo.pFileDataStart + 12, DataInfo.FileDataSize - 12)) return false;
+		File.Close();
+
+		if (ConvertDDS)
+		{
+			ConvertDDStoPNG(DataInfo.pFileDataStart, DataInfo.FileDataSize, OutputFilename);
+		}
+
+		return true;
+	}
+
+
+	bool CMnfFile::SaveSubFile (mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, CFile* pFile, const std::string ExtractSubFileDataType, const bool NoExtractGR2)
 	{
 		dat_subfileinfo_t DataInfo;
 		std::string OutputFilename;
@@ -558,16 +668,27 @@ namespace eso {
 
 		if (DataInfo.pFileDataStart == nullptr) return PrintError("Error: No uncompressed data to write to file!");
 
-		std::string FileExtension = GuessFileExtension((char *)DataInfo.pFileDataStart, DataInfo.FileDataSize);
+		std::string FileExtension = GuessFileExtension((unsigned char *)DataInfo.pFileDataStart, DataInfo.FileDataSize);
 		
 		if (FileEntry.pZosftEntry != nullptr && !FileEntry.pZosftEntry->Filename.empty())
 		{
 			SaveSubFileZosft(FileEntry, BasePath, ConvertDDS, DataInfo);
 		}
 
-		if (FileExtension == "gr2")
+		if (FileExtension == "gr2" && !NoExtractGR2)
 		{
 			SaveSubFileGR2(FileEntry, BasePath, ConvertDDS, DataInfo);
+		}
+		else if (FileExtension == "EsoFileData")
+		{
+			if (ExtractSubFileDataType == "combined")
+				ExtractSubFileDataCombined(FileEntry, BasePath, ConvertDDS, DataInfo);
+			else if (ExtractSubFileDataType == "seperate")
+				ExtractSubFileDataSeperate(FileEntry, BasePath, ConvertDDS, DataInfo);
+		}
+		else if (FileExtension == "xv4")
+		{
+			SaveSubFileXV4(FileEntry, BasePath, ConvertDDS, DataInfo);
 		}
 
 		OutputFilename = CreateFilename(BasePath, "%03u\\%06u.%s", (dword)FileEntry.ArchiveIndex, FileEntry.Index, FileExtension.c_str());
@@ -608,7 +729,7 @@ namespace eso {
 
 		PrintError("Saving file index %d (0x%08X) from MNF file...", FileIndex, FileIndex);
 		PrintError("Saving data to '%s'...", ExportOptions.OutputPath.c_str());
-		return SaveSubFile(*m_FileIndexMap[FileIndex], ExportOptions.OutputPath, ExportOptions.ConvertDDS);
+		return SaveSubFile(*m_FileIndexMap[FileIndex], ExportOptions.OutputPath, ExportOptions.ConvertDDS, nullptr, ExportOptions.ExtractSubFileDataType, ExportOptions.NoParseGR2);
 	}
 
 	
@@ -699,7 +820,7 @@ namespace eso {
 				LastArchive = SortedTable[i].ArchiveIndex;
 			}
 
-			Result = SaveSubFile(SortedTable[i], ExportOptions.OutputPath, ExportOptions.ConvertDDS, &InputFile);
+			Result = SaveSubFile(SortedTable[i], ExportOptions.OutputPath, ExportOptions.ConvertDDS, &InputFile, ExportOptions.ExtractSubFileDataType);
 			if (Result) ++SuccessCount;
 			SaveResult &= Result;
 		}

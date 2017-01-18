@@ -46,7 +46,7 @@ namespace eso {
 	{
 		if (Index >= m_DataCount) return "";
 		if (m_Data[Index].pUncompressedData == nullptr) return "";
-		return eso::GuessFileExtension((const char *)m_Data[Index].pUncompressedData, m_Data[Index].UncompressedSize);
+		return eso::GuessFileExtension((const unsigned char *)m_Data[Index].pUncompressedData, m_Data[Index].UncompressedSize);
 	}
 
 

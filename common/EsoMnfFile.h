@@ -5,6 +5,7 @@
 #include "EsoMnfBlock.h"
 #include "EsoDatFile.h"
 #include "EsoZosftFile.h"
+#include "EsoSubFile.h"
 
 
 namespace eso {
@@ -43,6 +44,7 @@ namespace eso {
 		std::string OrigLangFilename;
 		std::string IdFilename1;
 		std::string IdFilename2;
+		std::string ExtractSubFileDataType;
 		int MnfStartIndex;
 		int MnfEndIndex;
 		int ArchiveIndex;
@@ -53,6 +55,7 @@ namespace eso {
 		bool UsePOCSVFormat;
 		bool UsePOSourceText;
 		bool UseLangText;
+		bool NoParseGR2;
 
 		mnf_exportoptions_t() :
 					MnfStartIndex(-1), 
@@ -64,7 +67,9 @@ namespace eso {
 					SkipSubFiles(false),
 					UsePOCSVFormat(false),
 					UsePOSourceText(false),
-					UseLangText(false)
+					UseLangText(false),
+					ExtractSubFileDataType("none"),
+					NoParseGR2(false)
 		{
 		}
 
@@ -120,6 +125,7 @@ namespace eso {
 		CMnfFileTableArray	m_FileTable;
 		CMnfFileHashMap     m_FileHashMap;
 		CMnfFileIndexMap    m_FileIndexMap;
+		CMnfFileIndexMap	m_FileInternalIndexMap;
 
 
 	protected:
@@ -137,7 +143,10 @@ namespace eso {
 
 		bool SaveSubFileZosft(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo);
 		bool SaveSubFileGR2(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo);
-		bool SaveSubFile (mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS = false, CFile* pFile = nullptr);
+		bool SaveSubFileXV4(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo);
+		bool SaveSubFile (mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS = false, CFile* pFile = nullptr, const std::string ExtractSubFileDataType = "none", const bool NoExtractGR2 = false);
+		bool ExtractSubFileDataCombined(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo);
+		bool ExtractSubFileDataSeperate(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo);
 
 
 	public:

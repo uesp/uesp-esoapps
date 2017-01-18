@@ -24,7 +24,7 @@ typedef unsigned int dword;
 typedef unsigned __int64 dword64;
 
 
-std::string GuessFileExtension (const char* pOutputBuffer, const size_t OutputSize);
+std::string GuessFileExtension (const unsigned char* pOutputBuffer, const size_t OutputSize);
 std::string RemoveFileExtension (const std::string Filename);
 std::string TerminatePath (const std::string Path);
 std::string AppendPaths (const std::string Path1, const std::string Path2);
@@ -45,6 +45,19 @@ word WordSwap (const word i);
 dword DwordSwap (const dword i);
 dword64 Dword64Swap (const dword64 i);
 float FloatSwap (const float f);
+
+
+inline dword ConvertMotorolaBytesToDword(byte *pData)
+{
+	return (((dword)pData[0]) << 24) | (((dword)pData[1]) << 16) | (((dword)pData[2]) << 8) | ((dword)pData[3]);
+}
+
+
+inline word ConvertMotorolaBytesToWord(byte *pData)
+{
+	return (((dword)pData[0]) << 8) | ((dword)pData[1]);
+}
+
 
 bool ReadDword(FILE* pFile, dword& Output, const bool IsBigEndian = false);
 bool ReadWord(FILE* pFile, word& Output, const bool IsBigEndian = false);
@@ -71,6 +84,8 @@ bool ConvertDDStoPNG (const byte* pData, const size_t Size, const std::string Fi
 
 bool FileExists(const char* pFilename);
 bool GetFileSize (__int64& FileSize, const std::string Filename);
+
+bool WriteMotorolaDword(FILE* pFile, const dword Value);
 
 };
 

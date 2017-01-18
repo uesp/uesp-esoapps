@@ -274,7 +274,7 @@ bool DirectoryExists(const char* lpszPath)
 }
 
 
-std::string GuessFileExtension (const char* pOutputBuffer, const size_t OutputSize)
+std::string GuessFileExtension (const unsigned char* pOutputBuffer, const size_t OutputSize)
 {
 	std::string Extension;
 
@@ -324,7 +324,7 @@ std::string GuessFileExtension (const char* pOutputBuffer, const size_t OutputSi
 	{
 		Extension = "gr2";
 	}
-	else if (memcmp(pOutputBuffer, "\x1E\0D\xB0\xCA", 4) == 0)
+	else if (memcmp(pOutputBuffer, "\x1E\x0D\xB0\xCA", 4) == 0)
 	{
 		Extension = "hkx";
 	}
@@ -335,6 +335,22 @@ std::string GuessFileExtension (const char* pOutputBuffer, const size_t OutputSi
 	else if (memcmp(pOutputBuffer, "\xFB\xFB\xEC\xEC", 4) == 0)
 	{
 		Extension = "EsoIdData";
+	}
+	else if (memcmp(pOutputBuffer, "\x00\x00\x00\x02", 4) == 0)
+	{
+		Extension = "EsoIdData";
+	}
+	else if (memcmp(pOutputBuffer, "\xEF\xBB\xBF", 3) == 0)
+	{
+		Extension = "txt";
+	}
+	else if (memcmp(pOutputBuffer, "xV4", 3) == 0)
+	{
+		Extension = "xv4";
+	}
+	else if (memcmp(pOutputBuffer, "__ffx", 5) == 0)
+	{
+		Extension = "ffx";
 	}
 	else if (memcmp(pOutputBuffer, "RIFF", 4) == 0)
 	{
@@ -365,6 +381,10 @@ std::string GuessFileExtension (const char* pOutputBuffer, const size_t OutputSi
 	else if (memcmp(pOutputBuffer, "ZOSFT", 5) == 0)
 	{
 		Extension = "zosft";
+	}
+	else if (memcmp(pOutputBuffer, "PSB2", 4) == 0)
+	{
+		Extension = "psb2";
 	}
 	else if (memcmp(pOutputBuffer + OutputSize - 5, "end", 3) == 0 || 
 			memcmp(pOutputBuffer + OutputSize - 3, "end", 3) == 0 ||
@@ -475,13 +495,13 @@ std::string AppendFilenameToPath (const std::string Path, const std::string File
 std::string CreateFilename (const std::string BaseFilename, const char* pString, ...)
 {
 	va_list Args;
-	char Buffer[256];
+	char Buffer[1024];
 
 	std::string Output(BaseFilename);
 	std::replace(Output.begin(), Output.end(), '/', '\\');
 
 	va_start(Args, pString);
-	_vsnprintf(Buffer, 250, pString, Args);
+	_vsnprintf(Buffer, 1000, pString, Args);
 	va_end(Args);
 
 	if (Buffer[0] == '\\' && !Output.empty() && Output.back() == '\\')
@@ -623,6 +643,17 @@ bool FileExists(const char* pFilename)
 {
 	DWORD dw = ::GetFileAttributes(pFilename);
 	return (dw != INVALID_FILE_ATTRIBUTES && (dw & FILE_ATTRIBUTE_DIRECTORY) == 0);
+}
+
+
+bool WriteMotorolaDword(FILE* pFile, const dword Value)
+{
+	if (fputc((Value >> 24) & 0xff, pFile) == EOF) return false;
+	if (fputc((Value >> 16) & 0xff, pFile) == EOF) return false;
+	if (fputc((Value >> 8) & 0xff, pFile) == EOF) return false;
+	if (fputc(Value & 0xff, pFile) == EOF) return false;
+
+	return true;
 }
 
 

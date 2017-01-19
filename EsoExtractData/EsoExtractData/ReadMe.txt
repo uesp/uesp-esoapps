@@ -1,7 +1,7 @@
 
-	EsoExtractData v0.29 (formally EsoExportMnf)
+	EsoExtractData v0.30 (formally EsoExportMnf)
 	by Dave Humphrey (dave@uesp.net)
-	5 September 2016
+	18 January 2017
 -------------------------------
 EsoextractData is a simple Windows command line application that loads and exports
 data found in ESO's (Elder Scrolls Online) MNF and DAT files.
@@ -174,6 +174,36 @@ There are several more advanced command line options which may be useful:
 		 removed. In this way you can keep translated lines from orig.XXX and update any text that
 		 has been changed/added/removed in a new LANG file.
 
+	esoextractdata eso.mnf --noparsegr2
+		Don't parse any GR2 files for their original filenames. By default all recognized GR2 files
+		are loaded and parsed by the Granny DLL in order to extract and output the file to its
+		original filename.
+		  
+	esoextractdata eso.mnf --extractsubfile combined
+		Files that contain compressed record/subfile data are uncompressed and their data output 
+		to a single file. The combined file format is output in the following format:
+
+					Header (same 16 bytes as original compressed file)
+						dword MagicBytes
+						dword Unknown1
+						dword NumRecords
+						dword Unknown2
+					x(0...N) Record Data (variable sized)
+						dword MagicBytes = "####"
+						dword Index
+						dword UncompressedSize1
+						dword UncompressedSize2
+						dword CompressedSize
+						dword Index					(from index file if found)
+						dword OrigFileOffset		(from index file if found)
+ 						dword UncompressedSize
+						byte UncompressedData[UncompressedSize]
+
+	esoextractdata eso.mnf --extractsubfile seperate
+		Files that contain compressed record/subfile data are uncompressed and their data output
+		into individual files within a subdirectory. Warning: This creates over 1 million files
+		and adds several hours to the extraction.
+ 
 
      Notes
 -------------------------------

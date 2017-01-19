@@ -105,6 +105,8 @@
  *		- Recognize UTF-8 text files starting with the byte order mark EF BB BF and give the extension "TXT".
  *		- Recognize the unknown XV4 file which seems to be just a DDS with 12 bytes of extra header data and
  *		  4 bytes of extra footer. The original file and a DDS version without the extra header is saved.
+ *		- Include the "--noparsegr2" parameter to prevent the parsing of GR2 files to extract their
+ *		  original filename.
  *		- Added the "--extractsubfile" option for extracting compressed data from some file types:
  *				--extractsubfile none		: Default, does nothing
  *				--extractsubfile combined	: Outputs all compressed files in one large file.

@@ -1,5 +1,6 @@
 // Power and Spell Power (1)
 ESODATATABLE_POWER_SPELL_POWER = array(
+        [0] = array(0, 0, 0, 0, 0, 0),
         [1] = array(0, 14, 15, 16, 17, 18, );
         [2] = array(0, 14, 15, 16, 17, 18, );
         [3] = array(0, 14, 15, 16, 17, 18, );
@@ -104,6 +105,7 @@ ESODATATABLE_POWER_SPELL_POWER = array(
 
 // Health, Magicka, Stamina (2)
 ESODATATABLE_HEALTH_MAGICKA_STAMINA = array(
+        [0] = array(0, 0, 0, 0, 0, 0),
         [1] = array(0, 70, 75, 80, 84, 91, );
         [2] = array(0, 70, 75, 80, 84, 91, );
         [3] = array(0, 70, 75, 80, 84, 91, );
@@ -208,6 +210,7 @@ ESODATATABLE_HEALTH_MAGICKA_STAMINA = array(
 
 // Regeneration Rates (3)
 ESODATATABLE_REGENERATION_RATES = array(
+        [0] = array(0, 0, 0, 0, 0, 0),
         [1] = array(0, 13, 14, 16, 17, 18, );
         [2] = array(0, 13, 14, 16, 17, 18, );
         [3] = array(0, 13, 14, 16, 17, 18, );
@@ -312,6 +315,7 @@ ESODATATABLE_REGENERATION_RATES = array(
 
 // Resistances (4)
 ESODATATABLE_RESISTANCES = array(
+        [0] = array(0, 0, 0, 0, 0, 0),
         [1] = array(0, 320, 342, 366, 384, 416, );
         [2] = array(0, 320, 342, 366, 384, 416, );
         [3] = array(0, 320, 342, 366, 384, 416, );
@@ -416,6 +420,7 @@ ESODATATABLE_RESISTANCES = array(
 
 // Weapon Proc Damage (5)
 ESODATATABLE_WEAPON_PROC_DAMAGE = array(
+        [0] = array(0, 0, 0, 0, 0, 0),
         [1] = array(5, 107, 115, 122, 128, 140, );
         [2] = array(5, 107, 115, 122, 128, 140, );
         [3] = array(5, 107, 115, 122, 128, 140, );
@@ -520,6 +525,7 @@ ESODATATABLE_WEAPON_PROC_DAMAGE = array(
 
 // Armor & Spell Resistance (6)
 ESODATATABLE_ARMOR_SPELL_RESISTANCE = array(
+        [0] = array(0, 0, 0, 0, 0, 0),
         [1] = array(0, 75, 80, 86, 90, 98, );
         [2] = array(0, 75, 80, 86, 90, 98, );
         [3] = array(0, 75, 80, 86, 90, 98, );
@@ -624,6 +630,7 @@ ESODATATABLE_ARMOR_SPELL_RESISTANCE = array(
 
 // Reduce Cost (7)
 ESODATATABLE_REDUCE_COST = array(
+        [0] = array(0, 0, 0, 0, 0, 0),
         [1] = array(0, 17, 18, 19, 21, 22, );
         [2] = array(0, 17, 18, 19, 21, 22, );
         [3] = array(0, 17, 18, 19, 21, 22, );
@@ -728,6 +735,7 @@ ESODATATABLE_REDUCE_COST = array(
 
 // Linear Lookup Table (8)
 ESODATATABLE_LINEAR_LOOKUP_TABLE = array(
+        [0] = array(0, 0, 0, 0, 0, 0),
         [1] = array(0, 1, 4, 7, 10, 13, );
         [2] = array(0, 2, 5, 8, 11, 14, );
         [3] = array(0, 3, 6, 9, 12, 15, );
@@ -832,6 +840,7 @@ ESODATATABLE_LINEAR_LOOKUP_TABLE = array(
 
 // Potion Reduction (9)
 ESODATATABLE_POTION_REDUCTION = array(
+        [0] = array(0, 0, 0, 0, 0, 0),
         [1] = array(0, 1000, 2000, 3000, 4000, 5000, );
         [2] = array(0, 1000, 2000, 3000, 4000, 5000, );
         [3] = array(0, 1000, 2000, 3000, 4000, 5000, );
@@ -936,6 +945,7 @@ ESODATATABLE_POTION_REDUCTION = array(
 
 // Crafted Potion Scaling Ceiling (11)
 ESODATATABLE_CRAFTED_POTION_SCALING_CEILING = array(
+        [0] = array(0, 0, 0, 0, 0, 0),
         [1] = array(0, 9, 9, 9, 9, 9, );
         [2] = array(0, 9, 9, 9, 9, 9, );
         [3] = array(0, 9, 9, 9, 9, 9, );
@@ -1040,6 +1050,7 @@ ESODATATABLE_CRAFTED_POTION_SCALING_CEILING = array(
 
 // Crafted Food Scaling Ceiling (12)
 ESODATATABLE_CRAFTED_FOOD_SCALING_CEILING = array(
+        [0] = array(0, 0, 0, 0, 0, 0),
         [1] = array(0, 4, 4, 4, 4, 4, );
         [2] = array(0, 4, 4, 4, 4, 4, );
         [3] = array(0, 4, 4, 4, 4, 4, );
@@ -1144,6 +1155,7 @@ ESODATATABLE_CRAFTED_FOOD_SCALING_CEILING = array(
 
 // Crafted Scaling Base Level (13)
 ESODATATABLE_CRAFTED_SCALING_BASE_LEVEL = array(
+        [0] = array(0, 0, 0, 0, 0, 0),
         [1] = array(0, 1, 1, 1, 1, 1, );
         [2] = array(0, 2, 2, 2, 2, 2, );
         [3] = array(0, 3, 3, 3, 3, 3, );
@@ -1248,6 +1260,7 @@ ESODATATABLE_CRAFTED_SCALING_BASE_LEVEL = array(
 
 // Quality Call (14)
 ESODATATABLE_QUALITY_CALL = array(
+        [0] = array(0, 0, 0, 0, 0, 0),
         [1] = array(0, 1, 5, 7, 10, 13, );
         [2] = array(0, 1, 5, 7, 10, 13, );
         [3] = array(0, 1, 5, 7, 10, 13, );
@@ -1352,6 +1365,7 @@ ESODATATABLE_QUALITY_CALL = array(
 
 // Poison Ravage Health Damage (15)
 ESODATATABLE_POISON_RAVAGE_HEALTH_DAMAGE = array(
+        [0] = array(0, 0, 0, 0, 0, 0),
         [1] = array(2, 2, 2, 2, 2, 2, );
         [2] = array(2, 2, 2, 2, 2, 2, );
         [3] = array(2, 2, 2, 2, 2, 2, );
@@ -1456,6 +1470,7 @@ ESODATATABLE_POISON_RAVAGE_HEALTH_DAMAGE = array(
 
 // Damage Shield Weapon Proc (16)
 ESODATATABLE_DAMAGE_SHIELD_WEAPON_PROC = array(
+        [0] = array(0, 0, 0, 0, 0, 0),
         [1] = array(0, 86, 92, 98, 103, 112, );
         [2] = array(0, 86, 92, 98, 103, 112, );
         [3] = array(0, 86, 92, 98, 103, 112, );
@@ -1560,6 +1575,7 @@ ESODATATABLE_DAMAGE_SHIELD_WEAPON_PROC = array(
 
 // Power and Spell Power Wpn Proc (17)
 ESODATATABLE_POWER_SPELL_POWER_WPN_PROC = array(
+        [0] = array(0, 0, 0, 0, 0, 0),
         [1] = array(0, 25, 27, 29, 31, 33, );
         [2] = array(0, 25, 27, 29, 31, 33, );
         [3] = array(0, 25, 27, 29, 31, 33, );
@@ -1664,6 +1680,7 @@ ESODATATABLE_POWER_SPELL_POWER_WPN_PROC = array(
 
 // Armor & Spell Res Weapon Proc (18)
 ESODATATABLE_ARMOR_SPELL_RES_WEAPON_PROC = array(
+        [0] = array(0, 0, 0, 0, 0, 0),
         [1] = array(0, 95, 101, 109, 114, 124, );
         [2] = array(0, 95, 101, 109, 114, 124, );
         [3] = array(0, 95, 101, 109, 114, 124, );
@@ -1766,3 +1783,22 @@ ESODATATABLE_ARMOR_SPELL_RES_WEAPON_PROC = array(
         [100] = array(0, 62804, 65502, 70960, 75365, 81645, );
 );
 
+ESODATATABLE_ALL = array(
+        [1] = &ESODATATABLE_POWER_SPELL_POWER,
+        [2] = &ESODATATABLE_HEALTH_MAGICKA_STAMINA,
+        [3] = &ESODATATABLE_REGENERATION_RATES,
+        [4] = &ESODATATABLE_RESISTANCES,
+        [5] = &ESODATATABLE_WEAPON_PROC_DAMAGE,
+        [6] = &ESODATATABLE_ARMOR_SPELL_RESISTANCE,
+        [7] = &ESODATATABLE_REDUCE_COST,
+        [8] = &ESODATATABLE_LINEAR_LOOKUP_TABLE,
+        [9] = &ESODATATABLE_POTION_REDUCTION,
+        [11] = &ESODATATABLE_CRAFTED_POTION_SCALING_CEILING,
+        [12] = &ESODATATABLE_CRAFTED_FOOD_SCALING_CEILING,
+        [13] = &ESODATATABLE_CRAFTED_SCALING_BASE_LEVEL,
+        [14] = &ESODATATABLE_QUALITY_CALL,
+        [15] = &ESODATATABLE_POISON_RAVAGE_HEALTH_DAMAGE,
+        [16] = &ESODATATABLE_DAMAGE_SHIELD_WEAPON_PROC,
+        [17] = &ESODATATABLE_POWER_SPELL_POWER_WPN_PROC,
+        [18] = &ESODATATABLE_ARMOR_SPELL_RES_WEAPON_PROC,
+);

@@ -9071,9 +9071,13 @@ function uespLog.MineItemsQualityMapLogItem(itemLink, intLevel, intSubtype, extr
 	logData.level = reqLevel
 	logData.cp = reqCP
 	logData.quality = quality
-	logData.csv = tostring(intLevel) .. ", "..tostring(intSubtype)..", "..tostring(reqLevel)..", "..tostring(reqCP)..", "..tostring(quality)
+	logData.effLevel = reqLevel + math.floor(reqCP / 10);
+	--logData.csv = tostring(intLevel) .. ", "..tostring(intSubtype)..", "..tostring(reqLevel)..", "..tostring(reqCP)..", "..tostring(quality)
 
 	uespLog.AppendDataToLog("all", logData, extraData)
+	
+	local data = uespLog.savedVars.tempData.data
+	data[#data+1] = tostring(intLevel) .. ","..tostring(intSubtype)..","..tostring(logData.effLevel)..","..tostring(quality);
 end
 
 
@@ -9083,7 +9087,7 @@ function uespLog.MineItemsQualityMap(level)
 		
 	uespLog.MsgColor(uespLog.mineColor, "Creating type quality map for item #"..tostring(uespLog.MINEITEM_QUALITYMAP_ITEMID).." at level "..tostring(level))
 	
-	for subtype = 1, 400 do
+	for subtype = 0, 400 do
 		local itemLink = uespLog.MakeItemLink(uespLog.MINEITEM_QUALITYMAP_ITEMID, level, subtype)
 			
 		if (uespLog.IsValidItemLink(itemLink)) then

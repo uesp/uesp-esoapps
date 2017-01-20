@@ -116,10 +116,12 @@ public:
 		}
 	}
 
+
 	void DumpPhp (FILE* pOutput = stdout)
 	{
 		fprintf(pOutput, "// %s (%d)\n", m_Name.c_str(), m_Index2);
 		fprintf(pOutput, "%s = array(\n", GetPhpName().c_str());
+		fprintf(pOutput, "\t[0] = array(0, 0, 0, 0, 0, 0),\n");
 		dword LastLevel = 1;
 
 		for (size_t i = 0; i < m_Entries.size(); )
@@ -144,6 +146,9 @@ public:
 	{
 		fprintf(pOutput, "%s (%d)\n", m_Name.c_str(), m_Index2);
 	}
+
+
+	dword  GetIndex() const { return m_Index2; }
 
 
 	std::string GetPhpName()
@@ -273,6 +278,16 @@ public:
 		{
 			Record.DumpPhp(pOutput);
 		}
+
+		fprintf(pOutput, "ESODATATABLE_ALL = array(\n");
+
+		for (auto &Record : m_Records)
+		{
+			fprintf(pOutput, "\t[%d] = &%s,\n", Record.GetIndex(), Record.GetPhpName().c_str());
+		}
+
+		fprintf(pOutput, ");\n");
+		
 	}
 
 

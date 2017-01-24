@@ -8,6 +8,7 @@
 #include <stdarg.h>
 #include <intrin.h>
 #include <algorithm>
+#include <iostream>
 
 
 const std::string INPUT_FILENAME = "E:\\Temp\\testexport\\000\\498177_Uncompressed.dat";
@@ -344,11 +345,9 @@ bool LoadTables(const std::string Filename)
 }
 
 
-
-
 int main()
 {
-
+	
 	if (!LoadTables(INPUT_FILENAME)) 
 	{
 		ReportError("Failed to load file!");

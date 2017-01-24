@@ -612,6 +612,7 @@
 --				  menu (like MasterMerchant).
 --				- Added the "/uespstyle summary" and "/uespstyle all" commands to show a summary of all styles known.
 --				- Added the 2 new styles from the New Life Festival (Skinchanger and Stalhrim Frostcaster).
+--				- Added the 3 crown store merchants to the NPC ignore list.
 --			Update 13 Changes
 --				- API updated to 100018.
 --				- Added the new special item type to logged item data.
@@ -622,6 +623,7 @@
 --				  containers when your inventory is full. It will autoloot as many items as your inventory can hold but
 --				  will no longer display the open container showing remaining items.
 --				- Fixed known/unknown display of recipes.
+--				- Added the 4 new styles: Silken Ring, Mazzatun, Ra Gada, and Ebony
 --		 
 --
 --		Future Versions (Works in Progress)
@@ -855,6 +857,9 @@ uespLog.ignoredNPCs = {
 	["Lynx"] = 1,			--Dark Brotherhood
 	["Badger"] = 1,			--Dark Brotherhood
 	["Heron"] = 1,			--Dark Brotherhood
+	["Nuzhimeh"] = 1,
+	["Tythis Andromo"] = 1,
+	["Pirharri the Smuggler"] = 1,
 }
 
 uespLog.lastTargetData = {
@@ -9071,7 +9076,11 @@ function uespLog.MineItemsQualityMapLogItem(itemLink, intLevel, intSubtype, extr
 	logData.level = reqLevel
 	logData.cp = reqCP
 	logData.quality = quality
-	logData.effLevel = reqLevel + math.floor(reqCP / 10);
+	logData.effLevel = reqLevel
+
+	if (reqCp > 0) then
+		logData.effLevel = 50 + math.floor(reqCp/10)
+	end
 	--logData.csv = tostring(intLevel) .. ", "..tostring(intSubtype)..", "..tostring(reqLevel)..", "..tostring(reqCP)..", "..tostring(quality)
 
 	uespLog.AppendDataToLog("all", logData, extraData)
@@ -9738,6 +9747,8 @@ uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
 	["stal"] = 53,
 	["frostcaster"] = 53,
 	["frost"] = 53,
+	
+		-- Homestead
 }
 
 
@@ -13897,3 +13908,103 @@ end
 
 SLASH_COMMANDS["/uespnirnsound"] = uespLog.NirnSoundCommand
 
+
+uespLog.FindNameChangeItemId = 1
+uespLog.FindNameChangeIsScanning = false
+uespLog.FindNameChangeScanIds = 2000
+uespLog.FindNameChangeScanEndId = 130000
+uespLog.FindNameChangeScanDelayMS = 1000
+uespLog.FindNameChangeItemCount = 0
+
+
+		
+uespLog.FindNameChangeLevelData = {		
+	{  1,   1 }, {  2,   1 }, {  3,   1 }, {  4,   1 }, {  5,   1 }, {  6,   1 }, {  7,   1 }, {  8,   1 }, {  9,   1 }, { 10,   1 },
+	{ 11,   1 }, { 12,   1 }, { 13,   1 }, { 14,   1 }, { 15,   1 }, { 16,   1 }, { 17,   1 }, { 18,   1 }, { 19,   1 }, { 20,   1 },
+	{ 21,   1 }, { 22,   1 }, { 23,   1 }, { 24,   1 }, { 25,   1 }, { 26,   1 }, { 27,   1 }, { 28,   1 }, { 29,   1 }, { 30,   1 },
+	{ 31,   1 }, { 32,   1 }, { 33,   1 }, { 34,   1 }, { 35,   1 }, { 36,   1 }, { 37,   1 }, { 38,   1 }, { 39,   1 }, { 40,   1 },
+	{ 41,   1 }, { 42,   1 }, { 43,   1 }, { 44,   1 }, { 45,   1 }, { 46,   1 }, { 47,   1 }, { 48,   1 }, { 49,   1 }, { 50,   1 },
+	{ 50,  51 }, { 50,  52 }, { 50,  53 }, { 50,  54 }, { 50,  55 }, { 50,  56 }, { 50,  57 }, { 50,  58 }, { 50,  59 }, { 50,  60 },
+	{ 50, 228 }, { 50, 246 }, { 50, 264 }, { 50, 282 }, { 50, 300 }, { 50, 358 },
+}
+
+
+function uespLog.FindMinedItemNameChangeStart()
+
+	if (uespLog.FindNameChangeIsScanning) then
+		uespLog.Msg("Already looking for item name changes...")
+		return
+	end
+	
+	uespLog.FindNameChangeItemId = 1
+	uespLog.FindNameChangeItemCount = 0
+	uespLog.FindNameChangeIsScanning = true
+	
+	uespLog.FindMinedItemNameChange()
+end
+
+
+function uespLog.FindMinedItemNameChangeEnd()
+	uespLog.FindNameChangeIsScanning = false
+end
+
+
+function uespLog.FindMinedItemNameChangeLog(itemId)
+	local lastName = ""
+	local tempData = uespLog.savedVars.tempData.data
+	
+	for i, data in ipairs(uespLog.FindNameChangeLevelData) do
+		local itemLink = uespLog.MakeItemLink(itemId, data[1], data[2])
+		local itemName = GetItemLinkName(itemLink)
+		local reqLevel = GetItemLinkRequiredLevel(itemLink)
+		local reqCp = GetItemLinkRequiredChampionPoints(itemLink)
+		local level = reqLevel
+		
+		if (reqCp > 0) then
+			level = 50 + math.floor(reqCp/10)
+		end
+		
+		if (itemName ~= lastName) then
+			lastName = itemName
+			tempData[#tempData + 1] = tostring(itemId)..","..tostring(level)..",'"..tostring(itemName).."'"
+		end
+	end
+	
+end
+
+
+function uespLog.FindMinedItemNameChange()
+	local startItemId = uespLog.FindNameChangeItemId
+	local endItemId = startItemId + uespLog.FindNameChangeScanIds
+	
+	if (not uespLog.FindNameChangeIsScanning) then
+		return
+	end
+	
+	if (endItemId > uespLog.FindNameChangeScanEndId) then
+		endItemId = uespLog.FindNameChangeScanEndId
+	end
+	
+	uespLog.Msg("Looking for mined items "..tostring(startItemId).."-"..tostring(endItemId).." with name changes ("..tostring(uespLog.FindNameChangeItemCount).." so far)...")
+
+	for itemId = startItemId, endItemId do
+		local itemLink1 = uespLog.MakeItemLink(itemId, 1, 1)
+		local itemLink2 = uespLog.MakeItemLink(itemId, 50, 370)
+		local itemName1 = GetItemLinkName(itemLink1)
+		local itemName2 = GetItemLinkName(itemLink2)
+		
+		if (itemName1 ~= itemName2) then
+			uespLog.FindNameChangeItemCount = uespLog.FindNameChangeItemCount + 1
+			uespLog.FindMinedItemNameChangeLog(itemId)
+		end
+		
+	end
+		
+	uespLog.FindNameChangeItemId = endItemId + 1
+	
+	if (uespLog.FindNameChangeItemId < uespLog.FindNameChangeScanEndId) then
+		zo_callLater(uespLog.FindMinedItemNameChange, uespLog.FindNameChangeScanDelayMS)
+	else
+		uespLog.Msg("Found "..tostring(uespLog.FindNameChangeItemCount).." items with name changes...")
+	end
+end

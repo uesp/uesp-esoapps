@@ -78,6 +78,10 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[31]							 = "uespLog/images/draugr.dds",				-- Draugr, Pristine Shrouds, 31, /esoui/art/icons/crafting_style_item_draugr_r2.dds	
 	[42]							 = "uespLog/images/skinchanger.dds",		-- Skinchanger, Wolfsbane Incense, 42, /esoui/art/icons/crafting_style_item_wolfsbane_r2.dds	
 	[53]							 = "uespLog/images/stalhrim.dds",			-- Stalhrim Frostcaster, Stalhrim Shard, 53, /esoui/art/icons/crafting_runecrafter_armor__standard_r_003.dds	
+	[56]							 = "uespLog/images/silkenring.dds",			-- Silken Ring, Distilled Slowsilver, 56, /esoui/art/icons/crafting_style_item_mirrorsheen_r2.dds
+	[57]							 = "uespLog/images/mazzatun.dds",			-- Mazzatun, Leviathan Scrimshaw, 57, /esoui/art/icons/crafting_style_item_mazzatun_r2.dds
+	[44]							 = "uespLog/images/ragada.dds",				-- Ra Gada, Ancient Sandstone, 44, /esoui/art/icons/crafting_style_item_ragada_r2.dds
+	[40]							 = "uespLog/images/ebony.dds",				-- Ebony, Night Pumice, 40, /esoui/art/icons/crafting_style_item_ebony_r2.dds
 }
 
 
@@ -124,6 +128,10 @@ uespLog.STYLE_ICON_DATA = {
 	[31]							 = "/esoui/art/icons/crafting_style_item_draugr_r2.dds",
 	[42]							 = "/esoui/art/icons/crafting_style_item_wolfsbane_r2.dds",
 	[53]							 = "/esoui/art/icons/crafting_runecrafter_armor__standard_r_003.dds",
+	[56]							 = "/esoui/art/icons/crafting_style_item_mirrorsheen_r2.dds",
+	[57]							 = "/esoui/art/icons/crafting_style_item_mazzatun_r2.dds",
+	[44]							 = "/esoui/art/icons/crafting_style_item_ragada_r2.dds",
+	[40]							 = "/esoui/art/icons/crafting_style_item_ebony_r2.dds",
 }
 
 

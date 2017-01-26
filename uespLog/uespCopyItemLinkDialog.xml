@@ -1,0 +1,42 @@
+<GuiXml>	
+	<Controls>
+		<TopLevelControl name="uespCopyItemLinkDialog" inherits="ZO_DialogBase" keyboardEnabled="true" hidden="true">
+			<Controls>
+				<Label name="$(parent)Label" inherits="ZO_DialogContentAnchors" horizontalAlignment="CENTER" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" font="ZoFontHeader3"/>
+				<Backdrop name="$(parent)Note" inherits="ZO_EditBackdrop">
+					<Anchor point="TOPLEFT" relativeTo="$(parent)Label" relativePoint="BOTTOMLEFT" offsetY="10"/>
+					<Anchor point="TOPRIGHT" relativeTo="$(parent)Label" relativePoint="BOTTOMRIGHT" offsetY="10"/>
+					<Dimensions y="50"/>
+					<Controls>
+						<EditBox name="$(parent)Edit" maxInputCharacters="2000" inherits="ZO_DefaultEditMultiLineForBackdrop ZO_EditDefaultText">
+							<OnEffectivelyShown>
+								self:TakeFocus()
+							</OnEffectivelyShown>
+							
+							<OnFocusLost>
+								uespLog.CopyItemLinkDialog_Close()
+							</OnFocusLost>
+							
+							<OnMouseDown>
+								uespLog.CopyItemLinkDialog_Close()
+							</OnMouseDown>
+							
+							<OnMouseExit>							
+							</OnMouseExit>
+							
+							<OnEscape>
+								uespLog.CopyItemLinkDialog_Close()
+							</OnEscape>
+						</EditBox>
+					</Controls>
+				</Backdrop>
+				<Button name="$(parent)Close" inherits="ZO_CloseButton">
+					<Anchor point="TOPRIGHT" offsetX="-6" offsetY="6" />
+					<OnClicked>
+						self:GetParent():SetHidden(true)
+					</OnClicked>
+				</Button>
+			</Controls>
+		</TopLevelControl>
+	</Controls>
+</GuiXml>

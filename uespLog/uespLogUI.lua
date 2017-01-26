@@ -726,3 +726,7 @@ function uespLog.GetCharInfoText()
 		
 	return OutputText
 end
+
+
+function uespLog_CopyItemLinkDialog_OnNext()
+end

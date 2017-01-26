@@ -613,6 +613,8 @@
 --				- Added the "/uespstyle summary" and "/uespstyle all" commands to show a summary of all styles known.
 --				- Added the 2 new styles from the New Life Festival (Skinchanger and Stalhrim Frostcaster).
 --				- Added the 3 crown store merchants to the NPC ignore list.
+--				- Added the "Copy Item Link" context menu to item tooltips. This popups up a simple dialog that
+--				  lets you press CTRL+C to quickly copy the item link. Press ESC or click anywhere to close the dialog.
 --			Update 13 Changes
 --				- API updated to 100018.
 --				- Added the new special item type to logged item data.
@@ -3086,6 +3088,7 @@ function uespLog.EnchantingOnTooltipMouseUp(control, button, upInside)
 
 			AddMenuItem(GetString(SI_ITEM_ACTION_LINK_TO_CHAT), AddLink)
 			AddMenuItem("Show Item Info", GetInfo)
+			AddMenuItem("Copy Item Link", function() uespLog.CopyItemLink(link) end)
 				
 			ShowMenu(ENCHANTING)
 		end
@@ -3109,6 +3112,7 @@ function uespLog.AlchemyOnTooltipMouseUp(control, button, upInside)
 
 			AddMenuItem(GetString(SI_ITEM_ACTION_LINK_TO_CHAT), AddLink)
 			AddMenuItem("Show Item Info", GetInfo)
+			AddMenuItem("Copy Item Link", function() uespLog.CopyItemLink(link) end)
 				
 			ShowMenu(ALCHEMY)
 		end
@@ -3134,6 +3138,7 @@ function uespLog.SmithingCreationOnTooltipMouseUp(control, button, upInside)
 
 			AddMenuItem(GetString(SI_ITEM_ACTION_LINK_TO_CHAT), AddLink)
 			AddMenuItem("Show Item Info", GetInfo)
+			AddMenuItem("Copy Item Link", function() uespLog.CopyItemLink(link) end)
 				
 			ShowMenu(SMITHING)
 		end
@@ -3159,6 +3164,7 @@ function uespLog.SmithingImprovementOnTooltipMouseUp(control, button, upInside)
 
 			AddMenuItem(GetString(SI_ITEM_ACTION_LINK_TO_CHAT), AddLink)
 			AddMenuItem("Show Item Info", GetInfo)
+			AddMenuItem("Copy Item Link", function() uespLog.CopyItemLink(link) end)
 				
 			ShowMenu(SMITHING)
 		end
@@ -3188,6 +3194,25 @@ function uespLog.New_InventorySlot_ShowContextMenu (inventorySlot)
 end
 
 
+function uespLog.CopyItemLinkDialog_OnKeyUp(key, ctrl, alt, shift, command)
+end
+
+
+function uespLog.CopyItemLinkDialog_Close()
+	uespCopyItemLinkDialog:SetHidden(true)
+end
+
+
+function uespLog.CopyItemLink(itemLink)
+	uespCopyItemLinkDialogTitle:SetText("UESP -- Copy Item Link")
+	uespCopyItemLinkDialogLabel:SetText("Press CTRL+C to copy the item link to the system clipboard:")
+	uespCopyItemLinkDialogNoteEdit:SetText(itemLink)
+	uespCopyItemLinkDialog:SetHidden(false)
+	uespCopyItemLinkDialogNoteEdit:SetEditEnabled(false)
+	uespCopyItemLinkDialogNoteEdit:SelectAll()
+end
+
+
 function uespLog.OnTooltipMouseUp (control, button, upInside)
 
 	if upInside and button == 2 then
@@ -3204,9 +3229,10 @@ function uespLog.OnTooltipMouseUp (control, button, upInside)
 			local function GetInfo()
 				uespLog.ShowItemInfo(link)
 			end
-
+			
 			AddMenuItem(GetString(SI_ITEM_ACTION_LINK_TO_CHAT), AddLink)
 			AddMenuItem("Show Item Info", GetInfo)
+			AddMenuItem("Copy Item Link", function() uespLog.CopyItemLink(link) end)
 				
 			ShowMenu(PopupTooltip)
 		end
@@ -3225,6 +3251,7 @@ function uespLog.ZO_LinkHandler_OnLinkMouseUp (link, button, control)
 			
             if (button == 2 and link ~= '') then				
 	            AddMenuItem("Show Item Info", function() uespLog.ShowItemInfo(link) end)
+				AddMenuItem("Copy Item Link", function() uespLog.CopyItemLink(link) end)
                 ShowMenu(control)
             end
         end
@@ -3253,7 +3280,7 @@ function uespLog.FindDataIndexFromHorizontalList (scrollListControl, rootList, d
 end
 
 
-function uespLog.ShowItemInfoRowControl (rowControl)
+function uespLog.GetItemLinkRowControl (rowControl)
 	local dataEntry = rowControl.dataEntry
 	local bagId, slotIndex 
 	local itemLink = nil
@@ -3350,6 +3377,13 @@ function uespLog.ShowItemInfoRowControl (rowControl)
 		end				
 		
 	end
+	
+	return itemLink
+end
+	
+	
+function uespLog.ShowItemInfoRowControl (rowControl)
+	local itemLink = uespLog.GetItemLinkRowControl(rowControl)
 
 	if (itemLink == nil) then
 		uespLog.DebugMsg("UESP: ShowItemInfoRowControl -- No itemLink found!")
@@ -3357,6 +3391,17 @@ function uespLog.ShowItemInfoRowControl (rowControl)
 	end
 	
 	uespLog.ShowItemInfo(itemLink)
+end
+
+
+function uespLog.CopyItemLinkRowControl (rowControl)
+	local itemLink = uespLog.GetItemLinkRowControl(rowControl)
+
+	if (itemLink == nil) then
+		return
+	end
+	
+	uespLog.CopyItemLink(itemLink)
 end
 
 

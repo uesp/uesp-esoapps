@@ -243,6 +243,18 @@ function uespLog.SaveGuildSummary(guildIndex)
 end
 
 
+function uespLog.GetItemLinkRequiredEffectiveLevel(itemLink)
+	local reqLevel = GetItemLinkRequiredLevel(itemLink)
+	local reqCP = GetItemLinkRequiredChampionPoints(itemLink)
+	
+	if (reqCP > 0) then
+		return 50 + math.floor(reqCP/10)
+	end
+	
+	return reqLevel
+end
+
+
 function uespLog.SaveGuildPurchase(guildId, eventIndex)
 	local eventType, seconds, seller, buyer, qnt, itemLink, gold, taxes = GetGuildEventInfo(guildId, GUILD_HISTORY_STORE, eventIndex)
 	local eventId = GetGuildEventId(guildId, GUILD_HISTORY_STORE, eventIndex)
@@ -263,7 +275,7 @@ function uespLog.SaveGuildPurchase(guildId, eventIndex)
 	logData.itemLink = itemLink
 	logData.trait = GetItemLinkTraitInfo(logData.itemLink)
 	logData.quality = GetItemLinkQuality(logData.itemLink)
-	logData.level = GetItemLinkRequiredLevel(logData.itemLink) + math.floor(GetItemLinkRequiredChampionPoints(logData.itemLink)/10)
+	logData.level = uespLog.GetItemLinkRequiredEffectiveLevel(logData.itemLink)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 end
@@ -380,7 +392,7 @@ function uespLog.SaveTradingHouseSalesItem(guildId, itemIndex, currentTimestamp,
 	logData.itemLink = GetTradingHouseSearchResultItemLink(itemIndex)
 	logData.trait = GetItemLinkTraitInfo(logData.itemLink)
 	logData.quality = GetItemLinkQuality(logData.itemLink)
-	logData.level = GetItemLinkRequiredLevel(logData.itemLink) + math.floor(GetItemLinkRequiredChampionPoints(logData.itemLink)/10)
+	logData.level = uespLog.GetItemLinkRequiredEffectiveLevel(logData.itemLink)
 	logData.listTimestamp = tostring(currentTimestamp + logData.timeRemaining - uespLog.SALES_MAX_LISTING_TIME)
 	
 	logData.timeRemaining = nil
@@ -507,7 +519,7 @@ function uespLog.SaveTradingHouseListingDataItem(eventName, listingData)
 	logData.itemLink = listingData.itemLink
 	logData.trait = GetItemLinkTraitInfo(logData.itemLink)
 	logData.quality = GetItemLinkQuality(logData.itemLink)
-	logData.level = GetItemLinkRequiredLevel(logData.itemLink) + math.floor(GetItemLinkRequiredChampionPoints(logData.itemLink)/10)
+	logData.level = uespLog.GetItemLinkRequiredEffectiveLevel(logData.itemLink)
 	logData.listTimestamp = tostring(listingData.listTimestamp)
 			
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
@@ -623,7 +635,7 @@ function uespLog.SaveTradingHouseListingItem(itemIndex, currentTimestamp)
 	logData.itemLink = GetTradingHouseListingItemLink(itemIndex)
 	logData.trait = GetItemLinkTraitInfo(logData.itemLink)
 	logData.quality = GetItemLinkQuality(logData.itemLink)
-	logData.level = GetItemLinkRequiredLevel(logData.itemLink) + math.floor(GetItemLinkRequiredChampionPoints(logData.itemLink)/10)
+	logData.level = uespLog.GetItemLinkRequiredEffectiveLevel(logData.itemLink)
 	logData.listTimestamp = tostring(currentTimestamp + logData.timeRemaining - uespLog.SALES_MAX_LISTING_TIME)
 	
 	logData.timeRemaining = nil

@@ -3205,7 +3205,7 @@ end
 
 function uespLog.CopyItemLink(itemLink)
 	uespCopyItemLinkDialogTitle:SetText("UESP -- Copy Item Link")
-	uespCopyItemLinkDialogLabel:SetText("Press CTRL+C to copy the item link to the system clipboard:")
+	uespCopyItemLinkDialogLabel:SetText("Press CTRL+C to copy the item link and ESC or Click to exit:")
 	uespCopyItemLinkDialogNoteEdit:SetText(itemLink)
 	uespCopyItemLinkDialog:SetHidden(false)
 	uespCopyItemLinkDialogNoteEdit:SetEditEnabled(false)
@@ -3232,7 +3232,7 @@ function uespLog.OnTooltipMouseUp (control, button, upInside)
 			
 			AddMenuItem(GetString(SI_ITEM_ACTION_LINK_TO_CHAT), AddLink)
 			AddMenuItem("Show Item Info", GetInfo)
-			AddMenuItem("Copy Item Link", function() uespLog.CopyItemLink(link) end)
+			AddMenuItem("Copy Item Link", function() ZO_PopupTooltip_Hide() uespLog.CopyItemLink(link) end)
 				
 			ShowMenu(PopupTooltip)
 		end
@@ -3251,7 +3251,7 @@ function uespLog.ZO_LinkHandler_OnLinkMouseUp (link, button, control)
 			
             if (button == 2 and link ~= '') then				
 	            AddMenuItem("Show Item Info", function() uespLog.ShowItemInfo(link) end)
-				AddMenuItem("Copy Item Link", function() uespLog.CopyItemLink(link) end)
+				AddMenuItem("Copy Item Link", function() ZO_PopupTooltip_Hide() uespLog.CopyItemLink(link) end)
                 ShowMenu(control)
             end
         end

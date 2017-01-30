@@ -213,6 +213,14 @@ function uespLog.InitOptionControlsData()
 		getFunc = function () return uespLog.GetNirnSound() end,
 		setFunc = function (value) uespLog.SetNirnSound(value) end
 	})
+	
+	uespLog.optionControlsData:insert({
+		type = "checkbox",
+		name = "Log Guild Sales", 
+		tooltip = "Logs various sources of guild sales data.\n      /uespsales on/off", 
+		getFunc = function () return uespLog.IsSalesDataSave() end,
+		setFunc = function (value) uespLog.SetSalesDataSave(value) end
+	})
 		
 	uespLog.optionControlsData:insert({
 		type = "header",
@@ -352,6 +360,12 @@ function uespLog.InitOptionControlsData()
 		title = "",
 		text = uespLog.GetCharInfoText(),
 		getFunc = function() return uespLog.GetCharInfoText() end,
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "uespdescription",
+		title = "",
+		text = "",
 	})
 	
 	uespLog.optionControlsData:insert({

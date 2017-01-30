@@ -40,6 +40,20 @@ function uespLog.GetSalesDataConfig()
 end
 
 
+function uespLog.SetSalesDataSave(flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.salesData == nil) then
+		uespLog.savedVars.settings.data.salesData = uespLog.DEFAULT_SETTINGS.salesData
+	end
+	
+	uespLog.savedVars.settings.data.salesData.saveSales = flag
+end
+
+
 function uespLog.IsSalesDataSave()
 	local salesConfig = uespLog.GetSalesDataConfig()
 	return salesConfig.saveSales
@@ -667,3 +681,24 @@ function uespLog.OnTradingHouseConfirmPurchase(event, pendingPurchaseIndex)
 
 	uespLog.SaveTradingHouseSalesItem(GetSelectedTradingHouseGuildId(), pendingPurchaseIndex, currentTimestamp, extraData)
 end
+
+
+function uespLog.SalesCommand (cmd)
+	local cmds, firstCmd = uespLog.SplitCommands(cmd)
+	
+	if (firstCmd == "on") then
+		uespLog.SetSalesDataSave(true)
+		uespLog.Msg("Guild sales data logging is now ON!")
+	elseif (firstCmd == "off") then
+		uespLog.SetSalesDataSave(false)
+		uespLog.Msg("Guild sales data logging is now OFF!")
+	else
+		uespLog.Msg("Logs various guild sales data:")
+		uespLog.Msg(".       /uespsalesdata [on||off]     Turns logging on/off")
+		uespLog.Msg("Guild sales data logging is currently "..uespLog.BoolToOnOff(uespLog.GetSalesDataConfig().saveSales)..".")
+	end		
+	
+end
+
+
+SLASH_COMMANDS["/uespsales"] = uespLog.SalesCommand

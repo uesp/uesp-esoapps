@@ -1,4 +1,5 @@
 -- uespLog.lua -- by Dave Humphrey, dave@uesp.net
+-- uespLog.lua -- by Dave Humphrey, dave@uesp.net
 -- AddOn for ESO that logs various game data for use on www.uesp.net
 --
 -- TODO:
@@ -621,6 +622,23 @@
 --						- Logs items you list
 --						- Logs item searchs from all guild traders
 --						- Once data is uploaded/parsed it can be viewed at: http://esosales.uesp.net/
+--			- Added the /uespkilldata command to tracking basic kill statistics of NPCs (number and total health).
+--			  Data is tracked per character and is saved between sessions.
+--					/uespkilldata on/off				Turns the feature on and off (default is off).
+--					/uespkilldata reset					Clears the current data.
+--					/uespkilldata show					Lists all the current kill data.
+--					/ukd                                Short command 
+--			- Added the /uesptrackloot command to track loot received. Data is tracked per character and is
+--			  saved between sessions. Gold, experience, Tel Var, and Alliance Points are also tracked. The
+--			  item value shown is the MasterMerchant average value if that add-on is installed and has data
+--			  for that item. Otherwise the item's gold value is used.
+--					/uesptrackloot on/off				Turns loot tracking on/off.
+--					/uesptrackloot show					Displays all items looted.
+--					/uesptrackloot show [name]			Show all looted items matching the given name.
+--					/uesptrackloot sources				Show all sources of loot.
+--					/uesptrackloot sources [name]		Show all sources of loot matching the given name.
+--					/uesptrackloot reset				Clear all loot tracking data.
+--					/utl 								Short command
 --			Update 13 Changes
 --				- API updated to 100018.
 --				- Added the new special item type to logged item data.
@@ -652,11 +670,7 @@
 --					/uesptrackstat all					  Start tracking all stats.
 --					/uesptrackstat none					  Turns off all tracking.
 --					/uesptrackstat resettime			  Resets the game time display to 0.
---			- Added the /uespkilldata command to tracking basic kill statistics of NPCs (number and total health).
---			  Data is tracked per character and is saved between sessions.
---					/uespkilldata on/off				Turns the feature on and off (default is off).
---					/uespkilldata reset					Clears the current data.
---					/uespkilldata show					Lists all the current kill data.
+--			-
 --
 --
 

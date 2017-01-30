@@ -615,6 +615,12 @@
 --				- Added the 3 crown store merchants to the NPC ignore list.
 --				- Added the "Copy Item Link" context menu to item tooltips. This popups up a simple dialog that
 --				  lets you press CTRL+C to quickly copy the item link. Press ESC or click anywhere to close the dialog.
+--				- A new feature in testing that logs guild sales data.
+--						- Turn on/off with: /uespsales on/off
+--						- Logs sales from your guild history
+--						- Logs items you list
+--						- Logs item searchs from all guild traders
+--						- Once data is uploaded/parsed it can be viewed at: http://esosales.uesp.net/
 --			Update 13 Changes
 --				- API updated to 100018.
 --				- Added the new special item type to logged item data.

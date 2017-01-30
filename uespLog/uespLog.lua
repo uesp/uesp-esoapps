@@ -1397,6 +1397,7 @@ uespLog.DEFAULT_SETTINGS =
 		["salesData"] = {
 			["saveSales"] = true,
 			["lastTimestamp"] = 0,
+			["guildListTimes"] = {},
 			[1] = {
 				["guildName"] = "",
 				["guildId"] = 1,

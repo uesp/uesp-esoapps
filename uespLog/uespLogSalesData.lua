@@ -25,6 +25,17 @@ uespLog.IsSavingGuildSales = false
 uespLog.SalesBadScanCount = 0
 uespLog.GuildSalesLastListingTimestamp = 0
 
+uespLog.SalesGuildSearchScanStarted = false
+uespLog.SalesGuildSearchScanNumItems = 0
+uespLog.SalesGuildSearchScanPage = 0
+uespLog.SalesGuildSearchScanStartTime = 0
+uespLog.SalesGuildSearchScanLastTimestamp = 0
+uespLog.SalesGuildSearchScanFinish = false
+uespLog.SalesGuildSearchScanFinishIndex = 0
+uespLog.SalesGuildSearchScanAllGuilds = false 
+uespLog.SalesGuildSearchScanGuildId = 1
+uespLog.SalesGuildSearchScanGuildCount = 0
+
 
 function uespLog.GetSalesDataConfig()
 
@@ -109,7 +120,7 @@ function uespLog.StartGuildSalesScan(guildIndex)
 		return false
 	end
 		
-	uespLog.DebugExtraMsg("UESP: Starting sales scan for guild #"..tostring(guildIndex))
+	uespLog.DebugExtraMsg("UESP: Starting sales history scan for guild #"..tostring(guildIndex))
 	
 	local guildId = GetGuildId(guildIndex)
 	local requested = RequestGuildHistoryCategoryNewest(guildId, GUILD_HISTORY_STORE)
@@ -144,7 +155,7 @@ function uespLog.StartGuildSalesScanMore(guildIndex)
 	uespLog.SalesStartEventIndex = GetNumGuildEvents(guildId, GUILD_HISTORY_STORE)
 	uespLog.SalesCurrentGuildIndex = guildIndex
 	
-	uespLog.DebugExtraMsg("UESP: Loading more sales for guild #"..tostring(guildIndex)..", starting at event #"..tostring(uespLog.SalesStartEventIndex))
+	uespLog.DebugExtraMsg("UESP: Loading more sales history for guild #"..tostring(guildIndex)..", starting at event #"..tostring(uespLog.SalesStartEventIndex))
 	
 	uespLog.GuildHistoryLastReceivedTimestamp = GetTimeStamp()
 	local requested = RequestGuildHistoryCategoryOlder(guildId, GUILD_HISTORY_STORE)
@@ -189,7 +200,7 @@ function uespLog.ScanGuildSales(guildIndex)
 		uespLog.SalesScanCurrentLastTimestamp = lastTimestamp
 	end
 	
-	uespLog.DebugExtraMsg("UESP: Scanning sales for guild #"..tostring(guildIndex)..", up to timestamp "..lastTimestamp)
+	uespLog.DebugExtraMsg("UESP: Scanning sales history for guild #"..tostring(guildIndex)..", up to timestamp "..lastTimestamp)
 	
 	local scanMore = uespLog.ScanGuildSales_Loop(guildId, currentTimestamp, lastTimestamp)
 	
@@ -306,6 +317,13 @@ function uespLog.ResetNewSalesDataTimestamps()
 end
 
 
+function uespLog.ResetLastListingSalesDataTimestamps()
+	local salesConfig = uespLog.GetSalesDataConfig()
+	
+	salesConfig.guildListTimes = {}
+end
+
+
 function uespLog.OnJoinedGuild (event, guildId, guildName)
 
 	if (not uespLog.IsSalesDataSave()) then
@@ -364,7 +382,12 @@ end
 function uespLog.OnTradingHouseSearchResultsReceived (eventCode, guildId, numItemsOnPage, currentPage, hasMorePages)
 
 	if (uespLog.IsSalesDataSave()) then
-		uespLog.SaveTradingHouseSalesData(guildId, numItemsOnPage, currentPage)	
+		uespLog.SaveTradingHouseSalesData(guildId, numItemsOnPage, currentPage)
+		
+		if (uespLog.SalesGuildSearchScanStarted) then
+			uespLog.OnGuildSearchScanItemsReceived(guildId, numItemsOnPage, currentPage, hasMorePages)
+		end
+		
 	end
 
 end
@@ -386,17 +409,25 @@ function uespLog.SaveTradingHouseSalesData(guildId, numItemsOnPage, currentPage)
 	if (numItemsOnPage == 0) then
 		return
 	end
-	
-	uespLog.DebugMsg("UESP: Saving "..tostring(numItemsOnPage).." sales from "..logData.name.."...")
+
+	if (not uespLog.SalesGuildSearchScanStarted) then
+		uespLog.DebugMsg("UESP: Saving "..tostring(numItemsOnPage).." sales from "..logData.name.."...")
+	end
 
 	for i = 1, numItemsOnPage do
-		uespLog.SaveTradingHouseSalesItem(guildId, i, currentTimestamp)
+		local saveResult = uespLog.SaveTradingHouseSalesItem(guildId, i, currentTimestamp, nil, true)
+		
+		if (not saveResult) then
+			uespLog.SalesGuildSearchScanFinishIndex = numItemsOnPage - i + 1
+			--uespLog.DebugMsg("Stopped saving items at index "..tostring(i).."!")
+			return
+		end
 	end
 	
 end
 
 
-function uespLog.SaveTradingHouseSalesItem(guildId, itemIndex, currentTimestamp, extraData)
+function uespLog.SaveTradingHouseSalesItem(guildId, itemIndex, currentTimestamp, extraData, checkScan)
 	local logData = {}
 	
 	logData.event = "GuildSaleSearchEntry"
@@ -407,17 +438,24 @@ function uespLog.SaveTradingHouseSalesItem(guildId, itemIndex, currentTimestamp,
 	logData.trait = GetItemLinkTraitInfo(logData.itemLink)
 	logData.quality = GetItemLinkQuality(logData.itemLink)
 	logData.level = uespLog.GetItemLinkRequiredEffectiveLevel(logData.itemLink)
-	logData.listTimestamp = tostring(currentTimestamp + logData.timeRemaining - uespLog.SALES_MAX_LISTING_TIME)
+	local listTimestamp = currentTimestamp + logData.timeRemaining - uespLog.SALES_MAX_LISTING_TIME
+	logData.listTimestamp = tostring(listTimestamp)
+	
+	if (checkScan and uespLog.SalesGuildSearchScanStarted and listTimestamp < uespLog.SalesGuildSearchScanLastTimestamp) then
+		uespLog.SalesGuildSearchScanFinish = true
+		return false
+	end
 	
 	logData.timeRemaining = nil
 	logData.stack = nil
 	logData.currency = nil
 	
 	if (logData.itemLink == "") then
-		return
+		return true
 	end
 		
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData(), extraData)
+	return true
 end
 
 
@@ -683,6 +721,147 @@ function uespLog.OnTradingHouseConfirmPurchase(event, pendingPurchaseIndex)
 end
 
 
+function uespLog.StartGuildSearchSalesScanAll()
+	local guildId, guildName = GetCurrentTradingHouseGuildDetails()
+	local numTradeGuilds = GetNumTradingHouseGuilds()
+	
+	if (uespLog.SalesGuildSearchScanStarted) then
+		uespLog.Msg("Guild listing scan is already in progress...")
+		return
+	end
+	
+	if (GetNumTradingHouseGuilds() == 0) then
+		uespLog.Msg("You must be in the bank guild store in order to start a listing scan!")
+		return
+	end
+	
+	if (numTradeGuilds == 1) then
+		uespLog.StartGuildSearchSalesScan()
+		return
+	end
+		
+	uespLog.SalesGuildSearchScanGuildCount = numTradeGuilds
+	uespLog.SalesGuildSearchScanAllGuilds = true
+	uespLog.SalesGuildSearchScanGuildId = 0
+	
+	uespLog.StartGuildSearchSalesScanNextGuild()
+end
+
+
+function uespLog.StartGuildSearchSalesScanNextGuild()
+	local guildId, guildName = GetCurrentTradingHouseGuildDetails()
+		
+	uespLog.SalesGuildSearchScanGuildId = uespLog.SalesGuildSearchScanGuildId + 1
+	uespLog.SalesGuildSearchScanStarted = false
+		
+	if (uespLog.SalesGuildSearchScanGuildId > uespLog.SalesGuildSearchScanGuildCount) then
+		uespLog.SalesGuildSearchScanAllGuilds = false
+		uespLog.Msg("Finished scanning listings from all guilds!")
+		return
+	end
+	
+	if (guildId ~= uespLog.SalesGuildSearchScanGuildId) then
+	
+		if (not SelectTradingHouseGuildId(uespLog.SalesGuildSearchScanGuildId)) then
+			uespLog.SalesGuildSearchScanAllGuilds = false
+			uespLog.Msg("Error: Failed to select guild ID "..tostring(uespLog.SalesGuildSearchScanGuildId).." for listing scan!")
+			return
+		end
+	end
+	
+	uespLog.StartGuildSearchSalesScan()
+end
+
+
+function uespLog.StartGuildSearchSalesScan()
+
+	if (uespLog.SalesGuildSearchScanStarted) then
+		uespLog.Msg("Guild listing scan is already in progress...")
+		return
+	end
+	
+	if (GetNumTradingHouseGuilds() == 0) then
+		uespLog.Msg("You must be on a guild trader in order to start a listing scan!")
+		return
+	end
+	
+	local guildId, guildName = GetCurrentTradingHouseGuildDetails()
+	
+	uespLog.SalesGuildSearchScanStarted = true
+	uespLog.SalesGuildSearchScanNumItems = 0
+	uespLog.SalesGuildSearchScanStartTime = GetTimeStamp()
+	uespLog.SalesGuildSearchScanLastTimestamp = 0
+	uespLog.SalesGuildSearchScanFinishIndex = 0
+	uespLog.SalesGuildSearchScanNumItems = 0
+	uespLog.SalesGuildSearchScanPage = 0
+	uespLog.SalesGuildSearchScanFinish = false
+	uespLog.Msg("Starting guild listing scan for "..tostring(guildName).."...do not leave trader until it is finished.")
+	
+	local salesConfig = uespLog.GetSalesDataConfig()
+		
+	if (salesConfig.guildListTimes[guildName] == nil) then
+		uespLog.SalesGuildSearchScanLastTimestamp = 0
+	else
+		uespLog.SalesGuildSearchScanLastTimestamp = salesConfig.guildListTimes[guildName]
+	end
+		
+	uespLog.SalesGuildSearchScanListTimestamp = GetTimeStamp()
+		
+	ClearAllTradingHouseSearchTerms()
+	ExecuteTradingHouseSearch(0, TRADING_HOUSE_SORT_EXPIRY_TIME, false)
+end
+
+
+function uespLog.StopGuildSearchSalesScan()
+
+	if (not uespLog.SalesGuildSearchScanStarted) then
+		uespLog.Msg("Guild listing scan has been stopped!")
+	end
+	
+	uespLog.SalesGuildSearchScanStarted = false
+end
+
+
+function uespLog.OnGuildSearchScanItemsReceived(guildId, numItemsOnPage, currentPage, hasMorePages)
+	local _, guildName = GetCurrentTradingHouseGuildDetails()
+	
+	uespLog.SalesGuildSearchScanPage = uespLog.SalesGuildSearchScanPage + 1
+	uespLog.SalesGuildSearchScanNumItems = uespLog.SalesGuildSearchScanNumItems + numItemsOnPage - uespLog.SalesGuildSearchScanFinishIndex
+	uespLog.SalesGuildSearchScanFinishIndex = 0
+
+	if (not hasMorePages or uespLog.SalesGuildSearchScanFinish) then
+		local deltaTime = GetTimeStamp() - uespLog.SalesGuildSearchScanStartTime
+		uespLog.Msg("Finished guild listing scan for "..tostring(guildName).."! "..uespLog.SalesGuildSearchScanNumItems.." items in "..uespLog.SalesGuildSearchScanPage.." pages scanned in "..tostring(deltaTime).." secs.")	
+		uespLog.SalesGuildSearchScanStarted = false
+		
+		local salesConfig = uespLog.GetSalesDataConfig()
+		salesConfig.guildListTimes[guildName] = uespLog.SalesGuildSearchScanListTimestamp
+		
+		if (uespLog.SalesGuildSearchScanAllGuilds) then
+			zo_callLater(uespLog.StartGuildSearchSalesScanNextGuild, GetTradingHouseCooldownRemaining() + 250)	
+		end
+		
+		return
+	end
+		
+	zo_callLater(uespLog.DoNextGuildListingScan, GetTradingHouseCooldownRemaining() + 250)	
+	
+	uespLog.DebugMsg("Guild Listing Scan for "..tostring(guildName)..": Logged "..numItemsOnPage.." items on page "..uespLog.SalesGuildSearchScanPage..".")	
+end
+
+
+function uespLog.DoNextGuildListingScan()
+
+	if (GetNumTradingHouseGuilds() == 0) then
+		uespLog.Msg("Scan Aborted! You must be on a guild trader in order to perform a listing scan.")
+		uespLog.SalesGuildSearchScanStarted = false
+		return
+	end
+	
+	ExecuteTradingHouseSearch(uespLog.SalesGuildSearchScanPage, TRADING_HOUSE_SORT_EXPIRY_TIME, false)
+end
+
+
 function uespLog.SalesCommand (cmd)
 	local cmds, firstCmd = uespLog.SplitCommands(cmd)
 	
@@ -692,9 +871,31 @@ function uespLog.SalesCommand (cmd)
 	elseif (firstCmd == "off") then
 		uespLog.SetSalesDataSave(false)
 		uespLog.Msg("Guild sales data logging is now OFF!")
+	elseif (firstCmd == "scan") then
+		uespLog.StartGuildSearchSalesScan()
+	elseif (firstCmd == "stop") then
+		uespLog.StopGuildSearchSalesScan()
+	elseif (firstCmd == "scanall") then
+		uespLog.StartGuildSearchSalesScanAll()
+	elseif (firstCmd == "reset") then
+		uespLog.ResetNewSalesDataTimestamps()
+		uespLog.ResetLastListingSalesDataTimestamps()
+		uespLog.Msg("Reset the last scan timestamps for all sales/listing in all guilds on account!")
+	elseif (firstCmd == "resetlist") then
+		uespLog.ResetLastListingSalesDataTimestamps()
+		uespLog.Msg("Reset the last scan timestamps for all listings in all guilds on account!")
+	elseif (firstCmd == "resetsale") then
+		uespLog.ResetLastListingSalesDataTimestamps()
+		uespLog.Msg("Reset the last scan timestamps for all sales in all guilds on account!")
 	else
 		uespLog.Msg("Logs various guild sales data:")
 		uespLog.Msg(".       /uespsalesdata [on||off]     Turns logging on/off")
+		uespLog.Msg(".       /uespsalesdata scan          Scans all listing in the current guild store")
+		uespLog.Msg(".       /uespsalesdata stop          Stops the current listing scan")
+		uespLog.Msg(".       /uespsalesdata scanall       Scans all guild stores when at a bank")
+		uespLog.Msg(".       /uespsalesdata reset         Reset the sales and listing scan timestamps")
+		uespLog.Msg(".       /uespsalesdata resetsale         Reset the sales scan timestamps")
+		uespLog.Msg(".       /uespsalesdata resetlist         Reset the listing scan timestamps")
 		uespLog.Msg("Guild sales data logging is currently "..uespLog.BoolToOnOff(uespLog.GetSalesDataConfig().saveSales)..".")
 	end		
 	

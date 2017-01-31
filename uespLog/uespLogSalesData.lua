@@ -872,11 +872,11 @@ function uespLog.SalesCommand (cmd)
 		uespLog.SetSalesDataSave(false)
 		uespLog.Msg("Guild sales data logging is now OFF!")
 	elseif (firstCmd == "scan") then
-		uespLog.StartGuildSearchSalesScan()
+		uespLog.StartGuildSearchSalesScanAll()
 	elseif (firstCmd == "stop") then
 		uespLog.StopGuildSearchSalesScan()
 	elseif (firstCmd == "scanall") then
-		uespLog.StartGuildSearchSalesScanAll()
+		uespLog.StartGuildSearchSalesScanAll()		
 	elseif (firstCmd == "reset") then
 		uespLog.ResetNewSalesDataTimestamps()
 		uespLog.ResetLastListingSalesDataTimestamps()
@@ -890,9 +890,8 @@ function uespLog.SalesCommand (cmd)
 	else
 		uespLog.Msg("Logs various guild sales data:")
 		uespLog.Msg(".       /uespsalesdata [on||off]     Turns logging on/off")
-		uespLog.Msg(".       /uespsalesdata scan          Scans all listing in the current guild store")
+		uespLog.Msg(".       /uespsalesdata scan          Scans all guild store listings")
 		uespLog.Msg(".       /uespsalesdata stop          Stops the current listing scan")
-		uespLog.Msg(".       /uespsalesdata scanall       Scans all guild stores when at a bank")
 		uespLog.Msg(".       /uespsalesdata reset         Reset the sales and listing scan timestamps")
 		uespLog.Msg(".       /uespsalesdata resetsale         Reset the sales scan timestamps")
 		uespLog.Msg(".       /uespsalesdata resetlist         Reset the listing scan timestamps")

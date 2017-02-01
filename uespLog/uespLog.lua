@@ -1396,6 +1396,9 @@ uespLog.DEFAULT_SETTINGS =
 		["inventoryStats"] = "off",
 		["salesData"] = {
 			["saveSales"] = true,
+			["showPrices"] = false,
+			["showTooltip"] = false,
+			["showSaleType"] = "both",
 			["lastTimestamp"] = 0,
 			["guildListTimes"] = {},
 			[1] = {
@@ -2910,6 +2913,11 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_KEEP_GATE_STATE_CHANGED, uespLog.OnKeepGateStateChanged)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_GUILD_KEEP_CLAIM_UPDATED, uespLog.OnGuildKeepClaimUpdated)	
 	
+	ZO_PreHookHandler(PopupTooltip, 'OnUpdate', function() uespLog.AddStatsPopupTooltip() end)
+	ZO_PreHookHandler(PopupTooltip, 'OnHide', function() uespLog.RemoveStatsPopupTooltip() end)
+	ZO_PreHookHandler(ItemTooltip, 'OnUpdate', function() uespLog.AddStatsItemTooltip() end)
+	ZO_PreHookHandler(ItemTooltip, 'OnHide', function() uespLog.RemoveStatsItemTooltip() end)
+	
 	uespLog.Old_ZO_CharacterWindowStats_ShowComparisonValues = ZO_CharacterWindowStats_ShowComparisonValues
 	uespLog.Old_ZO_CharacterWindowStats_HideComparisonValues = ZO_CharacterWindowStats_HideComparisonValues
 	uespLog.Old_ZO_StatEntry_Keyboard_ShowComparisonValue = ZO_StatEntry_Keyboard.ShowComparisonValue
@@ -2997,6 +3005,7 @@ function uespLog.Initialize( self, addOnName )
 	
 	uespLog.SetupSlashCommands()
 	
+	zo_callLater(uespLog.LoadSalePriceData, 500)
 	zo_callLater(uespLog.InitTradeData, 500) 
 	zo_callLater(uespLog.InitCharData, 500)
 end
@@ -3110,6 +3119,10 @@ function uespLog.EnchantingOnTooltipMouseUp(control, button, upInside)
 			AddMenuItem(GetString(SI_ITEM_ACTION_LINK_TO_CHAT), AddLink)
 			AddMenuItem("Show Item Info", GetInfo)
 			AddMenuItem("Copy Item Link", function() uespLog.CopyItemLink(link) end)
+			
+			if (uespLog.IsSalesShowPrices()) then
+				AddMenuItem("UESP Price to Chat", function() uespLog.SalesPriceToChat(link) end)
+			end
 				
 			ShowMenu(ENCHANTING)
 		end
@@ -3134,6 +3147,10 @@ function uespLog.AlchemyOnTooltipMouseUp(control, button, upInside)
 			AddMenuItem(GetString(SI_ITEM_ACTION_LINK_TO_CHAT), AddLink)
 			AddMenuItem("Show Item Info", GetInfo)
 			AddMenuItem("Copy Item Link", function() uespLog.CopyItemLink(link) end)
+			
+			if (uespLog.IsSalesShowPrices()) then
+				AddMenuItem("UESP Price to Chat", function() uespLog.SalesPriceToChat(link) end)
+			end
 				
 			ShowMenu(ALCHEMY)
 		end
@@ -3160,6 +3177,10 @@ function uespLog.SmithingCreationOnTooltipMouseUp(control, button, upInside)
 			AddMenuItem(GetString(SI_ITEM_ACTION_LINK_TO_CHAT), AddLink)
 			AddMenuItem("Show Item Info", GetInfo)
 			AddMenuItem("Copy Item Link", function() uespLog.CopyItemLink(link) end)
+			
+			if (uespLog.IsSalesShowPrices()) then
+				AddMenuItem("UESP Price to Chat", function() uespLog.SalesPriceToChat(link) end)
+			end
 				
 			ShowMenu(SMITHING)
 		end
@@ -3186,6 +3207,10 @@ function uespLog.SmithingImprovementOnTooltipMouseUp(control, button, upInside)
 			AddMenuItem(GetString(SI_ITEM_ACTION_LINK_TO_CHAT), AddLink)
 			AddMenuItem("Show Item Info", GetInfo)
 			AddMenuItem("Copy Item Link", function() uespLog.CopyItemLink(link) end)
+			
+			if (uespLog.IsSalesShowPrices()) then
+				AddMenuItem("UESP Price to Chat", function() uespLog.SalesPriceToChat(link) end)
+			end
 				
 			ShowMenu(SMITHING)
 		end
@@ -3254,6 +3279,10 @@ function uespLog.OnTooltipMouseUp (control, button, upInside)
 			AddMenuItem(GetString(SI_ITEM_ACTION_LINK_TO_CHAT), AddLink)
 			AddMenuItem("Show Item Info", GetInfo)
 			AddMenuItem("Copy Item Link", function() ZO_PopupTooltip_Hide() uespLog.CopyItemLink(link) end)
+			
+			if (uespLog.IsSalesShowPrices()) then
+				AddMenuItem("UESP Price to Chat", function() ZO_PopupTooltip_Hide() uespLog.SalesPriceToChat(link) end)
+			end
 				
 			ShowMenu(PopupTooltip)
 		end
@@ -3273,6 +3302,11 @@ function uespLog.ZO_LinkHandler_OnLinkMouseUp (link, button, control)
             if (button == 2 and link ~= '') then				
 	            AddMenuItem("Show Item Info", function() uespLog.ShowItemInfo(link) end)
 				AddMenuItem("Copy Item Link", function() ZO_PopupTooltip_Hide() uespLog.CopyItemLink(link) end)
+				
+				if (uespLog.IsSalesShowPrices()) then
+					AddMenuItem("UESP Price to Chat", function() ZO_PopupTooltip_Hide() uespLog.SalesPriceToChat(link) end)
+				end
+				
                 ShowMenu(control)
             end
         end

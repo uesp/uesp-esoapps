@@ -36,6 +36,21 @@ uespLog.SalesGuildSearchScanAllGuilds = false
 uespLog.SalesGuildSearchScanGuildId = 1
 uespLog.SalesGuildSearchScanGuildCount = 0
 
+uespLog.SalesPrices = nil
+uespLog.SalesPricesVersion = 0
+
+
+function uespLog.LoadSalePriceData()
+
+	if (uespLog.IsSalesShowPrices() and uespLog.InitSalesPrices ~= nil) then
+		uespLog.InitSalesPrices()
+	else
+		uespLog.SalesPrices = nil
+		uespLog.SalesPricesVersion = 0
+	end
+	
+end
+
 
 function uespLog.GetSalesDataConfig()
 
@@ -68,6 +83,90 @@ end
 function uespLog.IsSalesDataSave()
 	local salesConfig = uespLog.GetSalesDataConfig()
 	return salesConfig.saveSales
+end
+
+
+function uespLog.SetSalesShowPrices(flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.salesData == nil) then
+		uespLog.savedVars.settings.data.salesData = uespLog.DEFAULT_SETTINGS.salesData
+	end
+	
+	uespLog.savedVars.settings.data.salesData.showPrices = flag
+	
+	uespLog.LoadSalePriceData()
+end
+
+
+function uespLog.IsSalesShowPrices()
+	local salesConfig = uespLog.GetSalesDataConfig()
+	
+	if (salesConfig.showPrices == nil) then
+		salesConfig.showPrices = false
+	end
+	
+	return salesConfig.showPrices
+end
+
+
+function uespLog.SetSalesShowTooltip(flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.salesData == nil) then
+		uespLog.savedVars.settings.data.salesData = uespLog.DEFAULT_SETTINGS.salesData
+	end
+	
+	uespLog.savedVars.settings.data.salesData.showTooltip = flag
+end
+
+
+function uespLog.IsSalesShowTooltip()
+	local salesConfig = uespLog.GetSalesDataConfig()
+	
+	if (salesConfig.showTooltip == nil) then
+		salesConfig.showTooltip = false
+	end
+	
+	return salesConfig.showTooltip
+end
+
+
+function uespLog.SetSalesShowSaleType(value)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.salesData == nil) then
+		uespLog.savedVars.settings.data.salesData = uespLog.DEFAULT_SETTINGS.salesData
+	end
+	
+	uespLog.savedVars.settings.data.salesData.showSaleType = value
+end
+
+
+function uespLog.GetSalesShowSaleType()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.showSaleType == nil) then
+		uespLog.savedVars.settings.data.showSaleType = uespLog.DEFAULT_SETTINGS.salesData
+	end
+	
+	if (uespLog.savedVars.settings.data.salesData.showSaleType == nil) then
+		uespLog.savedVars.settings.data.salesData.showSaleType = "both"
+	end
+	
+	return uespLog.savedVars.settings.data.salesData.showSaleType
 end
 
 
@@ -317,10 +416,15 @@ function uespLog.ResetNewSalesDataTimestamps()
 end
 
 
-function uespLog.ResetLastListingSalesDataTimestamps()
+function uespLog.ResetLastListingSalesDataTimestamps(guildName)
 	local salesConfig = uespLog.GetSalesDataConfig()
 	
-	salesConfig.guildListTimes = {}
+	if (guildName == nil or guildName == "") then
+		salesConfig.guildListTimes = {}
+	else
+		salesConfig.guildListTimes[guildName] = 0
+	end
+	
 end
 
 
@@ -773,7 +877,24 @@ function uespLog.StartGuildSearchSalesScanNextGuild()
 end
 
 
-function uespLog.StartGuildSearchSalesScan()
+
+function uespLog.StartGuildSearchSalesScanPage(startPage)
+	local pageNum = tonumber(startPage)
+	
+	if (pageNum == nil) then
+		uespLog.Msg("Error: Page number '"..tostring(startPage).."' is not a valid number!")
+		return
+	end
+	
+	uespLog.StartGuildSearchSalesScan(pageNum)
+end
+
+
+function uespLog.StartGuildSearchSalesScan(startPage)
+
+	if (startPage == nil) then
+		startPage = 0
+	end
 
 	if (uespLog.SalesGuildSearchScanStarted) then
 		uespLog.Msg("Guild listing scan is already in progress...")
@@ -793,7 +914,7 @@ function uespLog.StartGuildSearchSalesScan()
 	uespLog.SalesGuildSearchScanLastTimestamp = 0
 	uespLog.SalesGuildSearchScanFinishIndex = 0
 	uespLog.SalesGuildSearchScanNumItems = 0
-	uespLog.SalesGuildSearchScanPage = 0
+	uespLog.SalesGuildSearchScanPage = startPage
 	uespLog.SalesGuildSearchScanFinish = false
 	uespLog.Msg("Starting guild listing scan for "..tostring(guildName).."...do not leave trader until it is finished.")
 	
@@ -808,7 +929,7 @@ function uespLog.StartGuildSearchSalesScan()
 	uespLog.SalesGuildSearchScanListTimestamp = GetTimeStamp()
 		
 	ClearAllTradingHouseSearchTerms()
-	ExecuteTradingHouseSearch(0, TRADING_HOUSE_SORT_EXPIRY_TIME, false)
+	ExecuteTradingHouseSearch(startPage, TRADING_HOUSE_SORT_EXPIRY_TIME, false)
 end
 
 
@@ -838,13 +959,13 @@ function uespLog.OnGuildSearchScanItemsReceived(guildId, numItemsOnPage, current
 		salesConfig.guildListTimes[guildName] = uespLog.SalesGuildSearchScanListTimestamp
 		
 		if (uespLog.SalesGuildSearchScanAllGuilds) then
-			zo_callLater(uespLog.StartGuildSearchSalesScanNextGuild, GetTradingHouseCooldownRemaining() + 250)	
+			zo_callLater(uespLog.StartGuildSearchSalesScanNextGuild, GetTradingHouseCooldownRemaining() + 400)	
 		end
 		
 		return
 	end
 		
-	zo_callLater(uespLog.DoNextGuildListingScan, GetTradingHouseCooldownRemaining() + 250)	
+	zo_callLater(uespLog.DoNextGuildListingScan, GetTradingHouseCooldownRemaining() + 400)	
 	
 	uespLog.DebugMsg("Guild Listing Scan for "..tostring(guildName)..": Logged "..numItemsOnPage.." items on page "..uespLog.SalesGuildSearchScanPage..".")	
 end
@@ -862,6 +983,340 @@ function uespLog.DoNextGuildListingScan()
 end
 
 
+function uespLog.SalesPriceToChatRowControl(rowControl)
+	local itemLink = uespLog.GetItemLinkRowControl(rowControl)
+
+	if (itemLink == nil) then
+		return
+	end
+	
+	uespLog.SalesPriceToChat(itemLink)
+end
+
+	
+function uespLog.AddStatsPopupTooltip() 
+
+	PopupTooltip:GetOwningWindow():SetDrawTier(ZO_Menus:GetDrawTier() - 1)
+ 	--PopupTooltip:SetHandler("OnMouseUp", MasterMerchant.ThisItem)
+
+	if (not uespLog.IsSalesShowPrices() or not uespLog.IsSalesShowTooltip()) then
+		return
+	end
+		
+	if (PopupTooltip.lastLink == nil) then
+		return 
+	end 
+	
+	if (uespLog.ActiveTooltipItemLink and uespLog.ActiveTooltipItemLink == PopupTooltip.lastLink) then 
+		return
+	end
+
+	if (uespLog.activeTip ~= PopupTooltip.lastLink) then
+		
+		if (PopupTooltip.uespTextPool) then
+			PopupTooltip.uespTextPool:ReleaseAllObjects()
+		end
+		
+		PopupTooltip.uespText = nil
+	end
+	
+	uespLog.ActiveTooltipItemLink = PopupTooltip.lastLink
+
+	uespLog.AddSalesPricetoTooltip(PopupTooltip.lastLink, PopupTooltip)
+end
+
+
+function uespLog.RemoveStatsPopupTooltip()
+	uespLog.ActiveTooltipItemLink = nil
+	
+	if (PopupTooltip.uespTextPool) then
+		PopupTooltip.uespTextPool:ReleaseAllObjects()
+	end
+	
+	PopupTooltip.uespText = nil
+end
+
+
+function uespLog.GetItemLinkFromItemTooltip() 
+	local skMoc = moc()
+	local itemLink = nil
+	local mocParent = skMoc:GetParent():GetName()
+	
+	if mocParent == 'ZO_StoreWindowListContents' then 
+		itemLink = GetStoreItemLink(skMoc.index)
+	elseif mocParent == 'ZO_BuyBackListContents' then 
+		itemLink = GetBuybackItemLink(skMoc.index)
+	elseif mocParent == 'ZO_TradingHousePostedItemsListContents' then
+		local mocData = skMoc.dataEntry.data
+		itemLink = GetTradingHouseListingItemLink(mocData.slotIndex)
+	elseif mocParent == 'ZO_TradingHouseItemPaneSearchResultsContents' then
+		local rData = skMoc.dataEntry and skMoc.dataEntry.data or nil
+		
+		if not rData or rData.timeRemaining == 0 then return end
+		itemLink = GetTradingHouseSearchResultItemLink(rData.slotIndex)
+
+	elseif mocParent == 'ZO_TradingHouseLeftPanePostItemFormInfo' then
+		if skMoc.slotIndex and skMoc.bagId then itemLink = GetItemLink(skMoc.bagId, skMoc.slotIndex) end
+  
+	elseif 	mocParent == 'ZO_PlayerInventoryBackpackContents' or
+			mocParent == 'ZO_PlayerInventoryListContents' or
+			mocParent == 'ZO_CraftBagListContents' or
+			mocParent == 'ZO_QuickSlotListContents' or
+			mocParent == 'ZO_PlayerBankBackpackContents' or
+			mocParent == 'ZO_SmithingTopLevelImprovementPanelInventoryBackpackContents' or
+			mocParent == 'ZO_SmithingTopLevelDeconstructionPanelInventoryBackpackContents' or
+			mocParent == 'ZO_SmithingTopLevelRefinementPanelInventoryBackpackContents' or
+			mocParent == 'ZO_EnchantingTopLevelInventoryBackpackContents' or
+			mocParent == 'ZO_GuildBankBackpackContents' then
+			
+		if skMoc and skMoc.dataEntry then
+            local rData = skMoc.dataEntry.data
+            itemLink = GetItemLink(rData.bagId, rData.slotIndex)
+		end
+  
+	elseif mocParent == 'ZO_Character' then 
+		itemLink = GetItemLink(skMoc.bagId, skMoc.slotIndex)
+	elseif mocParent == 'ZO_LootAlphaContainerListContents' then 
+		itemLink = GetLootItemLink(skMoc.dataEntry.data.lootId)
+	elseif mocParent == 'ZO_MailInboxMessageAttachments' then 
+		itemLink = GetAttachedItemLink(MAIL_INBOX:GetOpenMailId(), skMoc.id, LINK_STYLE_DEFAULT)
+	elseif mocParent == 'ZO_MailSendAttachments' then 
+		itemLink = GetMailQueuedAttachmentLink(skMoc.id, LINK_STYLE_DEFAULT)
+    end
+  
+  return itemLink
+end
+ 
+ 
+function uespLog.AddStatsItemTooltip() 
+	local currentControl = moc()
+	
+	if (not uespLog.IsSalesShowPrices() or not uespLog.IsSalesShowTooltip()) then
+		return
+	end
+	
+	if (not currentControl or not currentControl:GetParent()) then
+		return
+	end
+	
+	if (currentControl == uespLog.CurrentTooltipControl) then 
+		return 
+	end
+	
+	local itemLink = uespLog.GetItemLinkFromItemTooltip()
+
+	if (itemLink == nil) then
+		return
+	end
+	
+    if (uespLog.CurrentTooltipControl ~= currentControl) then
+	
+		if (ItemTooltip.uespTextPool) then
+			ItemTooltip.uespTextPool:ReleaseAllObjects()
+		end
+		
+		ItemTooltip.uespText = nil
+    end
+
+    uespLog.CurrentTooltipControl = currentControl
+    uespLog.AddSalesPricetoTooltip(itemLink, ItemTooltip)
+end
+	
+	
+function uespLog.RemoveStatsItemTooltip() 
+	uespLog.ItemTooltipControl = nil 
+	
+	if (ItemTooltip.uespTextPool) then
+		ItemTooltip.uespTextPool:ReleaseAllObjects()
+	end
+	
+	ItemTooltip.uespPriceText = nil
+end
+
+
+function uespLog.AddSalesPricetoTooltip(itemLink, tooltip)
+	local msg = uespLog.GetSalesPriceTip(itemLink, false)
+	
+    if (not uespLog.IsSalesShowPrices() or not uespLog.IsSalesShowTooltip()) then
+		return
+	end
+	
+	if (not tooltip.uespTextPool) then
+		tooltip.uespTextPool = ZO_ControlPool:New('UespTooltipSalesLabel', tooltip, 'UespText')
+	end
+
+	if (not tooltip.uespText) then
+		--tooltip:AddVerticalPadding(5)
+		--ZO_Tooltip_AddDivider(tooltip)
+		--tooltip:AddVerticalPadding(5)   
+		tooltip.uespText = tooltip.uespTextPool:AcquireObject()
+		tooltip:AddControl(tooltip.uespText)
+		tooltip.uespText:SetAnchor(CENTER)   
+	end
+
+	if (tooltip.uespText) then
+		tooltip.uespText:SetText(msg)
+		tooltip.uespText:SetColor(1,1,1,1)
+	end
+	
+end
+
+
+function uespLog.GetSalesPriceTip(itemLink, isChat)
+	local prices = uespLog.FindSalesPrice(itemLink)
+	local newItemLink = itemLink:gsub("|H0:", "|H1:")
+	
+	if (prices == nil) then
+		if (isChat) then
+			return "UESP has no price data for "..tostring(newItemLink)
+		else
+			return ""
+		end
+	end
+	
+	local price = prices.price
+	local countSold = prices.countSold
+	local countListed = prices.countListed
+	local itemCount = prices.items
+	
+	if (uespLog.GetSalesShowSaleType() == "list") then
+		price = prices.priceListed
+		countSold = 0
+		countListed = prices.countListed
+		itemCount = prices.itemsListed
+	elseif (uespLog.GetSalesShowSaleType() == "sold") then
+		price = prices.priceSold
+		countSold = prices.countSold
+		countListed = 0
+		itemCount = prices.itemsSold
+	end
+	
+	if (countSold + countListed == 0) then
+		if (isChat) then
+			return "UESP has no price data for "..tostring(newItemLink)
+		else
+			return ""
+		end
+	end
+			
+	local msg = "UESP price ("
+	
+	if (countSold > 0) then
+		msg = msg .. tostring(countSold).." sold"
+	end
+	
+	if (countListed > 0) then
+		if (countSold > 0) then
+			msg = msg .. ", "
+		end
+		
+		msg = msg .. tostring(countListed).." listed"
+	end
+	
+	if (itemCount > countSold + countListed) then
+		msg = msg .. ", "..tostring(itemCount).." items"
+	end
+	
+	msg = msg .. "): " .. tostring(price)
+	
+	if (isChat) then
+		msg = msg .. " gp for "..tostring(newItemLink)
+	else
+		msg = msg .. "|t16:16:EsoUI/Art/currency/currency_gold.dds|t"
+	end
+	
+	return msg
+end
+
+
+function uespLog.SalesPriceToChat(itemLink)
+	local msg = uespLog.GetSalesPriceTip(itemLink, true)
+	
+	--uespLog.Msg(msg)
+	
+	local ChatEditControl = CHAT_SYSTEM.textEntry.editControl
+    if (not ChatEditControl:HasFocus()) then StartChatInput() end
+    ChatEditControl:InsertText(msg)
+end
+
+
+function uespLog.FindSalesPrice(itemLink)
+	local _, _, itemId,  internalSubType, internalLevel, data = uespLog.ParseLinkID(itemLink)
+	
+	itemId = tonumber(itemId)
+	
+	local levelData = uespLog.SalesPrices[itemId]
+	
+	if (levelData == nil) then
+		--uespLog.DebugMsg("FindSalesPrice: No ItemID Data")
+		return nil
+	end
+	
+	local quality = GetItemLinkQuality(itemLink)
+	local trait = GetItemLinkTraitInfo(itemLink)
+	local level = GetItemLinkRequiredLevel(itemLink)
+	local reqCP = GetItemLinkRequiredChampionPoints(itemLink)
+	
+	if (reqCP > 0) then
+		level = 50 + math.floor(reqCP/10)
+	end
+	
+	local _, potionValue = data:match("(.*):(.-)")
+	potionValue = tonumber(potionValue)
+	
+	if (potionValue == nil) then
+		potionValue = 0
+	end
+		
+	local qualityData = levelData[level]
+	
+	if (qualityData == nil) then
+		--uespLog.DebugMsg("FindSalesPrice: No Level Data")
+		return nil
+	end
+	
+	local traitData = qualityData[quality]
+	
+	if (traitData == nil) then
+		--uespLog.DebugMsg("FindSalesPrice: No Quality Data")
+		return nil
+	end
+	
+	local potionData = traitData[trait]
+	
+	if (potionData == nil) then
+		--uespLog.DebugMsg("FindSalesPrice: No Trait Data")
+		return nil
+	end
+	
+	local salesData = potionData[potionValue]
+	
+	if (salesData == nil) then
+		--uespLog.DebugMsg("FindSalesPrice: No Potion Data")
+		return nil
+	end
+	
+	if (uespLog.SalesPricesVersion == nil or uespLog.SalesPricesVersion > 1) then
+		return nil
+	end
+	
+	local result = {}
+	
+	result.price = salesData[1]
+	result.priceSold = salesData[2]
+	result.priceListed = salesData[3]
+	result.countSold = salesData[4]
+	result.countListed = salesData[5]
+	result.itemsSold = salesData[6]
+	result.itemsListed = salesData[7]
+	result.count = result.countSold + result.countListed
+	result.items = result.itemsSold + result.itemsListed
+	result.itemLink = itemLink
+	
+	return result
+end
+
+
 function uespLog.SalesCommand (cmd)
 	local cmds, firstCmd = uespLog.SplitCommands(cmd)
 	
@@ -871,8 +1326,56 @@ function uespLog.SalesCommand (cmd)
 	elseif (firstCmd == "off") then
 		uespLog.SetSalesDataSave(false)
 		uespLog.Msg("Guild sales data logging is now OFF!")
+	elseif (firstCmd == "price" or firstCmd == "prices") then
+		local secondCmd = string.lower(cmds[2])
+		
+		if (secondCmd == "on") then
+			uespLog.SetSalesShowPrices(true)
+			uespLog.Msg("UESP sale price data is now ON!")
+		elseif (secondCmd == "off") then
+			uespLog.SetSalesShowPrices(false)
+			uespLog.Msg("UESP sale price data is now OFF!")
+		else
+			uespLog.Msg("UESP sale price data is currently "..uespLog.BoolToOnOff(uespLog.IsSalesShowPrices()))
+		end		
+		
+	elseif (firstCmd == "tooltip" or firstCmd == "tooltips") then
+		local secondCmd = string.lower(cmds[2])
+		
+		if (secondCmd == "on") then
+			uespLog.SetSalesShowTooltip(true)
+			uespLog.Msg("UESP sale price item tooltips are now ON!")
+		elseif (secondCmd == "off") then
+			uespLog.SetSalesShowTooltip(false)
+			uespLog.Msg("UESP sale price item tooltips are now OFF!")
+		else
+			uespLog.Msg("UESP sale price item tooltips are currently "..uespLog.BoolToOnOff(uespLog.IsSalesShowTooltip()))
+		end		
+		
 	elseif (firstCmd == "scan") then
-		uespLog.StartGuildSearchSalesScanAll()
+	
+		if (cmds[2] == nil) then
+			uespLog.StartGuildSearchSalesScanAll()
+		else
+			uespLog.StartGuildSearchSalesScanPage(cmds[2])
+		end
+		
+	elseif (firstCmd == "saletype") then
+		local secondCmd = string.lower(cmds[2])
+		
+		if (secondCmd == "both" or secondCmd == "all") then
+			uespLog.SetSalesShowSaleType("both")
+			uespLog.Msg("UESP sale prices now display both listed and sold data!")
+		elseif (secondCmd == "listed" or secondCmd == "list") then
+			uespLog.SetSalesShowSaleType("list")
+			uespLog.Msg("UESP sale prices now display only list data!")
+		elseif (secondCmd == "sold") then
+			uespLog.SetSalesShowSaleType("sold")
+			uespLog.Msg("UESP sale prices now display only sold data!")
+		else
+			uespLog.Msg("UESP sale price display is currently using "..uespLog.GetSalesShowSaleType().." data!")
+		end		
+		
 	elseif (firstCmd == "stop") then
 		uespLog.StopGuildSearchSalesScan()
 	elseif (firstCmd == "scanall") then
@@ -880,25 +1383,43 @@ function uespLog.SalesCommand (cmd)
 	elseif (firstCmd == "reset") then
 		uespLog.ResetNewSalesDataTimestamps()
 		uespLog.ResetLastListingSalesDataTimestamps()
-		uespLog.Msg("Reset the last scan timestamps for all sales/listing in all guilds on account!")
+		uespLog.Msg("Reset the last scan timestamps for all sales/listing in all guilds!")
 	elseif (firstCmd == "resetlist") then
-		uespLog.ResetLastListingSalesDataTimestamps()
-		uespLog.Msg("Reset the last scan timestamps for all listings in all guilds on account!")
+		local guildName = uespLog.implodeOrder(cmds, " ", 2)
+		
+		uespLog.ResetLastListingSalesDataTimestamps(guildName)
+		
+		if (guildName ~= "") then
+			uespLog.Msg("Reset the last scan timestamp for all listings in '"..tostring(guildName).."'!")
+		else
+			uespLog.Msg("Reset the last scan timestamps for all listings in all guilds!")
+		end
+		
 	elseif (firstCmd == "resetsale") then
-		uespLog.ResetLastListingSalesDataTimestamps()
+		uespLog.ResetNewSalesDataTimestamps()
 		uespLog.Msg("Reset the last scan timestamps for all sales in all guilds on account!")
 	else
 		uespLog.Msg("Logs various guild sales data:")
 		uespLog.Msg(".       /uespsalesdata [on||off]     Turns logging on/off")
+		uespLog.Msg(".       /uespsalesdata prices [on||off]     Enables/disables all uesp price usage")
+		uespLog.Msg(".       /uespsalesdata tooltip [on||off]     Turns price item tooltip display on/off")
+		uespLog.Msg(".       /uespsalesdata saletype [both||list||sold]     Sets type of sale price average to display")
 		uespLog.Msg(".       /uespsalesdata scan          Scans all guild store listings")
+		uespLog.Msg(".       /uespsalesdata scan [page]   Scans the current guild store listing at the given page")
 		uespLog.Msg(".       /uespsalesdata stop          Stops the current listing scan")
 		uespLog.Msg(".       /uespsalesdata reset         Reset the sales and listing scan timestamps")
 		uespLog.Msg(".       /uespsalesdata resetsale         Reset the sales scan timestamps")
-		uespLog.Msg(".       /uespsalesdata resetlist         Reset the listing scan timestamps")
+		uespLog.Msg(".       /uespsalesdata resetlist         Reset the listing timestamps for all guilds")
+		uespLog.Msg(".       /uespsalesdata resetlist [name]  Reset the listing timestamps for that guild")
 		uespLog.Msg("Guild sales data logging is currently "..uespLog.BoolToOnOff(uespLog.GetSalesDataConfig().saveSales)..".")
+		uespLog.Msg("Sale price data usage is currently "..uespLog.BoolToOnOff(uespLog.IsSalesShowPrices()))
+		uespLog.Msg("Sale price item tooltips are currently "..uespLog.BoolToOnOff(uespLog.IsSalesShowTooltip()))
 	end		
 	
 end
 
 
 SLASH_COMMANDS["/uespsales"] = uespLog.SalesCommand
+
+
+

@@ -357,6 +357,11 @@ end
 function uespLog.UpdateInventoryContextMenu(rowControl)
 	AddMenuItem("Show Item Info", function() uespLog.ShowItemInfoRowControl(rowControl) end, MENU_ADD_OPTION_LABEL)
 	AddMenuItem("Copy Item Link", function() uespLog.CopyItemLinkRowControl(rowControl) end, MENU_ADD_OPTION_LABEL)
+	
+	if (uespLog.IsSalesShowPrices()) then
+		AddMenuItem("UESP Price to Chat", function() uespLog.SalesPriceToChatRowControl(rowControl) end, MENU_ADD_OPTION_LABEL)
+	end
+	
 	ShowMenu(self)
 end
 

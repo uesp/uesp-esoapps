@@ -33,6 +33,7 @@ uespLogDaily.lua
 uespLogPerformanceMeter.lua
 uespLogPerformanceMeter.xml
 uespCopyItemLinkDialog.xml
+uespSalesPrices.lua
 
 lang/en.lua
 lang/$(language).lua

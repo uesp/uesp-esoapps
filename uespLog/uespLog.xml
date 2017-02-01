@@ -16,5 +16,10 @@
                 </Label>
             </Controls>
         </TopLevelControl>
+		<Label name="UespTooltipSalesLabel" virtual="true" font="ZoFontGame" linkEnabled="true" mouseEnabled="true" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" text="">
+			<OnLinkMouseUp>
+				ZO_LinkHandler_OnLinkMouseUp(linkText, button, self)
+			</OnLinkMouseUp>      
+		</Label>
 	</Controls>
 </GuiXml>

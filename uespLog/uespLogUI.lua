@@ -209,9 +209,14 @@ function uespLog.InitOptionControlsData()
 	uespLog.optionControlsData:insert({
 		type = "checkbox",
 		name = "Play Nirncrux Sound", 
-		tooltip = "Plays a sound when you loot a Potent or Fortified Nirncruz.\n      /uespnirnsound on/off", 
+		tooltip = "Plays a sound when you loot a Potent or Fortified Nirncrux.\n      /uespnirnsound on/off", 
 		getFunc = function () return uespLog.GetNirnSound() end,
 		setFunc = function (value) uespLog.SetNirnSound(value) end
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "header",
+		name = "Guild Sales Data (Beta)",
 	})
 	
 	uespLog.optionControlsData:insert({
@@ -220,6 +225,31 @@ function uespLog.InitOptionControlsData()
 		tooltip = "Logs various sources of guild sales data.\n      /uespsales on/off", 
 		getFunc = function () return uespLog.IsSalesDataSave() end,
 		setFunc = function (value) uespLog.SetSalesDataSave(value) end
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "checkbox",
+		name = "Use UESP Price Data", 
+		tooltip = "Enables/disables the usage of UESP price data.\n      /uespsales prices on/off", 
+		getFunc = function () return uespLog.IsSalesShowPrices() end,
+		setFunc = function (value) uespLog.SetSalesShowPrices(value) end
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "checkbox",
+		name = "Price Item Tooltips", 
+		tooltip = "Show UESP specific price info on item tooltips.\n      /uespsales tooltip on/off", 
+		getFunc = function () return uespLog.IsSalesShowTooltip() end,
+		setFunc = function (value) uespLog.SetSalesShowTooltip(value) end
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "dropdown",
+		name = "Price Display Type", 
+		choices = { "both", "list", "sold" },
+		tooltip = "Select the type of data to use for price displays.\n      /uespsales saletype both/list/sold", 
+		getFunc = function () return uespLog.GetSalesShowSaleType() end,
+		setFunc = function (value) uespLog.SetSalesShowSaleType(value) end
 	})
 		
 	uespLog.optionControlsData:insert({
@@ -324,6 +354,11 @@ function uespLog.InitOptionControlsData()
 		type = "uespdescription",
 		title = "",
 		text = "",
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "header",
+		name = "Time",
 	})
 	
 	uespLog.optionControlsData:insert({
@@ -557,7 +592,7 @@ function uespLog.GetSettingsStatisticText()
 	OutputText = OutputText .. "          Global: " .. tostring(count2) .. " records taking up " .. string.format("%.2f", size2/1000000) .. " MB\n"
 	OutputText = OutputText .. "          Achievement: " .. tostring(count3) .. " records taking up " .. string.format("%.2f", size3/1000000) .. " MB\n"
 	OutputText = OutputText .. "     " .. tostring(achCompleteCount) .. " / " .. tostring(achCount) .. " achievements complete\n"
-	OutputText = OutputText .. "     Player Location = " .. tostring(posString) .. ", " .. tostring(headingStr) .. " deg\n"
+	OutputText = OutputText .. "     Location = " .. tostring(posString) .. ", " .. tostring(headingStr) .. " deg\n"
 	OutputText = OutputText .. "     Camera Heading = " .. tostring(camHeadingStr) .. " degrees\n"
 	OutputText = OutputText .. "     Game _VERSION = "  .. version .. "\n"
 	OutputText = OutputText .. "     Game API = " .. tostring(apiVersion) .. "\n"

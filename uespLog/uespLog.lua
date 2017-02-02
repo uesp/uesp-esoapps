@@ -597,7 +597,7 @@
 --				  statistic comparison feature in the inventory stats window.
 --				- Added the 3 new styles (Celestial, Yokudan, Draugr).
 --
---		- v1.00 -- February 2017
+--		- v1.00 -- 6 February 2017
 --				- Mined item data for recipes now includes the information needed to duplicate the in-game
 --				  tool-tip displayed for recipes.
 --				- Fixed the stacking of Major Force in the Critical Damage stat display.
@@ -725,7 +725,7 @@
 uespLog = { }
 
 uespLog.version = "1.00"
-uespLog.releaseDate = "5 February 2017"
+uespLog.releaseDate = "6 February 2017"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

@@ -616,12 +616,6 @@
 --				- Added the 3 crown store merchants to the NPC ignore list.
 --				- Added the "Copy Item Link" context menu to item tooltips. This popups up a simple dialog that
 --				  lets you press CTRL+C to quickly copy the item link. Press ESC or click anywhere to close the dialog.
---				- A new feature in testing that logs guild sales data.
---						- Turn on/off with: /uespsales on/off
---						- Logs sales from your guild history
---						- Logs items you list
---						- Logs item searchs from all guild traders
---						- Once data is uploaded/parsed it can be viewed at: http://esosales.uesp.net/
 --			- Added the /uespkilldata command to tracking basic kill statistics of NPCs (number and total health).
 --			  Data is tracked per character and is saved between sessions.
 --					/uespkilldata on/off				Turns the feature on and off (default is off).
@@ -654,6 +648,58 @@
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
+--
+--			- Guild sales data tracking and price display. A new feature in testing since v1.00 which logs guild
+--			  sales data from several sources including:
+--					- Logs sales from your guild history
+--					- Logs items you list
+--					- Logs item searches from all guild traders
+--					- Manually scan of listings in the current guild store with "/uespsales scan"
+--			  All uploaded sales data can be viewed at http://esosales.uesp.net/ . Average price data is computed
+--			  using both the listed items and sold items for potentially greater accuracy in the price calculation.
+--
+--			  Sales data logging and price display can be controlled with the "/uespsales" command:
+--					/uespsales [on|off]            Turn logging of sales data on/off.
+--					/uespsales prices [on|off]     Enables/disables all UESP price diplays.
+--					/uespsales tooltip [on|off]    Turns price item tooltip display on/off.
+--					/uespsales saletype both       Uses both listed and sold data when displaying prices.
+--					/uespsales saletype list       Uses only listed data when displaying prices.
+--					/uespsales saletype sold       Uses only sold data when displaying prices.
+--					/uespsales scan                Scans all guild store listings.
+--					/uespsales scan [page]         Scans the current guild store listing at the given page.
+--					/uespsales stop                Stops the current listing scan.
+--					/uespsales reset               Reset the sales and listing scan timestamps.
+--					/uespsales resetsold           Reset the sales scan timestamps.
+--					/uespsales resetlist           Reset the listing timestamps for all guilds.
+--					/uespsales resetlist [name]    Reset the listing timestamps for that guild.
+--
+--			  When doing a manual scan of guild listings you need to be at a guild trader kiosk or bank screen.
+--			  When at a guild store bank it will scan all guilds you are currently in. A full scan can take 
+-- 			  up to 10 minutes depending on how many items are in the guild store. You have to remain on the 
+--			  trader during this time and you cannot perform any searches yourself as this will interfere with
+--			  automatic scan. You can stop a listing scan with "/uespsales stop" or by exiting the guild trader
+--			  interface at anytime.
+--
+--			  Once a guild scan has been completed then subsequent scans will only need to scan any new items
+--			  listed since the last scan. This applies to both guild listings and guild sale histories. You
+--			  can reset these with the "/uespsales resetlist" and "/uespsales resetsold" commands but the
+--			  next scans will then require a longer complete scan. Daily updated versions of this file can
+--			  be downloaded from  http://esosales.uesp.net/ . If you don't use the UESP price data at all you
+--			  can delete everything in this file with any text editor to save a little bit of memory.
+--
+--			  Collected price data is included in the "uespSalesPrices.lua" file. Average price data can be
+--			  viewed in item tooltips if you turn them on with "/uespsales prices on" and "/uespsales tooltip on",
+--			  much in the same manner as with the MasterMerchant add-on. 
+--
+-- 			  You can control which type of sales data is used for the average price with the commands:
+--					/uespsales saletype both       Uses both listed and sold price data.
+--					/uespsales saletype list       Uses only listed price data.
+--					/uespsales saletype sold       Uses only sold price data.
+--
+--			  Using only sold data would be the same as how the MasterMerchant add-on works. Using only the listed
+--			  data would be the same as how the TamrielTraderCentre add-on works. Using both gets you the best
+--			  of both worlds. 
+--
 --			- Fishing notifications (turn on with /uespfish on)
 --			- Daily quest tracking (/uespdaily)
 --			- Added the /uesptrackstat command for tracking changes to Health/Magicka/Stamina/Ultimate. You
@@ -1397,7 +1443,7 @@ uespLog.DEFAULT_SETTINGS =
 		["salesData"] = {
 			["saveSales"] = true,
 			["showPrices"] = false,
-			["showTooltip"] = false,
+			["showTooltip"] = true,
 			["showSaleType"] = "both",
 			["lastTimestamp"] = 0,
 			["guildListTimes"] = {},

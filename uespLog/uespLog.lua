@@ -658,6 +658,11 @@
 --			  All uploaded sales data can be viewed at http://esosales.uesp.net/ . Average price data is computed
 --			  using both the listed items and sold items for potentially greater accuracy in the price calculation.
 --
+--			  Note that the addon includes prices for the PC-NA server at the time of the add-ons release. For 
+--			  updated prices and other servers you can download an updated price file (uespSalesPrices.lua) at:
+--
+--					http://esosales.uesp.net/salesPrices.shtml
+--
 --			  Sales data logging and price display can be controlled with the "/uespsales" command:
 --					/uespsales [on|off]            Turn logging of sales data on/off.
 --					/uespsales prices [on|off]     Enables/disables all UESP price diplays.

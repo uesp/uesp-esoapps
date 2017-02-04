@@ -673,9 +673,10 @@
 --					/uespsales scan                Scans all guild store listings.
 --					/uespsales scan [page]         Scans the current guild store listing at the given page.
 --					/uespsales stop                Stops the current listing scan.
---					/uespsales reset               Reset the sales and listing scan timestamps.
---					/uespsales resetsold           Reset the sales scan timestamps.
---					/uespsales resetlist           Reset the listing timestamps for all guilds.
+--					/uespsales resetall            Reset the sales and listing scan timestamps.
+--					/uespsales resetsold           Reset the sales history scan timestamps for  all your guilds.
+--					/uespsales resetlist all       Reset the listing timestamps for all guilds.
+--					/uespsales resetlist current   Reset the listing timestamps for the current guild trader.
 --					/uespsales resetlist [name]    Reset the listing timestamps for that guild.
 --
 --			  When doing a manual scan of guild listings you need to be at a guild trader kiosk or bank screen.
@@ -2907,7 +2908,8 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_RESPONSE_RECEIVED, uespLog.OnTradingHouseResponseReceived)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_GUILD_HISTORY_RESPONSE_RECEIVED, uespLog.OnGuildHistoryResponseReceived)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_CONFIRM_ITEM_PURCHASE, uespLog.OnTradingHouseConfirmPurchase)	
-
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_ERROR, uespLog.OnTradingHouseError)	
+	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_EFFECT_CHANGED, uespLog.OnEffectChanged)	
 	
 		-- Note: This event is called up to 40-50 time for each kill with some weapons (Destruction Staff)

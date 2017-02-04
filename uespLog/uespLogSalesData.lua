@@ -1357,7 +1357,8 @@ function uespLog.SalesCommand (cmd)
 		if (cmds[2] == nil) then
 			uespLog.StartGuildSearchSalesScanAll()
 		else
-			uespLog.StartGuildSearchSalesScanPage(cmds[2])
+			local page = tonumber(cmds[2]) or 1
+			uespLog.StartGuildSearchSalesScanPage(page - 1)
 		end
 		
 	elseif (firstCmd == "saletype") then

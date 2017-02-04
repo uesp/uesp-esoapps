@@ -418,11 +418,22 @@ end
 
 function uespLog.ResetLastListingSalesDataTimestamps(guildName)
 	local salesConfig = uespLog.GetSalesDataConfig()
-	
-	if (guildName == nil or guildName == "") then
+		
+	if (guildName == nil or guildName == "" or guildName:lower() == "all") then
 		salesConfig.guildListTimes = {}
+		uespLog.Msg("Reset the last scan timestamps for all listings in all guilds!")
+	elseif (guildName:lower() == "current") then
+		local _, realGuildName = GetCurrentTradingHouseGuildDetails()		
+		
+		if (realGuildName ~= nil and realGuildName ~= "") then
+			salesConfig.guildListTimes[realGuildName] = 0
+			uespLog.Msg("Reset the last scan timestamp for all listings in '"..tostring(realGuildName).."'!")
+		else
+			uespLog.Msg("You need to be at a guild trader to reset the current guild listings!")
+		end
 	else
 		salesConfig.guildListTimes[guildName] = 0
+		uespLog.Msg("Reset the last scan timestamp for all listings in '"..tostring(guildName).."'!")
 	end
 	
 end
@@ -560,6 +571,11 @@ function uespLog.SaveTradingHouseSalesItem(guildId, itemIndex, currentTimestamp,
 		
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData(), extraData)
 	return true
+end
+
+
+function uespLog.OnTradingHouseError(event, errorCode)
+	uespLog.DebugExtraMsg("OnTradingHouseError " .. tostring(errorCode))
 end
 
 
@@ -1381,20 +1397,19 @@ function uespLog.SalesCommand (cmd)
 		uespLog.StopGuildSearchSalesScan()
 	elseif (firstCmd == "scanall") then
 		uespLog.StartGuildSearchSalesScanAll()		
-	elseif (firstCmd == "reset") then
+	elseif (firstCmd == "resetall") then
 		uespLog.ResetNewSalesDataTimestamps()
 		uespLog.ResetLastListingSalesDataTimestamps()
 		uespLog.Msg("Reset the last scan timestamps for all sales/listing in all guilds!")
 	elseif (firstCmd == "resetlist") then
 		local guildName = uespLog.implodeOrder(cmds, " ", 2)
 		
-		uespLog.ResetLastListingSalesDataTimestamps(guildName)
-		
-		if (guildName ~= "") then
-			uespLog.Msg("Reset the last scan timestamp for all listings in '"..tostring(guildName).."'!")
-		else
-			uespLog.Msg("Reset the last scan timestamps for all listings in all guilds!")
+		if (guildName == "") then
+			uespLog.Msg("Missing guild name to reset or 'all' for all guilds!")
+			return
 		end
+		
+		uespLog.ResetLastListingSalesDataTimestamps(guildName)
 		
 	elseif (firstCmd == "resetsold") then
 		uespLog.ResetNewSalesDataTimestamps()
@@ -1408,9 +1423,10 @@ function uespLog.SalesCommand (cmd)
 		uespLog.Msg(".       /uespsales scan          Scans all guild store listings")
 		uespLog.Msg(".       /uespsales scan [page]   Scans the current guild store listing at the given page")
 		uespLog.Msg(".       /uespsales stop          Stops the current listing scan")
-		uespLog.Msg(".       /uespsales reset         Reset the sales and listing scan timestamps")
+		uespLog.Msg(".       /uespsales resetall         Reset the sales and listing scan timestamps")
 		uespLog.Msg(".       /uespsales resetsold         Reset the sales scan timestamps")
-		uespLog.Msg(".       /uespsales resetlist         Reset the listing timestamps for all guilds")
+		uespLog.Msg(".       /uespsales resetlist all     Reset the listing timestamps for all guilds")
+		uespLog.Msg(".       /uespsales resetlist current Reset the listing timestamps for the current guild trader")
 		uespLog.Msg(".       /uespsales resetlist [name]  Reset the listing timestamps for that guild")
 		uespLog.Msg("Guild sales data logging is currently "..uespLog.BoolToOnOff(uespLog.GetSalesDataConfig().saveSales)..".")
 		uespLog.Msg("Sale price data usage is currently "..uespLog.BoolToOnOff(uespLog.IsSalesShowPrices()))

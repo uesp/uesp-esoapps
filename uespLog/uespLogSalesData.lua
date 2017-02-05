@@ -968,7 +968,7 @@ function uespLog.OnGuildSearchScanItemsReceived(guildId, numItemsOnPage, current
 
 	if (not hasMorePages or uespLog.SalesGuildSearchScanFinish) then
 		local deltaTime = GetTimeStamp() - uespLog.SalesGuildSearchScanStartTime
-		uespLog.Msg("Finished guild listing scan for "..tostring(guildName).."! "..uespLog.SalesGuildSearchScanNumItems.." items in "..uespLog.SalesGuildSearchScanPage.." pages scanned in "..tostring(deltaTime).." secs.")	
+		uespLog.Msg("Finished guild listing scan for "..tostring(guildName).."! "..uespLog.SalesGuildSearchScanNumItems.." items in "..tostring(uespLog.SalesGuildSearchScanPage-1).." pages scanned in "..tostring(deltaTime).." secs.")	
 		uespLog.SalesGuildSearchScanStarted = false
 		
 		local salesConfig = uespLog.GetSalesDataConfig()

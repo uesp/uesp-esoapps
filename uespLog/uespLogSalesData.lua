@@ -983,7 +983,7 @@ function uespLog.OnGuildSearchScanItemsReceived(guildId, numItemsOnPage, current
 		
 	zo_callLater(uespLog.DoNextGuildListingScan, GetTradingHouseCooldownRemaining() + 400)	
 	
-	uespLog.DebugMsg("Guild Listing Scan for "..tostring(guildName)..": Logged "..numItemsOnPage.." items on page "..uespLog.SalesGuildSearchScanPage..".")	
+	uespLog.DebugMsg("Scanning "..tostring(guildName)..": Logged "..numItemsOnPage.." items on page "..uespLog.SalesGuildSearchScanPage..".")	
 end
 
 

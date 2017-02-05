@@ -634,6 +634,7 @@
 --					/uesptrackloot reset				Clear all loot tracking data.
 --					/utl 								Short command
 --			- Removed old code for manually monitoring the Mercenary and Ancient Orc styles.
+--			- Added logging when pickpocketing for the NPC thieving class and other data.
 --
 --			Update 13 Changes
 --				- API updated to 100018.
@@ -724,7 +725,6 @@
 --					/uesptrackstat all					  Start tracking all stats.
 --					/uesptrackstat none					  Turns off all tracking.
 --					/uesptrackstat resettime			  Resets the game time display to 0.
---			-
 --
 --
 
@@ -2885,7 +2885,7 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_BUY_RECEIPT, uespLog.OnBuyReceipt)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SELL_RECEIPT, uespLog.OnSellReceipt)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TELVAR_STONE_UPDATE, uespLog.OnTelvarStoneUpdate)	
-
+	
     EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LORE_BOOK_ALREADY_KNOWN, uespLog.OnLoreBookAlreadyKnown)
     EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LORE_BOOK_LEARNED, uespLog.OnLoreBookLearned)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SHOW_BOOK, uespLog.OnShowBook)
@@ -2954,7 +2954,8 @@ function uespLog.Initialize( self, addOnName )
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_JUSTICE_GOLD_PICKPOCKETED, uespLog.OnGoldPickpocketed)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_JUSTICE_GOLD_REMOVED, uespLog.OnGoldRemoved)
-	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_JUSTICE_ITEM_PICKPOCKETED, uespLog.OnItemPickpocketed)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_JUSTICE_ITEM_PICKPOCKETED, uespLog.OnItemPickpocketed) -- Note: This event does not seem to be called
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_JUSTICE_PICKPOCKET_FAILED, uespLog.OnPickpocketFailed)	
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOT_ABILITY_USED, uespLog.OnActionSlotAbilityUsed)
 	
@@ -4742,6 +4743,9 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 	
 	if (isPickPocket) then
 		rcvType = "pickpocketed"
+		
+		logData.ppBonus, logData.ppIsHostile, logData.ppChance, logData.ppDifficulty, logData.ppEmpty, logData.ppResult, logData.ppClassString, logData.ppClass = GetGameCameraPickpocketingBonusInfo()
+
 	elseif (uespLog.lastTargetData.action == uespLog.ACTION_STEALFROM or uespLog.lastTargetData.action == uespLog.ACTION_STEAL) then
 		rcvType = "stole"
 	end
@@ -10443,6 +10447,7 @@ function uespLog.OnGoldRemoved(eventCode, goldAmount)
 end
 
 
+-- Note: This event does not seem to be called
 function uespLog.OnItemPickpocketed (eventCode, itemName, itemCount)
 
 	if (itemCount == 1) then
@@ -10451,6 +10456,24 @@ function uespLog.OnItemPickpocketed (eventCode, itemName, itemCount)
 		uespLog.DebugExtraMsg("Pickpocketed "..tostring(itemName).." (x"..tostring(itemCount)..")")
 	end
 	
+	local logData = {}
+	
+	logData.event = "PickpocketItem"
+	logData.ppBonus, logData.ppIsHostile, logData.ppChance, logData.ppDifficulty, logData.ppEmpty, logData.ppResult, logData.ppClassString, logData.ppClass = GetGameCameraPickpocketingBonusInfo()
+	logData.item = itemName
+	logData.count = itemCount
+
+	uespLog.AppendDataToLog("all", logData, uespLog.GetLastTargetData(), uespLog.GetTimeData())
+end
+
+
+function uespLog.OnPickpocketFailed(eventCode)
+	local logData = {}
+	
+	logData.event = "PickpocketFailed"
+	logData.ppBonus, logData.ppIsHostile, logData.ppChance, logData.ppDifficulty, logData.ppEmpty, logData.ppResult, logData.ppClassString, logData.ppClass = GetGameCameraPickpocketingBonusInfo()
+	
+	uespLog.AppendDataToLog("all", logData, uespLog.GetLastTargetData(), uespLog.GetTimeData())
 end
 
 
@@ -13985,3 +14008,5 @@ function uespLog.FindMinedItemNameChange()
 		uespLog.Msg("Found "..tostring(uespLog.FindNameChangeItemCount).." items with name changes...")
 	end
 end
+
+

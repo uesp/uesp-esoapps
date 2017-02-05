@@ -531,7 +531,7 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 		-- Motifs
 	if (itemType == 8) then
 		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
-			local isKnown, isCertain = uespLog.IsItemLinkBookKnown(itemLink)
+			local isKnown, isCertain = IsItemLinkBookKnown(itemLink)
 			
 			if (not isCertain) then
 				itemText = ""
@@ -709,7 +709,7 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 		-- Motifs
 	if (itemType == 8) then
 		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
-			local isKnown, isCertain = uespLog.IsItemLinkBookKnown(itemLink)
+			local isKnown, isCertain = IsItemLinkBookKnown(itemLink)
 			
 			if (not isCertain) then
 				iconControl:SetHidden(true)		
@@ -1679,7 +1679,7 @@ function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
 		-- Motifs
 	if (itemType == 8) then
 		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
-			local isKnown, isCertain = uespLog.IsItemLinkBookKnown(itemLink)
+			local isKnown, isCertain = IsItemLinkBookKnown(itemLink)
 			
 			if (not isCertain) then
 				iconControl:SetHidden(true)		

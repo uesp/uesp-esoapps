@@ -633,6 +633,8 @@
 --					/uesptrackloot sources [name]		Show all sources of loot matching the given name.
 --					/uesptrackloot reset				Clear all loot tracking data.
 --					/utl 								Short command
+--			- Removed old code for manually monitoring the Mercenary and Ancient Orc styles.
+--
 --			Update 13 Changes
 --				- API updated to 100018.
 --				- Added the new special item type to logged item data.
@@ -2833,11 +2835,11 @@ function uespLog.Initialize( self, addOnName )
 		uespLog.savedVars.settings.data.TREASURE_TIMER_DURATIONS["thieves trove"] = uespLog.DEFAULT_SETTINGS.data.TREASURE_TIMER_DURATIONS["thieves trove"]
 	end
 	
-	if (uespLog.savedVars.charInfo.data.mercStyle == nil) then
-		uespLog.savedVars.charInfo.data.mercStyle = {}
+	if (uespLog.savedVars.charInfo.data.mercStyle ~= nil) then
+		uespLog.savedVars.charInfo.data.mercStyle = nil
 	end
 	
-	if (uespLog.savedVars.charInfo.data.ancientOrcStyle == nil) then
+	if (uespLog.savedVars.charInfo.data.ancientOrcStyle ~= nil) then
 		uespLog.savedVars.charInfo.data.ancientOrcStyle = {}
 	end	
 	
@@ -4832,41 +4834,11 @@ function uespLog.OnStyleLearned (eventCode, styleIndex, chapterIndex)
 	--
 	uespLog.DebugExtraMsg("OnStyleLearned: "..tostring(styleIndex)..":"..tostring(chapterIndex))
 
-	if (styleIndex == 27) then
-		local itemStyle = select(5, GetSmithingStyleItemInfo(styleIndex))
-		
-		if chapterIndex == ITEM_STYLE_CHAPTER_ALL then
-			for i = 1, 14 do
-				uespLog.savedVars.charInfo.data.mercStyle[i] = true
-			end
-		elseif (chapterIndex >= 1 and chapterIndex <= 14) then
-			local realIndex = uespLog.CHAPTERINDEX_TO_DISPLAYEDCHAPTER[tonumber(chapterIndex)]
-			uespLog.savedVars.charInfo.data.mercStyle[realIndex] = true
-		end
-	elseif (styleIndex == 23) then
-		local itemStyle = select(5, GetSmithingStyleItemInfo(styleIndex))
-		
-		if chapterIndex == ITEM_STYLE_CHAPTER_ALL then
-			for i = 1, 14 do
-				uespLog.savedVars.charInfo.data.ancientOrcStyle[i] = true
-			end
-		elseif (chapterIndex >= 1 and chapterIndex <= 14) then
-			local realIndex = uespLog.CHAPTERINDEX_TO_DISPLAYEDCHAPTER[tonumber(chapterIndex)]
-			uespLog.savedVars.charInfo.data.ancientOrcStyle[realIndex] = true
-		end
-	end
-
 end
 
 
 function uespLog.OnCraftStationInteract (eventCode, craftSkill, sameStation)
 	uespLog.DebugExtraMsg("OnCraftStationInteract: "..tostring(craftSkill))
-		
-	if (craftSkill == CRAFTING_TYPE_BLACKSMITHING or craftSkill == CRAFTING_TYPE_CLOTHIER or craftSkill == CRAFTING_TYPE_WOODWORKING) then
-		uespLog.SaveMercenaryStylesKnown()
-		uespLog.SaveAncientOrcStylesKnown()
-	end
-	
 end
 
 
@@ -4907,179 +4879,6 @@ uespLog.WEAPONTYPE_TO_CRAFTBOOKCHAPTER = {
 	[WEAPONTYPE_TWO_HANDED_HAMMER] = 10,
 	[WEAPONTYPE_TWO_HANDED_SWORD] = 14,
 }
-
-                 
-function uespLog.IsItemLinkBookKnown(itemLink)
-	local baseKnown = IsItemLinkBookKnown(itemLink)
-	local itemName = GetItemLinkName(itemLink)
-	local bookIndex, chapterIndex, styleName, slotName = itemName:match("Crafting Motifs ([%d]+), [%a%.]+ ([%d]+): ([%a%s]+) ([%a]+)")
-	
-	if (bookIndex == nil) then
-		--bookIndex, chapterIndex, styleName, slotName = itemName:match("Crafting Motifs ([%d]+), Chap%. ([%d]+): ([%a%s]+) ([%a]+)")
-		
-		if (bookIndex == nil) then
-			--bookIndex, chapterIndex, styleName, slotName = itemName:match("Crafting Motifs ([%d]+), Ch%. ([%d]+): ([%a%s]+) ([%a]+)")
-		end
-	end
-	
-		-- Mercenary Motifs
-		-- Crafting Motifs 19, Chap. 12: Mercenary XXXXX
-		-- Crafting Motifs 19, Chapter 6: Mercenary XXXXX
-		-- Crown Crafting Motifs 19: Mercenary
-		-- Crafting Motifs 19: Mercenary
-	if (itemName == "Crown Crafting Motifs 19: Mercenary" or itemName == "Crafting Motifs 19: Mercenary") then
-	
-		if (baseKnown) then
-			return baseKnown, true
-		end
-		
-		local allKnown = true
-		local isCertain = true
-		
-		for i = 1, 14 do
-			allKnown = allKnown and (uespLog.savedVars.charInfo.data.mercStyle[i] or false)
-			isCertain = isCertain and (uespLog.savedVars.charInfo.data.mercStyle[i] ~= nil)
-		end
-		
-		return allKnown, isCertain
-		
-	elseif (itemName == "Crown Crafting Motifs: Ancient Orc" or itemName == "Crafting Motifs 21: Ancient Orc") then
-	
-		if (baseKnown) then
-			return baseKnown, true
-		end
-		
-		local allKnown = true
-		local isCertain = true
-		
-		for i = 1, 14 do
-			allKnown = allKnown and (uespLog.savedVars.charInfo.data.ancientOrcStyle[i] or false)
-			isCertain = isCertain and (uespLog.savedVars.charInfo.data.ancientOrcStyle[i] ~= nil)
-		end
-		
-		return allKnown, isCertain
-		
-	elseif (bookIndex == 19 or styleName == "Mercenary") then
-	
-		if (baseKnown) then
-			return baseKnown, true
-		end
-		
-		chapterIndex = tonumber(chapterIndex)
-		local isKnown = uespLog.savedVars.charInfo.data.mercStyle[chapterIndex] or false
-		local isCertain = uespLog.savedVars.charInfo.data.mercStyle[chapterIndex] ~= nil
-		
-		return isKnown, isCertain
-		
-	elseif (bookIndex == 21 or styleName == "Ancient Orc") then
-	
-		if (baseKnown) then
-			return baseKnown, true
-		end
-		
-		chapterIndex = tonumber(chapterIndex)
-		local isKnown = uespLog.savedVars.charInfo.data.ancientOrcStyle[chapterIndex] or false
-		local isCertain = uespLog.savedVars.charInfo.data.ancientOrcStyle[chapterIndex] ~= nil
-		
-		return isKnown, isCertain
-	end
-
-	return baseKnown, true
-end
-
-
-function uespLog.IsItemLinkMercKnown(itemLink)
-	local equipType = GetItemLinkEquipType(itemLink)
-	local weaponType = GetItemLinkWeaponType(itemLink)
-	local chapterIndex = uespLog.WEAPONTYPE_TO_CRAFTBOOKCHAPTER[weaponType] or uespLog.EQUIPTYPE_TO_CRAFTBOOKCHAPTER[equipType] or 0
-	
-	return uespLog.IsMercChapterKnown(chapterIndex)
-end
-
-
-function uespLog.IsItemLinkAncientOrcKnown(itemLink)
-	local equipType = GetItemLinkEquipType(itemLink)
-	local weaponType = GetItemLinkWeaponType(itemLink)
-	local chapterIndex = uespLog.WEAPONTYPE_TO_CRAFTBOOKCHAPTER[weaponType] or uespLog.EQUIPTYPE_TO_CRAFTBOOKCHAPTER[equipType] or 0
-	
-	return uespLog.IsAncientOrcChapterKnown(chapterIndex)
-end
-
-
-function uespLog.IsMercChapterKnown(chapterIndex)
-
-	if (uespLog.savedVars.charInfo.data.mercStyle == nil) then
-		uespLog.savedVars.charInfo.data.mercStyle = {}
-	end
-	
-	return uespLog.savedVars.charInfo.data.mercStyle[tonumber(chapterIndex)] or false
-end
-
-
-function uespLog.IsAncientOrcChapterKnown(chapterIndex)
-
-	if (uespLog.savedVars.charInfo.data.ancientOrcStyle == nil) then
-		uespLog.savedVars.charInfo.data.ancientOrcStyle = {}
-	end
-	
-	return uespLog.savedVars.charInfo.data.ancientOrcStyle[tonumber(chapterIndex)] or false
-end
-
-
-function uespLog.SaveMercenaryStylesKnown()
-	local numPatterns = GetNumSmithingPatterns()
-	local patternIndex
-	
-	if (uespLog.savedVars.charInfo.data.mercStyle == nil) then
-		uespLog.savedVars.charInfo.data.mercStyle = {}
-	end
-	
-	for patternIndex = 1, numPatterns do
-		local known = IsSmithingStyleKnown(27, patternIndex)
-		local name, baseName = GetSmithingPatternInfo(patternIndex)
-		local numMaterial = GetSmithingPatternNextMaterialQuantity(patternIndex, 1, 1, 1)
-		local itemLink = GetSmithingPatternResultLink(patternIndex, 1, numMaterial, 1, 1)
-		
-		if (itemLink ~= "") then
-			local equipType = GetItemLinkEquipType(itemLink)
-			local weaponType = GetItemLinkWeaponType(itemLink)
-			local chapter = uespLog.WEAPONTYPE_TO_CRAFTBOOKCHAPTER[weaponType] or uespLog.EQUIPTYPE_TO_CRAFTBOOKCHAPTER[equipType] or 0
-			
-			if (chapter > 0) then
-				uespLog.savedVars.charInfo.data.mercStyle[tonumber(chapter)] = known
-			end
-		end
-	end
-	
-end
-
-
-function uespLog.SaveAncientOrcStylesKnown()
-	local numPatterns = GetNumSmithingPatterns()
-	local patternIndex
-	
-	if (uespLog.savedVars.charInfo.data.ancientOrcStyle == nil) then
-		uespLog.savedVars.charInfo.data.ancientOrcStyle = {}
-	end
-	
-	for patternIndex = 1, numPatterns do
-		local known = IsSmithingStyleKnown(23, patternIndex)
-		local name, baseName = GetSmithingPatternInfo(patternIndex)
-		local numMaterial = GetSmithingPatternNextMaterialQuantity(patternIndex, 1, 1, 1)
-		local itemLink = GetSmithingPatternResultLink(patternIndex, 1, numMaterial, 1, 1)
-		
-		if (itemLink ~= "") then
-			local equipType = GetItemLinkEquipType(itemLink)
-			local weaponType = GetItemLinkWeaponType(itemLink)
-			local chapter = uespLog.WEAPONTYPE_TO_CRAFTBOOKCHAPTER[weaponType] or uespLog.EQUIPTYPE_TO_CRAFTBOOKCHAPTER[equipType] or 0
-			
-			if (chapter > 0) then
-				uespLog.savedVars.charInfo.data.ancientOrcStyle[tonumber(chapter)] = known
-			end
-		end
-	end
-	
-end
 
 
 function uespLog.OnCraftCompleted (eventCode, craftSkill)
@@ -10078,7 +9877,7 @@ function uespLog.GetStyleKnown(styleName)
 	
 		for i = 1,14 do
 			local itemLink = uespLog.MakeItemLink(motifId[i], 1, 1)
-			known[i] = uespLog.IsItemLinkBookKnown(itemLink)
+			known[i] = IsItemLinkBookKnown(itemLink)
 			
 			if (known[i]) then
 				knownCount = knownCount + 1
@@ -10097,7 +9896,7 @@ function uespLog.GetStyleKnown(styleName)
 		end
 	else
 		local itemLink = uespLog.MakeItemLink(motifId)
-		known = uespLog.IsItemLinkBookKnown(itemLink)
+		known = IsItemLinkBookKnown(itemLink)
 		knowAll = known	
 		knownCount = 14
 	end

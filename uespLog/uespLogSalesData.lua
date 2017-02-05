@@ -1216,21 +1216,35 @@ function uespLog.GetSalesPriceTip(itemLink, isChat)
 	end
 			
 	local msg = "UESP price ("
-	
-	if (countSold > 0) then
-		msg = msg .. tostring(countSold).." sold"
-	end
-	
+		
 	if (countListed > 0) then
+		
+		if (countListed >= 1000) then
+			msg = msg .. tostring(math.floor(countListed/1000)).."k listed"
+		else		
+			msg = msg .. tostring(countListed).." listed"
+		end
+		
 		if (countSold > 0) then
 			msg = msg .. ", "
 		end
-		
-		msg = msg .. tostring(countListed).." listed"
 	end
 	
+	if (countSold >= 1000) then
+		msg = msg .. tostring(math.floor(countSold/1000)).."k sold"
+	elseif (countSold > 0) then
+		msg = msg .. tostring(countSold).." sold"
+	end	
+	
 	if (itemCount > countSold + countListed) then
-		msg = msg .. ", "..tostring(itemCount).." items"
+	
+		if (itemCount >= 1000000) then
+			msg = msg .. ", "..tostring(math.floor(itemCount/1000000)).."M items"
+		elseif (itemCount >= 1000) then
+			msg = msg .. ", "..tostring(math.floor(itemCount/1000)).."k items"
+		else
+			msg = msg .. ", "..tostring(itemCount).." items"
+		end
 	end
 	
 	msg = msg .. "): " .. tostring(price)

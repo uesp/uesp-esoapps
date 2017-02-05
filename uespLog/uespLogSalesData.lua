@@ -851,7 +851,7 @@ function uespLog.StartGuildSearchSalesScanAll()
 	end
 	
 	if (GetNumTradingHouseGuilds() == 0) then
-		uespLog.Msg("You must be in the bank guild store in order to start a listing scan!")
+		uespLog.Msg("You must be in a guild store in order to start a listing scan!")
 		return
 	end
 	

@@ -388,7 +388,7 @@ function uespLog.SaveGuildPurchase(guildId, eventIndex)
 	logData.event = "GuildSale"
 	logData.type = eventType
 	logData.saleTimestamp = tostring(currentTimestamp - seconds)
-	logData.eventId = Id64ToString(eventId)
+	logData.eventId = tostring(eventId)
 	logData.seller = seller
 	logData.buyer = buyer
 	logData.qnt = qnt

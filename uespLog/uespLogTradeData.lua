@@ -531,12 +531,9 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 		-- Motifs
 	if (itemType == 8) then
 		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
-			local isKnown, isCertain = IsItemLinkBookKnown(itemLink)
+			local isKnown = IsItemLinkBookKnown(itemLink)
 			
-			if (not isCertain) then
-				itemText = ""
-				iconColor = uespLog.TRADE_KNOWN_COLOR
-			elseif (isKnown) then
+			if (isKnown) then
 				itemText = "Motif Known"
 				iconColor = uespLog.TRADE_KNOWN_COLOR
 			else
@@ -709,11 +706,9 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 		-- Motifs
 	if (itemType == 8) then
 		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
-			local isKnown, isCertain = IsItemLinkBookKnown(itemLink)
+			local isKnown = IsItemLinkBookKnown(itemLink)
 			
-			if (not isCertain) then
-				iconControl:SetHidden(true)		
-			elseif (isKnown) then
+			if (isKnown) then
 				iconControl:SetHidden(false)		
 				iconControl:SetTexture(uespLog.TRADE_KNOWN_TEXTURE)
 				iconControl:SetColor(unpack(uespLog.TRADE_KNOWN_COLOR))
@@ -1679,11 +1674,9 @@ function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
 		-- Motifs
 	if (itemType == 8) then
 		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
-			local isKnown, isCertain = IsItemLinkBookKnown(itemLink)
+			local isKnown = IsItemLinkBookKnown(itemLink)
 			
-			if (not isCertain) then
-				iconControl:SetHidden(true)		
-			elseif (isKnown) then
+			if (isKnown) then
 				iconControl:SetHidden(false)		
 				iconControl:SetTexture(uespLog.TRADE_KNOWN_TEXTURE)
 				iconControl:SetColor(unpack(uespLog.TRADE_KNOWN_COLOR))

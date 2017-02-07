@@ -647,7 +647,9 @@
 --				  will no longer display the open container showing remaining items.
 --				- Fixed known/unknown display of recipes.
 --				- Added the 4 new styles: Silken Ring, Mazzatun, Ra Gada, and Ebony
---		 
+--		
+--		- v1.01 -- ?
+--			- Fix motif unknown/known display.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -732,7 +734,7 @@
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "1.00"
+uespLog.version = "1.01"
 uespLog.releaseDate = "6 February 2017"
 uespLog.DATA_VERSION = 3
 
@@ -2912,8 +2914,6 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_CONFIRM_ITEM_PURCHASE, uespLog.OnTradingHouseConfirmPurchase)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_ERROR, uespLog.OnTradingHouseError)	
 	
-	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_EFFECT_CHANGED, uespLog.OnEffectChanged)	
-	
 		-- Note: This event is called up to 40-50 time for each kill with some weapons (Destruction Staff)
 	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOT_UPDATED, uespLog.OnActionSlotUpdated)	
 		
@@ -2944,7 +2944,7 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_POWER_UPDATE, uespLog.OnPowerUpdate)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SYNERGY_ABILITY_GAINED, uespLog.OnSynergyAbilityGained)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SYNERGY_ABILITY_LOST, uespLog.OnSynergyAbilityLost)
-	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_EFFECT_CHANGED, uespLog.OnEffectChanged)
+	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_EFFECT_CHANGED, uespLog.OnEffectChanged)		-- Is called a lot
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CHAT_MESSAGE_CHANNEL, uespLog.OnChatMessage)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_MAIL_TAKE_ATTACHED_ITEM_SUCCESS, uespLog.OnMailMessageTakeAttachedItem)
@@ -5176,9 +5176,15 @@ function uespLog.OnSynergyAbilityLost (eventCode, synergyBuffSlot)
 end
 
 
-function uespLog.OnEffectChanged (eventCode, changeType, effectSlot, effectName, unitTag, beginTime, endTime, stackCount, iconName, buffType, effectType, abilityType, statusEffectType)
+function uespLog.OnEffectChanged (eventCode, changeType, effectSlot, effectName, unitTag, beginTime, endTime, stackCount, iconName, buffType, effectType, abilityType, statusEffectType, unitName, unitId, abilityId)
+	-- (integer eventCode,number changeType, number effectSlot, string effectName, string unitTag, number beginTime, number endTime, number stackCount, string iconName, string buffType, number effectType, number abilityType, number statusEffectType)
 	--EVENT_EFFECT_CHANGED (integer changeType, integer effectSlot, string effectName, string unitTag, number beginTime, number endTime, integer stackCount, string iconName, string buffType, integer effectType, integer abilityType, integer statusEffectType)
-	uespLog.DebugExtraMsg("Effect Changed: "..effectName.." unit:"..unitTag.." type:"..changeType.."")
+	local playerUnitName = GetRawUnitName('player')
+	
+	--if (abilityId == 23998) then
+	--if (playerUnitName == unitName) then
+		uespLog.DebugExtraMsg("Effect Changed: "..tostring(abilityId)..":"..effectName.." unit:"..unitTag.." type:"..changeType.."  name:"..tostring(unitName).." id:"..tostring(unitId))
+	--end
 end
 
 
@@ -10469,9 +10475,16 @@ end
 
 function uespLog.OnPickpocketFailed(eventCode)
 	local logData = {}
+	local unitTag = "reticleover"
 	
 	logData.event = "PickpocketFailed"
 	logData.ppBonus, logData.ppIsHostile, logData.ppChance, logData.ppDifficulty, logData.ppEmpty, logData.ppResult, logData.ppClassString, logData.ppClass = GetGameCameraPickpocketingBonusInfo()
+	
+	logData.level = GetUnitLevel(unitTag)
+	logData.gender = GetUnitGender(unitTag)
+	logData.class = GetUnitClass(unitTag)   	-- Empty?
+	logData.race = GetUnitRace(unitTag)			-- Empty?
+	logData.difficulty = GetUnitDifficulty(unitTag)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetLastTargetData(), uespLog.GetTimeData())
 end
@@ -13855,15 +13868,6 @@ function uespLog.OpenInventoryContainer(bagId, slotIndex, itemLink)
 	
 	SCENE_MANAGER:Hide("inventory")
 	--zo_callLater(function() SCENE_MANAGER:Hide("inventory") end, 100)
-end
-
-
-function uespLog.OnEffectChanged(e, change, slot, auraName, unitTag, start, finish, stack, icon, buffType, effectType, abilityType, statusType, unitName, unitID, abilityID)
-
-	--if (auraName == "Ritual of Retribution" or auraName == "Blazing Spear") then
-		--uespLog.DebugMsg("EffectChanged: "..tostring(unitTag)..", "..tostring(abilityType)..", "..tostring(abilityID))
-	--end
-
 end
 
 

@@ -5177,13 +5177,33 @@ end
 
 
 function uespLog.OnEffectChanged (eventCode, changeType, effectSlot, effectName, unitTag, beginTime, endTime, stackCount, iconName, buffType, effectType, abilityType, statusEffectType, unitName, unitId, abilityId)
-	-- (integer eventCode,number changeType, number effectSlot, string effectName, string unitTag, number beginTime, number endTime, number stackCount, string iconName, string buffType, number effectType, number abilityType, number statusEffectType)
 	--EVENT_EFFECT_CHANGED (integer changeType, integer effectSlot, string effectName, string unitTag, number beginTime, number endTime, integer stackCount, string iconName, string buffType, integer effectType, integer abilityType, integer statusEffectType)
 	local playerUnitName = GetRawUnitName('player')
+	local tempData = uespLog.savedVars.tempData.data
+	local msg = ""
+	
+	msg = msg .. "'EffectChanged',"
+	msg = msg .. "'" .. tostring(GetGameTimeMilliseconds()) .. "',"
+	msg = msg .. "'" .. tostring(changeType) .. "',"
+	msg = msg .. "'" .. tostring(effectSlot) .. "',"
+	msg = msg .. "'" .. tostring(effectName) .. "',"
+	msg = msg .. "'" .. tostring(unitTag) .. "',"
+	msg = msg .. "'" .. tostring(beginTime) .. "',"
+	msg = msg .. "'" .. tostring(endTime) .. "',"
+	msg = msg .. "'" .. tostring(stackCount) .. "',"
+	msg = msg .. "'" .. tostring(iconName) .. "',"
+	msg = msg .. "'" .. tostring(buffType) .. "',"
+	msg = msg .. "'" .. tostring(effectType) .. "',"
+	msg = msg .. "'" .. tostring(abilityType) .. "',"
+	msg = msg .. "'" .. tostring(statusEffectType) .. "',"
+	msg = msg .. "'" .. tostring(unitName) .. "',"
+	msg = msg .. "'" .. tostring(unitId) .. "',"
+	msg = msg .. "'" .. tostring(abilityId)
+	tempData[#tempData + 1] = msg
 	
 	--if (abilityId == 23998) then
 	--if (playerUnitName == unitName) then
-		uespLog.DebugExtraMsg("Effect Changed: "..tostring(abilityId)..":"..effectName.." unit:"..unitTag.." type:"..changeType.."  name:"..tostring(unitName).." id:"..tostring(unitId))
+		--uespLog.DebugExtraMsg("Effect Changed: "..tostring(abilityId)..":"..effectName.." unit:"..unitTag.." type:"..changeType.."  name:"..tostring(unitName).." id:"..tostring(unitId))
 	--end
 end
 
@@ -5279,6 +5299,31 @@ end
 
 
 function uespLog.OnCombatEvent (eventCode, result, isError, abilityName, abilityGraphic, abilityActionSlotType, sourceName, sourceType, targetName, targetType, hitValue, powerType, damageType, isLogged, sourceUnitId, targetUnitId, abilityId)
+	
+	--[[
+	local msg = ""
+	local tempData = uespLog.savedVars.tempData.data
+	
+	msg = msg .. "'CombatEvent',"
+	msg = msg .. "'" .. tostring(GetGameTimeMilliseconds()) .. "',"
+	msg = msg .. "'" .. tostring(result) .. "',"
+	msg = msg .. "'" .. tostring(isError) .. "',"
+	msg = msg .. "'" .. tostring(abilityName) .. "',"
+	msg = msg .. "'" .. tostring(abilityGraphic) .. "',"
+	msg = msg .. "'" .. tostring(abilityActionSlotType) .. "',"
+	msg = msg .. "'" .. tostring(sourceName) .. "',"
+	msg = msg .. "'" .. tostring(sourceType) .. "',"
+	msg = msg .. "'" .. tostring(targetName) .. "',"
+	msg = msg .. "'" .. tostring(targetType) .. "',"
+	msg = msg .. "'" .. tostring(hitValue) .. "',"
+	msg = msg .. "'" .. tostring(powerType) .. "',"
+	msg = msg .. "'" .. tostring(damageType) .. "',"
+	msg = msg .. "'" .. tostring(isLogged) .. "',"
+	msg = msg .. "'" .. tostring(sourceUnitId) .. "',"
+	msg = msg .. "'" .. tostring(targetUnitId) .. "',"
+	msg = msg .. "'" .. tostring(abilityId)
+	tempData[#tempData + 1] = msg	
+	--]]
 
 	if (sourceType ~= COMBAT_UNIT_TYPE_PLAYER and targetType ~= COMBAT_UNIT_TYPE_PLAYER) then
 	

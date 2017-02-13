@@ -62,21 +62,20 @@ uespLog.SKILLCOEF_MECHANIC_NAMES = {
 uespLog.SKILLCOEF_SPECIALTYPES = {
 
 	-- NightBlade Grim Focus/Merciless Resolve/Relentless Focus
-	-- Game mechanic says Magicka but main damage seems to work like an ultimate
-	[61919] = POWERTYPE_ULTIMATE,
-	[62111] = POWERTYPE_ULTIMATE,
-	[62114] = POWERTYPE_ULTIMATE,
-	[62117] = POWERTYPE_ULTIMATE,
+	[61919] = POWERTYPE_MAGICKA,
+	[62111] = POWERTYPE_MAGICKA,
+	[62114] = POWERTYPE_MAGICKA,
+	[62117] = POWERTYPE_MAGICKA,
 	
-	[61927] = POWERTYPE_ULTIMATE,
-	[62099] = POWERTYPE_ULTIMATE,
-	[62103] = POWERTYPE_ULTIMATE,
-	[62107] = POWERTYPE_ULTIMATE,
+	[61927] = POWERTYPE_STAMAINA,
+	[62099] = POWERTYPE_STAMAINA,
+	[62103] = POWERTYPE_STAMAINA,
+	[62107] = POWERTYPE_STAMAINA,
 	
-	[61902] = POWERTYPE_ULTIMATE,
-	[62090] = POWERTYPE_ULTIMATE,
-	[64176] = POWERTYPE_ULTIMATE,
-	[62096] = POWERTYPE_ULTIMATE,
+	[61902] = POWERTYPE_MAGICKA,
+	[62090] = POWERTYPE_MAGICKA,
+	[64176] = POWERTYPE_MAGICKA,
+	[62096] = POWERTYPE_MAGICKA,
 	
 	-- NightBlade Soul Shred/Soul Tether/Soul Siphon
 	-- The health stealing portion seems to always use Spell Damage
@@ -201,10 +200,10 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	--[42655] = { [4] = POWERTYPE_HEALTH },
 	
 	-- Templar Repentance
-	[26821] = { [2] = POWERTYPE_ULTIMATE, [3] = POWERTYPE_ULTIMATE },
-	[27036] = { [2] = POWERTYPE_ULTIMATE, [3] = POWERTYPE_ULTIMATE },
-	[27040] = { [2] = POWERTYPE_ULTIMATE, [3] = POWERTYPE_ULTIMATE },
-	[27043] = { [2] = POWERTYPE_ULTIMATE, [3] = POWERTYPE_ULTIMATE },
+	[26821] = POWERTYPE_ULTIMATE,
+	[27036] = POWERTYPE_ULTIMATE,
+	[27040] = POWERTYPE_ULTIMATE,
+	[27043] = POWERTYPE_ULTIMATE,
 	
 	-- Templar Cleansing Ritual
 	[22265] = { [5] = POWERTYPE_ULTIMATE },
@@ -267,22 +266,22 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[34080] = { [2] = POWERTYPE_ULTIMATE },
 	
 	-- Dragonknight Standard
-	[28988] = { [3] = POWERTYPE_HEALTH },
-	[33955] = { [3] = POWERTYPE_HEALTH },
-	[33959] = { [3] = POWERTYPE_HEALTH },
-	[33963] = { [3] = POWERTYPE_HEALTH },
+	[28988] = { [5] = POWERTYPE_HEALTH },
+	[33955] = { [5] = POWERTYPE_HEALTH },
+	[33959] = { [5] = POWERTYPE_HEALTH },
+	[33963] = { [5] = POWERTYPE_HEALTH },
 	
 	-- Dragonknight Standard of Might	
-	[32947] = { [5] = POWERTYPE_HEALTH },
-	[34009] = { [5] = POWERTYPE_HEALTH },
-	[34015] = { [5] = POWERTYPE_HEALTH },
-	[34021] = { [5] = POWERTYPE_HEALTH },
+	[32947] = { [6] = POWERTYPE_HEALTH },
+	[34009] = { [6] = POWERTYPE_HEALTH },
+	[34015] = { [6] = POWERTYPE_HEALTH },
+	[34021] = { [6] = POWERTYPE_HEALTH },
 	
 	-- Dragonknight Shifting Standard	
-	[32958] = { [3] = POWERTYPE_HEALTH },	
-	[33967] = { [3] = POWERTYPE_HEALTH },
-	[33977] = { [3] = POWERTYPE_HEALTH },
-	[33987] = { [3] = POWERTYPE_HEALTH },
+	[32958] = { [5] = POWERTYPE_HEALTH },	
+	[33967] = { [5] = POWERTYPE_HEALTH },
+	[33977] = { [5] = POWERTYPE_HEALTH },
+	[33987] = { [5] = POWERTYPE_HEALTH },
 	
 	-- Dragonknight Choking Talons	
 	[20251] = { [5] = POWERTYPE_ULTIMATE },
@@ -301,6 +300,10 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[32114] = { [5] = POWERTYPE_ULTIMATE },
 	[32119] = { [5] = POWERTYPE_ULTIMATE },
 	[32123] = { [5] = POWERTYPE_ULTIMATE },
+	
+	-- Dragonknight Battle Roar
+	[29463] = { [1] = POWERTYPE_HEALTH, [2] = POWERTYPE_MAGICKA, [3] = POWERTYPE_STAMINA },
+	[44984] = { [1] = POWERTYPE_HEALTH, [2] = POWERTYPE_MAGICKA, [3] = POWERTYPE_STAMINA },
 		
 	-- Vampire Devouring Swarm
 	[38931] = { [3] = uespLog.UESP_POWERTYPE_SOULTETHER },
@@ -363,8 +366,8 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[45482] = { [2] = POWERTYPE_STAMINA, [6] = uespLog.UESP_POWERTYPE_WEAPONDAGGER },
 	
 	-- Light Armor Spell Warding	
-	[29663] = { [1] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
-	[45559] = { [1] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	[29663] = { [2] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	[45559] = { [2] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
 	
 	-- Light Armor Evocation	
 	[29639] = { [2] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
@@ -376,30 +379,30 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[45557] = { [2] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
 	
 	-- Medium Armor Dexterity	
-	[29743] = { [1] = uespLog.UESP_POWERTYPE_MEDIUMARMOR},
-	[45563] = { [1] = uespLog.UESP_POWERTYPE_MEDIUMARMOR},
-	[45564] = { [1] = uespLog.UESP_POWERTYPE_MEDIUMARMOR},
+	[29743] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR},
+	[45563] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR},
+	[45564] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR},
 	
 	-- Medium Armor Improved Sneak	
 	[29738] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR, [4] = uespLog.UESP_POWERTYPE_MEDIUMARMOR  },
 	[45567] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR, [4] = uespLog.UESP_POWERTYPE_MEDIUMARMOR  },
 	
 	-- Medium Armor Athletics	
-	[29742] = { [3] = uespLog.UESP_POWERTYPE_MEDIUMARMOR },
-	[45574] = { [3] = uespLog.UESP_POWERTYPE_MEDIUMARMOR },
+	[29742] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR, [4] = uespLog.UESP_POWERTYPE_MEDIUMARMOR },
+	[45574] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR, [4] = uespLog.UESP_POWERTYPE_MEDIUMARMOR },
 	
 	-- Medium Armor Wind Walker	
 	[29687] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR, [4] = uespLog.UESP_POWERTYPE_MEDIUMARMOR  },
 	[45565] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR, [4] = uespLog.UESP_POWERTYPE_MEDIUMARMOR  },
 		
 	-- Heavy Armor Resolve
-	[29825] = { [1] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
-	[45531] = { [1] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
-	[45533] = { [1] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[29825] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[45531] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[45533] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
 		
 	-- Heavy Armor Constitution
-	[29769] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR, [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
-	[45526] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR, [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[29769] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR, [5] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[45526] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR, [5] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
 		
 	-- Heavy Armor Juggernaut
 	-- Note that skill output is truncated to integer values so fit accuracy may be low
@@ -416,8 +419,8 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[45053] = uespLog.UESP_POWERTYPE_ASSASSINATION,	
 	
 	-- Nightblade Shadow Barrier	
-	[18866] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR, [3] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
-	[45071] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR, [3] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[18866] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR, [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[45071] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR, [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
 	
 	-- Soul Magic Soul Shatter
 	[39266] = { [2] = POWERTYPE_HEALTH},
@@ -432,8 +435,8 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[55676] = { [2] = POWERTYPE_HEALTH, [3] = POWERTYPE_STAMINA, [4] = POWERTYPE_MAGICKA },
 	
 	-- Destruction Tri Focus
-	[30948] = { [2] = POWERTYPE_HEALTH },
-	[45500] = { [2] = POWERTYPE_HEALTH },	
+	[30948] = { [4] = POWERTYPE_HEALTH },
+	[45500] = { [4] = POWERTYPE_HEALTH },	
 	
 	-- Two Handed Heavy Weapons
 	[29375] = { [3] = POWERTYPE_STAMINA },
@@ -501,6 +504,15 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[60783] = POWERTYPE_STAMINA,
 	[60786] = POWERTYPE_MAGICKA,
 	[60796] = POWERTYPE_MAGICKA,
+	
+	-- Sprint
+	[973] = POWERTYPE_STAMINA,
+	
+	-- Block
+	[14980] = POWERTYPE_STAMINA,
+	
+	-- Sneak
+	[20299] = POWERTYPE_STAMINA,
 	
 -- CP
 
@@ -1555,8 +1567,6 @@ function uespLog.CaptureSkillCoefData()
 				if (level == 0 or level == nil) then 
 					level = 1
 				end
-				
-				
 			
 				if (progressionIndex ~= nil and progressionIndex > 0) then
 					result = uespLog.SaveSkillCoefData(GetAbilityProgressionAbilityId(progressionIndex, 0, 1), 1)

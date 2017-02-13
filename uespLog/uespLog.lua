@@ -652,6 +652,7 @@
 --			- Fix motif unknown/known display.
 --			- Update skill coefficients for a few skills that had incorrect coefficient types.
 --			- Writ vouchers added to character data export.
+--			- Added the /offline and /online commands (short for "/afk offline" and "/afk online").
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -3095,6 +3096,8 @@ function uespLog.SetupSlashCommands()
 	uespLog.SetSlashCommand("/afk", uespLog.AfkCommand)
 	uespLog.SetSlashCommand("/away", uespLog.AwayCommand)
 	uespLog.SetSlashCommand("/back", uespLog.BackCommand)
+	uespLog.SetSlashCommand("/online", function() uespLog.AfkCommand("online") end)
+	uespLog.SetSlashCommand("/offline", function() uespLog.AfkCommand("offline") end)
 	uespLog.SetSlashCommand("/utl", SLASH_COMMANDS["/uesptrackloot"])
 	uespLog.SetSlashCommand("/ukd", SLASH_COMMANDS["/uespkilldata"])
 end

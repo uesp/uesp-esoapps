@@ -650,6 +650,7 @@
 --		
 --		- v1.01 -- ?
 --			- Fix motif unknown/known display.
+--			- Update skill coefficients for a few skills that had incorrect coefficient types.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.

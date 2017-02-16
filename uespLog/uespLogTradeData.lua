@@ -71,7 +71,7 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[39] 							 = "uespLog/images/minotaur.dds",			-- Oxblood Fungus, Minotaur, 39, /esoui/art/icons/crafting_style_item_minotaur_r2.dds
 	[16] 							 = "uespLog/images/akatosh.dds",			-- Pearl Sand, Akatosh, 16, /esoui/art/icons/crafting_style_item_orderoth_r2.dds
 	[45] 							 = "uespLog/images/dromothra.dds",			-- Defiled Whiskers, Dro-m'Athra, 45, /esoui/art/icons/crafting_style_item_dromothra_r2.dds
-	[58]							 = "uespLog/images/grimarlequin.dds",		-- Grinstone, Grim Arlequin, 57, /esoui/art/icons/crafting_style_item_harlequin_r2.dds
+	[58]							 = "uespLog/images/grimarlequin.dds",		-- Grinstone, Grim Arlequin, 58, /esoui/art/icons/crafting_style_item_harlequin_r2.dds
 	[59]							 = "uespLog/images/hollowjack.dds",			-- Amber Marble, Hollowjack, 59, /esoui/art/icons/crafting_style_item_hollowjack_r2.dds
 	[ITEMSTYLE_AREA_YOKUDAN] 		 = "uespLog/images/yokudan.dds",			-- Yokudan, Ferrous Salts, 35, /esoui/art/icons/crafting_humanoid_daedra_void_salts.dds
 	[27]							 = "uespLog/images/celestial.dds",			-- Celestial, Star Sapphires, 27, /esoui/art/icons/crafting_style_item_celestial_r2.dds
@@ -528,8 +528,21 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 	itemText = ""
 	iconColor = uespLog.TRADE_KNOWN_COLOR
 	
+		-- Recipes
+	if (itemType == ITEMTYPE_RECIPE) then
+		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
+		
+			if (IsItemLinkRecipeKnown(itemLink)) then
+				itemText = "Recipe Known"
+				iconColor = uespLog.TRADE_KNOWN_COLOR
+			else
+				itemText = "Recipe Unknown"
+				iconColor = uespLog.TRADE_UNKNOWN_COLOR
+			end
+		end
+		
 		-- Motifs
-	if (itemType == 8) then
+	elseif (itemType == 8) then
 		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
 			local isKnown = IsItemLinkBookKnown(itemLink)
 			

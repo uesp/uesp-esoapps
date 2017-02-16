@@ -12,6 +12,7 @@
 
 
 const std::string INPUT_FILENAME = "E:\\Temp\\testexport\\000\\498177_Uncompressed.dat";
+const std::string INPUT_FILENAME1 = "E:\\Temp\\testexport\\000\\497777_Uncompressed.dat";
 
 
 typedef unsigned int dword;
@@ -149,6 +150,12 @@ public:
 	}
 
 
+	void DumpHeaders (FILE* pOutput = stdout)
+	{
+		fprintf(pOutput, "%d = %s\n", m_Index2, m_Name.c_str());
+	}
+
+
 	dword  GetIndex() const { return m_Index2; }
 
 
@@ -247,6 +254,37 @@ public:
 		return true;
 	}
 
+
+	bool ReadHeaders(FILE* pFile)
+	{
+		dword Tmp;
+		word NameLength;
+
+		if (!ReadBigEndianDword(pFile, Tmp)) return false; //####
+		if (!ReadBigEndianDword(pFile, m_RecordIndex)) return false;
+		if (!ReadBigEndianDword(pFile, m_UncompressedSize1)) return false;
+		if (!ReadBigEndianDword(pFile, m_UncompressedSize2)) return false;
+		if (!ReadBigEndianDword(pFile, m_CompressedSize)) return false;
+		if (!ReadBigEndianDword(pFile, m_Index)) return false;
+		if (!ReadBigEndianDword(pFile, m_OrigFileOffset)) return false;
+		if (!ReadBigEndianDword(pFile, m_UncompressedSize)) return false;
+
+		fpos_t StartPos = ftell(pFile);
+
+		if (!ReadBigEndianDword(pFile, m_Index2)) return false;
+		if (!ReadBigEndianWord(pFile, NameLength)) return false;
+
+		char* pBuffer = new char[NameLength + 4];
+		if (fread(pBuffer, 1, NameLength + 1, pFile) != NameLength + 1) return ReportError("Failed to read %d bytes from file!", NameLength + 1);
+		m_Name = pBuffer;
+		delete[] pBuffer;
+
+		long offset = (long)StartPos + m_UncompressedSize;
+		fseek(pFile, offset, SEEK_SET);
+
+		return true;
+	}
+
 };
 
 
@@ -269,6 +307,15 @@ public:
 		for (auto &Record : m_Records)
 		{
 			Record.Dump(pOutput);
+		}
+	}
+
+
+	void DumpHeaders(FILE* pOutput = stdout)
+	{
+		for (auto &Record : m_Records)
+		{
+			Record.DumpHeaders(pOutput);
 		}
 	}
 
@@ -317,13 +364,38 @@ public:
 			m_Records.push_back(Record);
 		}
 
-
 		long LastOffset = ftell(pFile);
 		fseek(pFile, 0, SEEK_END);
 		long FileSize = ftell(pFile);
 
 		if (FileSize > LastOffset) ReportError("Warning: %d extra bytes left at end of file!", FileSize - LastOffset);
 		
+		return true;
+	}
+
+
+	bool ReadHeaders(FILE* pFile)
+	{
+		if (!ReadBigEndianDword(pFile, m_MagicBytes)) return false;
+		if (!ReadBigEndianDword(pFile, m_Unknown1)) return false;
+		if (!ReadBigEndianDword(pFile, m_NumRecords)) return false;
+		if (!ReadBigEndianDword(pFile, m_Unknown2)) return false;
+
+		for (dword i = 0; i < m_NumRecords; ++i)
+		{
+			CEsoDataTableRecord Record;
+
+			if (!Record.ReadHeaders(pFile)) return false;
+
+			m_Records.push_back(Record);
+		}
+
+		long LastOffset = ftell(pFile);
+		fseek(pFile, 0, SEEK_END);
+		long FileSize = ftell(pFile);
+
+		if (FileSize > LastOffset) ReportError("Warning: %d extra bytes left at end of file!", FileSize - LastOffset);
+
 		return true;
 	}
 
@@ -345,18 +417,30 @@ bool LoadTables(const std::string Filename)
 }
 
 
+bool LoadTableHeaders(const std::string Filename)
+{
+	FILE* pFile = fopen(Filename.c_str(), "rb");
+	if (pFile == nullptr) return ReportError("Failed to open '%s' for reading!", Filename.c_str());
+
+	g_DataTable.ReadHeaders(pFile);
+
+	fclose(pFile);
+	return true;
+}
+
+
 int main()
 {
 	
-	if (!LoadTables(INPUT_FILENAME)) 
+	if (!LoadTableHeaders(INPUT_FILENAME1))
 	{
 		ReportError("Failed to load file!");
 		return -1;
 	}
 
-	//g_DataTable.Dump();
-	g_DataTable.DumpPhp();
-	g_DataTable.DumpSummary();
+	g_DataTable.DumpHeaders();
+	//g_DataTable.DumpPhp();
+	//g_DataTable.DumpSummary();
 
     return 0;
 }

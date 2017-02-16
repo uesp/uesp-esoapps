@@ -10332,7 +10332,7 @@ end
 
 
 function uespLog.MakeItemLinkEx(itemData)
-	--     |H0:item:ID:SUBTYPE:LEVEL:ENCHANTID:ENCHANTSUBTYPE:ENCHANTLEVEL:WRIT1:WRIT2:WRIT3:WRIT4:WRIT5:WRIT6:0:0:0:STYLE:CRAFTED:BOUND:CHARGES:POTIONEFFECT|hNAME|h
+	--     |H0:item:ID:SUBTYPE:LEVEL:ENCHANTID:ENCHANTSUBTYPE:ENCHANTLEVEL:WRIT1:WRIT2:WRIT3:WRIT4:WRIT5:WRIT6:0:0:0:0:STYLE:CRAFTED:BOUND:CHARGES:POTIONEFFECT|hNAME|h
 	local itemId = itemData.itemId or 1
 	local itemLevel = itemData.level or 1
 	local itemQuality = itemData.quality or itemData.inttype or 1
@@ -10353,7 +10353,7 @@ function uespLog.MakeItemLinkEx(itemData)
 	
 	local itemLinkBase = "|H0:item:"..tostring(itemId)..":"..tostring(itemQuality)..":"..tostring(itemLevel)..":"..
 			tostring(enchantId)..":"..tostring(enchantQuality)..":"..tostring(enchantLevel)..":"..tostring(writ1)..":"..
-			tostring(writ2)..":"..tostring(writ3)..":"..tostring(writ4)..":"..tostring(writ5)..":"..tostring(writ6)..":0:0:0:0:0:"..
+			tostring(writ2)..":"..tostring(writ3)..":"..tostring(writ4)..":"..tostring(writ5)..":"..tostring(writ6)..":0:0:0:0:"..
 			tostring(style)..":"..tostring(crafted)..":"..tostring(bound)..":"..tostring(charges)..":"..tostring(potionEffect).."|h"
 		
 	local itemLink = itemLinkBase .. "|h"
@@ -14090,7 +14090,7 @@ SLASH_COMMANDS["/uesptestwrit"] = function (cmd)
 	itemData.writ4 = cmds[5]
 	itemData.writ5 = cmds[6]
 	itemData.writ6 = cmds[7]
-	itemData.writ7 = cmds[8]
+	itemData.vouchers = cmds[8]
 	
 	local itemLink = uespLog.MakeItemLinkEx(itemData)
 	

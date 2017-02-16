@@ -7288,6 +7288,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 	logData.reqCP = GetItemLinkRequiredChampionPoints(itemLink)
 	logData.value = GetItemLinkValue(itemLink, false)
 	logData.condition = GetItemLinkCondition(itemLink)
+	logData.useType = GetItemLinkItemUseType(itemLink)
 	logData.recipeRank = -1
 		
 	if (uespLog.MINEITEM_SHIELDARMORFACTOR ~= nil and uespLog.MINEITEM_SHIELDARMORFACTOR ~= 1 and logData.weaponType == 14) then
@@ -8460,7 +8461,10 @@ end
 
 
 function uespLog.IsValidItemLink (itemLink)
-	return (GetItemLinkItemType(itemLink) > 0)
+	local icon, sellPrice, meetsUsageRequirement, equipType, itemStyle = GetItemLinkInfo(itemLink)
+	
+	return not (icon == nil or icon == "")
+	--return (GetItemLinkItemType(itemLink) > 0)
 end
 
 
@@ -10387,7 +10391,7 @@ SLASH_COMMANDS["/uespmakelink"] = function (cmd)
 	
 	local icon, sellPrice, meetsUsageRequirement, equipType, itemStyle = GetItemLinkInfo(itemLink)
 
-	if (icon == nil or icon == "" or icon == "") then
+	if (icon == nil or icon == "") then
 		uespLog.Msg("Item "..tostring(itemId).." is not valid!")
 		return
 	end

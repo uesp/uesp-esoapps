@@ -10332,22 +10332,29 @@ end
 
 
 function uespLog.MakeItemLinkEx(itemData)
-	--     |H0:item:ID:SUBTYPE:LEVEL:ENCHANTID:ENCHANTSUBTYPE:ENCHANTLEVEL:0:0:0:0:0:0:0:0:0:STYLE:CRAFTED:BOUND:CHARGES:POTIONEFFECT|hNAME|h
+	--     |H0:item:ID:SUBTYPE:LEVEL:ENCHANTID:ENCHANTSUBTYPE:ENCHANTLEVEL:WRIT1:WRIT2:WRIT3:WRIT4:WRIT5:WRIT6:0:0:0:STYLE:CRAFTED:BOUND:CHARGES:POTIONEFFECT|hNAME|h
 	local itemId = itemData.itemId or 1
 	local itemLevel = itemData.level or 1
-	local itemQuality = itemData.quality or 1
+	local itemQuality = itemData.quality or itemData.inttype or 1
 	local enchantId = itemData.enchantId or 0
 	local enchantQuality = itemData.enchantQuality or 0
 	local enchantLevel = itemData.enchantLevel or 0
 	local style = itemData.style or 0
-	local potionEffect = itemData.potionEffect or 0
+	local potionEffect = itemData.potionEffect or itemData.vouchers or 0
 	local charges = itemData.charges or 0
 	local bound = itemData.bound or 0
 	local crafted = itemData.crafted or 0
+	local writ1 = itemData.writ1 or 0
+	local writ2 = itemData.writ2 or 0
+	local writ3 = itemData.writ3 or 0
+	local writ4 = itemData.writ4 or 0
+	local writ5 = itemData.writ5 or 0
+	local writ6 = itemData.writ6 or 0
 	
-	local itemLinkBase = "|H0:item:"..tostring(itemId)..":"..tostring(itemQuality)..":"..tostring(itemLevel)..":"
-			..tostring(enchantId)..":"..tostring(enchantQuality)..":"..tostring(enchantLevel)..":0:0:0:0:0:0:0:0:0:0:"
-			..tostring(style)..":"..tostring(crafted)..":"..tostring(bound)..":"..tostring(charges)..":"..tostring(potionEffect).."|h"
+	local itemLinkBase = "|H0:item:"..tostring(itemId)..":"..tostring(itemQuality)..":"..tostring(itemLevel)..":"..
+			tostring(enchantId)..":"..tostring(enchantQuality)..":"..tostring(enchantLevel)..":"..tostring(writ1)..":"..
+			tostring(writ2)..":"..tostring(writ3)..":"..tostring(writ4)..":"..tostring(writ5)..":"..tostring(writ6)..":0:0:0:0:0:"..
+			tostring(style)..":"..tostring(crafted)..":"..tostring(bound)..":"..tostring(charges)..":"..tostring(potionEffect).."|h"
 		
 	local itemLink = itemLinkBase .. "|h"
 	return itemLink
@@ -14069,3 +14076,24 @@ function uespLog.FindMinedItemNameChange()
 end
 
 
+
+SLASH_COMMANDS["/uesptestwrit"] = function (cmd)
+	local itemData = {}
+	local cmds, firstCmd = uespLog.SplitCommands(cmd)
+		
+	itemData.itemId = cmds[1]
+	itemData.inttype = 6
+	itemData.level = 1
+	itemData.writ1 = cmds[2]
+	itemData.writ2 = cmds[3]
+	itemData.writ3 = cmds[4]
+	itemData.writ4 = cmds[5]
+	itemData.writ5 = cmds[6]
+	itemData.writ6 = cmds[7]
+	itemData.writ7 = cmds[8]
+	
+	local itemLink = uespLog.MakeItemLinkEx(itemData)
+	
+	uespLog.Msg("UESP: Make test link ".. itemLink)
+	ZO_PopupTooltip_SetLink(itemLink)
+end

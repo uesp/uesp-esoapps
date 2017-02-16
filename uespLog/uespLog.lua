@@ -649,7 +649,8 @@
 --				- Added the 4 new styles: Silken Ring, Mazzatun, Ra Gada, and Ebony
 --		
 --		- v1.01 -- ?
---			- Fix motif unknown/known display.
+--			- Fixed motif unknown/known display.
+--			- Add recipe known display to tooltips.
 --			- Update skill coefficients for a few skills that had incorrect coefficient types.
 --			- Writ vouchers added to character data export.
 --			- Added the /offline and /online commands (short for "/afk offline" and "/afk online").

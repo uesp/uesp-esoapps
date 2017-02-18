@@ -654,6 +654,8 @@
 --			- Update skill coefficients for a few skills that had incorrect coefficient types.
 --			- Writ vouchers added to character data export.
 --			- Added the /offline and /online commands (short for "/afk offline" and "/afk online").
+--			- Added the "/uespmineitems itemtype" parameter to permit mining of specific item types. Tweaked output of
+--			  the item mining to better indicate how many valid items have been mined.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -1329,6 +1331,7 @@ uespLog.mineItemAutoRestart = false
 uespLog.mineItemAutoRestartOutputEnd = false
 uespLog.MINEITEM_AUTO_MAXITEMID = 130000
 uespLog.mineItemOnlySubType = -1
+uespLog.mineItemOnlyItemType = {}
 uespLog.mineItemOnlyLevel = -1
 uespLog.MINEITEM_QUALITYMAP_ITEMID = 47000
 uespLog.MINEITEM_IDCHECK_NUMITEMS = 5000
@@ -1411,6 +1414,7 @@ uespLog.DEFAULT_SETTINGS =
 		["mineItemAutoRestart"] = false,
 		["mineItemsEnabled"] = false,
 		["mineItemOnlySubType"] = -1,
+		["mineItemOnlyItemType"] = {},
 		["mineItemOnlyLevel"] = -1,
 		["mineItemPotionData"] = false,
 		["mineItemReloadDelay"] = uespLog.MINEITEM_AUTORELOAD_DELTATIMEMS,
@@ -2831,6 +2835,7 @@ function uespLog.Initialize( self, addOnName )
 	uespLog.mineItemsEnabled = uespLog.savedVars.settings.data.mineItemsEnabled or uespLog.mineItemsEnabled
 	uespLog.isAutoMiningItems = uespLog.savedVars.settings.data.isAutoMiningItems or uespLog.isAutoMiningItems
 	uespLog.mineItemOnlySubType = uespLog.savedVars.settings.data.mineItemOnlySubType or uespLog.mineItemOnlySubType
+	uespLog.mineItemOnlyItemType = uespLog.savedVars.settings.data.mineItemOnlyItemType or uespLog.mineItemOnlyItemType
 	uespLog.mineItemOnlyLevel = uespLog.savedVars.settings.data.mineItemOnlyLevel or uespLog.mineItemOnlyLevel
 	uespLog.mineItemPotionData = uespLog.savedVars.settings.data.mineItemPotionData or uespLog.mineItemPotionData
 	uespLog.mineItemReloadDelay = uespLog.savedVars.settings.data.mineItemReloadDelay or uespLog.mineItemReloadDelay
@@ -3690,6 +3695,10 @@ function uespLog.ShowItemInfo (itemLink)
 			local setBonusRequired, setBonusDesc = GetItemLinkSetBonusInfo(itemLink, NOT_EQUIPPED, i)
 			uespLog.MsgColor(uespLog.itemColor, ".       "..tostring(setBonusRequired)..": "..tostring(setBonusDesc))
 		end
+	end
+	
+	if (craftSkill == nil or craftSkill <= 0) then
+		craftSkill = GetItemLinkRecipeCraftingSkillType(itemLink)
 	end
 	
 	if (craftSkill ~= nil and craftSkill > 0) then
@@ -7213,21 +7222,36 @@ function uespLog.LogInventoryItem (bagId, slotIndex, event, extraData)
 end
 
 
-function uespLog.DoesItemChangeWithLevelQuality (itemId)
+function uespLog.DoesItemChangeWithLevelQuality (itemId, outputDiff)
 	local itemLink1 = uespLog.MakeItemLink(itemId, 1, 1)
-	local itemLink2 = uespLog.MakeItemLink(itemId, 50, 312)
+	local itemLink2 = uespLog.MakeItemLink(itemId, 50, 370)
 	local itemLog1 = uespLog.CreateItemLinkLog(itemLink1)
 	local itemLog2 = uespLog.CreateItemLinkLog(itemLink2)
+	local returnValue = false
 	
 	local itemDiff = uespLog.CompareItemLogs(itemLog1, itemLog2)
 	
+	if (outputDiff) then
+		uespLog.Msg("Comparing item data between "..tostring(itemLink1).." and "..tostring(itemLink2))
+	end
+	
 	for k, v in pairs(itemDiff) do
 		if (uespLog.ITEMCHANGE_IGNORE_FIELDS[k] == nil) then
-			return true
+		
+			if (outputDiff) then
+				uespLog.Msg(".    "..tostring(k))
+				returnValue = true
+			else
+				return true
+			end
 		end
 	end
+	
+	if (outputDiff and not returnValue) then
+		uespLog.Msg(".     No changes detected in item data!")
+	end
 		
-	return false
+	return returnValue
 end
 
 
@@ -7272,7 +7296,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 	local flavourText
 	local logData = { }
 	local _, _, itemId, internalLevel, _, _, _, internalSubType  = uespLog.ParseLinkID(itemLink)
-				
+	
 	logData.itemLink = itemLink
 		
 	logData.name = GetItemLinkName(itemLink)
@@ -7382,18 +7406,45 @@ function uespLog.CreateItemLinkLog (itemLink)
 	isConsumable = IsItemLinkConsumable(itemLink)
 	if (isConsumable) then flagString = flagString .. "Consumable " end
 	
+	runeKnown, logData.reagentTrait1 = GetItemLinkReagentTraitInfo(itemLink, 1)
+	runeKnown, logData.reagentTrait2 = GetItemLinkReagentTraitInfo(itemLink, 2)
+	runeKnown, logData.reagentTrait3 = GetItemLinkReagentTraitInfo(itemLink, 3)
+	runeKnown, logData.reagentTrait4 = GetItemLinkReagentTraitInfo(itemLink, 4)
+	
 	isRune = IsItemLinkEnchantingRune(itemLink)
 			
 	if (isRune) then
-		runeKnown, logData.runeName = GetItemLinkEnchantingRuneName() 
+		runeKnown, logData.runeName = GetItemLinkEnchantingRuneName(itemLink) 
 		logData.runeType = GetItemLinkEnchantingRuneClassification(itemLink)
 		logData.runeRank = GetItemLinkRequiredCraftingSkillRank(itemLink)		
 	end
 			
 	craftSkill = GetItemLinkCraftingSkillType(itemLink)
-	
+		
 	if (craftSkill > 0) then 
 		logData.craftSkill = craftSkill 
+	else
+		logData.craftSkill = GetItemLinkRecipeCraftingSkillType(itemLink)
+	end
+	
+	logData.refinedMatLink = GetItemLinkRefinedMaterialItemLink(itemLink)
+	logData.matLevelDesc = GetItemLinkMaterialLevelDescription(itemLink)
+	
+	if (logData.matLevelDesc == "" and logData.refinedMatLink ~= "") then
+		logData.matLevelDesc = GetItemLinkMaterialLevelDescription(logData.refinedMatLink)
+	end
+	
+	if (logData.refinedMatLink ~= "") then
+		logData.refinedMat = GetItemLinkName(logData.refinedMatLink)
+		logData.refinedMatLink = nil
+		
+		if (logData.refinedMat == "") then
+			logData.refinedMat = nil
+		end
+	end
+	
+	if (logData.matLevelDesc == "") then
+		logData.matLevelDesc = nil
 	end
 	
 	requiredQuality = GetItemLinkRecipeQualityRequirement(itemLink)
@@ -7451,7 +7502,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 	
 	craftSkillRank = GetItemLinkRequiredCraftingSkillRank(itemLink)
 	
-	if (craftSkillRank ~= nil and logData.recipeRank > 0) then
+	if (craftSkillRank ~= nil) then
 		logData.craftSkillRank = craftSkillRank
 	end
 		
@@ -7504,13 +7555,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 		end
 		
 	end
-	
-	local levelsDescription = GetItemLinkMaterialLevelDescription(itemLink)
-	
-	if (levelsDescription ~= nil and levelsDescription ~= "") then
-		logData.matLevelDesc = levelsDescription
-	end
-	
+		
 	bookTitle = GetItemLinkBookTitle(itemLink)
 	--logData.isBookKnown = IsItemLinkBookKnown(itemLink)
 	
@@ -8614,6 +8659,15 @@ function uespLog.MineItemIterate (itemId)
 		return 1, 0
 	end
 	
+	local itemLink = uespLog.MakeItemLink(itemId, 1, 1)
+	local itemType = GetItemLinkItemType(itemLink)
+	
+	if (uespLog.mineItemOnlyItemType[itemType] == nil) then
+		uespLog.mineItemCount = uespLog.mineItemCount + 1
+		uespLog.mineItemBadCount = uespLog.mineItemBadCount + 1
+		return 1, 0
+	end
+	
 	local changesWithLevel = uespLog.DoesItemChangeWithLevelQuality(itemId)
 	
 	if (changesWithLevel) then
@@ -8774,7 +8828,7 @@ function uespLog.MineItemIteratePotionData (effectIndex, realItemId, potionItemI
 	
 	uespLog.MsgColor(uespLog.mineColor, "UESP: Auto-mined "..tostring(setCount).." "..typeMsg.." data, "..
 				tostring(badCount).." bad, effect "..tostring(effectIndex)..
-				" (total "..tostring(uespLog.mineItemCount).." items)")	
+				" (total "..tostring(uespLog.mineItemCount - uespLog.mineItemBadCount).." items)")	
 
 	
 	return setCount, badCount
@@ -8799,6 +8853,12 @@ function uespLog.MineItems (startId, endId)
 	
 	if (uespLog.mineItemOnlySubType >= 0) then
 		uespLog.MsgColor(uespLog.mineColor, ".     Only mining items with internal type of "..tostring(uespLog.mineItemOnlySubType))
+	end
+	
+	local text = uespLog.implodeKeys(uespLog.mineItemOnlyItemType, ", ")
+	
+	if (text ~= "") then
+		uespLog.MsgColor(uespLog.mineColor, ".     Only mining items with item types of "..text)
 	end
 	
 	logData = { }
@@ -8884,7 +8944,7 @@ function uespLog.MineItemsAutoLoop ()
 	if (initItemId < uespLog.mineItemsAutoNextItemId) then
 		uespLog.MsgColor(uespLog.mineColor, "Auto-mined "..tostring(uespLog.mineItemCount - initItemCount).." items, "..
 				tostring(uespLog.mineItemBadCount - initBadCount).." bad, IDs "..tostring(initItemId).."-"..tostring(itemId)..
-				" (total "..tostring(uespLog.mineItemCount).." items)")	
+				" (total "..tostring(uespLog.mineItemCount - uespLog.mineItemBadCount).." items)")	
 	end
 end
 
@@ -8941,6 +9001,12 @@ function uespLog.MineItemsAutoStart ()
 		uespLog.MsgColor(uespLog.mineColor, ".     Only mining items with internal type of "..tostring(uespLog.mineItemOnlySubType))
 	end
 	
+	local text = uespLog.implodeKeys(uespLog.mineItemOnlyItemType, ", ")
+	
+	if (text ~= "") then
+		uespLog.MsgColor(uespLog.mineColor, ".     Only mining items with item types of "..text)
+	end
+	
 	zo_callLater(uespLog.MineItemsAutoLoop, uespLog.MINEITEMS_AUTODELAY)
 end
 
@@ -8962,6 +9028,7 @@ function uespLog.MineItemsOutputStartLog ()
 	logData.event = "mineItem::Start"
 	logData.onlySubType = uespLog.mineItemOnlySubType
 	logData.onlyLevel = uespLog.mineItemOnlyLevel
+	logData.onlyItemType = uespLog.implodeKeys(uespLog.mineItemOnlyItemType, ", ")
 	
 	if (uespLog.mineItemPotionData) then
 		logData.potionData = 1
@@ -9011,7 +9078,7 @@ function uespLog.MineItemsAutoEnd ()
 		uespLog.MsgColor(uespLog.mineColor, "Stopped auto-mining items at ID "..tostring(uespLog.mineItemsAutoNextItemId))
 	end
 	
-	uespLog.MsgColor(uespLog.mineColor, "Total auto-mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad")	
+	uespLog.MsgColor(uespLog.mineColor, "Total auto-mined "..tostring(uespLog.mineItemCount - uespLog.mineItemBadCount).." items, "..tostring(uespLog.mineItemBadCount).." bad")	
 end
 
 
@@ -9062,7 +9129,7 @@ function uespLog.MineItemsAutoStatus ()
 	
 	if (uespLog.isAutoMiningItems) then
 		uespLog.MsgColor(uespLog.mineColor, "Currently auto-mining items.")
-		uespLog.MsgColor(uespLog.mineColor, "Total auto-mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad")	
+		uespLog.MsgColor(uespLog.mineColor, "Total auto-mined "..tostring(uespLog.mineItemCount - uespLog.mineItemBadCount).." items, "..tostring(uespLog.mineItemBadCount).." bad")	
 		uespLog.MsgColor(uespLog.mineColor, "Auto-reload = "..tostring(uespLog.mineItemAutoReload)..",  auto-restart = "..tostring(uespLog.mineItemAutoRestart))	
 	else
 		uespLog.MsgColor(uespLog.mineColor, "Not currently auto-mining items.")
@@ -9081,6 +9148,12 @@ function uespLog.MineItemsAutoStatus ()
 		uespLog.MsgColor(uespLog.mineColor, "Only mining items with internal level "..tostring(uespLog.mineItemOnlyLevel)..".")
 	elseif (uespLog.mineItemOnlySubType >= 0) then
 		uespLog.MsgColor(uespLog.mineColor, "Only mining items with internal type of "..tostring(uespLog.mineItemOnlySubType)..".")
+	end
+	
+	local text = uespLog.implodeKeys(uespLog.mineItemOnlyItemType, ", ")
+	
+	if (text ~= "") then
+		uespLog.MsgColor(uespLog.mineColor, ".     Only mining items with item type of "..text)
 	end
 end
 
@@ -9325,12 +9398,35 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		
 		return
 	
+	elseif (command == "itemtype") then
+		uespLog.mineItemOnlyItemType = {}
+	
+		for i = 2, #cmds do
+			local number = tonumber(cmds[i])
+			
+			if (number ~= nil and number >= 0) then
+				uespLog.mineItemOnlyItemType[number] = 1
+			end
+		end
+		
+		uespLog.savedVars.settings.data.mineItemOnlyItemType = uespLog.mineItemOnlyItemType
+		local text = uespLog.implodeKeys(uespLog.mineItemOnlyItemType, ", ")
+		
+		if (text == "") then
+			uespLog.MsgColor(uespLog.mineColor, "Mining items with all item types.")
+		else
+			uespLog.MsgColor(uespLog.mineColor, "Only mining items with item type of "..text..".")
+		end
+		
+		return
+	
 	elseif (command == "quick") then
 		local option = string.lower(cmds[2])
 		
 		if (option == "on") then
 			uespLog.savedVars.settings.data.mineItemOnlySubType = uespLog.MINEITEM_ONLYSUBTYPE
 			uespLog.savedVars.settings.data.mineItemOnlyLevel = uespLog.MINEITEM_ONLYLEVEL
+			uespLog.savedVars.settings.data.mineItemOnlyItemType = {}
 			uespLog.MsgColor(uespLog.mineColor, "Only mining items with internal level "..tostring(uespLog.savedVars.settings.data.mineItemOnlyLevel).." and type "..tostring(uespLog.savedVars.settings.data.mineItemOnlySubType)..".")
 		elseif (option == "off") then
 			uespLog.MsgColor(uespLog.mineColor, "Mining items with all internal levels/types.")
@@ -9402,6 +9498,9 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems quick [on/off]")
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems potion [on/off]")
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems reloaddelay [number]")
+		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems level [#]")
+		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems subtype [#]")
+		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems itemtype [#] [#] ...")
 		
 		return
 	end
@@ -11063,6 +11162,29 @@ function uespLog.implode(tab, delim)
 		end
 		
         output = output .. tostring(v)
+		isFirst = false
+    end
+	
+    return output
+end
+
+
+function uespLog.implodeKeys(tab, delim)
+    local output = ""
+	local isFirst = true
+	local strDelim = tostring(delim)
+	
+	if (type(tab) ~= "table") then
+		return tostring(tab)
+	end
+	
+    for k, v in pairs(tab) do
+	
+		if (not isFirst) then
+			output = output .. strDelim
+		end
+		
+        output = output .. tostring(k)
 		isFirst = false
     end
 	

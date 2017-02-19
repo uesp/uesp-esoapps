@@ -503,7 +503,7 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 	local itemText = ""
 	local fontName = "ZoFontWinH5"
 	
-	if (itemStyleIcon ~= nil and (itemType == 1 or itemType == 2) and (equipType ~= 12 and equipType ~= 2) and uespLog.IsCraftStyleDisplay()) then
+	if (itemStyleIcon ~= nil and (itemType == 1 or itemType == 2) and (equipType ~= 12 and equipType ~= 2) and uespLog.IsCraftStyleDisplay("tooltip")) then
 		color1, color2, color3 = unpack(uespLog.TRADE_STYLE_COLOR)
 		ThisToolTip:AddLine("", "ZoFontWinH5", color1, color2, color3, BOTTOM, MODIFY_TEXT_TYPE_NONE)
 		ThisToolTip:AddLine("Item Style: "..tostring(itemStyleText), "ZoFontWinH4", color1, color2, color3, BOTTOM, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_CENTER)
@@ -512,7 +512,7 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 	
 	if (iconTexture ~= nil and tradeType ~= nil) then
 	
-		if (uespLog.IsCraftIngredientDisplay()) then
+		if (uespLog.IsCraftIngredientDisplay("tooltip")) then
 			itemText = uespLog.GetItemTradeTypeText(tradeType)
 			color1, color2, color3 = unpack(iconColor)
 		
@@ -530,7 +530,7 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 	
 		-- Recipes
 	if (itemType == ITEMTYPE_RECIPE) then
-		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
+		if (uespLog.IsCraftRecipeDisplay("tooltip") and uespLog.IsCraftDisplay()) then
 		
 			if (IsItemLinkRecipeKnown(itemLink)) then
 				itemText = "Recipe Known"
@@ -543,7 +543,7 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 		
 		-- Motifs
 	elseif (itemType == 8) then
-		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
+		if (uespLog.IsCraftRecipeDisplay("tooltip") and uespLog.IsCraftDisplay()) then
 			local isKnown = IsItemLinkBookKnown(itemLink)
 			
 			if (isKnown) then
@@ -574,7 +574,7 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 
 	local isResearchable = uespLog.CheckIsItemLinkResearchable(itemLink)
 	
-	if (isResearchable >= 0 and uespLog.IsCraftTraitDisplay()) then
+	if (isResearchable >= 0 and uespLog.IsCraftTraitDisplay("tooltip")) then
 		local isResearching = uespLog.IsResearchingItemLink(itemLink)
 	
 		if (isResearchable == uespLog.ORNATE_TRAIT_INDEX) then
@@ -681,7 +681,7 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 	styleIconControl:ClearAnchors()
 	styleIconControl:SetAnchor(CENTER, rowControl, CENTER, 85 + iconOffset)
 	
-	if (itemStyleIcon ~= nil and (itemType == 1 or itemType == 2) and (equipType ~= 12 and equipType ~= 2) and uespLog.IsCraftStyleDisplay()) then
+	if (itemStyleIcon ~= nil and (itemType == 1 or itemType == 2) and (equipType ~= 12 and equipType ~= 2) and uespLog.IsCraftStyleDisplay("inventory")) then
 		styleIconControl:SetHidden(false)		
 		styleIconControl:SetTexture(itemStyleIcon)
 		--iconControl:SetColor(unpack(uespLog.TRADE_KNOWN_COLOR))
@@ -689,7 +689,7 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 	
 	if (iconTexture ~= nil) then
 	
-		if (uespLog.IsCraftIngredientDisplay() and uespLog.IsCraftDisplay()) then
+		if (uespLog.IsCraftIngredientDisplay("inventory") and uespLog.IsCraftDisplay()) then
 			iconControl:SetHidden(false)		
 			iconControl:SetTexture(iconTexture)
 	
@@ -701,7 +701,7 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 	end
 	
 	if (itemType == ITEMTYPE_RECIPE) then
-		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
+		if (uespLog.IsCraftRecipeDisplay("inventory") and uespLog.IsCraftDisplay()) then
 			if (IsItemLinkRecipeKnown(itemLink)) then
 				iconControl:SetHidden(false)		
 				iconControl:SetTexture(uespLog.TRADE_KNOWN_TEXTURE)
@@ -718,7 +718,7 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 	
 		-- Motifs
 	if (itemType == 8) then
-		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
+		if (uespLog.IsCraftRecipeDisplay("inventory") and uespLog.IsCraftDisplay()) then
 			local isKnown = IsItemLinkBookKnown(itemLink)
 			
 			if (isKnown) then
@@ -746,7 +746,7 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 		return
 	end
 
-	if (uespLog.IsCraftTraitDisplay() and uespLog.IsCraftDisplay()) then
+	if (uespLog.IsCraftTraitDisplay("inventory") and uespLog.IsCraftDisplay()) then
 	
 		if (isResearchable == uespLog.ORNATE_TRAIT_INDEX) then
 			iconControl:SetHidden(false)		
@@ -1207,16 +1207,17 @@ end
 
 
 function uespLog.DisplayUespCraftHelp()
-	uespLog.Msg("/uespcraft on/off            -- Turns all crafting displays on/off")
-	uespLog.Msg("/uespcraft style on/off      -- Turns style display on/off")
-	uespLog.Msg("/uespcraft trait on/off      -- Turns trait display on/off")
-	uespLog.Msg("/uespcraft recipe on/off     -- Turns recipe display on/off")
-	uespLog.Msg("/uespcraft ingredient on/off -- Turns ingredient display on/off")
+	uespLog.Msg("/uespcraft [on||off]            -- Turns all crafting displays on/off")
+	uespLog.Msg("/uespcraft style [option]      -- Adjusts display of styles")
+	uespLog.Msg("/uespcraft trait [option]     -- Adjusts display of traits")
+	uespLog.Msg("/uespcraft recipe [option]     -- Adjusts display of recipe/motif status")
+	uespLog.Msg("/uespcraft ingredient [option] -- Adjust display of ingredient types")
+	uespLog.Msg(".             [option] = none || both || tooltip || inventory")
     uespLog.Msg("Craft display is "..uespLog.BoolToOnOff(uespLog.IsCraftDisplay()))
-	uespLog.Msg("Craft style display is "..uespLog.BoolToOnOff(uespLog.IsCraftStyleDisplay()))
-	uespLog.Msg("Craft trait display is "..uespLog.BoolToOnOff(uespLog.IsCraftTraitDisplay()))
-	uespLog.Msg("Craft recipe display is "..uespLog.BoolToOnOff(uespLog.IsCraftRecipeDisplay()))
-	uespLog.Msg("Craft ingredient display is "..uespLog.BoolToOnOff(uespLog.IsCraftIngredientDisplay()))
+	uespLog.Msg("Craft style display is "..uespLog.GetCraftStyleDisplay())
+	uespLog.Msg("Craft trait display is "..uespLog.GetCraftTraitDisplay())
+	uespLog.Msg("Craft recipe/motif display is "..uespLog.GetCraftRecipeDisplay())
+	uespLog.Msg("Craft ingredient display is "..uespLog.GetCraftIngredientDisplay())
 end
 
 
@@ -1250,42 +1251,143 @@ function uespLog.GetCraftAutoLootMinProvLevel()
 end
 
 
-function uespLog.IsCraftStyleDisplay()
-
+function uespLog.GetCraftStyleDisplay()
+	
 	if (uespLog.savedVars.settings == nil) then
 		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.craftStyle == nil) then
+		uespLog.savedVars.settings.data.craftStyle = uespLog.DEFAULT_SETTINGS.data.craftStyle
+	end
+	
+	if (uespLog.savedVars.settings.data.craftStyle == true) then
+		uespLog.savedVars.settings.data.craftStyle = "both"
+	elseif (uespLog.savedVars.settings.data.craftStyle == false) then
+		uespLog.savedVars.settings.data.craftStyle = "none"
 	end
 	
 	return uespLog.savedVars.settings.data.craftStyle
 end
 
 
-function uespLog.IsCraftRecipeDisplay()
+function uespLog.IsCraftStyleDisplay(value)
+	local display = uespLog.GetCraftStyleDisplay()
+	
+	if (value == nil) then
+		return display ~= "none"
+	end
+	
+	if (display == value or display == "both") then
+		return true
+	end
 
+	return false
+end
+
+
+function uespLog.GetCraftRecipeDisplay()
+	
 	if (uespLog.savedVars.settings == nil) then
 		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.craftRecipe == nil) then
+		uespLog.savedVars.settings.data.craftRecipe = uespLog.DEFAULT_SETTINGS.data.craftRecipe
+	end
+	
+	if (uespLog.savedVars.settings.data.craftRecipe == true) then
+		uespLog.savedVars.settings.data.craftRecipe = "both"
+	elseif (uespLog.savedVars.settings.data.craftRecipe == false) then
+		uespLog.savedVars.settings.data.craftRecipe = "none"
 	end
 	
 	return uespLog.savedVars.settings.data.craftRecipe
 end
 
 
-function uespLog.IsCraftTraitDisplay()
+function uespLog.IsCraftRecipeDisplay(value)
+	local display = uespLog.GetCraftRecipeDisplay()
+	
+	if (value == nil) then
+		return display ~= "none"
+	end
+	
+	if (display == value or display == "both") then
+		return true
+	end
 
+	return false
+end
+
+
+function uespLog.GetCraftTraitDisplay()
+	
 	if (uespLog.savedVars.settings == nil) then
 		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.craftTrait == nil) then
+		uespLog.savedVars.settings.data.craftTrait = uespLog.DEFAULT_SETTINGS.data.craftTrait
+	end
+	
+	if (uespLog.savedVars.settings.data.craftTrait == true) then
+		uespLog.savedVars.settings.data.craftTrait = "both"
+	elseif (uespLog.savedVars.settings.data.craftTrait == false) then
+		uespLog.savedVars.settings.data.craftTrait = "none"
 	end
 	
 	return uespLog.savedVars.settings.data.craftTrait
 end
 
-function uespLog.IsCraftIngredientDisplay()
 
+function uespLog.IsCraftTraitDisplay(value)
+	local display = uespLog.GetCraftTraitDisplay()
+	
+	if (value == nil) then
+		return display ~= "none"
+	end
+	
+	if (display == value or display == "both") then
+		return true
+	end
+
+	return false
+end
+
+
+function uespLog.GetCraftIngredientDisplay()
+	
 	if (uespLog.savedVars.settings == nil) then
 		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
 	end
 	
+	if (uespLog.savedVars.settings.data.craftIngredient == nil) then
+		uespLog.savedVars.settings.data.craftIngredient = uespLog.DEFAULT_SETTINGS.data.craftIngredient
+	end
+	
+	if (uespLog.savedVars.settings.data.craftIngredient == true) then
+		uespLog.savedVars.settings.data.craftIngredient = "both"
+	elseif (uespLog.savedVars.settings.data.craftIngredient == false) then
+		uespLog.savedVars.settings.data.craftIngredient = "none"
+	end
+	
 	return uespLog.savedVars.settings.data.craftIngredient
+end
+
+
+function uespLog.IsCraftIngredientDisplay(value)
+	local display = uespLog.GetCraftIngredientDisplay()
+	
+	if (value == nil) then
+		return display ~= "none"
+	end
+	
+	if (display == value or display == "both") then
+		return true
+	end
+
+	return false
 end
 
 
@@ -1384,51 +1486,60 @@ SLASH_COMMANDS["/uespcraft"] = function (cmd)
 	
 	if (cmdWords[1] == "recipe") then
 	
-		if (cmdWords[2] == "on") then
-			uespLog.SetCraftRecipeDisplay(true)
-			uespLog.Msg("Turned recipe display on")
-		elseif (cmdWords[2] == "off") then
-			uespLog.SetCraftRecipeDisplay(false)
-			uespLog.Msg("Turned recipe display off")
-		else
-			uespLog.Msg("Craft recipe display is "..uespLog.BoolToOnOff(uespLog.IsCraftRecipeDisplay()))
+		if (cmdWords[2] == "both") then
+			uespLog.SetCraftRecipeDisplay("both")
+		elseif (cmdWords[2] == "none") then
+			uespLog.SetCraftRecipeDisplay("none")
+		elseif (cmdWords[2] == "inventory") then
+			uespLog.SetCraftRecipeDisplay("inventory")
+		elseif (cmdWords[2] == "tooltip") then
+			uespLog.SetCraftRecipeDisplay("tooltip")
 		end
 		
+		uespLog.Msg("Craft recipe/motif display is "..uespLog.GetCraftRecipeDisplay())
+				
 	elseif (cmdWords[1] == "ingredient") then
 	
-		if (cmdWords[2] == "on") then
-			uespLog.SetCraftIngredientDisplay(true)
-			uespLog.Msg("Turned ingredient display on")
-		elseif (cmdWords[2] == "off") then
-			uespLog.SetCraftIngredientDisplay(false)
-			uespLog.Msg("Turned ingredient display off")
-		else
-			uespLog.Msg("Craft ingredient display is "..uespLog.BoolToOnOff(uespLog.IsCraftIngredientDisplay()))
+		if (cmdWords[2] == "both") then
+			uespLog.SetCraftIngredientDisplay("both")
+		elseif (cmdWords[2] == "none") then
+			uespLog.SetCraftIngredientDisplay("none")
+		elseif (cmdWords[2] == "inventory") then
+			uespLog.SetCraftIngredientDisplay("inventory")
+		elseif (cmdWords[2] == "tooltip") then
+			uespLog.SetCraftIngredientDisplay("tooltip")
 		end
+		
+		uespLog.Msg("Craft ingredient display is "..uespLog.GetCraftIngredientDisplay())		
 		
 	elseif (cmdWords[1] == "style") then
 	
-		if (cmdWords[2] == "on") then
-			uespLog.SetCraftStyleDisplay(true)
-			uespLog.Msg("Turned style display on")
-		elseif (cmdWords[2] == "off") then
-			uespLog.SetCraftStyleDisplay(false)
-			uespLog.Msg("Turned style display off")
-		else
-			uespLog.Msg("Craft style display is "..uespLog.BoolToOnOff(uespLog.IsCraftStyleDisplay()))
+		if (cmdWords[2] == "both") then
+			uespLog.SetCraftStyleDisplay("both")
+		elseif (cmdWords[2] == "none") then
+			uespLog.SetCraftStyleDisplay("none")
+		elseif (cmdWords[2] == "inventory") then
+			uespLog.SetCraftStyleDisplay("inventory")
+		elseif (cmdWords[2] == "tooltip") then
+			uespLog.SetCraftStyleDisplay("tooltip")
 		end
+		
+		uespLog.Msg("Craft style display is "..uespLog.GetCraftStyleDisplay())
+
 				
 	elseif (cmdWords[1] == "trait") then
 	
-		if (cmdWords[2] == "on") then
-			uespLog.SetCraftTraitDisplay(true)
-			uespLog.Msg("Turned trait display on")
-		elseif (cmdWords[2] == "off") then
-			uespLog.SetCraftTraitDisplay(false)
-			uespLog.Msg("Turned trait display off")
-		else
-			uespLog.Msg("Craft trait display is "..uespLog.BoolToOnOff(uespLog.IsCraftTraitDisplay()))
+		if (cmdWords[2] == "both") then
+			uespLog.SetCraftTraitDisplay("both")
+		elseif (cmdWords[2] == "none") then
+			uespLog.SetCraftTraitDisplay("none")
+		elseif (cmdWords[2] == "inventory") then
+			uespLog.SetCraftTraitDisplay("inventory")
+		elseif (cmdWords[2] == "tooltip") then
+			uespLog.SetCraftTraitDisplay("tooltip")
 		end
+		
+		uespLog.Msg("Craft trait display is "..uespLog.GetCraftTraitDisplay())
 		
 	elseif (cmdWords[1] == "autoloot") then
 		uespLog.Msg("Craft autoloot is deprecated since update #6")
@@ -1654,14 +1765,14 @@ function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
 	local itemType = GetItemLinkItemType(itemLink)
 	local equipType = GetItemLinkEquipType(itemLink)
 	
-	if (itemStyleIcon ~= nil and (itemType == 1 or itemType == 2) and (equipType ~= 12 and equipType ~= 2) and uespLog.IsCraftStyleDisplay()) then
+	if (itemStyleIcon ~= nil and (itemType == 1 or itemType == 2) and (equipType ~= 12 and equipType ~= 2) and uespLog.IsCraftStyleDisplay("inventory")) then
 		styleIconControl:SetHidden(false)		
 		styleIconControl:SetTexture(itemStyleIcon)
 	end
 	
 	local isResearchable = uespLog.CheckIsItemLinkResearchable(itemLink)
 
-	if (isResearchable >= 0 and uespLog.IsCraftTraitDisplay() and uespLog.IsCraftDisplay()) then
+	if (isResearchable >= 0 and uespLog.IsCraftTraitDisplay("inventory") and uespLog.IsCraftDisplay()) then
 	
 		if (isResearchable == uespLog.ORNATE_TRAIT_INDEX) then
 			iconControl:SetHidden(false)		
@@ -1686,7 +1797,7 @@ function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
 	
 		-- Motifs
 	if (itemType == 8) then
-		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
+		if (uespLog.IsCraftRecipeDisplay("inventory") and uespLog.IsCraftDisplay()) then
 			local isKnown = IsItemLinkBookKnown(itemLink)
 			
 			if (isKnown) then
@@ -1704,7 +1815,7 @@ function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
 	end
 	
 	if (iconTexture ~= nil) then
-		if (uespLog.IsCraftIngredientDisplay() and uespLog.IsCraftDisplay()) then
+		if (uespLog.IsCraftIngredientDisplay("inventory") and uespLog.IsCraftDisplay()) then
 			iconControl:SetHidden(false)		
 			iconControl:SetTexture(iconTexture)
 			iconControl:SetColor(unpack(iconColor))
@@ -1715,7 +1826,7 @@ function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
 	end
 	
 	if (itemType == ITEMTYPE_RECIPE) then
-		if (uespLog.IsCraftRecipeDisplay() and uespLog.IsCraftDisplay()) then
+		if (uespLog.IsCraftRecipeDisplay("inventory") and uespLog.IsCraftDisplay()) then
 			if (IsItemLinkRecipeKnown(itemLink)) then
 				iconControl:SetHidden(false)		
 				iconControl:SetTexture(uespLog.TRADE_KNOWN_TEXTURE)

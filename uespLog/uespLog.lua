@@ -656,6 +656,8 @@
 --			- Added the /offline and /online commands (short for "/afk offline" and "/afk online").
 --			- Added the "/uespmineitems itemtype" parameter to permit mining of specific item types. Tweaked output of
 --			  the item mining to better indicate how many valid items have been mined.
+--			- Changed the craft style, trait, recipe/motif, and ingredient display toggles to each individually control
+--			  whether they are displayed in inventory rows and/or item tooltips.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -1402,10 +1404,10 @@ uespLog.DEFAULT_SETTINGS =
 		["color"] = true,
 		["totalInspiration"] = 0,
 		["craft"] = true,
-		["craftStyle"] = true,
-		["craftTrait"] = true,
-		["craftRecipe"] = true,
-		["craftIngredient"] = true,
+		["craftStyle"] = "both",
+		["craftTrait"] = "both",
+		["craftRecipe"] = "both",
+		["craftIngredient"] = "both",
 		["craftAutoLoot"] = false,
 		["craftAutoLootMinProvLevel"] = 1,
 		["mailDeleteNotify"] = false,

@@ -266,38 +266,42 @@ function uespLog.InitOptionControlsData()
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "checkbox",
+		type = "dropdown",
+		choices = { "none", "tooltip", "inventory", "both" },
 		name = "Item Style Display",
 		tooltip = "Enable/disable the display of styles on items info\n     /uespcraft style on/off",
-		getFunc = function() return uespLog.IsCraftStyleDisplay() end,
-		setFunc = function(flag) return uespLog.SetCraftStyleDisplay(flag) end,
+		getFunc = function() return uespLog.GetCraftStyleDisplay() end,
+		setFunc = function(value) return uespLog.SetCraftStyleDisplay(value) end,
 		disabled = function() return not uespLog.IsCraftDisplay() end
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "checkbox",
+		type = "dropdown",
+		choices = { "none", "tooltip", "inventory", "both" },
 		name = "Item Trait Display",
 		tooltip = "Enable/disable the display of traits on items info\n     /uespcraft trait on/off",
-		getFunc = function() return uespLog.IsCraftTraitDisplay() end,
-		setFunc = function(flag) return uespLog.SetCraftTraitDisplay(flag) end,
+		getFunc = function() return uespLog.GetCraftTraitDisplay() end,
+		setFunc = function(value) return uespLog.SetCraftTraitDisplay(value) end,
 		disabled = function() return not uespLog.IsCraftDisplay() end
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "checkbox",
+		type = "dropdown",
+		choices = { "none", "tooltip", "inventory", "both" },
 		name = "Recipe Display",
 		tooltip = "Enable/disable the display of known/unknown on recipes\n     /uespcraft recipe on/off",
-		getFunc = function() return uespLog.IsCraftRecipeDisplay() end,
-		setFunc = function(flag) return uespLog.SetCraftRecipeDisplay(flag) end,
+		getFunc = function() return uespLog.GetCraftRecipeDisplay() end,
+		setFunc = function(value) return uespLog.SetCraftRecipeDisplay(value) end,
 		disabled = function() return not uespLog.IsCraftDisplay() end
 	})
 	
 	uespLog.optionControlsData:insert({
-		type = "checkbox",
+		type = "dropdown",
+		choices = { "none", "tooltip", "inventory", "both" },
 		name = "Ingredient Display",
 		tooltip = "Enable/disable the display of ingredient information\n     /uespcraft ingredient on/off",
-		getFunc = function() return uespLog.IsCraftIngredientDisplay() end,
-		setFunc = function(flag) return uespLog.SetCraftIngredientDisplay(flag) end,
+		getFunc = function() return uespLog.GetCraftIngredientDisplay() end,
+		setFunc = function(value) return uespLog.SetCraftIngredientDisplay(value) end,
 		disabled = function() return not uespLog.IsCraftDisplay() end
 	})
 	

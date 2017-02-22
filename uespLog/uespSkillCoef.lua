@@ -34,6 +34,13 @@ uespLog.UESP_POWERTYPE_WEAPONDAGGER  = -54
 uespLog.UESP_POWERTYPE_ARMORTYPE     = -55
 uespLog.UESP_POWERTYPE_DAMAGE        = -56
 uespLog.UESP_POWERTYPE_ASSASSINATION = -57
+uespLog.UESP_POWERTYPE_FIGHTERSGUILD = -58
+uespLog.UESP_POWERTYPE_DRACONICPOWER = -59
+uespLog.UESP_POWERTYPE_SHADOW = -60
+uespLog.UESP_POWERTYPE_SIPHONING = -61
+uespLog.UESP_POWERTYPE_SORCERER = -62
+uespLog.UESP_POWERTYPE_MAGESGUILD = -63
+uespLog.UESP_POWERTYPE_SUPPORT = -64
 
 uespLog.SKILLCOEF_CHECK_ABILITYID = 28302
 uespLog.SKILLCOEF_CHECK_INDEX = 2
@@ -55,6 +62,13 @@ uespLog.SKILLCOEF_MECHANIC_NAMES = {
 	[uespLog.UESP_POWERTYPE_ARMORTYPE] = "Armor Types",
 	[uespLog.UESP_POWERTYPE_DAMAGE] = "Spell + Weapon Damage",
 	[uespLog.UESP_POWERTYPE_ASSASSINATION] = "Assassination Skills Slotted",
+	[uespLog.UESP_POWERTYPE_FIGHTERSGUILD] = "Fighters Guild Skills Slotted",
+	[uespLog.UESP_POWERTYPE_DRACONICPOWER] = "Draconic Power Skills Slotted",
+	[uespLog.UESP_POWERTYPE_SHADOW] = "Shadow Skills Slotted",
+	[uespLog.UESP_POWERTYPE_SIPHONING] = "Siphoning Skills Slotted",
+	[uespLog.UESP_POWERTYPE_SORCERER] = "Sorcerer Skills Slotted",
+	[uespLog.UESP_POWERTYPE_MAGESGUILD] = "Mages Guild Skills Slotted",
+	[uespLog.UESP_POWERTYPE_SUPPORT] = "Support Skills Slotted",
 }
 
 
@@ -123,6 +137,10 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[42268] = POWERTYPE_HEALTH,
 	[42273] = POWERTYPE_HEALTH,
 	[42278] = POWERTYPE_HEALTH,
+	
+	-- Mages Guild Magicka Controller
+	[40438] = uespLog.UESP_POWERTYPE_MAGESGUILD,
+	[45603] = uespLog.UESP_POWERTYPE_MAGESGUILD,
 	
 	-- Undaunted Inner Fire/Inner Rage/Inner Beast
 	-- Numbers 4/6 seem to work like ultimates
@@ -198,6 +216,11 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	--[42647] = { [4] = POWERTYPE_HEALTH },
 	--[42651] = { [4] = POWERTYPE_HEALTH },
 	--[42655] = { [4] = POWERTYPE_HEALTH },
+	
+	-- Fighters Guild Slayer
+	[35803] = { [2] = uespLog.UESP_POWERTYPE_FIGHTERSGUILD },
+	[45595] = { [2] = uespLog.UESP_POWERTYPE_FIGHTERSGUILD },
+	[45596] = { [2] = uespLog.UESP_POWERTYPE_FIGHTERSGUILD },	
 	
 	-- Templar Repentance
 	[26821] = POWERTYPE_ULTIMATE,
@@ -304,6 +327,10 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	-- Dragonknight Battle Roar
 	[29463] = { [1] = POWERTYPE_HEALTH, [2] = POWERTYPE_MAGICKA, [3] = POWERTYPE_STAMINA },
 	[44984] = { [1] = POWERTYPE_HEALTH, [2] = POWERTYPE_MAGICKA, [3] = POWERTYPE_STAMINA },
+	
+	-- Dragonknight Elder Dragon
+	[29460] = { [2] = uespLog.UESP_POWERTYPE_DRACONICPOWER },
+	[44951] = { [2] = uespLog.UESP_POWERTYPE_DRACONICPOWER },
 		
 	-- Vampire Devouring Swarm
 	[38931] = { [3] = uespLog.UESP_POWERTYPE_SOULTETHER },
@@ -335,6 +362,10 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[46616] = { [3] = POWERTYPE_MAGICKA },
 	[46619] = { [3] = POWERTYPE_MAGICKA },
 	[46622] = { [3] = POWERTYPE_MAGICKA },
+	
+	-- Alliance Support Magicka Aid
+	[39255] = { [2] = uespLog.UESP_POWERTYPE_SUPPORT },
+	[45622] = { [2] = uespLog.UESP_POWERTYPE_SUPPORT },
 	
 	-- Light Armor Dampen Magic
 	[39186] = { [4] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
@@ -416,11 +447,19 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	
 	-- Nightblade Pressure Points
 	[36636] = uespLog.UESP_POWERTYPE_ASSASSINATION,
-	[45053] = uespLog.UESP_POWERTYPE_ASSASSINATION,	
+	[45053] = uespLog.UESP_POWERTYPE_ASSASSINATION,
 	
 	-- Nightblade Shadow Barrier	
 	[18866] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR, [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
 	[45071] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR, [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	
+	-- Nightblade Dark Vigor
+	[36532] = { [2] = uespLog.UESP_POWERTYPE_SHADOW },
+	[45084] = { [2] = uespLog.UESP_POWERTYPE_SHADOW },
+	
+	-- Nightblade Soul Siphoner
+	[36603] = { [2] = uespLog.UESP_POWERTYPE_SIPHONING },
+	[45155] = { [2] = uespLog.UESP_POWERTYPE_SIPHONING },
 	
 	-- Soul Magic Soul Shatter
 	[39266] = { [2] = POWERTYPE_HEALTH},
@@ -445,6 +484,10 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	-- Sorcerer Disintegrate/Implosion
 	[31422] = { [3] = POWERTYPE_HEALTH, [6] = POWERTYPE_HEALTH },
 	[45192] = { [3] = POWERTYPE_HEALTH, [6] = POWERTYPE_HEALTH },
+	
+	-- Sorcerer Expert Mage
+	[31425] = { [2] = uespLog.UESP_POWERTYPE_SORCERER },
+	[45195] = { [2] = uespLog.UESP_POWERTYPE_SORCERER },
 	
 	-- Templar Burning Light	
 	--[31718] = { [2] = POWERTYPE_ULTIMATE },
@@ -2052,6 +2095,12 @@ function uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 		x = skill.hea
 		y = 0
 	elseif (mechanic == uespLog.UESP_POWERTYPE_ASSASSINATION) then
+		x = 0	-- TODO - Actually count skills
+		y = 0		
+	elseif (mechanic == uespLog.UESP_POWERTYPE_FIGHTERSGUILD) then
+		x = 0	-- TODO - Actually count skills
+		y = 0		
+	elseif (mechanic == uespLog.UESP_POWERTYPE_SHADOW) then
 		x = 0	-- TODO - Actually count skills
 		y = 0		
 	end

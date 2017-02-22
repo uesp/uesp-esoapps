@@ -113,7 +113,6 @@ uespLog.CHARDATA_CRAFTSTYLE_NAMES = {
 	'Dark Brotherhood',
 	"Abah's Watch",
 	'Draugr',
-	'Akatosh',
 	'Skinchanger',
 	'Stalhrim',
 	'Silken Ring',

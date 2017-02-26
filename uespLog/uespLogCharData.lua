@@ -109,7 +109,7 @@ uespLog.CHARDATA_CRAFTSTYLE_NAMES = {
 	"Assassins League",
 	'Celestial',
 	'Hollowjack',
-	'Grim Arlequin',
+	'Grim Harlequin',
 	'Dark Brotherhood',
 	"Abah's Watch",
 	'Draugr',

@@ -658,6 +658,7 @@
 --			  the item mining to better indicate how many valid items have been mined.
 --			- Changed the craft style, trait, recipe/motif, and ingredient display toggles to each individually control
 --			  whether they are displayed in inventory rows and/or item tooltips.
+--			- Fixed style Grim Harlequin from incorrectly showing as unknown in some cases.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -4255,7 +4256,7 @@ uespLog.ITEMSTYLES = {
 	[53] = "Stalhrim Frostcaster",
 	[56] = "Silken Ring",
 	[57] = "Mazzatun",
-	[58] = "Grim Arlequin",
+	[58] = "Grim Harlequin",
 	[59] = "Hollowjack",
 }
 
@@ -9853,6 +9854,8 @@ uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
 		-- Witches Festival
 	["grim arlequin"] = 58,
 	["grim_arlequin"] = 58,
+	["grim harlequin"] = 58,
+	["grim_harlequin"] = 58,
 	["grim"] = 58,
 	["hollowjack"] = 59,
 	["hollow"] = 59,
@@ -9974,6 +9977,8 @@ uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
 			-- Witches Festival
 	["grim arlequin"] = { 82039, 82040, 82041, 82042, 82043, 82044, 82045, 82046, 82047, 82048, 82049, 82050, 82051, 82052 }, -- 82038, 82053
 	["grim_arlequin"] = { 82039, 82040, 82041, 82042, 82043, 82044, 82045, 82046, 82047, 82048, 82049, 82050, 82051, 82052 }, -- 82038, 82053
+	["grim harlequin"] = { 82039, 82040, 82041, 82042, 82043, 82044, 82045, 82046, 82047, 82048, 82049, 82050, 82051, 82052 }, -- 82038, 82053
+	["grim_harlequin"] = { 82039, 82040, 82041, 82042, 82043, 82044, 82045, 82046, 82047, 82048, 82049, 82050, 82051, 82052 }, -- 82038, 82053
 	["grim"] = { 82039, 82040, 82041, 82042, 82043, 82044, 82045, 82046, 82047, 82048, 82049, 82050, 82051, 82052 }, -- 82038, 82053
 	["hollowjack"] = { 82023, 82024, 82025, 82026, 82027, 82028, 82029, 82030, 82031, 82032, 82033, 82034, 82035, 82036 }, -- 82022, 82037
 	["hollow"] = { 82023, 82024, 82025, 82026, 82027, 82028, 82029, 82030, 82031, 82032, 82033, 82034, 82035, 82036 }, -- 82022, 82037

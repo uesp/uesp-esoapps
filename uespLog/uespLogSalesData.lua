@@ -12,6 +12,7 @@
 
 uespLog.SALES_FIRSTSCAN_DELAYMS = 3000
 uespLog.SALES_SCAN_DELAY = 1500
+uespLog.SALESSCAN_EXTRADELAY = 200
 uespLog.NewGuildSales = 0
 uespLog.SalesCurrentGuildIndex = 1
 uespLog.SalesStartEventIndex = 1
@@ -35,6 +36,11 @@ uespLog.SalesGuildSearchScanFinishIndex = 0
 uespLog.SalesGuildSearchScanAllGuilds = false 
 uespLog.SalesGuildSearchScanGuildId = 1
 uespLog.SalesGuildSearchScanGuildCount = 0
+
+uespLog.SalesLastSearchCooldownGameTime = 0
+uespLog.SalesLastSearchCooldownUpdate = false
+uespLog.SalesLastSearchCooldownCount = 0
+uespLog.SalesLastSearchCooldownMaxCount = 10
 
 uespLog.SalesPrices = nil
 uespLog.SalesPricesVersion = 0
@@ -579,6 +585,16 @@ function uespLog.OnTradingHouseError(event, errorCode)
 end
 
 
+function uespLog.OnTradingHouseSearchCooldownUpdate(event, cooldown)
+	uespLog.DebugExtraMsg("OnTradingHouseSearchCooldownUpdate " .. tostring(cooldown))
+	
+	if (cooldown <= 0) then
+		uespLog.SalesLastSearchCooldownUpdate = true
+		uespLog.SalesLastSearchCooldownGameTime = GetGameTimeMilliseconds()
+	end
+end
+
+
 function uespLog.OnTradingHouseResponseReceived(event, responseType, result)
 	--TRADING_HOUSE_RESULT_CANCEL_SALE_PENDING
 	--TRADING_HOUSE_RESULT_PURCHASE_PENDING
@@ -870,6 +886,16 @@ end
 
 function uespLog.StartGuildSearchSalesScanNextGuild()
 	local guildId, guildName = GetCurrentTradingHouseGuildDetails()
+	local cooldown = GetTradingHouseCooldownRemaining()
+	
+	if (cooldown > 0 or not uespLog.SalesLastSearchCooldownUpdate) then
+		uespLog.SalesLastSearchCooldownCount = uespLog.SalesLastSearchCooldownCount + 1
+		
+		if (uespLog.SalesLastSearchCooldownCount < uespLog.SalesLastSearchCooldownMaxCount) then
+			zo_callLater(uespLog.StartGuildSearchSalesScanNextGuild, GetTradingHouseCooldownRemaining() + uespLog.SALESSCAN_EXTRADELAY)	
+			return
+		end
+	end	
 		
 	uespLog.SalesGuildSearchScanGuildId = uespLog.SalesGuildSearchScanGuildId + 1
 	uespLog.SalesGuildSearchScanStarted = false
@@ -891,7 +917,6 @@ function uespLog.StartGuildSearchSalesScanNextGuild()
 	
 	uespLog.StartGuildSearchSalesScan()
 end
-
 
 
 function uespLog.StartGuildSearchSalesScanPage(startPage)
@@ -944,6 +969,8 @@ function uespLog.StartGuildSearchSalesScan(startPage)
 		
 	uespLog.SalesGuildSearchScanListTimestamp = GetTimeStamp()
 		
+	uespLog.SalesLastSearchCooldownUpdate = false
+	uespLog.SalesLastSearchCooldownCount = 0
 	ClearAllTradingHouseSearchTerms()
 	ExecuteTradingHouseSearch(startPage, TRADING_HOUSE_SORT_EXPIRY_TIME, false)
 end
@@ -975,19 +1002,20 @@ function uespLog.OnGuildSearchScanItemsReceived(guildId, numItemsOnPage, current
 		salesConfig.guildListTimes[guildName] = uespLog.SalesGuildSearchScanListTimestamp
 		
 		if (uespLog.SalesGuildSearchScanAllGuilds) then
-			zo_callLater(uespLog.StartGuildSearchSalesScanNextGuild, GetTradingHouseCooldownRemaining() + 400)	
+			zo_callLater(uespLog.StartGuildSearchSalesScanNextGuild, GetTradingHouseCooldownRemaining() + uespLog.SALESSCAN_EXTRADELAY)	
 		end
 		
 		return
 	end
 		
-	zo_callLater(uespLog.DoNextGuildListingScan, GetTradingHouseCooldownRemaining() + 400)	
+	zo_callLater(uespLog.DoNextGuildListingScan, GetTradingHouseCooldownRemaining() + uespLog.SALESSCAN_EXTRADELAY)	
 	
 	uespLog.DebugMsg("Scanning "..tostring(guildName)..": Logged "..numItemsOnPage.." items on page "..uespLog.SalesGuildSearchScanPage..".")	
 end
 
 
 function uespLog.DoNextGuildListingScan()
+	local cooldown = GetTradingHouseCooldownRemaining()
 
 	if (GetNumTradingHouseGuilds() == 0) then
 		uespLog.Msg("Scan Aborted! You must be on a guild trader in order to perform a listing scan.")
@@ -995,6 +1023,17 @@ function uespLog.DoNextGuildListingScan()
 		return
 	end
 	
+	if (cooldown > 0 or not uespLog.SalesLastSearchCooldownUpdate) then
+		uespLog.SalesLastSearchCooldownCount = uespLog.SalesLastSearchCooldownCount + 1
+		
+		if (uespLog.SalesLastSearchCooldownCount < uespLog.SalesLastSearchCooldownMaxCount) then
+			zo_callLater(uespLog.DoNextGuildListingScan, GetTradingHouseCooldownRemaining() + uespLog.SALESSCAN_EXTRADELAY)	
+			return
+		end
+	end
+	
+	uespLog.SalesLastSearchCooldownUpdate = false
+	uespLog.SalesLastSearchCooldownCount = 0
 	ExecuteTradingHouseSearch(uespLog.SalesGuildSearchScanPage, TRADING_HOUSE_SORT_EXPIRY_TIME, false)
 end
 

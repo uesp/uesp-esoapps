@@ -659,6 +659,7 @@
 --			- Changed the craft style, trait, recipe/motif, and ingredient display toggles to each individually control
 --			  whether they are displayed in inventory rows and/or item tooltips.
 --			- Fixed style Grim Harlequin from incorrectly showing as unknown in some cases.
+--			- Fixed the error that occasionally would stop a guild listing scan before it was actually finished.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -2925,7 +2926,8 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_GUILD_HISTORY_RESPONSE_RECEIVED, uespLog.OnGuildHistoryResponseReceived)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_CONFIRM_ITEM_PURCHASE, uespLog.OnTradingHouseConfirmPurchase)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_ERROR, uespLog.OnTradingHouseError)	
-	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_SEARCH_COOLDOWN_UPDATE, uespLog.OnTradingHouseSearchCooldownUpdate)	
+		
 		-- Note: This event is called up to 40-50 time for each kill with some weapons (Destruction Staff)
 	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOT_UPDATED, uespLog.OnActionSlotUpdated)	
 		
@@ -10176,24 +10178,36 @@ function uespLog.ShowStyleSummary()
 	local totalKnown = 0
 	local totalUnknown = 0
 	local validStyles = 0
-			
+	local styleData = {}
+				
 	uespLog.MsgColor(uespLog.craftColor, "Showing summary for all styles:")
 	
 	for i = 1, numStyles do
 		local styleItemName, _, _, _, itemStyle = GetSmithingStyleItemInfo(i)
 		local styleName = GetString("SI_ITEMSTYLE", itemStyle)
-		local known, knownCount = uespLog.GetStyleKnown(styleName)
+		
+		if (styleItemName ~= "" and styleName ~= "") then 
+			styleData[#styleData + 1] = { ["name"] = styleName, ["style"] = itemStyle }
+		end
+	end
+	
+	table.sort(styleData, function (a, b) return a.name < b.name end)
+	
+	for i, data in ipairs(styleData) do
+		local styleName = data.name
+		local itemStyle = data.style
+		local known, knownCount = uespLog.GetStyleKnown(styleName)	
 		
 		if (styleItemName ~= "" and styleName ~= "") then 
 			totalKnown = totalKnown + knownCount
 			totalUnknown = totalUnknown + 14 - knownCount
 			validStyles = validStyles + 1
 		
-			uespLog.Msg(".    "..itemStyle..") "..tostring(styleName).." = "..knownCount.."/14")			
+			uespLog.MsgColor(uespLog.craftColor, ".    "..tostring(styleName).." (" .. itemStyle .. ") = "..knownCount.."/14")			
 		end
 	end
 	
-	uespLog.Msg("You know a total of "..totalKnown.."/"..tostring(14*validStyles).." possible style chapters")
+	uespLog.MsgColor(uespLog.craftColor, "You know a total of "..totalKnown.."/"..tostring(14*validStyles).." possible style chapters")
 end
 
 

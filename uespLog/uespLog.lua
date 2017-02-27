@@ -660,6 +660,7 @@
 --			  whether they are displayed in inventory rows and/or item tooltips.
 --			- Fixed style Grim Harlequin from incorrectly showing as unknown in some cases.
 --			- Fixed the error that occasionally would stop a guild listing scan before it was actually finished.
+--			- "/uespcount recipes" now shows counts per recipe categories.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -8252,27 +8253,62 @@ function uespLog.GetRecipeCounts()
 	local numRecipeLists = GetNumRecipeLists()
 	local recipeCount = 0
 	local knownCount = 0
+	local knownData = {}
+	
+	knownData["Food Recipes"] = {}
+	knownData["Food Recipes"].name = "Food/Drink Recipes"
+	knownData["Food Recipes"].known = 0
+	knownData["Food Recipes"].count = 0
+	
+	knownData["Furniture Recipes"] = {}
+	knownData["Furniture Recipes"].name = "Furniture Recipes"
+	knownData["Furniture Recipes"].known = 0
+	knownData["Furniture Recipes"].count = 0
 	
 	for recipeListIndex = 1, numRecipeLists do
 		local name, numRecipes, upIcon, downIcon, overIcon, disabledIcon, createSound = GetRecipeListInfo(recipeListIndex)
 		
 		for recipeIndex = 1, numRecipes do
 			local known = GetRecipeInfo(recipeListIndex, recipeIndex)
+			local category = "Food Recipes"
+			
+			if (recipeListIndex >= 17) then
+				category = "Furniture Recipes"
+			end
+			
 			recipeCount = recipeCount + 1
+			
+			if (knownData[name] == nil) then
+				knownData[name] = {}
+				knownData[name].name = name
+				knownData[name].count = 0
+				knownData[name].known = 0
+			end
+			
+			knownData[name].count = knownData[name].count + 1
+			knownData[category].count = knownData[category].count + 1
 			
 			if (known) then
 				knownCount = knownCount + 1
-			end
+				knownData[name].known = knownData[name].known + 1
+				knownData[category].known = knownData[category].known + 1
+			end			
+			
 		end
 	end
 	
-	return recipeCount, knownCount
+	return recipeCount, knownCount, knownData
 end
 
 	
 function uespLog.CountRecipes()
-	local recipeCount, knownCount = uespLog.GetRecipeCounts()
-	uespLog.MsgColor(uespLog.countColor, "You know "..tostring(knownCount).."/"..tostring(recipeCount).." recipes.")	
+	local recipeCount, knownCount, knownData = uespLog.GetRecipeCounts()
+	
+	for specialType, data in pairs(knownData) do
+		uespLog.MsgColor(uespLog.countColor, "You know "..tostring(data.known).."/"..tostring(data.count).." "..data.name.." recipes.")
+	end
+	
+	uespLog.MsgColor(uespLog.countColor, "You know "..tostring(knownCount).."/"..tostring(recipeCount).." recipes.")
 end
 
 

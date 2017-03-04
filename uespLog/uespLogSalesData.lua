@@ -888,6 +888,13 @@ function uespLog.StartGuildSearchSalesScanNextGuild()
 	local guildId, guildName = GetCurrentTradingHouseGuildDetails()
 	local cooldown = GetTradingHouseCooldownRemaining()
 	
+	if (GetNumTradingHouseGuilds() == 0) then
+		uespLog.Msg("Scan Aborted! You must be on a guild trader in order to perform a listing scan.")
+		uespLog.SalesGuildSearchScanStarted = false
+		uespLog.SalesGuildSearchScanAllGuilds = false
+		return
+	end
+	
 	if (cooldown > 0 or not uespLog.SalesLastSearchCooldownUpdate) then
 		uespLog.SalesLastSearchCooldownCount = uespLog.SalesLastSearchCooldownCount + 1
 		
@@ -971,6 +978,7 @@ function uespLog.StartGuildSearchSalesScan(startPage)
 		
 	uespLog.SalesLastSearchCooldownUpdate = false
 	uespLog.SalesLastSearchCooldownCount = 0
+	
 	ClearAllTradingHouseSearchTerms()
 	ExecuteTradingHouseSearch(startPage, TRADING_HOUSE_SORT_EXPIRY_TIME, false)
 end
@@ -1034,6 +1042,7 @@ function uespLog.DoNextGuildListingScan()
 	
 	uespLog.SalesLastSearchCooldownUpdate = false
 	uespLog.SalesLastSearchCooldownCount = 0
+	
 	ExecuteTradingHouseSearch(uespLog.SalesGuildSearchScanPage, TRADING_HOUSE_SORT_EXPIRY_TIME, false)
 end
 

@@ -648,7 +648,7 @@
 --				- Fixed known/unknown display of recipes.
 --				- Added the 4 new styles: Silken Ring, Mazzatun, Ra Gada, and Ebony
 --		
---		- v1.01 -- ?
+--		- v1.01 -- 4 March 2017
 --			- Fixed motif unknown/known display.
 --			- Add recipe known display to tooltips.
 --			- Update skill coefficients for a few skills that had incorrect coefficient types.
@@ -659,7 +659,8 @@
 --			- Changed the craft style, trait, recipe/motif, and ingredient display toggles to each individually control
 --			  whether they are displayed in inventory rows and/or item tooltips.
 --			- Fixed style Grim Harlequin from incorrectly showing as unknown in some cases.
---			- Fixed the error that occasionally would stop a guild listing scan before it was actually finished.
+--			- Mostly fixed the error that occasionally would stop a guild listing scan before it was actually finished.
+--			  It still rarely occurs but much less often than previously.
 --			- "/uespcount recipes" now shows counts per recipe categories.
 --
 --		Future Versions (Works in Progress)
@@ -746,7 +747,7 @@
 uespLog = { }
 
 uespLog.version = "1.01"
-uespLog.releaseDate = "6 February 2017"
+uespLog.releaseDate = "4 March 2017"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

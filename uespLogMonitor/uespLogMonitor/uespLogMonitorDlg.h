@@ -1,5 +1,6 @@
 #pragma once
 #include "afxcmn.h"
+#include "../../common/EsoCommon.h"
 
 
 	/* Type of name to use for logging */
@@ -136,6 +137,7 @@ protected:
 	std::string		m_CurrentCharacterName;
 
 	UINT_PTR		m_TimerId;
+	UINT_PTR		m_FileMonitorTimerId;
 
 	CUlmLogDataArray	m_LogGlobalData;
 	CUlmLogDataArray	m_LogAchievementData;
@@ -159,6 +161,11 @@ protected:
 
 	std::string					m_CharData;
 	int							m_CharDataCount;
+
+	ULONGLONG	m_LastLogCheck;
+
+	bool    m_EnableFileMonitor;
+	HANDLE	m_hFileMonitor;
 
 
 public:
@@ -187,6 +194,8 @@ protected:
 	void DestroyTimer ();
 	void CreateTimer ();
 	void OnLogCheckTimer();
+	void OnCheckFileMonitorTimer();
+	void OnFileMonitorUpdate();
 
 	void ClearLogData ();
 
@@ -237,6 +246,9 @@ protected:
 	bool CheckAndSendLogDataAchievement();
 	bool SendAllLogData();
 
+	void InitializeFileMonitor(void);
+	void StopFileMonitor(void);
+
 	bool CheckAndSendBuildData();
 	bool CheckAndSendCharData();
 	bool QueueBuildData();
@@ -247,7 +259,7 @@ protected:
 	bool BackupLogData (const std::string Section, const ulm_sectiondata_t Data);
 	bool SendQueuedData ();
 	std::string EncodeLogDataForQuery (const std::string Data);
-	bool SendFormData (const std::string FormURL, std::string FormQuery);
+	bool SendFormData (const std::string FormURL, std::string FormQuery, bool Compress, size_t& SentSize);
 	bool HasQueuedData (void) { return m_SendQueue.size() > 0; }
 
 	std::string GetCurrentUserName ();
@@ -295,6 +307,8 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg void OnBnClickedButton1();
 
+	BOOL PreTranslateMessage(MSG* pMsg);
+
 	DECLARE_MESSAGE_MAP()
 
 public:
@@ -302,11 +316,11 @@ public:
 	virtual BOOL DestroyWindow();
 	afx_msg void OnFileExit();
 	CRichEditCtrl m_LogText;
-	afx_msg void OnCancel();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnViewOptions();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnFileSendotherlog();
 	afx_msg void OnFileChecklognow();
 	afx_msg void OnBnClickedChecknowButton();
+	virtual void OnOK();
 };

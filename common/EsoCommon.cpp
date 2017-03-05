@@ -133,7 +133,7 @@ bool ReadWord(FILE* pFile, word& Output, const bool IsBigEndian)
 }
 
 
-bool InflateZlibBlock (byte* pOutputData, size_t &OutputSize, const size_t MaxOutputSize, byte* pInputData, const size_t InputSize, const bool Quiet)
+bool InflateZlibBlock (byte* pOutputData, size_t &OutputSize, const size_t MaxOutputSize, const byte* pInputData, const size_t InputSize, const bool Quiet)
 {
 	z_stream Stream;
 	int Result;
@@ -150,7 +150,7 @@ bool InflateZlibBlock (byte* pOutputData, size_t &OutputSize, const size_t MaxOu
 	Stream.avail_in = InputSize;
 	Stream.avail_out = MaxOutputSize;
 	Stream.next_out = pOutputData;
-	Stream.next_in = pInputData;
+	Stream.next_in = (byte *)pInputData;
 
 		/* Decompress until deflate stream ends or end of block data */
 	do {
@@ -179,7 +179,7 @@ bool InflateZlibBlock (byte* pOutputData, size_t &OutputSize, const size_t MaxOu
 }
 
 
-bool InflateSnappyBlock (byte* pOutputData, size_t &OutputSize, const size_t MaxOutputSize, byte* pInputData, const size_t InputSize, const bool Quiet)
+bool InflateSnappyBlock (byte* pOutputData, size_t &OutputSize, const size_t MaxOutputSize, const byte* pInputData, const size_t InputSize, const bool Quiet)
 {
 	bool Result;
 	size_t RealOutputSize;
@@ -198,6 +198,54 @@ bool InflateSnappyBlock (byte* pOutputData, size_t &OutputSize, const size_t Max
 	if (!Result) Quiet ? false : PrintError("Error: Failed to decompress the Snappy data!");
 
 	OutputSize = RealOutputSize;
+	return true;
+}
+
+
+
+bool DeflateZlibBlock(byte* pOutputData, size_t &OutputSize, const size_t MaxOutputSize, const byte* pInputData, const size_t InputSize, const bool Quiet)
+{
+	z_stream Stream;
+	int Result;
+
+	Stream.zalloc = Z_NULL;
+	Stream.zfree = Z_NULL;
+	Stream.opaque = Z_NULL;
+	Stream.avail_in = 0;
+	Stream.next_in = Z_NULL;
+
+	Result = deflateInit(&Stream, -1);
+	if (Result != Z_OK) return Quiet ? false : PrintError("Error: Failed to initialize the zlib stream!");
+
+	Stream.avail_in = InputSize;
+	Stream.avail_out = MaxOutputSize;
+	Stream.next_out = pOutputData;
+	Stream.next_in = (byte *) pInputData;
+
+		/* Compress until stream ends or end of block data */
+	do {
+		Result = deflate(&Stream, Z_FINISH);
+
+		switch (Result) {
+		case Z_BUF_ERROR:
+			if (Stream.avail_out == 0) return Quiet ? false : PrintError("Error: No more output space available!");
+			Result = Z_STREAM_END;
+			break;
+		case Z_NEED_DICT:
+			Result = Z_DATA_ERROR;     /* and fall through */
+		case Z_DATA_ERROR:
+		case Z_MEM_ERROR:
+		case Z_STREAM_ERROR:
+			//case Z_BUF_ERROR:
+			OutputSize = Stream.total_out;
+			deflateEnd(&Stream);
+			return Quiet ? false : PrintError("Error: Failed to compress data stream!");
+		};
+
+	} while (Result != Z_STREAM_END);
+
+	OutputSize = Stream.total_out;
+	deflateEnd(&Stream);
 	return true;
 }
 

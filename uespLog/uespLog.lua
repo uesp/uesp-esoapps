@@ -665,6 +665,7 @@
 --
 --		- v1.02
 --			- Added the "/uespcraft alchemy on|off" command which turns on tooltips when in the alchemy crafting window.
+--			- Fixed UESP sales price not appearing in tooltips from top item rows.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -749,7 +750,7 @@
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "1.01"
+uespLog.version = "1.02"
 uespLog.releaseDate = "4 March 2017"
 uespLog.DATA_VERSION = 3
 

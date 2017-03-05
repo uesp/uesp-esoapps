@@ -1208,12 +1208,15 @@ end
 
 function uespLog.DisplayUespCraftHelp()
 	uespLog.Msg("/uespcraft [on||off]            -- Turns all crafting displays on/off")
+	uespLog.Msg("/uespcraft alchemy [on||off]   -- Turns tooltips on/off in alchemy crafting")
 	uespLog.Msg("/uespcraft style [option]      -- Adjusts display of styles")
 	uespLog.Msg("/uespcraft trait [option]     -- Adjusts display of traits")
 	uespLog.Msg("/uespcraft recipe [option]     -- Adjusts display of recipe/motif status")
 	uespLog.Msg("/uespcraft ingredient [option] -- Adjust display of ingredient types")
 	uespLog.Msg(".             [option] = none || both || tooltip || inventory")
+	
     uespLog.Msg("Craft display is "..uespLog.BoolToOnOff(uespLog.IsCraftDisplay()))
+	uespLog.Msg("Craft alchemy tooltip display is "..uespLog.BoolToOnOff(uespLog.GetCraftAlchemyTooltipDisplay()))
 	uespLog.Msg("Craft style display is "..uespLog.GetCraftStyleDisplay())
 	uespLog.Msg("Craft trait display is "..uespLog.GetCraftTraitDisplay())
 	uespLog.Msg("Craft recipe/motif display is "..uespLog.GetCraftRecipeDisplay())
@@ -1248,6 +1251,30 @@ function uespLog.GetCraftAutoLootMinProvLevel()
 	end
 	
 	return uespLog.savedVars.settings.data.craftAutoLootMinProvLevel
+end
+
+
+function uespLog.GetCraftAlchemyTooltipDisplay()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.alchemyTooltip == nil) then
+		uespLog.savedVars.settings.data.alchemyTooltip = uespLog.DEFAULT_SETTINGS.data.alchemyTooltip
+	end
+	
+	return uespLog.savedVars.settings.data.alchemyTooltip
+end
+
+
+function uespLog.SetCraftAlchemyTooltipDisplay(flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	uespLog.savedVars.settings.data.alchemyTooltip = flag
 end
 
 
@@ -1540,7 +1567,17 @@ SLASH_COMMANDS["/uespcraft"] = function (cmd)
 		end
 		
 		uespLog.Msg("Craft trait display is "..uespLog.GetCraftTraitDisplay())
+	
+	elseif (cmdWords[1] == "alchemy") then
+	
+		if (cmdWords[2] == "on") then
+			uespLog.SetCraftAlchemyTooltipDisplay(true)
+		elseif (cmdWords[2] == "off") then
+			uespLog.SetCraftAlchemyTooltipDisplay(false)
+		end
 		
+		uespLog.Msg("Craft alchemy tooltip display is "..uespLog.BoolToOnOff(uespLog.GetCraftAlchemyTooltipDisplay()))
+	
 	elseif (cmdWords[1] == "autoloot") then
 		uespLog.Msg("Craft autoloot is deprecated since update #6")
 	elseif (cmdWords[1] == "minprovlevel") then
@@ -1840,6 +1877,7 @@ function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
 	end
 	
 end
+
 
 
 

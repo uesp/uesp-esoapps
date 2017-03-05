@@ -2994,6 +2994,9 @@ function uespLog.Initialize( self, addOnName )
 	uespLog.Old_ZO_CharacterWindowStats_HideComparisonValues = ZO_CharacterWindowStats_HideComparisonValues
 	uespLog.Old_ZO_StatEntry_Keyboard_ShowComparisonValue = ZO_StatEntry_Keyboard.ShowComparisonValue
 	
+	uespLog.Old_ZO_InventorySlot_OnMouseEnter = ZO_InventorySlot_OnMouseEnter
+	ZO_InventorySlot_OnMouseEnter = uespLog.ZO_InventorySlot_OnMouseEnter
+		
 	if (uespLog.GetCustomStatDisplay()) then
 		if (uespLog.GetInventoryStatsConfig() == "off") then
 			uespLog.SetInventoryStatsConfig("on")
@@ -14256,7 +14259,6 @@ function uespLog.FindMinedItemNameChange()
 end
 
 
-
 SLASH_COMMANDS["/uesptestwrit"] = function (cmd)
 	local itemData = {}
 	local cmds, firstCmd = uespLog.SplitCommands(cmd)
@@ -14276,4 +14278,104 @@ SLASH_COMMANDS["/uesptestwrit"] = function (cmd)
 	
 	uespLog.Msg("UESP: Make test link ".. itemLink)
 	ZO_PopupTooltip_SetLink(itemLink)
+end
+
+
+uespLog.InventoryEnter = {
+ [SLOT_TYPE_CRAFTING_COMPONENT] =
+    {
+        function(inventorySlot)
+            if not ZO_CraftingUtils_IsPerformingCraftProcess() then
+                if SYSTEMS:IsShowing("alchemy") then
+                    return true, nil -- no tooltip, but keep mouseover behavior
+                end
+
+                local bag, index = ZO_Inventory_GetBagAndIndex(inventorySlot)
+                ItemTooltip:SetBagItem(bag, index)
+                if SCENE_MANAGER:IsShowing("enchanting") then
+                    ENCHANTING:OnMouseEnterCraftingComponent(bag, index)
+                end
+                return true, ItemTooltip
+            end
+        end
+    },
+}
+
+
+function uespLog.ZO_InventorySlot_OnMouseEnter(inventorySlot)
+
+	if (not SYSTEMS:IsShowing("alchemy")) then
+		return uespLog.Old_ZO_InventorySlot_OnMouseEnter(inventorySlot)
+	end
+	
+	local buttonPart = inventorySlot
+    local listPart
+    local multiIconPart
+
+    local controlType = inventorySlot:GetType()
+    if controlType == CT_CONTROL and buttonPart.slotControlType and buttonPart.slotControlType == "listSlot" then
+        listPart = inventorySlot
+        buttonPart = inventorySlot:GetNamedChild("Button")
+        multiIconPart = inventorySlot:GetNamedChild("MultiIcon")
+    elseif controlType == CT_BUTTON then
+        listPart = buttonPart:GetParent()
+    end
+
+    if inventorySlot.slotControlType == "listSlot" then
+        if((ZO_InventorySlot_GetStackCount(buttonPart) > 0) or (ZO_InventorySlot_GetStackCount(listPart) > 0)) then
+            if not buttonPart.animation then
+                buttonPart.animation = ANIMATION_MANAGER:CreateTimelineFromVirtual("IconSlotMouseOverAnimation", buttonPart)
+            end
+
+            buttonPart.animation:PlayForward()
+
+            if multiIconPart then
+                if not multiIconPart.animation then
+                    multiIconPart.animation = ANIMATION_MANAGER:CreateTimelineFromVirtual("IconSlotMouseOverAnimation", multiIconPart)
+                end
+
+                multiIconPart.animation:PlayForward()
+            end
+        end
+    end
+
+    InitializeTooltip(ItemTooltip)
+    InitializeTooltip(InformationTooltip)
+
+    SetListHighlightHidden(listPart, false)
+
+    local success, tooltipUsed = RunHandlers(uespLog.InventoryEnter, buttonPart)
+    if success then
+        if tooltipUsed == ItemTooltip and not NoComparisionTooltip[ZO_InventorySlot_GetType(buttonPart)] then
+            tooltipUsed:HideComparativeTooltips()
+            tooltipUsed:ShowComparativeTooltips()
+            ZO_PlayShowAnimationOnComparisonTooltip(ComparativeTooltip1)
+            ZO_PlayShowAnimationOnComparisonTooltip(ComparativeTooltip2)
+            
+            if inventorySlot.dataEntry then
+                local bagId = inventorySlot.dataEntry.data.bagId
+                local slotId = inventorySlot.dataEntry.data.slotIndex
+                ZO_CharacterWindowStats_ShowComparisonValues(bagId, slotId)
+            end
+        end
+
+        ItemTooltip:SetHidden(tooltipUsed ~= ItemTooltip)
+        InformationTooltip:SetHidden(tooltipUsed ~= InformationTooltip)
+        
+        if tooltipUsed then
+            if buttonPart.customTooltipAnchor then
+                buttonPart.customTooltipAnchor(tooltipUsed, buttonPart, ComparativeTooltip1, ComparativeTooltip2)
+            else
+                ZO_Tooltips_SetupDynamicTooltipAnchors(tooltipUsed, buttonPart.tooltipAnchor or buttonPart, ComparativeTooltip1, ComparativeTooltip2)
+            end
+        end
+
+        UpdateMouseoverCommand(buttonPart)
+        return true
+    else
+        ItemTooltip:SetHidden(true)
+        InformationTooltip:SetHidden(true)
+
+        return false
+    end
 end

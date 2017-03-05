@@ -155,7 +155,7 @@ BEGIN_MESSAGE_MAP(CuespLogMonitorDlg, CDialogEx)
 	ON_UPDATE_COMMAND_UI(ID_FILE_DELETEBUILDBACKUP, &CuespLogMonitorDlg::OnUpdateFileDeletebuildbackup)
 	ON_COMMAND(ID_FILE_DELETECHARBACKUP, &CuespLogMonitorDlg::OnFileDeletecharbackup)
 	ON_UPDATE_COMMAND_UI(ID_FILE_DELETECHARBACKUP, &CuespLogMonitorDlg::OnUpdateFileDeletecharbackup)
-	ON_MESSAGE(WM_KICKIDLE, OnKickIdle)
+	//ON_MESSAGE(WM_KICKIDLE, OnKickIdle)
 	ON_COMMAND(ID_VIEW_CHECKFILESIZES, &CuespLogMonitorDlg::OnViewCheckfilesizes)
 END_MESSAGE_MAP()
 
@@ -2045,13 +2045,13 @@ DWORD CuespLogMonitorDlg::SendQueueThreadProc()
 	while(!m_StopSendQueueThread)
 	{
 		SendQueuedDataThread();
-		//Sleep(100);
+		Sleep(100);
 
 		SendQueuedBuildDataThread();
-		//Sleep(100);
+		Sleep(100);
 
 		SendQueuedCharDataThread();
-		//Sleep(100);
+		Sleep(100);
 	}
 
 	return 0;
@@ -3257,6 +3257,11 @@ LRESULT CuespLogMonitorDlg::OnKickIdle(WPARAM, LPARAM)
 	{
 		CMenu* pSubMenu = pMainMenu->GetSubMenu(n);
 		cmdUI.m_nIndexMax = pSubMenu->GetMenuItemCount();
+
+		//MENUITEMINFO Info;
+		//pMainMenu->GetMenuItemInfo(n, &Info);
+		//if ((Info.fState & MFS_HILITE) == 0) continue;
+
 		for (UINT i = 0; i < cmdUI.m_nIndexMax; ++i)
 		{
 			cmdUI.m_nIndex = i;

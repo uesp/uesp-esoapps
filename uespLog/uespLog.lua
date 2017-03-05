@@ -663,6 +663,9 @@
 --			  It still rarely occurs but much less often than previously.
 --			- "/uespcount recipes" now shows counts per recipe categories.
 --
+--		- v1.02
+--			- Added the "/uespcraft alchemy on|off" command which turns on tooltips when in the alchemy crafting window.
+--
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
 --
@@ -1498,6 +1501,7 @@ uespLog.DEFAULT_SETTINGS =
 			},
 		},
 		["nirnSound"] = false,
+		["alchemyTooltip"] = false,
 	}
 }
 
@@ -2996,6 +3000,9 @@ function uespLog.Initialize( self, addOnName )
 	
 	uespLog.Old_ZO_InventorySlot_OnMouseEnter = ZO_InventorySlot_OnMouseEnter
 	ZO_InventorySlot_OnMouseEnter = uespLog.ZO_InventorySlot_OnMouseEnter
+
+	uespLog.Old_ZO_InventorySlot_OnMouseExit = ZO_InventorySlot_OnMouseExit
+	ZO_InventorySlot_OnMouseExit = uespLog.ZO_InventorySlot_OnMouseExit	
 		
 	if (uespLog.GetCustomStatDisplay()) then
 		if (uespLog.GetInventoryStatsConfig() == "off") then
@@ -14266,13 +14273,13 @@ SLASH_COMMANDS["/uesptestwrit"] = function (cmd)
 	itemData.itemId = cmds[1]
 	itemData.inttype = 6
 	itemData.level = 1
-	itemData.writ1 = cmds[2]
-	itemData.writ2 = cmds[3]
-	itemData.writ3 = cmds[4]
-	itemData.writ4 = cmds[5]
-	itemData.writ5 = cmds[6]
-	itemData.writ6 = cmds[7]
-	itemData.vouchers = cmds[8]
+	itemData.writ1 = cmds[2] or 0
+	itemData.writ2 = cmds[3] or 0
+	itemData.writ3 = cmds[4] or 0
+	itemData.writ4 = cmds[5] or 0
+	itemData.writ5 = cmds[6] or 0
+	itemData.writ6 = cmds[7] or 0
+	itemData.vouchers = cmds[8] or 1000
 	
 	local itemLink = uespLog.MakeItemLinkEx(itemData)
 	
@@ -14281,30 +14288,19 @@ SLASH_COMMANDS["/uesptestwrit"] = function (cmd)
 end
 
 
-uespLog.InventoryEnter = {
- [SLOT_TYPE_CRAFTING_COMPONENT] =
-    {
-        function(inventorySlot)
-            if not ZO_CraftingUtils_IsPerformingCraftProcess() then
-                if SYSTEMS:IsShowing("alchemy") then
-                    return true, nil -- no tooltip, but keep mouseover behavior
-                end
+function uespLog.ZO_InventorySlot_OnMouseExit(inventorySlot)
 
-                local bag, index = ZO_Inventory_GetBagAndIndex(inventorySlot)
-                ItemTooltip:SetBagItem(bag, index)
-                if SCENE_MANAGER:IsShowing("enchanting") then
-                    ENCHANTING:OnMouseEnterCraftingComponent(bag, index)
-                end
-                return true, ItemTooltip
-            end
-        end
-    },
-}
+	if (SYSTEMS:IsShowing("alchemy") and uespLog.GetCraftAlchemyTooltipDisplay()) then
+		ZO_PopupTooltip_Hide()	
+	end
+	
+	return uespLog.Old_ZO_InventorySlot_OnMouseExit(inventorySlot)
+end
 
 
 function uespLog.ZO_InventorySlot_OnMouseEnter(inventorySlot)
 
-	if (not SYSTEMS:IsShowing("alchemy")) then
+	if (not SYSTEMS:IsShowing("alchemy") or not uespLog.GetCraftAlchemyTooltipDisplay()) then
 		return uespLog.Old_ZO_InventorySlot_OnMouseEnter(inventorySlot)
 	end
 	
@@ -14321,61 +14317,18 @@ function uespLog.ZO_InventorySlot_OnMouseEnter(inventorySlot)
         listPart = buttonPart:GetParent()
     end
 
-    if inventorySlot.slotControlType == "listSlot" then
-        if((ZO_InventorySlot_GetStackCount(buttonPart) > 0) or (ZO_InventorySlot_GetStackCount(listPart) > 0)) then
-            if not buttonPart.animation then
-                buttonPart.animation = ANIMATION_MANAGER:CreateTimelineFromVirtual("IconSlotMouseOverAnimation", buttonPart)
-            end
-
-            buttonPart.animation:PlayForward()
-
-            if multiIconPart then
-                if not multiIconPart.animation then
-                    multiIconPart.animation = ANIMATION_MANAGER:CreateTimelineFromVirtual("IconSlotMouseOverAnimation", multiIconPart)
-                end
-
-                multiIconPart.animation:PlayForward()
-            end
-        end
-    end
-
-    InitializeTooltip(ItemTooltip)
-    InitializeTooltip(InformationTooltip)
-
-    SetListHighlightHidden(listPart, false)
-
-    local success, tooltipUsed = RunHandlers(uespLog.InventoryEnter, buttonPart)
-    if success then
-        if tooltipUsed == ItemTooltip and not NoComparisionTooltip[ZO_InventorySlot_GetType(buttonPart)] then
-            tooltipUsed:HideComparativeTooltips()
-            tooltipUsed:ShowComparativeTooltips()
-            ZO_PlayShowAnimationOnComparisonTooltip(ComparativeTooltip1)
-            ZO_PlayShowAnimationOnComparisonTooltip(ComparativeTooltip2)
-            
-            if inventorySlot.dataEntry then
-                local bagId = inventorySlot.dataEntry.data.bagId
-                local slotId = inventorySlot.dataEntry.data.slotIndex
-                ZO_CharacterWindowStats_ShowComparisonValues(bagId, slotId)
-            end
-        end
-
-        ItemTooltip:SetHidden(tooltipUsed ~= ItemTooltip)
-        InformationTooltip:SetHidden(tooltipUsed ~= InformationTooltip)
-        
-        if tooltipUsed then
-            if buttonPart.customTooltipAnchor then
-                buttonPart.customTooltipAnchor(tooltipUsed, buttonPart, ComparativeTooltip1, ComparativeTooltip2)
-            else
-                ZO_Tooltips_SetupDynamicTooltipAnchors(tooltipUsed, buttonPart.tooltipAnchor or buttonPart, ComparativeTooltip1, ComparativeTooltip2)
-            end
-        end
-
-        UpdateMouseoverCommand(buttonPart)
-        return true
-    else
-        ItemTooltip:SetHidden(true)
-        InformationTooltip:SetHidden(true)
-
-        return false
-    end
+ 	local slotIndex = buttonPart.slotIndex
+	local bagId = buttonPart.bagId
+	
+	if (slotIndex ~= nil and bagId ~= nil) then
+		local itemLink = GetItemLink(bagId, slotIndex)
+		
+		if (PopupTooltip.lastLink ~= itemLink) then
+			ZO_PopupTooltip_SetLink(itemLink)
+		end
+		
+		return true
+	end
+	
+	return uespLog.Old_ZO_InventorySlot_OnMouseEnter(inventorySlot)
 end

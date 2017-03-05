@@ -266,6 +266,14 @@ function uespLog.InitOptionControlsData()
 	})
 	
 	uespLog.optionControlsData:insert({
+		type = "checkbox",
+		name = "Alchemy Tooltip Display",
+		tooltip = "Enable/disable the display of tooltips in the alchemy crafting window\n     /uespcraft alchemy on/off",
+		getFunc = function() return uespLog.GetCraftAlchemyTooltipDisplay() end,
+		setFunc = function(flag) return uespLog.SetCraftAlchemyTooltipDisplay(flag) end,
+	})
+	
+	uespLog.optionControlsData:insert({
 		type = "dropdown",
 		choices = { "none", "tooltip", "inventory", "both" },
 		name = "Item Style Display",

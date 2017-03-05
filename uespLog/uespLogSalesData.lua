@@ -1188,13 +1188,13 @@ end
 	
 	
 function uespLog.RemoveStatsItemTooltip() 
-	uespLog.ItemTooltipControl = nil 
+	uespLog.CurrentTooltipControl = nil 
 	
 	if (ItemTooltip.uespTextPool) then
 		ItemTooltip.uespTextPool:ReleaseAllObjects()
 	end
 	
-	ItemTooltip.uespPriceText = nil
+	ItemTooltip.uespText = nil
 end
 
 
@@ -1210,9 +1210,6 @@ function uespLog.AddSalesPricetoTooltip(itemLink, tooltip)
 	end
 
 	if (not tooltip.uespText) then
-		--tooltip:AddVerticalPadding(5)
-		--ZO_Tooltip_AddDivider(tooltip)
-		--tooltip:AddVerticalPadding(5)   
 		tooltip.uespText = tooltip.uespTextPool:AcquireObject()
 		tooltip:AddControl(tooltip.uespText)
 		tooltip.uespText:SetAnchor(CENTER)   
@@ -1309,8 +1306,6 @@ end
 
 function uespLog.SalesPriceToChat(itemLink)
 	local msg = uespLog.GetSalesPriceTip(itemLink, true)
-	
-	--uespLog.Msg(msg)
 	
 	local ChatEditControl = CHAT_SYSTEM.textEntry.editControl
     if (not ChatEditControl:HasFocus()) then StartChatInput() end

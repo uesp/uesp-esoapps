@@ -2627,6 +2627,42 @@ function uespLog.ParseLink(link)
 end
 
 
+function uespLog.ParseItemLinkEx(link)
+	--|H1:item:Id:SubType:InternalLevel:EnchantId:EnchantSubType:EnchantLevel:Writ1:Writ2:Writ3:Writ4:Writ5:Writ6:0:0:0:Style:Crafted:Bound:Stolen::Charges:PotionEffect/WritReward|hName|h
+	local linkData = {}
+	
+	linkData.linkType, linkData.itemText, linkData.itemId, linkData.internalSubType, linkData.internalLevel, linkData.enchantId, linkData.enchantSubtype, linkData.enchantLevel, linkData.writ1, linkData.writ2, linkData.writ3, linkData.writ4, linkData.writ5, linkData.writ6, linkData.zero1, linkData.zero2, linkData.zero3, linkData.style, linkData.crafted, linkData.bound, linkData.stolen, linkData.charges, linkData.potionData, linkData.itemName = link:match("|H(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-)|h(.-)|h")	
+	
+	if (linkData.linkType == nil) then
+		return false
+	end
+	
+	linkData.itemId = tonumber(linkData.itemId)
+	linkData.internalSubType = tonumber(linkData.internalSubType)
+	linkData.internalLevel = tonumber(linkData.internalLevel)
+	linkData.enchantId = tonumber(linkData.enchantId)
+	linkData.enchantSubtype = tonumber(linkData.enchantSubtype)
+	linkData.enchantLevel = tonumber(linkData.enchantLevel)
+	linkData.writ1 = tonumber(linkData.writ1)
+	linkData.writ2 = tonumber(linkData.writ2)
+	linkData.writ3 = tonumber(linkData.writ3)
+	linkData.writ4 = tonumber(linkData.writ4)
+	linkData.writ5 = tonumber(linkData.writ5)
+	linkData.writ6 = tonumber(linkData.writ6)
+	linkData.zero1 = tonumber(linkData.zero1)
+	linkData.zero2 = tonumber(linkData.zero2)
+	linkData.zero3 = tonumber(linkData.zero3)
+	linkData.style = tonumber(linkData.style)
+	linkData.crafted = tonumber(linkData.crafted)
+	linkData.bound = tonumber(linkData.bound)
+	linkData.stolen = tonumber(linkData.stolen)
+	linkData.charges = tonumber(linkData.charges)
+	linkData.potionData = tonumber(linkData.potionData)
+	
+	return linkData
+end
+
+
 function uespLog.ParseLinkID(link)
 	--|HFFFFFF:item:45817:1:1:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|hJode|h
 	

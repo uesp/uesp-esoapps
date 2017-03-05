@@ -1314,11 +1314,15 @@ end
 
 
 function uespLog.FindSalesPrice(itemLink)
-	local _, _, itemId,  internalSubType, internalLevel, data = uespLog.ParseLinkID(itemLink)
+	local linkData = uespLog.ParseItemLinkEx(itemLink)
 	
-	itemId = tonumber(itemId)
+	if (not linkData) then
+		return nil
+	end
 	
-	local levelData = uespLog.SalesPrices[itemId]
+	linkData.itemId = tonumber(linkData.itemId)
+	
+	local levelData = uespLog.SalesPrices[linkData.itemId]
 	
 	if (levelData == nil) then
 		--uespLog.DebugMsg("FindSalesPrice: No ItemID Data")
@@ -1334,12 +1338,15 @@ function uespLog.FindSalesPrice(itemLink)
 		level = 50 + math.floor(reqCP/10)
 	end
 	
-	local _, potionValue = data:match("(.*):(.-)")
-	potionValue = tonumber(potionValue)
+	linkData.potionData = tonumber(linkData.potionData)
 	
-	if (potionValue == nil) then
-		potionValue = 0
+	if (linkData.potionData == nil) then
+		linkData.potionData = 0
 	end
+	
+	if (linkData.writ1 > 0) then
+		linkData.potionData = linkData.writ1 .. ":" .. linkData.writ2 .. ":" .. linkData.writ3 .. ":" .. linkData.writ4 .. ":" .. linkData.writ5 .. ":" .. linkData.writ6
+	end			
 		
 	local qualityData = levelData[level]
 	
@@ -1362,7 +1369,7 @@ function uespLog.FindSalesPrice(itemLink)
 		return nil
 	end
 	
-	local salesData = potionData[potionValue]
+	local salesData = potionData[linkData.potionData]
 	
 	if (salesData == nil) then
 		--uespLog.DebugMsg("FindSalesPrice: No Potion Data")

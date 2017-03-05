@@ -666,6 +666,7 @@
 --		- v1.02
 --			- Added the "/uespcraft alchemy on|off" command which turns on tooltips when in the alchemy crafting window.
 --			- Fixed UESP sales price not appearing in tooltips from top item rows.
+--			- Fixed price lookups for master writs and crafted potions.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.

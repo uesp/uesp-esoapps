@@ -6,6 +6,8 @@
 #include "windows.h"
 #include "EsoFile.h"
 #include <time.h>
+#include <iostream>
+#include <string>
 
 
 namespace eso {
@@ -704,5 +706,102 @@ bool WriteMotorolaDword(FILE* pFile, const dword Value)
 	return true;
 }
 
+
+bool GetFilesSize(__int64& DirSize, const std::string FileSpec)
+{
+	WIN32_FIND_DATAA data;
+	HANDLE sh = NULL;
+
+	DirSize = 0;
+
+	sh = FindFirstFileA(FileSpec.c_str(), &data);
+	if (sh == INVALID_HANDLE_VALUE) return false;
+
+	do
+	{
+		if (std::string(data.cFileName).compare(".") != 0 && std::string(data.cFileName).compare("..") != 0)
+		{
+			if ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
+			{
+			}
+			else
+			{
+				DirSize += (__int64)(data.nFileSizeHigh * (MAXDWORD)+data.nFileSizeLow);
+			}
+		}
+
+	} while (FindNextFileA(sh, &data));
+
+	FindClose(sh);
+	return true;
+}
+
+
+bool GetFolderSize(__int64& DirSize, const std::string Path)
+{
+	WIN32_FIND_DATAA data;
+	HANDLE sh = NULL;
+
+	DirSize = 0;
+
+	sh = FindFirstFileA((Path + "\\*").c_str(), &data);
+	if (sh == INVALID_HANDLE_VALUE) return false;
+	
+	do
+	{
+		if (std::string(data.cFileName).compare(".") != 0 && std::string(data.cFileName).compare("..") != 0)
+		{
+			if ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
+			{
+				__int64 DirSize1;
+				GetFolderSize(DirSize1, Path + "\\" + data.cFileName);
+				DirSize += DirSize1;
+			}
+			else
+			{
+				DirSize += (__int64)(data.nFileSizeHigh * (MAXDWORD)+data.nFileSizeLow);
+			}
+		}
+
+	} while (FindNextFileA(sh, &data));
+
+	FindClose(sh);
+	return true;
+}
+
+
+bool DeleteFiles(const std::string FileSpec)
+{
+	WIN32_FIND_DATAA data;
+	HANDLE sh = NULL;
+	bool Return = true;
+	std::string BaseFilename(FileSpec);
+	auto n = BaseFilename.find('\\');
+
+	if (n != BaseFilename.npos) BaseFilename.resize(n);
+	BaseFilename = eso::TerminatePath(BaseFilename);
+
+	sh = FindFirstFileA(FileSpec.c_str(), &data);
+	if (sh == INVALID_HANDLE_VALUE) return false;
+
+	do
+	{
+		if (std::string(data.cFileName).compare(".") != 0 && std::string(data.cFileName).compare("..") != 0)
+		{
+			if ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
+			{
+			}
+			else
+			{
+				std::string Filename = BaseFilename + data.cFileName;
+				if (!DeleteFile(Filename.c_str())) Return = false;
+			}
+		}
+
+	} while (FindNextFileA(sh, &data));
+
+	FindClose(sh);
+	return Return;
+}
 
 };

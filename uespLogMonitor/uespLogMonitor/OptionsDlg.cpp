@@ -51,6 +51,8 @@ void COptionsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CHARDATAENABLED_CHECK, m_CharDataEnabledCheck);
 	DDX_Control(pDX, IDC_CHARDATAFORMURL_TEXT, m_CharDataFormURLText);
 	DDX_Control(pDX, IDC_BACKUPCHARDATAFOLDER_TEXT, m_BackupCharDataFolder);
+	DDX_Control(pDX, IDC_AUTODOWNLOADPRICES_CHECK, m_AutoDownloadPricesCheck);
+	DDX_Control(pDX, IDC_PRICESERVER_LIST, m_PriceServerList);
 }
 
 
@@ -67,6 +69,7 @@ BOOL COptionsDlg::OnInitDialog()
 
 	FillLogNameList();
 	FillLogLevelList();
+	FillPriceServerList();
 	SetControlData();
 	
 	return TRUE;
@@ -101,6 +104,14 @@ int GetComboSelData (CComboBox& Combo, const int Default)
 	return Combo.GetItemData(ListIndex);
 }
 
+
+void COptionsDlg::FillPriceServerList()
+{
+	AddComboString(m_PriceServerList, "PC-NA", 1);
+	AddComboString(m_PriceServerList, "PC-EU", 2);
+	AddComboString(m_PriceServerList, "PTS", 3);
+	AddComboString(m_PriceServerList, "Other", 4);
+}
 
 
 void COptionsDlg::FillLogNameList()
@@ -180,6 +191,13 @@ void COptionsDlg::GetControlData()
 
 	m_CharDataFormURLText.GetWindowText(Buffer);
 	m_pOptions->CharDataFormURL = Buffer;
+	
+	m_pOptions->AutoDownloadPrices = m_AutoDownloadPricesCheck.GetCheck() != 0;
+	m_PriceServerList.GetWindowText(Buffer);
+	m_pOptions->PriceServer = Buffer;
+
+	if (Buffer == "PC-NA") m_pOptions->PriceServer = "NA";
+	if (Buffer == "PC-EU") m_pOptions->PriceServer = "EU";
 }
 
 
@@ -216,6 +234,13 @@ void COptionsDlg::SetControlData()
 
 	m_CharDataEnabledCheck.SetCheck(m_pOptions->CharDataEnabled);
 	m_CharDataFormURLText.SetWindowText(m_pOptions->CharDataFormURL.c_str());
+
+	m_AutoDownloadPricesCheck.SetCheck(m_pOptions->AutoDownloadPrices);
+	Buffer = m_pOptions->PriceServer.c_str();
+	if (Buffer == "NA") Buffer = "PC-NA";
+	if (Buffer == "EU") Buffer = "PC-EU";
+
+	m_PriceServerList.SelectString(-1, Buffer);
 
 	UpdateCustomNameState();
 }

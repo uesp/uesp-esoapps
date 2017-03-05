@@ -84,6 +84,10 @@ bool ConvertDDStoPNG (const byte* pData, const size_t Size, const std::string Fi
 
 bool FileExists(const char* pFilename);
 bool GetFileSize (__int64& FileSize, const std::string Filename);
+bool GetFilesSize(__int64& FileSize, const std::string FileSpec);
+bool GetFolderSize (__int64& FileSize, const std::string Path);
+
+bool DeleteFiles(const std::string Path);
 
 bool WriteMotorolaDword(FILE* pFile, const dword Value);
 

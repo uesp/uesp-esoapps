@@ -18,6 +18,7 @@ protected:
 	void SetControlData();
 	void FillLogNameList();
 	void FillLogLevelList();
+	void FillPriceServerList();
 	void UpdateCustomNameState();
 		
 public:
@@ -60,4 +61,6 @@ public:
 	CEdit m_CharDataFormURLText;
 	CEdit m_BackupCharDataFolder;
 	afx_msg void OnBnClickedBuilddataenabledCheck();
+	CButton m_AutoDownloadPricesCheck;
+	CComboBox m_PriceServerList;
 };

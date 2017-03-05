@@ -45,6 +45,7 @@ struct ulm_options_t
 	const static std::string DEFAULT_BACKUPCHARDATAFOLDER;
 	const static std::string DEFAULT_BUILDDATA_FORMURL;
 	const static std::string DEFAULT_CHARDATA_FORMURL;
+	const static std::string DEFAULT_PRICESERVER;
 
 	int					UpdateTime;		/* Time between updates in seconds */
 	ulm_uselogname_t	UseLogName;
@@ -63,6 +64,8 @@ struct ulm_options_t
 	bool				CharDataEnabled;
 	__int64				LastTimeStamp;
 	__int64				LastBackupTimeStamp;
+	bool				AutoDownloadPrices;
+	std::string			PriceServer;
 
 	ulm_options_t() :
 		UpdateTime(DEFAULT_UPDATETIME),
@@ -73,6 +76,7 @@ struct ulm_options_t
 		BuildDataFormURL(DEFAULT_BUILDDATA_FORMURL),
 		CharDataFormURL(DEFAULT_CHARDATA_FORMURL),
 		Enabled(true),
+		AutoDownloadPrices(true),
 		BuildDataEnabled(true),
 		CharDataEnabled(true),
 		SavedVarPath(),
@@ -80,7 +84,8 @@ struct ulm_options_t
 		BackupDataFilename(DEFAULT_BACKUPDATAFILENAME),
 		BackupBuildDataFolder(DEFAULT_BACKUPBUILDDATAFOLDER),
 		BackupCharDataFolder(DEFAULT_BACKUPCHARDATAFOLDER),
-		LastBackupTimeStamp(0)
+		LastBackupTimeStamp(0),
+		PriceServer(DEFAULT_PRICESERVER)
 	{ 
 	}
 
@@ -162,9 +167,10 @@ protected:
 	std::string					m_CharData;
 	int							m_CharDataCount;
 
-	ULONGLONG	m_LastLogCheck;
+	ULONGLONG	m_LastLogCheckTime;
+	ULONGLONG	m_LastPriceDownloadTime;
 
-	bool    m_EnableFileMonitor;
+	bool    m_SkipNextFileMonitor;
 	HANDLE	m_hFileMonitor;
 
 
@@ -201,7 +207,11 @@ protected:
 
 	bool HasLogChanged();
 	bool DoLogCheck(const bool OverrideEnable = false);
+	bool DoPriceDownloadCheck();
+	bool DownloadPriceList();
 	void UpdateLogFileSize();
+
+	void ClearLog();
 
 	std::string GetSavedVarFilename ();
 		
@@ -292,6 +302,14 @@ protected:
 	bool SendQueuedBuildDataThread();
 	bool SendQueuedCharDataThread();
 
+	void CheckBackupDataSize();
+	void CheckCharBackupDataSize();
+	void CheckBuildBackupDataSize();
+
+	__int64 GetBackupDataSize();
+	__int64 GetCharBackupDataSize();
+	__int64 GetBuildBackupDataSize();
+
 
 public:
 	CuespLogMonitorDlg(CWnd* pParent = NULL);
@@ -305,9 +323,9 @@ protected:
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
-	afx_msg void OnBnClickedButton1();
 
 	BOOL PreTranslateMessage(MSG* pMsg);
+	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
 
 	DECLARE_MESSAGE_MAP()
 
@@ -323,4 +341,13 @@ public:
 	afx_msg void OnFileChecklognow();
 	afx_msg void OnBnClickedChecknowButton();
 	virtual void OnOK();
+	afx_msg void OnFileDownloadpricelist();
+	afx_msg void OnViewClearlog();
+	afx_msg void OnFileDeletelogbackup();
+	afx_msg void OnUpdateFileDeletelogbackup(CCmdUI *pCmdUI);
+	afx_msg void OnFileDeletebuildbackup();
+	afx_msg void OnUpdateFileDeletebuildbackup(CCmdUI *pCmdUI);
+	afx_msg void OnFileDeletecharbackup();
+	afx_msg void OnUpdateFileDeletecharbackup(CCmdUI *pCmdUI);
+	afx_msg void OnViewCheckfilesizes();
 };

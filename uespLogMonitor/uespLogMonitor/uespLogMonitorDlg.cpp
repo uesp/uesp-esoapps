@@ -45,6 +45,19 @@
 		- Removed unnecessary delays when sending data that makes it much faster.
 		- Output data is now compressed which makes sending it much faster (x5 on average).
 		- Increased the amount of log data sent per request now that it is compressed.
+		- Skipped an unecessary log check after log entries are removed and the log is saved.
+		- Removed the "Check Now" button.
+		- Added the option to automatically or manually download the latest sales price data from
+				http://esosales.uesp.net/salesPrices.shtml
+		  Set your server in the options menu. Automatic downloading only occurs if enabled and only
+		  once every 1 hour. You can manually download the latest price data using the 
+		  "File-Download Price List" menu item.
+		- Added the "Clear Log Text" in the view menu to clear all existing log texts.
+		- Changed the default backup and build data backups to be empty (disabled). This only 
+		  affects new installations.
+		- Added warnings if any of the backup file/folders is too large on startup.
+		- Added menu items in the "File" menu to delete log/build/character backup data if it exists.
+		- Added "Check File Size" to the "View" menu to show the file sizes in the log.
 
 	TODO:
 		- Proper UI threading.
@@ -66,11 +79,12 @@
 
 
 const std::string ulm_options_t::DEFAULT_FORMURL("content3.uesp.net/esolog/esolog.php");
-const std::string ulm_options_t::DEFAULT_BACKUPDATAFILENAME("uespLog_backupData.txt");
-const std::string ulm_options_t::DEFAULT_BACKUPBUILDDATAFOLDER("BackupBuildData");
+const std::string ulm_options_t::DEFAULT_BACKUPDATAFILENAME("");
+const std::string ulm_options_t::DEFAULT_BACKUPBUILDDATAFOLDER("");
 const std::string ulm_options_t::DEFAULT_BACKUPCHARDATAFOLDER("");
 const std::string ulm_options_t::DEFAULT_BUILDDATA_FORMURL("content3.uesp.net/esobuilddata/parseBuildData.php");
 const std::string ulm_options_t::DEFAULT_CHARDATA_FORMURL("content3.uesp.net/esobuilddata/parseCharData.php");
+const std::string ulm_options_t::DEFAULT_PRICESERVER("NA");
 
 const char ULM_REGISTRY_SECTION_SETTINGS[] = "Settings";
 const char ULM_REGISTRY_KEY_UPDATETIME[] = "UpdateTime";
@@ -90,17 +104,26 @@ const char ULM_REGISTRY_KEY_LOGLEVEL[] = "LogLevel";
 const char ULM_REGISTRY_KEY_BACKUPDATAFILENAME[] = "BackupDataFilename";
 const char ULM_REGISTRY_KEY_BACKUPBUILDDATAFOLDER[] = "BackupBuildDataFolder";
 const char ULM_REGISTRY_KEY_BACKUPCHARDATAFOLDER[] = "BackupCharDataFolder";
+const char ULM_REGISTRY_KEY_PRICESERVER[] = "PriceServer";
+const char ULM_REGISTRY_KEY_AUTODOWNLOADPRICES[] = "AutoDownloadPrices";
 
 const std::string ULM_LOGSTRING_JOIN("#STR#");
 const int  ULM_LOGSTRING_MAXLENGTH = 1900;
 
-const ULONGLONG ULM_MINIMUM_LOGCHECK_TIMEMS = 10000;
+const ULONGLONG ULM_MINIMUM_LOGCHECK_TIMEMS = 5000;
 const DWORD ULM_FILE_MONITOR_TIMER = 2000;
+
+const DWORD ULM_PRICEDOWNLOAD_PERIODMS = 1000 * 3600;
+
+const __int64 ULM_WARN_BACKUP_DATASIZE = 500000000;
+const __int64 ULM_WARN_CHARBACKUP_DATASIZE = 100000000;
+const __int64 ULM_WARN_BUILDBACKUP_DATASIZE = 100000000;
 
 const char ULM_SAVEDVAR_NAME[] = "uespLogSavedVars";
 const char ULM_SAVEDVAR_FILENAME[] = "uespLog.lua";
 const char ULM_SAVEDVAR_BASEPATH[] = "Elder Scrolls Online\\live\\SavedVariables\\";
 const char ULM_SAVEDVAR_ALTBASEPATH[] = "Elder Scrolls Online\\liveeu\\SavedVariables\\";
+const char ULM_PRICEDOWNLOAD_URLBASE[] = "http://esosales.uesp.net/";
 
 const int ULM_SENDDATA_MAXPOSTSIZE = 500000;		/* Maximum desired size of post data in bytes before compression */
 
@@ -124,6 +147,16 @@ BEGIN_MESSAGE_MAP(CuespLogMonitorDlg, CDialogEx)
 	ON_COMMAND(ID_FILE_SENDOTHERLOG, &CuespLogMonitorDlg::OnFileSendotherlog)
 	ON_COMMAND(ID_FILE_CHECKLOGNOW, &CuespLogMonitorDlg::OnFileChecklognow)
 	ON_BN_CLICKED(IDC_CHECKNOW_BUTTON, &CuespLogMonitorDlg::OnBnClickedChecknowButton)
+	ON_COMMAND(ID_FILE_DOWNLOADPRICELIST, &CuespLogMonitorDlg::OnFileDownloadpricelist)
+	ON_COMMAND(ID_VIEW_CLEARLOG, &CuespLogMonitorDlg::OnViewClearlog)
+	ON_COMMAND(ID_FILE_DELETELOGBACKUP, &CuespLogMonitorDlg::OnFileDeletelogbackup)
+	ON_UPDATE_COMMAND_UI(ID_FILE_DELETELOGBACKUP, &CuespLogMonitorDlg::OnUpdateFileDeletelogbackup)
+	ON_COMMAND(ID_FILE_DELETEBUILDBACKUP, &CuespLogMonitorDlg::OnFileDeletebuildbackup)
+	ON_UPDATE_COMMAND_UI(ID_FILE_DELETEBUILDBACKUP, &CuespLogMonitorDlg::OnUpdateFileDeletebuildbackup)
+	ON_COMMAND(ID_FILE_DELETECHARBACKUP, &CuespLogMonitorDlg::OnFileDeletecharbackup)
+	ON_UPDATE_COMMAND_UI(ID_FILE_DELETECHARBACKUP, &CuespLogMonitorDlg::OnUpdateFileDeletecharbackup)
+	ON_MESSAGE(WM_KICKIDLE, OnKickIdle)
+	ON_COMMAND(ID_VIEW_CHECKFILESIZES, &CuespLogMonitorDlg::OnViewCheckfilesizes)
 END_MESSAGE_MAP()
 
 
@@ -144,7 +177,7 @@ CuespLogMonitorDlg::CuespLogMonitorDlg(CWnd* pParent) :
 	CDialogEx(CuespLogMonitorDlg::IDD, pParent),
 	m_TimerId(0),
 	m_FileMonitorTimerId(0),
-	m_EnableFileMonitor(true),
+	m_SkipNextFileMonitor(false),
 	m_LastLogFileSize(0),
 	m_IsInTray(false),
 	m_IsCheckingFile(false),
@@ -154,7 +187,8 @@ CuespLogMonitorDlg::CuespLogMonitorDlg(CWnd* pParent) :
 	m_BuildDataValidScreenshotCount(0),
 	m_CharDataCount(0),
 	m_FormErrorRetryCount(0),
-	m_LastLogCheck(0),
+	m_LastLogCheckTime(0),
+	m_LastPriceDownloadTime(0),
 	m_hFileMonitor(INVALID_HANDLE_VALUE)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -177,6 +211,7 @@ CuespLogMonitorDlg::~CuespLogMonitorDlg()
 	DestroySendQueueThread();
 	lua_close(m_pLuaState);
 }
+
 
 void CuespLogMonitorDlg::DoDataExchange(CDataExchange* pDX)
 {
@@ -1789,7 +1824,7 @@ bool CuespLogMonitorDlg::CheckAndSendLogDataAll ()
 	//if (LastValidTimeStamp == 0) LastValidTimeStamp = m_Options.LastTimeStamp - 1;
 	//m_LastParsedTimeStamp = LastValidTimeStamp + 1;
 
-	PrintLogLine(ULM_LOGLEVEL_INFO, "Sent %d log entries.", SentCount);
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Queued %d log entries.", SentCount);
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Last Parsed Timestamp = %I64d", m_LastParsedTimeStamp);
 	return true;
 }
@@ -1807,7 +1842,7 @@ bool CuespLogMonitorDlg::SendLogData (CUlmLogDataArray& DataArray)
 		++SentCount;
 	}
 
-	PrintLogLine(ULM_LOGLEVEL_INFO, "Sent %d log entries.", SentCount);
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Queued %d log entries.", SentCount);
 	return true;
 }
 
@@ -1909,7 +1944,7 @@ void CuespLogMonitorDlg::PrintLogLine (const char* pString, ...)
 void CuespLogMonitorDlg::PrintLogLineV (const char* pString, va_list Args)
 {
 	CString Buffer;
-	CString CurrentDate; // = COleDateTime::GetCurrentTime().Format("%m-%d %H:%M:%S -- ");
+	CString CurrentDate;
 	SYSTEMTIME t;
 
 	GetLocalTime(&t);
@@ -2090,6 +2125,10 @@ BOOL CuespLogMonitorDlg::OnInitDialog()
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Program initialized...");
 	PrintSettings();
 
+	CheckBackupDataSize();
+	CheckCharBackupDataSize();
+	CheckBuildBackupDataSize();
+
 	return TRUE;
 }
 
@@ -2246,6 +2285,11 @@ bool CuespLogMonitorDlg::LoadRegistrySettings (void)
 	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_CHARDATAFORMURL, m_Options.CharDataFormURL.c_str());
 	m_Options.CharDataFormURL = Buffer;
 
+	m_Options.AutoDownloadPrices = (pApp->GetProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_AUTODOWNLOADPRICES, m_Options.AutoDownloadPrices) != 0);
+
+	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_PRICESERVER, m_Options.PriceServer.c_str());
+	m_Options.PriceServer = Buffer;	
+
 	return true;
 }
 
@@ -2271,6 +2315,9 @@ bool CuespLogMonitorDlg::SaveRegistrySettings (void)
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPDATAFILENAME, m_Options.BackupDataFilename.c_str());
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPBUILDDATAFOLDER, m_Options.BackupBuildDataFolder.c_str());
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_BACKUPCHARDATAFOLDER, m_Options.BackupCharDataFolder.c_str());
+
+	pApp->WriteProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_AUTODOWNLOADPRICES, m_Options.AutoDownloadPrices);
+	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_PRICESERVER, m_Options.PriceServer.c_str());
 
 	Buffer.Format("%I64d", m_Options.LastTimeStamp);
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_LASTTIMESTAMP, Buffer);
@@ -2298,195 +2345,6 @@ BOOL CuespLogMonitorDlg::DestroyWindow()
 void CuespLogMonitorDlg::OnFileExit()
 {
 	EndDialog(0);
-}
-
-
-void TestOpenSSL() 
-{
-	/*
-	salt=C85BB02CA3A74318
-	key=DB27BAD9AC272A3CD0E77759D6B78E55EAF795F499D1862E61EE61EB04B44B6F
-	iv =A1DC8AB2FB65A6C1DCB9DF391BCAE955
-
-	salt=F0FC292456410C8C
-	key=B643CC4A20610FE77CF75053C9637FE4
-	iv =85C6DF68AC81AE6F38FB7B347187C8CF
-
-	*/
-
-  int bytes_read;
-  unsigned char indata[100] = "0123456789ABC";
-  unsigned char outdata[200];
-  unsigned char outdata1[200];
-
-  /* ckey and ivec are the two 128-bits keys necesary to
-     en- and recrypt your data.  Note that ckey can be
-     192 or 256 bits as well */
-  unsigned char salt[] = "\xF0\xFC\x29\x24\x56\x41\x0C\x8C";
-  unsigned char ckey[] =  "\xB6\x43\xCC\x4A\x20\x61\x0F\xE7\x7C\xF7\x50\x53\xC9\x63\x7F\xE4";
-  unsigned char ivec[] = "\x85\xC6\xDF\x68\xAC\x81\xAE\x6F\x38\xFB\x7B\x34\x71\x87\xC8\xCF";
-
-  /* data structure that contains the key itself */
-  AES_KEY key;
-  AES_KEY dekey;
-
-  /* set the encryption key */
-  
-
-  /* set where on the 128 bit encrypted block to begin encryption*/
-  int num = 0;
-  bytes_read = strlen((char *)ivec);
-
-	AES_set_encrypt_key(ckey, 128, &key);
-	//AES_encrypt(indata, outdata, &key);
-	AES_cfb128_encrypt(indata, outdata, AES_BLOCK_SIZE, &key, ivec, &num, AES_ENCRYPT);
-	//AES_cbc_encrypt((unsigned char *)indata, outdata, AES_BLOCK_SIZE, &key, ivec, AES_ENCRYPT);
-  	eso::PrintLog("Encrypted Data(%d): %s", num, outdata);
-
-	AES_set_decrypt_key(ckey, 128, &dekey);
-	//AES_cbc_encrypt(outdata, outdata1, AES_BLOCK_SIZE, &dekey, ivec, AES_DECRYPT);
-	AES_cfb128_encrypt(outdata, outdata1, AES_BLOCK_SIZE, &dekey, ivec, &num, AES_DECRYPT);
-	//AES_decrypt(outdata, outdata1, &dekey);
-	eso::PrintLog("Decrypted Data(%d): %s", num, outdata1);
-
-	EVP_CIPHER_CTX e_ctx;
-	EVP_CIPHER_CTX d_ctx;
-	//int i, nrounds = 5;
-	//unsigned char key[32], iv[32];
-	//EVP_BytesToKey(EVP_aes_256_cbc(), EVP_sha1(), salt, key_data, key_data_len, nrounds, key, iv);
-	EVP_CIPHER_CTX_init(&e_ctx);
-	 EVP_EncryptInit_ex(&e_ctx, EVP_aes_128_cbc(), NULL, ckey, ivec);
-	EVP_CIPHER_CTX_init(&d_ctx);
-	EVP_DecryptInit_ex(&d_ctx, EVP_aes_128_cbc(), NULL, ckey, ivec);
-
-	int c_len, f_len;
-	EVP_EncryptInit_ex(&e_ctx, NULL, NULL, NULL, NULL);
-	EVP_EncryptUpdate(&e_ctx, outdata, &c_len, indata, 16);
-	EVP_EncryptFinal_ex(&e_ctx, outdata+c_len, &f_len);
-
-	eso::PrintLog("Encrypted Data(%d, %d): %s", c_len, f_len, outdata);
-
-	int p_len;
-	EVP_DecryptInit_ex(&d_ctx, NULL, NULL, NULL, NULL);
-	EVP_DecryptUpdate(&d_ctx, outdata1, &p_len, outdata, f_len);
-	EVP_DecryptFinal_ex(&d_ctx, outdata1 + p_len, &f_len);
-
-	eso::PrintLog("Decrypted Data(%d, %d): %s", p_len, f_len, outdata1);
-
-
-	RSA *keypair = RSA_generate_key(2048, 3, NULL, NULL);
-	
-	//RSA* keypair;
-	keypair = RSA_new();
-	BIGNUM *oBigNbr = BN_new();
-	BN_set_word(oBigNbr, RSA_F4);
-	int RsaResult = RSA_generate_key_ex(keypair, 2048, oBigNbr, NULL);
-	//char msg[2048];
-
-	//RSA *rsa = PEM_read_RSA_PUBKEY(f,NULL,NULL,NULL);
-	//RSA *rsa = PEM_read_RSAPrivateKey(f,NULL,NULL,NULL);
-	//BN_hex2bn(&keypair->n, "C0E7FC730EB5CF85B040EC25DAEF288912641889AD651B3707CFED9FC5A1D3F6C40062AD46E3B3C3E21D4E71CC4800C80226D453242AEB2F86D748B41DDF35FD");
-	//BN_hex2bn(&keypair->e, "010001");
-	
-	// Encrypt the message
-	char encrypt[4096];
-	int encrypt_len;
-
-	encrypt_len = RSA_public_encrypt(strlen((char *)indata)+1, (unsigned char*)indata, (unsigned char*)encrypt, keypair, RSA_PKCS1_OAEP_PADDING);
-	eso::PrintLog("Encrypted Data(%d): %s", encrypt_len, encrypt);
-
-	char decrypt[4096];
-	int der = RSA_private_decrypt(encrypt_len, (unsigned char*)encrypt, (unsigned char*)decrypt, keypair, RSA_PKCS1_OAEP_PADDING);
-	eso::PrintLog("Decrypted Data(%d): %s", der, decrypt);
-}
-
-
-void CuespLogMonitorDlg::OnBnClickedButton1()
-{
-	int Result = luaL_dofile(m_pLuaState, "d:\\esoexport\\uesplog\\addon\\test\\testoutput.lua");
-	eso::PrintLog("DoFile Result = %d", Result);
-	
-	lua_getglobal(m_pLuaState, "uespLogSavedVars");
-	eso::PrintLog("DoFile isTable() = %d", lua_istable(m_pLuaState, -1));
-
-	lua_getfield (m_pLuaState, -1, "Default");
-	eso::PrintLog("DoFile isTable() = %d", lua_istable(m_pLuaState, -1));
-	eso::PrintLog("isnil = %d", lua_isnil(m_pLuaState, -1));
-
-	int index = lua_gettop(m_pLuaState);
-	eso::PrintLog("Stack Top index = %d", index);
-	std::string UserName;
-
-	lua_pushnil(m_pLuaState);  /* first key */
-
-    while (lua_next(m_pLuaState, index) != 0)
-	{
-			/* uses 'key' (at index -2) and 'value' (at index -1) */
-
-		if (lua_type(m_pLuaState, -2) == LUA_TSTRING) 
-		{
-			//lua_pushvalue(m_pLuaState, -2);
-			const char* pName = lua_tostring(m_pLuaState, -2);
-			//lua_pop(m_pLuaState, 1);
-			eso::PrintLog("String name = '%s'", pName);
-			UserName = pName;
-		}
-
-		eso::PrintLog("%s - %s",
-              lua_typename(m_pLuaState, lua_type(m_pLuaState, -2)),
-              lua_typename(m_pLuaState, lua_type(m_pLuaState, -1)));
-
-			/* removes 'value'; keeps 'key' for next iteration */
-		lua_pop(m_pLuaState, 1);
-    }
-
-	if (UserName.empty()) return;
-
-	lua_getfield (m_pLuaState, -1, UserName.c_str());
-	eso::PrintLog("DoFile isTable() = %d", lua_istable(m_pLuaState, -1));
-	eso::PrintLog("isnil = %d", lua_isnil(m_pLuaState, -1));
-
-	lua_getfield (m_pLuaState, -1, "$AccountWide");
-	eso::PrintLog("DoFile isTable() = %d", lua_istable(m_pLuaState, -1));
-	eso::PrintLog("isnil = %d", lua_isnil(m_pLuaState, -1));
-
-	lua_getfield (m_pLuaState, -1, "achievements");
-	eso::PrintLog("DoFile isTable() = %d", lua_istable(m_pLuaState, -1));
-	eso::PrintLog("isnil = %d", lua_isnil(m_pLuaState, -1));
-
-	lua_getfield (m_pLuaState, -1, "data");
-	eso::PrintLog("DoFile isTable() = %d", lua_istable(m_pLuaState, -1));
-	eso::PrintLog("isnil = %d", lua_isnil(m_pLuaState, -1));
-
-	int i = 1;
-
-	while (true)
-	{
-		lua_rawgeti(m_pLuaState, -1, i);
-
-		if (lua_isnil(m_pLuaState, -1)) {
-			lua_pop(m_pLuaState, 1);
-			break;
-		}
-
-		if (lua_type(m_pLuaState, -1) == LUA_TSTRING) 
-		{
-			const char* pName = lua_tostring(m_pLuaState, -1);
-			eso::PrintLog("Value[%d] = %s", i, pName);
-		}
-		else
-		{
-			eso::PrintLog("%d", i);
-		}
-
-		lua_pop(m_pLuaState, 1);
-		++i;
-	}
-
-	lua_getfield(m_pLuaState, -1, "test");
-	eso::PrintLog("isnil = %d", lua_isnil(m_pLuaState, -1));
-	PostURL();
-	TestOpenSSL();
 }
 
 
@@ -2554,7 +2412,74 @@ void CuespLogMonitorDlg::OnLogCheckTimer()
 
 	DoLogCheck();
 
+	DoPriceDownloadCheck();
+
 	m_IsCheckingFile = false;
+}
+
+
+bool CuespLogMonitorDlg::DoPriceDownloadCheck()
+{
+	if (!m_Options.AutoDownloadPrices) return false;
+
+	ULONGLONG CurrentTime = GetTickCount64();
+	ULONGLONG DeltaTime = CurrentTime - m_LastPriceDownloadTime;
+
+	if (DeltaTime < ULM_PRICEDOWNLOAD_PERIODMS) return false;
+
+	if (!DownloadPriceList())
+	{
+		m_LastPriceDownloadTime = CurrentTime - ULM_PRICEDOWNLOAD_PERIODMS + 30000;
+		return false;
+	}
+
+	PrintLogLine(ULM_LOGLEVEL_WARNING, "Next automatic price download will be in %d minutes...", ULM_PRICEDOWNLOAD_PERIODMS / 60000);
+	m_LastPriceDownloadTime = CurrentTime;
+	return true;
+}
+
+
+bool CuespLogMonitorDlg::DownloadPriceList()
+{
+	CString DownloadURL(ULM_PRICEDOWNLOAD_URLBASE);
+	CString TargetFile(m_Options.SavedVarPath.c_str());
+	CString TmpFile;
+	CString BackupFile;
+	BOOL Result;
+
+	DownloadURL += "prices";
+	DownloadURL += m_Options.PriceServer.c_str();
+	DownloadURL += "/uespSalesPrices.lua";
+
+	TargetFile.Replace("\\SavedVariables", "\\AddOns\\uespLog");
+	TargetFile += "uespSalesPrices.lua";
+	TmpFile = TargetFile + ".new";
+	BackupFile = TargetFile + ".old";
+	
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Attempting to download price list from '%s'...", DownloadURL);
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Attempting to save price list to '%s'...", TmpFile);
+
+	HRESULT hResult = URLDownloadToFile(NULL, DownloadURL, TmpFile, 0, NULL);
+
+	if (hResult != S_OK)
+	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "Failed to download price list from %s!", DownloadURL);
+		return false;
+	}
+
+	MoveFileEx(TargetFile, BackupFile, MOVEFILE_REPLACE_EXISTING);
+
+	Result = MoveFileEx(TmpFile, TargetFile, MOVEFILE_REPLACE_EXISTING);
+
+	if (!Result)
+	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "Failed to copy downloaded price list to '%s'!", TargetFile);
+		CopyFileEx(BackupFile, TargetFile, NULL, NULL, FALSE, 0);
+		return false;
+	}
+
+	PrintLogLine("Successfully downloaded the latest %s price list data!", m_Options.PriceServer.c_str());
+	return true;
 }
 
 
@@ -2572,10 +2497,10 @@ bool CuespLogMonitorDlg::DoLogCheck(const bool OverrideEnable)
 	ReleaseMutex(m_hSendQueueMutex);
 
 	ULONGLONG CurrentTime = GetTickCount64();
-	ULONGLONG DeltaTime = CurrentTime - m_LastLogCheck;
+	ULONGLONG DeltaTime = CurrentTime - m_LastLogCheckTime;
 
 	if (DeltaTime < ULM_MINIMUM_LOGCHECK_TIMEMS) return false;
-	m_LastLogCheck = CurrentTime;
+	m_LastLogCheckTime = CurrentTime;
 
 	if (!HasLogChanged()) return false;
 
@@ -2615,13 +2540,12 @@ bool CuespLogMonitorDlg::DoLogCheck(const bool OverrideEnable)
 	}
 
 	UpdateLogFileSize();
-	m_EnableFileMonitor = false;
+	m_SkipNextFileMonitor = true;
 
 	bool Result = DeleteOldLogData();
 	Result &= SaveSavedVars();
 
 	UpdateLogFileSize();
-	m_EnableFileMonitor = true;
 
 	//eso::PrintLog("LUA Stack size = %d", lua_gettop(m_pLuaState));
 	lua_settop(m_pLuaState, 0);
@@ -2794,17 +2718,20 @@ void CuespLogMonitorDlg::OnCheckFileMonitorTimer()
 void CuespLogMonitorDlg::OnFileMonitorUpdate()
 {
 	ULONGLONG CurrentTime = GetTickCount64();
-	ULONGLONG DeltaTime = CurrentTime - m_LastLogCheck;
+	ULONGLONG DeltaTime = CurrentTime - m_LastLogCheckTime;
 
-	if (!m_EnableFileMonitor || DeltaTime < ULM_MINIMUM_LOGCHECK_TIMEMS)
+	if (m_SkipNextFileMonitor || DeltaTime < ULM_MINIMUM_LOGCHECK_TIMEMS)
 	{
+		m_SkipNextFileMonitor = false;
 		FindNextChangeNotification(m_hFileMonitor);
 		return;
 	}
 
-	PrintLogLine(ULM_LOGLEVEL_INFO, "Automatically checking for changes in log file...");
+	Sleep(500);
 
-	DoLogCheck(true);
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Automatically checking for changes in log file...");
+		
+	DoLogCheck();
 	FindNextChangeNotification(m_hFileMonitor);
 }
 
@@ -3031,7 +2958,7 @@ void CuespLogMonitorDlg::OnSize(UINT nType, int cx, int cy)
 
 	if (nType != SIZE_MINIMIZED && IsWindow(m_LogText.m_hWnd))
 	{
-		m_LogText.SetWindowPos(NULL, 0, 0, cx-20, cy-20-40, SWP_NOMOVE | SWP_NOZORDER);
+		m_LogText.SetWindowPos(NULL, 0, 0, cx-20, cy-20, SWP_NOMOVE | SWP_NOZORDER);
 	}
 	
 }
@@ -3103,6 +3030,7 @@ void CuespLogMonitorDlg::OnBnClickedChecknowButton()
 
 BOOL CuespLogMonitorDlg::PreTranslateMessage(MSG* pMsg)
 {
+
 	if (pMsg->message == WM_KEYDOWN)
 	{
 		if (pMsg->wParam == VK_RETURN || pMsg->wParam == VK_ESCAPE)
@@ -3113,3 +3041,231 @@ BOOL CuespLogMonitorDlg::PreTranslateMessage(MSG* pMsg)
 
 	return CDialog::PreTranslateMessage(pMsg);
 }
+
+
+void CuespLogMonitorDlg::OnFileDownloadpricelist()
+{
+	DownloadPriceList();
+}
+
+
+void CuespLogMonitorDlg::ClearLog()
+{
+	m_LogText.SetWindowText("");
+	PrintLogLine("Cleared all log text...");
+}
+
+
+void CuespLogMonitorDlg::OnViewClearlog()
+{
+	ClearLog();
+}
+
+
+void CuespLogMonitorDlg::CheckBackupDataSize()
+{
+	__int64 FileSize = GetBackupDataSize();
+	if (FileSize <= 0) return;
+	
+	if (FileSize >= ULM_WARN_BACKUP_DATASIZE)
+	{
+		PrintLogLine("WARNING: The backup data file %s is %d MB in size!", m_Options.BackupDataFilename.c_str(), (int)(FileSize / 1000000));
+	}
+	else
+	{
+		PrintLogLine(ULM_LOGLEVEL_INFO, "The backup file is %.1f MB in size.", FileSize / 1000000.0);
+	}
+
+}
+
+
+void CuespLogMonitorDlg::CheckCharBackupDataSize()
+{
+	__int64 DirSize = GetCharBackupDataSize();
+	if (DirSize <= 0) return;
+	
+	if (DirSize >= ULM_WARN_CHARBACKUP_DATASIZE)
+	{
+		PrintLogLine("WARNING: The backup character data in %s is %d MB in size!", m_Options.BackupCharDataFolder.c_str(), (int)(DirSize / 1000000));
+	}
+	else
+	{
+		PrintLogLine(ULM_LOGLEVEL_INFO, "The backup character folder is %.1f MB in size.", DirSize / 1000000.0);
+	}
+
+}
+
+
+void CuespLogMonitorDlg::CheckBuildBackupDataSize()
+{
+	__int64 DirSize = GetBuildBackupDataSize();
+	if (DirSize <= 0) return;
+
+	if (DirSize >= ULM_WARN_BUILDBACKUP_DATASIZE)
+	{
+		PrintLogLine("WARNING: The backup build data in %s is %d MB in size!", m_Options.BackupBuildDataFolder.c_str(), (int)(DirSize / 1000000));
+	}
+	else
+	{
+		PrintLogLine(ULM_LOGLEVEL_INFO, "The backup build folder is %.1f MB in size.", DirSize / 1000000.0);
+	}
+}
+
+
+__int64 CuespLogMonitorDlg::GetBackupDataSize()
+{
+	__int64 FileSize;
+
+	if (m_Options.BackupDataFilename.empty()) return 0;
+	if (!eso::GetFileSize(FileSize, m_Options.BackupDataFilename)) return 0;
+
+	return FileSize;
+}
+
+
+__int64 CuespLogMonitorDlg::GetCharBackupDataSize()
+{
+	__int64 DirSize;
+	std::string FileSpec = eso::TerminatePath(m_Options.BackupCharDataFolder) + "uespBackupCharData*.txt";
+
+	if (m_Options.BackupCharDataFolder.empty()) return 0;
+	if (!eso::GetFilesSize(DirSize, FileSpec)) return 0;
+
+	return DirSize;
+}
+
+
+__int64 CuespLogMonitorDlg::GetBuildBackupDataSize()
+{
+	__int64 DirSize;
+	std::string FileSpec = eso::TerminatePath(m_Options.BackupBuildDataFolder) + "uespBackupBuildData*.txt";
+
+	if (m_Options.BackupBuildDataFolder.empty()) return 0;
+	if (!eso::GetFilesSize(DirSize, FileSpec)) return 0;
+
+	return DirSize;
+}
+
+
+void CuespLogMonitorDlg::OnViewCheckfilesizes()
+{
+	__int64 FileSize = 0;
+	eso::GetFileSize(FileSize, GetSavedVarFilename());
+
+	__int64 BackupSize = GetBackupDataSize();
+	__int64 CharSize = GetCharBackupDataSize();
+	__int64 BuildSize = GetBuildBackupDataSize();
+
+	PrintLogLine("Saved variable file is currently %0.1f MB in size.", FileSize / 1000000.0);
+	PrintLogLine("Backup log file is currently %0.1f MB in size.", BackupSize / 1000000.0);
+	PrintLogLine("Backup build data is currently %0.1f MB in size.", BuildSize / 1000000.0);
+	PrintLogLine("Backup character data is currently %0.1f MB in size.", CharSize / 1000000.0);
+}
+
+
+void CuespLogMonitorDlg::OnFileDeletelogbackup()
+{
+	__int64 FileSize = GetBackupDataSize();
+	CString Buffer;
+
+	if (FileSize <= 0) return;
+
+	Buffer.Format("Do you really wish to delete the file '%s' containing %0.1fMB of backup log data?\r\nThis action cannot be undone!", m_Options.BackupDataFilename.c_str(), FileSize / 1000000.0);
+	int Result = AfxMessageBox(Buffer, MB_OKCANCEL);
+	if (Result != IDOK) return;
+
+	PrintLogLine("Deleting backup log file '%s' with %0.1f MB of data...", m_Options.BackupDataFilename.c_str(), FileSize / 1000000.0);
+
+	if (!DeleteFile(m_Options.BackupDataFilename.c_str()))
+	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "Failed to delete the backup log file '%s'!", m_Options.BackupDataFilename.c_str());
+	}
+}
+
+
+void CuespLogMonitorDlg::OnUpdateFileDeletelogbackup(CCmdUI *pCmdUI)
+{
+	__int64 FileSize = GetBackupDataSize();
+	pCmdUI->Enable(FileSize > 0);
+}
+
+
+void CuespLogMonitorDlg::OnFileDeletebuildbackup()
+{
+	__int64 FileSize = GetBuildBackupDataSize();
+	CString Buffer;
+
+	if (FileSize <= 0) return;
+
+	Buffer.Format("Do you really wish to delete files in '%s' containing %0.1fMB of data?\r\nThis action cannot be undone!", m_Options.BackupBuildDataFolder.c_str(), FileSize / 1000000.0);
+	int Result = AfxMessageBox(Buffer, MB_OKCANCEL);
+	if (Result != IDOK) return;
+
+	PrintLogLine("Deleting all build backup log data in '%s' containing %0.1f MB of data...", m_Options.BackupBuildDataFolder.c_str(), FileSize / 1000000.0);
+
+	std::string FileSpec = eso::TerminatePath(m_Options.BackupBuildDataFolder) + "uespBackupBuildData*.txt";
+
+	if (!eso::DeleteFiles(FileSpec))
+	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "Failed to delete the backup build data files matching '%s'!", FileSpec.c_str());
+	}
+}
+
+
+void CuespLogMonitorDlg::OnUpdateFileDeletebuildbackup(CCmdUI *pCmdUI)
+{
+	__int64 FileSize = GetBuildBackupDataSize();
+	pCmdUI->Enable(FileSize > 0);
+}
+
+
+void CuespLogMonitorDlg::OnFileDeletecharbackup()
+{
+	__int64 FileSize = GetCharBackupDataSize();
+	CString Buffer;
+
+	if (FileSize <= 0) return;
+
+	Buffer.Format("Do you really wish to delete files in '%s' containing %0.1fMB of data?\r\nThis action cannot be undone!", m_Options.BackupCharDataFolder.c_str(), FileSize / 1000000.0);
+	int Result = AfxMessageBox(Buffer, MB_OKCANCEL);
+	if (Result != IDOK) return;
+
+	PrintLogLine("Deleting all character backup log data in '%s' containing %0.1f MB of data...", m_Options.BackupCharDataFolder.c_str(), FileSize / 1000000.0);
+
+	std::string FileSpec = eso::TerminatePath(m_Options.BackupCharDataFolder) + "uespBackupCharData*.txt";
+
+	if (!eso::DeleteFiles(FileSpec))
+	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "Failed to delete the backup character data files matching '%s'!", FileSpec.c_str());
+	}
+}
+
+
+void CuespLogMonitorDlg::OnUpdateFileDeletecharbackup(CCmdUI *pCmdUI)
+{
+	__int64 FileSize = GetCharBackupDataSize();
+	pCmdUI->Enable(FileSize > 0);
+}
+
+
+LRESULT CuespLogMonitorDlg::OnKickIdle(WPARAM, LPARAM)
+{
+	CMenu* pMainMenu = GetMenu();
+	CCmdUI cmdUI;
+
+	for (int n = 0; n < pMainMenu->GetMenuItemCount(); ++n)
+	{
+		CMenu* pSubMenu = pMainMenu->GetSubMenu(n);
+		cmdUI.m_nIndexMax = pSubMenu->GetMenuItemCount();
+		for (UINT i = 0; i < cmdUI.m_nIndexMax; ++i)
+		{
+			cmdUI.m_nIndex = i;
+			cmdUI.m_nID = pSubMenu->GetMenuItemID(i);
+			cmdUI.m_pMenu = pSubMenu;
+			cmdUI.DoUpdate(this, FALSE);
+		}
+	}
+	return TRUE;
+}
+
+

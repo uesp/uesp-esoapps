@@ -140,6 +140,9 @@
     <ClInclude Include="OptionsDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\common\zlib\zlib.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="uespLogMonitor.cpp">

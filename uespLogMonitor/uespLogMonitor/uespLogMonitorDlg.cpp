@@ -34,6 +34,17 @@
 		- Added support for parsing crafting bag data from log files.
 		- Fixed "Send Other File" to include build and character data.
 
+	v0.50 - ? March 2017
+		- Improved mutex handling to prevent many "Failed to wait for send queue mutex!" errors.
+		- Scrolling of log text improved to stay at bottom of log unless you manually scrolled elsewhere.
+		- Log text is no longer all selected at startup.
+		- Prevent closing dialog when the ESC key is pressed.
+		- Disabled messages when "0 elements" are removed from a section.
+		- Shortened the message when the log file size hasn't changed.
+		- Added the date/time to log messages.
+		- Removed unnecessary delays when sending data that makes it much faster.
+		- Output data is now compressed which makes sending it much faster (x5 on average).
+		- Increased the amount of log data sent per request now that it is compressed.
 
 	TODO:
 		- Proper UI threading.
@@ -83,14 +94,18 @@ const char ULM_REGISTRY_KEY_BACKUPCHARDATAFOLDER[] = "BackupCharDataFolder";
 const std::string ULM_LOGSTRING_JOIN("#STR#");
 const int  ULM_LOGSTRING_MAXLENGTH = 1900;
 
+const ULONGLONG ULM_MINIMUM_LOGCHECK_TIMEMS = 10000;
+const DWORD ULM_FILE_MONITOR_TIMER = 2000;
+
 const char ULM_SAVEDVAR_NAME[] = "uespLogSavedVars";
 const char ULM_SAVEDVAR_FILENAME[] = "uespLog.lua";
 const char ULM_SAVEDVAR_BASEPATH[] = "Elder Scrolls Online\\live\\SavedVariables\\";
 const char ULM_SAVEDVAR_ALTBASEPATH[] = "Elder Scrolls Online\\liveeu\\SavedVariables\\";
 
-const int ULM_SENDDATA_MAXPOSTSIZE = 100000;		/* Maximum desired size of post data in bytes */
+const int ULM_SENDDATA_MAXPOSTSIZE = 500000;		/* Maximum desired size of post data in bytes before compression */
 
-const int ULM_TIMER_ID = 5566;
+const int ULM_TIMER_ID  = 5566;
+const int ULM_TIMER_ID2 = 6655;
 
 
 #ifdef _DEBUG
@@ -101,11 +116,8 @@ const int ULM_TIMER_ID = 5566;
 BEGIN_MESSAGE_MAP(CuespLogMonitorDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
-	ON_WM_CLOSE()
 	ON_WM_QUERYDRAGICON()
-	ON_COMMAND(IDCLOSE, &CuespLogMonitorDlg::OnClose)
 	ON_COMMAND(ID_FILE_EXIT, &CuespLogMonitorDlg::OnFileExit)
-	ON_COMMAND(IDCANCEL, &CuespLogMonitorDlg::OnCancel)
 	ON_WM_TIMER()
 	ON_COMMAND(ID_VIEW_OPTIONS, &CuespLogMonitorDlg::OnViewOptions)
 	ON_WM_SIZE()
@@ -131,6 +143,8 @@ void replaceAll(std::string& str, const std::string& from, const std::string& to
 CuespLogMonitorDlg::CuespLogMonitorDlg(CWnd* pParent) :
 	CDialogEx(CuespLogMonitorDlg::IDD, pParent),
 	m_TimerId(0),
+	m_FileMonitorTimerId(0),
+	m_EnableFileMonitor(true),
 	m_LastLogFileSize(0),
 	m_IsInTray(false),
 	m_IsCheckingFile(false),
@@ -139,7 +153,9 @@ CuespLogMonitorDlg::CuespLogMonitorDlg(CWnd* pParent) :
 	m_StopSendQueueThread(0),
 	m_BuildDataValidScreenshotCount(0),
 	m_CharDataCount(0),
-	m_FormErrorRetryCount(0)
+	m_FormErrorRetryCount(0),
+	m_LastLogCheck(0),
+	m_hFileMonitor(INVALID_HANDLE_VALUE)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
@@ -157,6 +173,7 @@ CuespLogMonitorDlg::CuespLogMonitorDlg(CWnd* pParent) :
 
 CuespLogMonitorDlg::~CuespLogMonitorDlg()
 {
+	StopFileMonitor();
 	DestroySendQueueThread();
 	lua_close(m_pLuaState);
 }
@@ -170,16 +187,27 @@ void CuespLogMonitorDlg::DoDataExchange(CDataExchange* pDX)
 
 void CuespLogMonitorDlg::CreateTimer (void)
 {
-	if (m_TimerId > 0) DestroyTimer();
+	DestroyTimer();
+
 	m_TimerId = SetTimer(ULM_TIMER_ID, m_Options.UpdateTime * 1000, NULL);
+
+	m_FileMonitorTimerId = SetTimer(ULM_TIMER_ID2, ULM_FILE_MONITOR_TIMER, NULL);
 }
 
 
 void CuespLogMonitorDlg::DestroyTimer (void)
 {
-	if (m_TimerId < 0) return;
-	KillTimer(m_TimerId);
-	m_TimerId = 0;
+	if (m_TimerId > 0)
+	{
+		KillTimer(m_TimerId);
+		m_TimerId = 0;
+	}
+
+	if (m_FileMonitorTimerId > 0)
+	{
+		KillTimer(m_FileMonitorTimerId);
+		m_FileMonitorTimerId = 0;
+	}
 }
 
 
@@ -359,7 +387,7 @@ bool CuespLogMonitorDlg::ParseSavedVarAccount (const std::string VarName, void* 
 
 bool CuespLogMonitorDlg::ParseSavedVarCharacterAccount (const std::string VarName, void* pUserData)
 {
-	PrintLogLine(ULM_LOGLEVEL_INFO, "Parsing data sections in saved variable log for account '%s'...", VarName.c_str());
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Parsing data sections in saved variable log for character '%s'...", VarName.c_str());
 
 	ParseSavedVarDataSection("charData", &CuespLogMonitorDlg::ParseSavedVarCharData);
 
@@ -1363,10 +1391,12 @@ std::string CuespLogMonitorDlg::EncodeLogDataForQuery (const std::string Data)
 }
 
 
-bool CuespLogMonitorDlg::SendFormData (const std::string FormURL, std::string FormQuery)
+bool CuespLogMonitorDlg::SendFormData (const std::string FormURL, std::string FormQuery, bool Compress, size_t& SentSize)
 {
 	HINTERNET hinet, higeo, hreq;
 	BOOL Result;
+
+	SentSize = 0;
 
 	std::string EscQuery = FormQuery;
 	replaceAll(EscQuery, "+", "%2b");
@@ -1391,11 +1421,41 @@ bool CuespLogMonitorDlg::SendFormData (const std::string FormURL, std::string Fo
 	higeo = InternetConnect(hinet, SiteName.c_str(), INTERNET_DEFAULT_HTTP_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
 	hreq = HttpOpenRequest(higeo, "POST", PageURI.c_str(), "", SiteName.c_str(), NULL, INTERNET_FLAG_KEEP_CONNECTION | INTERNET_FLAG_FORMS_SUBMIT, 0);
 
-	HttpAddRequestHeaders(hreq, "Content-Type: application/x-www-form-urlencoded", -1, HTTP_ADDREQ_FLAG_ADD);
-	Result = HttpSendRequest(hreq, 0, 0, (void *)EscQuery.c_str(), EscQuery.size());
+	HttpAddRequestHeaders(hreq, "Content-Type: application/x-www-form-urlencoded", -1, HTTP_ADDREQ_FLAG_ADD | HTTP_ADDREQ_FLAG_REPLACE);
+
+	if (Compress)
+	{
+		byte* pCompressedData = new byte[EscQuery.size() + 200];
+		size_t CompressedSize = 0;
+
+		bool CompressResult = eso::DeflateZlibBlock(pCompressedData, CompressedSize, EscQuery.size() + 90, (eso::byte *) EscQuery.c_str(), EscQuery.size());
+
+		if (CompressResult)
+		{
+			//PrintLogLine("Sending Compressed Data: %d -> %d", EscQuery.size(), CompressedSize);
+			HttpAddRequestHeaders(hreq, "Content-Encoding: gzip", -1, HTTP_ADDREQ_FLAG_ADD | HTTP_ADDREQ_FLAG_REPLACE);
+			Result = HttpSendRequest(hreq, 0, 0, (void *)pCompressedData, CompressedSize);
+			SentSize = CompressedSize;
+		}
+		else
+		{
+			PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to compress the HTTP form request data!");
+			Compress = false;
+		}
+
+		delete[] pCompressedData;
+	}
+
+	if (!Compress)
+	{
+		HttpAddRequestHeaders(hreq, "Content-Encoding", -1, HTTP_ADDREQ_FLAG_REPLACE);
+		Result = HttpSendRequest(hreq, 0, 0, (void *)EscQuery.c_str(), EscQuery.size());
+		SentSize = EscQuery.size();
+	}
 
 	if (!Result)
 	{
+		SentSize = 0;
 		InternetCloseHandle(hreq);
 		InternetCloseHandle(higeo);
 		InternetCloseHandle(hinet);
@@ -1406,8 +1466,6 @@ bool CuespLogMonitorDlg::SendFormData (const std::string FormURL, std::string Fo
 	char Buffer[1220];
 	DWORD Size = 1200;
 	
-	Sleep(100); // TODO?
-
 	Result = HttpQueryInfo(hreq, HTTP_QUERY_STATUS_CODE, &Buffer, &Size, NULL);
 	
 	char ErrorBuffer[1220] = "X-Uesp-Error";
@@ -1422,7 +1480,6 @@ bool CuespLogMonitorDlg::SendFormData (const std::string FormURL, std::string Fo
 	if (!Result) 
 	{
 		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to receive a HTTP response when sending form data! %s", ErrorBuffer);
-		//PrintLogLine(ULM_LOGLEVEL_ERROR, "\t\t%s", ErrorBuffer);
 		++m_FormErrorRetryCount;
 		return false;
 	}
@@ -1430,7 +1487,6 @@ bool CuespLogMonitorDlg::SendFormData (const std::string FormURL, std::string Fo
 	if (strcmp(Buffer, "200") != 0)
 	{
 		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Received a '%s' HTTP response when sending form data! %s", Buffer, ErrorBuffer);
-		//PrintLogLine(ULM_LOGLEVEL_ERROR, "\t\t%s", ErrorBuffer);
 		++m_FormErrorRetryCount;
 		return false;
 	}
@@ -1449,6 +1505,8 @@ bool CuespLogMonitorDlg::SendQueuedData ()
 bool CuespLogMonitorDlg::SendQueuedBuildDataThread()
 {
 	std::string FormQuery;
+	std::string CurrentData;
+	size_t SentSize = 0;
 
 	if (m_BuildDataQueue.empty()) return true;
 	if (CuespLogMonitorDlg::BUILDDATA_UPLOAD_TESTONLY) return true;
@@ -1459,27 +1517,41 @@ bool CuespLogMonitorDlg::SendQueuedBuildDataThread()
 		return false;
 	}
 
-	std::string TempData = EncodeLogDataForQuery(m_BuildDataQueue);
+	CurrentData = m_BuildDataQueue;
+	m_BuildDataQueue.clear();
+
+	ReleaseMutex(m_hSendQueueMutex);
+
+	std::string TempData = EncodeLogDataForQuery(CurrentData);
 	FormQuery += "chardata=";
 	FormQuery += TempData;
 	FormQuery += "&";
 
-	if (!SendFormData(m_Options.BuildDataFormURL, FormQuery))
+	bool Result = SendFormData(m_Options.BuildDataFormURL, FormQuery, true, SentSize);
+
+	if (!Result)
 	{
 		if (m_FormErrorRetryCount > MAXIMUM_FORMERROR_RETRYCOUNT)
 		{
 			m_FormErrorRetryCount = 0;
 			PrintLogLine(ULM_LOGLEVEL_INFO, "Exceeded %d failed send attempts...aborting send of build data!", MAXIMUM_FORMERROR_RETRYCOUNT);
-			m_BuildDataQueue.clear();
+		}
+		else
+		{
+			if (WaitForSingleObject(m_hSendQueueMutex, INFINITE) != WAIT_OBJECT_0)
+			{
+				PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to wait for send queue mutex!");
+				return false;
+			}
+
+			m_BuildDataQueue += CurrentData;
+			ReleaseMutex(m_hSendQueueMutex);
 		}
 
-		ReleaseMutex(m_hSendQueueMutex);
 		return false;
 	}
 
-	PrintLogLine(ULM_LOGLEVEL_INFO, "Sent %u bytes of build data!", FormQuery.size());
-	m_BuildDataQueue.clear();
-	ReleaseMutex(m_hSendQueueMutex);
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Sent %u bytes of build data!", SentSize);
 	return true;
 }
 
@@ -1487,6 +1559,8 @@ bool CuespLogMonitorDlg::SendQueuedBuildDataThread()
 bool CuespLogMonitorDlg::SendQueuedCharDataThread()
 {
 	std::string FormQuery;
+	std::string CurrentData;
+	size_t SentSize = 0;
 
 	if (m_CharDataQueue.empty()) return true;
 	if (CuespLogMonitorDlg::CHARDATA_UPLOAD_TESTONLY) return true;
@@ -1497,35 +1571,52 @@ bool CuespLogMonitorDlg::SendQueuedCharDataThread()
 		return false;
 	}
 
-	std::string TempData = EncodeLogDataForQuery(m_CharDataQueue);
+	CurrentData = m_CharDataQueue;
+	m_CharDataQueue.clear();
+
+	ReleaseMutex(m_hSendQueueMutex);
+
+	std::string TempData = EncodeLogDataForQuery(CurrentData);
 	FormQuery += "chardata=";
 	FormQuery += TempData;
 	FormQuery += "&";
 
-	if (!SendFormData(m_Options.CharDataFormURL, FormQuery))
+	if (!SendFormData(m_Options.CharDataFormURL, FormQuery, true, SentSize))
 	{
 		if (m_FormErrorRetryCount > MAXIMUM_FORMERROR_RETRYCOUNT)
 		{
 			m_FormErrorRetryCount = 0;
 			PrintLogLine(ULM_LOGLEVEL_INFO, "Exceeded %d failed send attempts...aborting send of character data!", MAXIMUM_FORMERROR_RETRYCOUNT);
-			m_CharDataQueue.clear();
+		}
+		else
+		{
+			if (WaitForSingleObject(m_hSendQueueMutex, INFINITE) != WAIT_OBJECT_0)
+			{
+				PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to wait for send queue mutex!");
+				return false;
+			}
+
+			m_CharDataQueue += CurrentData;
+			ReleaseMutex(m_hSendQueueMutex);
 		}
 
-		ReleaseMutex(m_hSendQueueMutex);
 		return false;
 	}
 
-	PrintLogLine(ULM_LOGLEVEL_INFO, "Sent %u bytes of character data!", FormQuery.size());
-	m_CharDataQueue.clear();
-	ReleaseMutex(m_hSendQueueMutex);
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Sent %u bytes of character data!", SentSize);
 	return true;
 }
 
 
 bool CuespLogMonitorDlg::SendQueuedDataThread()
 {
+	CUlmLogDataArray SentData;
 	std::string FormQuery;
-	size_t i;
+	size_t i = 0;
+	size_t LastIndex = -1;
+	size_t SentSize = 0;
+
+	if (m_SendQueue.size() == 0) return true;
 
 	if (WaitForSingleObject(m_hSendQueueMutex, INFINITE) != WAIT_OBJECT_0) 
 	{ 
@@ -1533,10 +1624,14 @@ bool CuespLogMonitorDlg::SendQueuedDataThread()
 		return false;
 	}
 
+	size_t OrigQueueSize = m_SendQueue.size();
+
 	for (i = 0; i < m_SendQueue.size(); ++i)
 	{
+		LastIndex = i;
+		SentData.push_back(m_SendQueue[i]);
+
 		std::string TempData = EncodeLogDataForQuery(m_SendQueue[i].Data);
-		//eso::PrintLog("%s", TempData.c_str());
 
 		FormQuery += "log[]=";
 		FormQuery += TempData;
@@ -1548,26 +1643,36 @@ bool CuespLogMonitorDlg::SendQueuedDataThread()
 		}
 	}
 
-	if (FormQuery.size() > 0) 
+	m_SendQueue.erase(m_SendQueue.begin(), m_SendQueue.begin() + LastIndex + 1);
+	ReleaseMutex(m_hSendQueueMutex);
+
+	if (FormQuery.size() <= 0) return true;
+
+	if (!SendFormData(m_Options.FormURL, FormQuery, true, SentSize)) 
 	{
-		if (!SendFormData(m_Options.FormURL, FormQuery)) 
+		if (m_FormErrorRetryCount > MAXIMUM_FORMERROR_RETRYCOUNT)
 		{
-			if (m_FormErrorRetryCount > MAXIMUM_FORMERROR_RETRYCOUNT)
+			m_FormErrorRetryCount = 0;
+			PrintLogLine(ULM_LOGLEVEL_INFO, "Exceeded %d failed send attempts...aborting send of log data!", MAXIMUM_FORMERROR_RETRYCOUNT);
+		}
+		else
+		{
+			if (WaitForSingleObject(m_hSendQueueMutex, INFINITE) != WAIT_OBJECT_0)
 			{
-				m_FormErrorRetryCount = 0;
-				PrintLogLine(ULM_LOGLEVEL_INFO, "Exceeded %d failed send attempts...aborting send of log data!", MAXIMUM_FORMERROR_RETRYCOUNT);
-				m_SendQueue.erase(m_SendQueue.begin(), m_SendQueue.begin() + i);
+				PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to wait for send queue mutex!");
+				return false;
 			}
 
+			m_SendQueue.insert(m_SendQueue.end(), SentData.begin(), SentData.end());
+
 			ReleaseMutex(m_hSendQueueMutex);
-			return false;
 		}
 
-		PrintLogLine(ULM_LOGLEVEL_INFO, "Sent %d of %d log entries in %d bytes!", i, m_SendQueue.size(), FormQuery.size());
-		m_SendQueue.erase(m_SendQueue.begin(), m_SendQueue.begin() + i);
+		return false;
 	}
 
-	ReleaseMutex(m_hSendQueueMutex);
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Sent %d of %d log entries in %d bytes!", LastIndex + 1, OrigQueueSize, SentSize);
+
 	return true;
 }
 
@@ -1623,15 +1728,8 @@ bool CuespLogMonitorDlg::QueueBuildData()
 {
 	if (m_BuildData.empty()) return true;
 
-	if (WaitForSingleObject(m_hSendQueueMutex, 1000) != WAIT_OBJECT_0)
-	{
-		PrintLogLine(ULM_LOGLEVEL_ERROR, "Failed to queue build data...failed to acquire send queue mutex!");
-		return false;
-	}
-
 	m_BuildDataQueue += m_BuildData;
 
-	ReleaseMutex(m_hSendQueueMutex);
 	return true;
 }
 
@@ -1640,15 +1738,8 @@ bool CuespLogMonitorDlg::QueueCharData()
 {
 	if (m_CharData.empty()) return true;
 
-	if (WaitForSingleObject(m_hSendQueueMutex, 1000) != WAIT_OBJECT_0)
-	{
-		PrintLogLine(ULM_LOGLEVEL_ERROR, "Failed to queue character data...failed to acquire send queue mutex!");
-		return false;
-	}
-
 	m_CharDataQueue += m_CharData;
 
-	ReleaseMutex(m_hSendQueueMutex);
 	return true;
 }
 
@@ -1818,47 +1909,50 @@ void CuespLogMonitorDlg::PrintLogLine (const char* pString, ...)
 void CuespLogMonitorDlg::PrintLogLineV (const char* pString, va_list Args)
 {
 	CString Buffer;
+	CString CurrentDate; // = COleDateTime::GetCurrentTime().Format("%m-%d %H:%M:%S -- ");
+	SYSTEMTIME t;
+
+	GetLocalTime(&t);
+	CurrentDate.Format("%02d-%02d %02d:%02d:%02d.%03d -- ", t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond, t.wMilliseconds);
 
 	eso::PrintLogV(pString, Args);
 	Buffer.FormatV(pString, Args);
-	Buffer += "\r\n";
+	Buffer = CurrentDate + Buffer + "\r\n";
 
 	CHARRANGE OrigSelRange;
 	m_LogText.GetSel(OrigSelRange);
 
-	int MinScrollPos, MaxScrollPos;
+	bool IsAtBottom = false;
+	long OrigTextLength = m_LogText.GetTextLength();
+	SCROLLINFO ScrollInfo;
 	int OrigScrollPos = m_LogText.GetScrollPos(SB_VERT);
-	m_LogText.GetScrollRange(SB_VERT, &MinScrollPos, &MaxScrollPos);
+	int nOldFirstVisibleLine = m_LogText.GetFirstVisibleLine();
+
+	if (m_LogText.GetScrollInfo(SB_VERT, &ScrollInfo, SIF_ALL))
+	{
+		IsAtBottom = ((ScrollInfo.nPos + ScrollInfo.nPage >= (UINT)ScrollInfo.nMax) || ScrollInfo.nPage == 0);
+	}
 
 	m_LogText.LockWindowUpdate();
 
 	long TextLength = m_LogText.GetTextLength();
 	m_LogText.SetSel(TextLength, TextLength);
 	m_LogText.ReplaceSel(Buffer, false);
-
-	if (TextLength > 0)
-		m_LogText.SetSel(OrigSelRange);
-	else
-		m_LogText.SetSel(m_LogText.GetTextLength(), m_LogText.GetTextLength());
-
-	m_LogText.UnlockWindowUpdate();
-	m_LogText.RedrawWindow();
 	
-	if (OrigScrollPos == MaxScrollPos) 
-	{
-		//m_LogText.GetScrollRange(SB_VERT, &MinScrollPos, &MaxScrollPos);
-		//m_LogText.SetScrollPos(SB_VERT, MaxScrollPos, TRUE);
-		m_LogText.SendMessage(WM_VSCROLL, SB_BOTTOM, NULL);
-	}
-	else
-	{
-		//m_LogText.SetScrollPos(SB_VERT, OrigScrollPos, TRUE);
-	}
+	int nNewFirstVisibleLine = m_LogText.GetFirstVisibleLine();
+	if (nOldFirstVisibleLine != nNewFirstVisibleLine) m_LogText.LineScroll(nOldFirstVisibleLine - nNewFirstVisibleLine);
 	
 		/* Force scroll to bottom with no text selection */
-	TextLength = m_LogText.GetTextLength();
-	m_LogText.SetSel(TextLength, TextLength);
-	m_LogText.SendMessage(WM_VSCROLL, SB_BOTTOM, NULL);
+	if (IsAtBottom)
+	{
+		TextLength = m_LogText.GetTextLength();
+		m_LogText.SetSel(TextLength, TextLength);
+		m_LogText.SendMessage(WM_VSCROLL, SB_BOTTOM, NULL);
+	}
+
+	if (OrigSelRange.cpMax != OrigSelRange.cpMin) m_LogText.SetSel(OrigSelRange);
+	m_LogText.UnlockWindowUpdate();
+	m_LogText.RedrawWindow();
 }
 
 
@@ -1916,13 +2010,13 @@ DWORD CuespLogMonitorDlg::SendQueueThreadProc()
 	while(!m_StopSendQueueThread)
 	{
 		SendQueuedDataThread();
-		Sleep(100);
+		//Sleep(100);
 
 		SendQueuedBuildDataThread();
-		Sleep(100);
+		//Sleep(100);
 
 		SendQueuedCharDataThread();
-		Sleep(100);
+		//Sleep(100);
 	}
 
 	return 0;
@@ -1987,7 +2081,11 @@ BOOL CuespLogMonitorDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);
 	SetIcon(m_hIcon, FALSE);
 
+	InitializeFileMonitor();
+
 	InitSendQueueThread();
+
+	m_LogText.SetOptions(ECOOP_OR, ECO_SAVESEL);
 
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Program initialized...");
 	PrintSettings();
@@ -2186,7 +2284,7 @@ bool CuespLogMonitorDlg::SaveRegistrySettings (void)
 
 void CuespLogMonitorDlg::OnClose()
 {
-	OnOK();
+	//EndDialog(0);
 }
 
 
@@ -2199,7 +2297,7 @@ BOOL CuespLogMonitorDlg::DestroyWindow()
 
 void CuespLogMonitorDlg::OnFileExit()
 {
-	OnOK();
+	EndDialog(0);
 }
 
 
@@ -2408,7 +2506,7 @@ void CuespLogMonitorDlg::PostURL()
 
 	  char Buffer[220];
 	  DWORD Size = 200;
-	  Sleep(400);
+	  //Sleep(400);
 
 	  Result = HttpQueryInfo(hreq, HTTP_QUERY_STATUS_CODE, &Buffer, &Size, NULL);
 	  eso::PrintLog("HTTP Query Info = %d (%s)", Result, Buffer);  
@@ -2424,10 +2522,28 @@ void CuespLogMonitorDlg::PostURL()
 }
 
 
-void CuespLogMonitorDlg::OnCancel()
+void CuespLogMonitorDlg::OnOK()
 {
-	/* Do nothing to prevent ESC from closing dialog */
-	//eso::PrintLog("OnCancel");
+}
+
+
+void CuespLogMonitorDlg::InitializeFileMonitor()
+{
+	StopFileMonitor();
+
+	m_hFileMonitor = FindFirstChangeNotification(m_Options.SavedVarPath.c_str(), FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE);
+}
+
+
+void CuespLogMonitorDlg::StopFileMonitor()
+{
+
+	if (m_hFileMonitor != INVALID_HANDLE_VALUE)
+	{
+		FindCloseChangeNotification(m_hFileMonitor);
+		m_hFileMonitor = INVALID_HANDLE_VALUE;
+	}
+
 }
 
 
@@ -2455,25 +2571,22 @@ bool CuespLogMonitorDlg::DoLogCheck(const bool OverrideEnable)
 
 	ReleaseMutex(m_hSendQueueMutex);
 
+	ULONGLONG CurrentTime = GetTickCount64();
+	ULONGLONG DeltaTime = CurrentTime - m_LastLogCheck;
+
+	if (DeltaTime < ULM_MINIMUM_LOGCHECK_TIMEMS) return false;
+	m_LastLogCheck = CurrentTime;
+
+	if (!HasLogChanged()) return false;
+
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Checking log...");
 	//PrintLogLine(ULM_LOGLEVEL_INFO, "Pre-TimeStamp: %I64d", m_Options.LastTimeStamp);
 	//PrintLogLine(ULM_LOGLEVEL_INFO, "Pre-Backup TimeStamp: %I64d", m_Options.LastBackupTimeStamp);
-
-	if (HasQueuedData()) 
-	{
-		PrintLogLine(ULM_LOGLEVEL_INFO, "Sending remaining queued log data...");
-
-		if (SendQueuedData())
-		{
-			m_Options.LastTimeStamp = m_LastParsedTimeStamp;
-		}
-	}
 
 	m_BuildData = "";
 	m_CharData = "";
 	m_CharDataCount = 0;
 
-	if (!HasLogChanged()) return false;
 	if (!LoadSavedVars()) return false;
 
 	if (WaitForSingleObject(m_hSendQueueMutex, 1000) != WAIT_OBJECT_0) 
@@ -2502,11 +2615,15 @@ bool CuespLogMonitorDlg::DoLogCheck(const bool OverrideEnable)
 	}
 
 	UpdateLogFileSize();
+	m_EnableFileMonitor = false;
 
 	bool Result = DeleteOldLogData();
 	Result &= SaveSavedVars();
 
-	eso::PrintLog("LUA Stack size = %d", lua_gettop(m_pLuaState));
+	UpdateLogFileSize();
+	m_EnableFileMonitor = true;
+
+	//eso::PrintLog("LUA Stack size = %d", lua_gettop(m_pLuaState));
 	lua_settop(m_pLuaState, 0);
 
 	ReleaseMutex(m_hSendQueueMutex);
@@ -2592,7 +2709,7 @@ bool CuespLogMonitorDlg::DeleteOldLogDataSection (const std::string Section, con
 	lua_newtable(m_pLuaState);
 	lua_setfield(m_pLuaState, -2, "data");
 
-	PrintLogLine(ULM_LOGLEVEL_INFO, "Removed %d elements from '%s' data.", OrigTableLength, Section.c_str());
+	if (OrigTableLength != 0) PrintLogLine(ULM_LOGLEVEL_INFO, "Removed %d elements from '%s' data.", OrigTableLength, Section.c_str());
 	
 	lua_pop(m_pLuaState, 1);
 	return true;
@@ -2630,7 +2747,7 @@ bool CuespLogMonitorDlg::HasLogChanged()
 
 	if (FileSize == m_LastLogFileSize) 
 	{
-		PrintLogLine(ULM_LOGLEVEL_INFO, "Log file size hasn't changed");
+		PrintLogLine(ULM_LOGLEVEL_INFO, "Log file size hasn't changed since last check.");
 		return false;
 	}
 
@@ -2653,10 +2770,43 @@ void CuespLogMonitorDlg::OnTimer(UINT_PTR nIDEvent)
 		OnLogCheckTimer();
 		return;
 	}
+	else if (nIDEvent == m_FileMonitorTimerId)
+	{
+		OnCheckFileMonitorTimer();
+		return;
+	}
 
 	CDialogEx::OnTimer(nIDEvent);
 }
 
+
+void CuespLogMonitorDlg::OnCheckFileMonitorTimer()
+{
+	DWORD dwWaitStatus = WaitForSingleObject(m_hFileMonitor, 0);
+
+	if (dwWaitStatus == WAIT_OBJECT_0)
+	{
+		OnFileMonitorUpdate();
+	}
+}
+
+
+void CuespLogMonitorDlg::OnFileMonitorUpdate()
+{
+	ULONGLONG CurrentTime = GetTickCount64();
+	ULONGLONG DeltaTime = CurrentTime - m_LastLogCheck;
+
+	if (!m_EnableFileMonitor || DeltaTime < ULM_MINIMUM_LOGCHECK_TIMEMS)
+	{
+		FindNextChangeNotification(m_hFileMonitor);
+		return;
+	}
+
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Automatically checking for changes in log file...");
+
+	DoLogCheck(true);
+	FindNextChangeNotification(m_hFileMonitor);
+}
 
 
 void CuespLogMonitorDlg::OnViewOptions()
@@ -2665,6 +2815,8 @@ void CuespLogMonitorDlg::OnViewOptions()
 	int OrigUpdateTime = m_Options.UpdateTime;
 
 	if (Dlg.DoModal(m_Options) != IDOK) return;
+
+	InitializeFileMonitor();
 
 	if (OrigUpdateTime != m_Options.UpdateTime)
 	{
@@ -2921,7 +3073,6 @@ bool CuespLogMonitorDlg::SendEntireLog (const std::string Filename)
 	}
 
 			/* Send any data that needs to be updated */
-	//bool Result = SendAllLogData();
 	bool Result = true;
 	
 	Result &= CheckAndSendLogData();
@@ -2947,4 +3098,18 @@ void CuespLogMonitorDlg::OnFileChecklognow()
 void CuespLogMonitorDlg::OnBnClickedChecknowButton()
 {
 	DoLogCheck(true);
+}
+
+
+BOOL CuespLogMonitorDlg::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message == WM_KEYDOWN)
+	{
+		if (pMsg->wParam == VK_RETURN || pMsg->wParam == VK_ESCAPE)
+		{
+			return TRUE;                // Do not process further
+		}
+	}
+
+	return CDialog::PreTranslateMessage(pMsg);
 }

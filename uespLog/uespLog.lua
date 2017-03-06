@@ -667,6 +667,7 @@
 --			- Added the "/uespcraft alchemy on|off" command which turns on tooltips when in the alchemy crafting window.
 --			- Fixed UESP sales price not appearing in tooltips from top item rows.
 --			- Fixed price lookups for master writs and crafted potions.
+--			- Fixed item mining with no item type set.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -8752,7 +8753,7 @@ function uespLog.MineItemIterate (itemId)
 	local itemLink = uespLog.MakeItemLink(itemId, 1, 1)
 	local itemType = GetItemLinkItemType(itemLink)
 	
-	if (uespLog.mineItemOnlyItemType[itemType] == nil) then
+	if (#uespLog.mineItemOnlyItemType > 0 and uespLog.mineItemOnlyItemType[itemType] == nil) then
 		uespLog.mineItemCount = uespLog.mineItemCount + 1
 		uespLog.mineItemBadCount = uespLog.mineItemBadCount + 1
 		return 1, 0

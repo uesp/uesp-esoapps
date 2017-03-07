@@ -668,6 +668,8 @@
 --			- Fixed UESP sales price not appearing in tooltips from top item rows.
 --			- Fixed price lookups for master writs and crafted potions.
 --			- Fixed item mining with no item type set.
+--			- Stopping a guild listing scan in progress with "/uespsales stop" now works correctly.
+--			- Removed the "No items crafted." message.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -796,6 +798,7 @@ uespLog.dumpIndexTable = { }
 uespLog.dumpTableTable = { }
 uespLog.countGlobal = 0
 uespLog.countGlobalError = 0
+uespLogcountVariables = {}
 
 uespLog.baseTrackStatGameTime = GetGameTimeMilliseconds()
 
@@ -5023,7 +5026,7 @@ function uespLog.OnCraftCompleted (eventCode, craftSkill)
 	end
 	
 	if (numItemsGained == 0) then
-		uespLog.MsgType(uespLog.MSG_OTHER, "No items crafted")
+		uespLog.DebugExtraMsg("No items crafted")
 	else
 		uespLog.TrackLootSource("crafted")
 	end	
@@ -7100,6 +7103,90 @@ function uespLog.CountVarReturns(...)
 end
 
 
+function uespLog.ClearSalesPrices()
+	uespLog.SalesPrices = nil
+end
+
+
+function uespLog.CountVariableSize(object)
+	uespLogcountVariables = {}
+	
+	local count, size = uespLog.CountVariableSizeSafe(object)
+	
+	uespLogcountVariables = {}
+	
+	uespLog.Msg("Variable size is "..size.." bytes in "..count.." subobjects.")
+end
+
+
+function uespLog.CountVariableSizeSafe(object)
+	local size = 0
+	local count = 0
+	
+	if (object == nil) then
+		return 0, 0
+	end
+	
+	local vType = type(object)
+	
+	if (vType ~= "table") then
+	
+		if (vType == "string") then
+			size = size + #object + 24
+		elseif (vType == "number") then
+			size = size + 4 + 2
+		elseif (vType == "boolean") then
+			size = size + 4 + 1
+		else
+			size = size + 10
+		end
+		
+		return 1, size
+	end
+	
+	local stringName = tostring(object)
+	
+	if (uespLogcountVariables[stringName] ~= nil) then
+		return 0, 0
+	end
+	
+	size = size + 40
+	count = count + 1
+	local checkedKeys = {}
+	
+	for k, v in ipairs(object) do
+		vType = type(v)
+		
+		tCount, tSize = uespLog.CountVariableSizeSafe(k)
+		count = count + tCount
+		size = size + tSize
+				
+		local tCount, tSize = uespLog.CountVariableSizeSafe(v)
+		count = count + tCount
+		size = size + tSize + 16
+		
+		checkedKeys[k] = 1
+	end
+	
+	for k, v in pairs(object) do
+	
+		if (checkedKeys[k] == nil) then
+			vType = type(v)
+			
+			tCount, tSize = uespLog.CountVariableSizeSafe(k)
+			count = count + tCount
+			size = size + tSize
+			
+			local tCount, tSize = uespLog.CountVariableSizeSafe(v)
+			count = count + tCount
+			size = size + tSize + 40
+		end
+	end
+	
+	return count, size
+end
+
+
  function uespLog.countVariable(object)
 	local size = 0
 	local count = 0
@@ -7114,11 +7201,11 @@ end
 		count = count + 1
 		
 		if (vType == "string") then
-			size = size + #v + 2 + #stringName + 10
+			size = size + #v + 2 + #stringName + 20
 		elseif (vType == "number") then
-			size = size + 4 + #stringName + 10
+			size = size + 4 + #stringName + 20
 		elseif (vType == "boolean") then
-			size = size + 5 + #stringName + 10
+			size = size + 5 + #stringName + 20
 		elseif (vType == "table") then
 			local tCount, tSize = uespLog.countVariable(v)
 			count = count + tCount - 1

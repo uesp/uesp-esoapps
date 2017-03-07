@@ -10541,7 +10541,7 @@ function uespLog.MakeItemLinkEx(itemData)
 	--     |H0:item:ID:SUBTYPE:LEVEL:ENCHANTID:ENCHANTSUBTYPE:ENCHANTLEVEL:WRIT1:WRIT2:WRIT3:WRIT4:WRIT5:WRIT6:0:0:0:0:STYLE:CRAFTED:BOUND:CHARGES:POTIONEFFECT|hNAME|h
 	local itemId = itemData.itemId or 1
 	local itemLevel = itemData.level or 1
-	local itemQuality = itemData.quality or itemData.inttype or 1
+	local itemQuality = itemData.quality or itemData.inttype or itemData.intSubtype or itemData.intSubType or 1
 	local enchantId = itemData.enchantId or 0
 	local enchantQuality = itemData.enchantQuality or 0
 	local enchantLevel = itemData.enchantLevel or 0
@@ -14371,3 +14371,12 @@ function uespLog.ZO_InventorySlot_OnMouseEnter(inventorySlot)
 	
 	return uespLog.Old_ZO_InventorySlot_OnMouseEnter(inventorySlot)
 end
+
+
+function uespLog.MineItemSingle(itemId, internalLevel, internalSubtype)
+	local itemLink = uespLog.MakeItemLinkEx( { itemId = itemId, level = internalLevel, quality = internalSubtype, style = 0 } )
+		
+	uespLog.LogItemLink(itemLink, "mineitem")
+end
+
+

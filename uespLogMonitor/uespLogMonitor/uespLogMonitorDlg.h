@@ -325,7 +325,6 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 
 	BOOL PreTranslateMessage(MSG* pMsg);
-	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
 
 	DECLARE_MESSAGE_MAP()
 
@@ -350,4 +349,5 @@ public:
 	afx_msg void OnFileDeletecharbackup();
 	afx_msg void OnUpdateFileDeletecharbackup(CCmdUI *pCmdUI);
 	afx_msg void OnViewCheckfilesizes();
+	afx_msg void OnInitMenuPopup(CMenu *pPopupMenu, UINT nIndex, BOOL bSysMenu);
 };

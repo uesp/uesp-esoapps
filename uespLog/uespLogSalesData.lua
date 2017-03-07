@@ -245,6 +245,10 @@ end
 function uespLog.StartGuildSalesScanMore(guildIndex)
 	local guildId = GetGuildId(guildIndex)
 	local hasMore = DoesGuildHistoryCategoryHaveMoreEvents(guildId, GUILD_HISTORY_STORE)
+	
+	if (not uespLog.SalesGuildSearchScanStarted) then
+		return false
+	end
 		
 	if (not hasMore) then
 	
@@ -279,6 +283,10 @@ function uespLog.ScanGuildSales(guildIndex)
 	local requested = false
 	local currentTimestamp = uespLog.GuildHistoryLastReceivedTimestamp
 	local numEvents = GetNumGuildEvents(guildId, GUILD_HISTORY_STORE)
+	
+	if (not uespLog.SalesGuildSearchScanStarted) then
+		return false
+	end
 	
 	if (uespLog.SalesStartEventIndex >= numEvents and numEvents > 0) then
 		uespLog.SalesBadScanCount = uespLog.SalesBadScanCount + 1
@@ -879,6 +887,7 @@ function uespLog.StartGuildSearchSalesScanAll()
 	uespLog.SalesGuildSearchScanGuildCount = numTradeGuilds
 	uespLog.SalesGuildSearchScanAllGuilds = true
 	uespLog.SalesGuildSearchScanGuildId = 0
+	uespLog.SalesGuildSearchScanStarted = false
 	
 	uespLog.StartGuildSearchSalesScanNextGuild()
 end
@@ -887,6 +896,10 @@ end
 function uespLog.StartGuildSearchSalesScanNextGuild()
 	local guildId, guildName = GetCurrentTradingHouseGuildDetails()
 	local cooldown = GetTradingHouseCooldownRemaining()
+	
+	if (not uespLog.SalesGuildSearchScanAllGuilds) then
+		return false
+	end
 	
 	if (GetNumTradingHouseGuilds() == 0) then
 		uespLog.Msg("Scan Aborted! You must be on a guild trader in order to perform a listing scan.")
@@ -909,6 +922,7 @@ function uespLog.StartGuildSearchSalesScanNextGuild()
 		
 	if (uespLog.SalesGuildSearchScanGuildId > uespLog.SalesGuildSearchScanGuildCount) then
 		uespLog.SalesGuildSearchScanAllGuilds = false
+		uespLog.SalesGuildSearchScanStarted = false
 		uespLog.Msg("Finished scanning listings from all guilds!")
 		return
 	end
@@ -917,6 +931,7 @@ function uespLog.StartGuildSearchSalesScanNextGuild()
 	
 		if (not SelectTradingHouseGuildId(uespLog.SalesGuildSearchScanGuildId)) then
 			uespLog.SalesGuildSearchScanAllGuilds = false
+			uespLog.SalesGuildSearchScanStarted = false
 			uespLog.Msg("Error: Failed to select guild ID "..tostring(uespLog.SalesGuildSearchScanGuildId).." for listing scan!")
 			return
 		end
@@ -991,6 +1006,7 @@ function uespLog.StopGuildSearchSalesScan()
 	end
 	
 	uespLog.SalesGuildSearchScanStarted = false
+	uespLog.SalesGuildSearchScanAllGuilds = false
 end
 
 
@@ -1024,6 +1040,10 @@ end
 
 function uespLog.DoNextGuildListingScan()
 	local cooldown = GetTradingHouseCooldownRemaining()
+	
+	if (not uespLog.SalesGuildSearchScanStarted) then
+		return false
+	end
 
 	if (GetNumTradingHouseGuilds() == 0) then
 		uespLog.Msg("Scan Aborted! You must be on a guild trader in order to perform a listing scan.")

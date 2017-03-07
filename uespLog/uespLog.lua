@@ -2776,8 +2776,8 @@ uespLog.addonMemoryIndex = 1
 function uespLog.ShowAddonMemory()
 	local lastMemory = uespLog.initialMemory
 	
-	--table.sort(uespLog.addonMemory, function(a, b) return a.memory < b.memory end )
-	table.sort(uespLog.addonMemory, function(a, b) return a.index < b.index end )
+	table.sort(uespLog.addonMemory, function(a, b) return a.memory < b.memory end )
+	--table.sort(uespLog.addonMemory, function(a, b) return a.index < b.index end )
 	
 	for i, data in ipairs(uespLog.addonMemory) do
 		local memory = data.memory - lastMemory

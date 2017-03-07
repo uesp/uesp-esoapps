@@ -2768,8 +2768,31 @@ function uespLog.GetItemLinkID(link)
 end
 
 
+uespLog.addonMemory = {}
+uespLog.initialMemory = collectgarbage('count')
+uespLog.addonMemoryIndex = 1
+
+
+function uespLog.ShowAddonMemory()
+	local lastMemory = uespLog.initialMemory
+	
+	--table.sort(uespLog.addonMemory, function(a, b) return a.memory < b.memory end )
+	table.sort(uespLog.addonMemory, function(a, b) return a.index < b.index end )
+	
+	for i, data in ipairs(uespLog.addonMemory) do
+		local memory = data.memory - lastMemory
+		uespLog.Msg(".    "..data.name.." (" .. data.index .. ") = "..memory)
+		lastMemory = data.memory
+	end
+
+end
+
+
 --	Function fired at addon loaded to setup variables and default settings
 function uespLog.Initialize( self, addOnName )
+
+	uespLog.addonMemory[#uespLog.addonMemory + 1] = { ["name"] = addOnName, ["memory"] = collectgarbage('count'), ["index"] = uespLog.addonMemoryIndex }
+	uespLog.addonMemoryIndex = uespLog.addonMemoryIndex + 1
 
 	if ( addOnName ~= "uespLog" ) then 
 		return 

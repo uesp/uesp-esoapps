@@ -461,7 +461,14 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	local inventoryBonus, maxInventoryBonus, staminaBonus, maxStaminaBonus, speedBonus, maxSpeedBonus = GetRidingStats()
 	charData.RidingInventory = inventoryBonus
 	charData.RidingStamina = staminaBonus
-	charData.RidingSpeeed = speedBonus
+	charData.RidingSpeed = speedBonus
+	charData.RidingTrainingDone = 0
+	
+	local timeUntilTrained = GetTimeUntilCanBeTrained()
+	
+	if (timeUntilTrained > 0) then
+		charData.RidingTrainingDone = GetTimeStamp() + math.floor(timeUntilTrained/1000)
+	end
 	
 	charData.Stealth = GetUnitStealthState("player")
 	
@@ -501,7 +508,6 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 
 	return charData
 end
-
 
 
 function uespLog.MergeBuildDataStats(charData)

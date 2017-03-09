@@ -360,6 +360,7 @@ function uespLog.UpdateInventoryContextMenu(rowControl)
 	
 	if (uespLog.IsSalesShowPrices()) then
 		AddMenuItem("UESP Price to Chat", function() uespLog.SalesPriceToChatRowControl(rowControl) end, MENU_ADD_OPTION_LABEL)
+		AddMenuItem("Goto UESP Sales..." , function() uespLog.GotoUespSalesPageRowControl(rowControl) end, MENU_ADD_OPTION_LABEL)
 	end
 	
 	ShowMenu(self)
@@ -1784,12 +1785,12 @@ function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
 	iconControl:SetHidden(true)		
 	iconControl:SetDimensions(32, 32)
 	iconControl:ClearAnchors()
-	iconControl:SetAnchor(CENTER, rowControl, CENTER, 195)
+	iconControl:SetAnchor(CENTER, rowControl, CENTER, 180)
 		
 	styleIconControl:SetHidden(true)		
 	styleIconControl:SetDimensions(32, 32)
 	styleIconControl:ClearAnchors()
-	styleIconControl:SetAnchor(CENTER, rowControl, CENTER, 225)
+	styleIconControl:SetAnchor(CENTER, rowControl, CENTER, 200)
 	
 	if (itemLink == nil or itemLink == "") then
 		return

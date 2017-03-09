@@ -1523,4 +1523,36 @@ end
 SLASH_COMMANDS["/uespsales"] = uespLog.SalesCommand
 
 
+function uespLog.GotoUespSalesPage (itemLink)
 
+	if (itemLink == nil or itemLink == "") then
+		return
+	end
+	
+	local salesPage = "http://esosales.uesp.net/viewSales.php?text=" .. tostring(itemLink)
+	local serverName = GetUniqueNameForCharacter()
+	local server = "Other"
+	
+	if (serverName:sub(1, 2) == "NA") then
+		server = "NA"
+	elseif (serverName:sub(1, 2) == "EU") then
+		server = "EU"
+	elseif (serverName:sub(1, 2) == "PTS") then
+		server = "PTS"
+	end	
+	
+	salesPage = salesPage .. "&server=" .. server
+	
+	RequestOpenUnsafeURL(salesPage)
+end
+
+
+function uespLog.GotoUespSalesPageRowControl (rowControl)
+	local itemLink = uespLog.GetItemLinkRowControl(rowControl)
+
+	if (itemLink == nil) then
+		return
+	end
+	
+	uespLog.GotoUespSalesPage(itemLink)
+end

@@ -670,6 +670,13 @@
 --			- Fixed item mining with no item type set.
 --			- Stopping a guild listing scan in progress with "/uespsales stop" now works correctly.
 --			- Removed the "No items crafted." message.
+--			- Save both overload and werewolf ability bars for build and character data. Note that you have to activate
+--			  the ability bar for it to be updated. Previously it would only save these bars if you zoned, logged out,
+--			  or reloaded the UI while they were active. Also a Sorcerer Werewolf would only save the last extra bar
+--			  used and not both of them.
+--			- Tweaked the position of known/unknown and trait icons in the guild trader list.
+--			- Added the "Goto UESP Sales..." right-click menu option which opens a browser to the UESP sales page
+--			  for that item link (you are prompted to open a browser).
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -2883,14 +2890,21 @@ function uespLog.Initialize( self, addOnName )
 		if (uespLog.charData_ActionBarData[3] == nil) then
 			uespLog.charData_ActionBarData[3] = {}
 		end
+		
+		if (uespLog.charData_ActionBarData[4] == nil) then
+			uespLog.charData_ActionBarData[4] = {}
+		end
 	end
 	
 	if (uespLog.savedVars.charInfo.data.stats ~= nil) then
 		uespLog.charData_StatsData = uespLog.savedVars.charInfo.data.stats 
+		
+		if (uespLog.charData_StatsData[4] == nil) then
+			uespLog.charData_StatsData[4] = {}
+		end
 	end
 	
 	if (uespLog.savedVars.charInfo.data.skills ~= nil) then
-		-- uespLog.charData_SkillsData = uespLog.savedVars.charInfo.data.skills 
 		uespLog.savedVars.charInfo.data.skills = nil
 	end
 	
@@ -3268,9 +3282,10 @@ function uespLog.EnchantingOnTooltipMouseUp(control, button, upInside)
 			AddMenuItem(GetString(SI_ITEM_ACTION_LINK_TO_CHAT), AddLink)
 			AddMenuItem("Show Item Info", GetInfo)
 			AddMenuItem("Copy Item Link", function() uespLog.CopyItemLink(link) end)
-			
+						
 			if (uespLog.IsSalesShowPrices()) then
 				AddMenuItem("UESP Price to Chat", function() uespLog.SalesPriceToChat(link) end)
+				AddMenuItem("Goto UESP Sales..." , function() uespLog.GotoUespSalesPage(link) end)
 			end
 				
 			ShowMenu(ENCHANTING)
@@ -3296,9 +3311,10 @@ function uespLog.AlchemyOnTooltipMouseUp(control, button, upInside)
 			AddMenuItem(GetString(SI_ITEM_ACTION_LINK_TO_CHAT), AddLink)
 			AddMenuItem("Show Item Info", GetInfo)
 			AddMenuItem("Copy Item Link", function() uespLog.CopyItemLink(link) end)
-			
+						
 			if (uespLog.IsSalesShowPrices()) then
 				AddMenuItem("UESP Price to Chat", function() uespLog.SalesPriceToChat(link) end)
+				AddMenuItem("Goto UESP Sales..." , function() uespLog.GotoUespSalesPage(link) end)
 			end
 				
 			ShowMenu(ALCHEMY)
@@ -3326,9 +3342,10 @@ function uespLog.SmithingCreationOnTooltipMouseUp(control, button, upInside)
 			AddMenuItem(GetString(SI_ITEM_ACTION_LINK_TO_CHAT), AddLink)
 			AddMenuItem("Show Item Info", GetInfo)
 			AddMenuItem("Copy Item Link", function() uespLog.CopyItemLink(link) end)
-			
+						
 			if (uespLog.IsSalesShowPrices()) then
 				AddMenuItem("UESP Price to Chat", function() uespLog.SalesPriceToChat(link) end)
+				AddMenuItem("Goto UESP Sales..." , function() uespLog.GotoUespSalesPage(link) end)
 			end
 				
 			ShowMenu(SMITHING)
@@ -3356,9 +3373,10 @@ function uespLog.SmithingImprovementOnTooltipMouseUp(control, button, upInside)
 			AddMenuItem(GetString(SI_ITEM_ACTION_LINK_TO_CHAT), AddLink)
 			AddMenuItem("Show Item Info", GetInfo)
 			AddMenuItem("Copy Item Link", function() uespLog.CopyItemLink(link) end)
-			
+						
 			if (uespLog.IsSalesShowPrices()) then
 				AddMenuItem("UESP Price to Chat", function() uespLog.SalesPriceToChat(link) end)
+				AddMenuItem("Goto UESP Sales..." , function() uespLog.GotoUespSalesPage(link) end)
 			end
 				
 			ShowMenu(SMITHING)
@@ -3428,9 +3446,10 @@ function uespLog.OnTooltipMouseUp (control, button, upInside)
 			AddMenuItem(GetString(SI_ITEM_ACTION_LINK_TO_CHAT), AddLink)
 			AddMenuItem("Show Item Info", GetInfo)
 			AddMenuItem("Copy Item Link", function() ZO_PopupTooltip_Hide() uespLog.CopyItemLink(link) end)
-			
+						
 			if (uespLog.IsSalesShowPrices()) then
 				AddMenuItem("UESP Price to Chat", function() ZO_PopupTooltip_Hide() uespLog.SalesPriceToChat(link) end)
+				AddMenuItem("Goto UESP Sales..." , function() ZO_PopupTooltip_Hide() uespLog.GotoUespSalesPage(link) end)
 			end
 				
 			ShowMenu(PopupTooltip)
@@ -3451,9 +3470,10 @@ function uespLog.ZO_LinkHandler_OnLinkMouseUp (link, button, control)
             if (button == 2 and link ~= '') then				
 	            AddMenuItem("Show Item Info", function() uespLog.ShowItemInfo(link) end)
 				AddMenuItem("Copy Item Link", function() ZO_PopupTooltip_Hide() uespLog.CopyItemLink(link) end)
-				
+								
 				if (uespLog.IsSalesShowPrices()) then
 					AddMenuItem("UESP Price to Chat", function() ZO_PopupTooltip_Hide() uespLog.SalesPriceToChat(link) end)
+					AddMenuItem("Goto UESP Sales..." , function() ZO_PopupTooltip_Hide() uespLog.GotoUespSalesPage(link) end)
 				end
 				
                 ShowMenu(control)
@@ -11523,7 +11543,13 @@ function uespLog.ActionButton_HandleRelease(self)
 		uespLog.OnQuickSlotUsed(slotNum)
 	end
 	
-	uespLog.DebugExtraMsg("uespLog.ActionButton_HandleRelease "..tostring(slotNum)..", "..tostring(buttonType))
+		-- Ultimate activation, might bar swap
+	if (slotType == 1 and slotNum == 8) then
+		uespLog.SaveActionBarForCharData()
+		uespLog.SaveStatsForCharData()
+	end
+	
+	uespLog.DebugExtraMsg("uespLog.ActionButton_HandleRelease "..tostring(slotNum)..", "..tostring(buttonType)..", "..tostring(slotType))
 	
 	return uespLog.Old_ActionButton_HandleRelease(self)
 end

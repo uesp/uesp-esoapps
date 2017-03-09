@@ -125,21 +125,24 @@ uespLog.CHARDATA_CRAFTSTYLE_NAMES = {
 uespLog.charData_ActionBarData = { 
 	[1] = { },
 	[2] = { },
-	[3] = { }, -- Overload / Werewolf
+	[3] = { }, -- Overload
+	[4] = { }, -- Werewolf
 }
 
 
 uespLog.charData_SkillsData = { 
 	[1] = { },
 	[2] = { },
-	[3] = { }, -- Overload / Werewolf
+	[3] = { }, -- Overload
+	[4] = { }, -- Werewolf
 }
 
 
 uespLog.charData_StatsData = { 
 	[1] = { },
 	[2] = { },
-	[3] = { }, -- Overload / Werewolf
+	[3] = { }, -- Overload
+	[4] = { }, -- Werewolf
 }
 
 
@@ -367,7 +370,7 @@ function uespLog.GetBuildDataActiveBarIndex()
 	if (uespLog.IsInOverloadState()) then
 		barIndex = 3
 	elseif (IsWerewolf()) then
-		barIndex = 3
+		barIndex = 4
 	end
 	
 	return barIndex
@@ -513,7 +516,7 @@ end
 function uespLog.MergeBuildDataStats(charData)
 	local barIndex = uespLog.GetBuildDataActiveBarIndex()
 	
-	for i = 1, 3 do
+	for i = 1, 4 do
 		if (i ~= barIndex) then 
 		
 			for name, value in pairs(uespLog.charData_StatsData[i]) do
@@ -529,7 +532,7 @@ end
 function uespLog.MergeBuildDataSkills(charData)
 	local barIndex = uespLog.GetBuildDataActiveBarIndex()
 	
-	for i = 1, 3 do
+	for i = 1, 4 do
 		if (i ~= barIndex) then 
 		
 			for name, skillData in pairs(uespLog.charData_SkillsData[i]) do
@@ -631,6 +634,8 @@ function uespLog.SaveStatsForCharData()
 	local barIndex = uespLog.GetBuildDataActiveBarIndex()
 	local statsData = uespLog.CreateCharDataStats(true)
 	local powerData = uespLog.CreateCharDataPower(true)
+	
+	statsData["Bar" .. tostring(barIndex) .. ":ActiveWeaponBar"] = GetActiveWeaponPairInfo()
 	
 	uespLog.charData_StatsData[barIndex] = statsData
 	
@@ -925,7 +930,7 @@ function uespLog.CreateCharDataActionBar()
 	
 	uespLog.SaveActionBarForCharData()
 	
-	for j = 1, 3 do
+	for j = 1, 4 do
 		if (uespLog.charData_ActionBarData[j] ~= nil) then
 			for i = 3, 8 do
 				slots[i + (j-1)*100] = uespLog.charData_ActionBarData[j][i]
@@ -960,7 +965,7 @@ function uespLog.SaveActionBarForCharData()
 	
 	weaponPairIndex = uespLog.GetBuildDataActiveBarIndex()
 	
-	if (weaponPairIndex < 1 or weaponPairIndex > 3) then
+	if (weaponPairIndex < 1 or weaponPairIndex > 4) then
 		return false
 	end
 	
@@ -1028,7 +1033,7 @@ function uespLog.SaveActionBarForCharData()
 	
 	uespLog.savedVars.charInfo.data.actionBar = uespLog.charData_ActionBarData	
 	
-	uespLog.DebugExtraMsg("UESP: ***Current action bar saved***")
+	uespLog.DebugExtraMsg("UESP: ***Current action bar saved*** barIndex "..weaponPairIndex)
 end
 
 
@@ -1070,6 +1075,7 @@ end
 function uespLog.OnActionSlotAbilitySlotted (eventCode, newAbilitySlotted)
 	--uespLog.DebugMsg("OnActionSlotAbilitySlotted "..tostring(newAbilitySlotted))
 	uespLog.SaveActionBarForCharData()
+	uespLog.SaveStatsForCharData()
 end
 
 
@@ -1099,11 +1105,12 @@ end
 function uespLog.OnActiveQuickSlotChanged (eventCode, slotId)
 	--uespLog.DebugMsg("OnActiveQuickSlotChanged "..tostring(slotId))
 	uespLog.SaveActionBarForCharData()
+	uespLog.SaveStatsForCharData()
 end
 
 
 function uespLog.OnActiveWeaponPairChanged (eventCode, activeWeaponPair, locked)
-	--uespLog.DebugMsg("OnActiveWeaponPairChanged "..tostring(activeWeaponPair))
+	uespLog.DebugExtraMsg("OnActiveWeaponPairChanged "..tostring(activeWeaponPair))
 	uespLog.SaveActionBarForCharData()
 	uespLog.SaveStatsForCharData()
 	

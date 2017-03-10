@@ -2478,7 +2478,10 @@ bool CuespLogMonitorDlg::DownloadPriceList()
 		return false;
 	}
 
-	PrintLogLine("Successfully downloaded the latest %s price list data!", m_Options.PriceServer.c_str());
+	long long FileSize = 0;
+	eso::GetFileSize(FileSize, (const char *) TargetFile);
+
+	PrintLogLine("Successfully downloaded the latest %s price list data (%.1f MB)!", m_Options.PriceServer.c_str(), (float)FileSize/1000000);
 	return true;
 }
 
@@ -2500,9 +2503,10 @@ bool CuespLogMonitorDlg::DoLogCheck(const bool OverrideEnable)
 	ULONGLONG DeltaTime = CurrentTime - m_LastLogCheckTime;
 
 	if (DeltaTime < ULM_MINIMUM_LOGCHECK_TIMEMS) return false;
-	m_LastLogCheckTime = CurrentTime;
-
+	
 	if (!HasLogChanged()) return false;
+
+	m_LastLogCheckTime = CurrentTime;
 
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Checking log...");
 	//PrintLogLine(ULM_LOGLEVEL_INFO, "Pre-TimeStamp: %I64d", m_Options.LastTimeStamp);

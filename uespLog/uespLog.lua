@@ -14729,3 +14729,81 @@ function uespLog:ZO_SmithingResearchSelect_SetupDialog(craftingType, researchLin
 end
 
 
+function uespLog.MineBooks()
+	local numCategories = GetNumLoreCategories()
+	local totalBooks = 0
+	local validBooks = 0
+	local totalKnownBooks = 0
+	local logEntry
+	
+	-- GetLoreBookIndicesFromBookId(number bookId)
+	-- Returns: number:nilable categoryIndex, number:nilable collectionIndex, number:nilable bookIndex
+	
+	logEntry = {}
+	logEntry.event = "mineBook:Start"
+	uespLog.AppendDataToLog("all", logEntry, uespLog.GetTimeData())
+
+	for categoryIndex = 1, numCategories do
+		local name1, numCollections, categoryId = GetLoreCategoryInfo(categoryIndex)
+		
+		logEntry = {}
+		logEntry.event = "mineBook:Category"
+		logEntry.name = name1
+		logEntry.numCollections = numCollections
+		logEntry.categoryId = categoryId
+		logEntry.categoryIndex = categoryIndex
+		uespLog.AppendDataToLog("all", logEntry)
+		
+		for collectionIndex = 1, numCollections do
+			local name2, desc, numKnownBooks, numBooks, hidden, collectionIcon, collectionId = GetLoreCollectionInfo(categoryIndex, collectionIndex)
+			
+			logEntry = {}
+			logEntry.event = "mineBook:Collection"
+			logEntry.name = name2
+			logEntry.collectionIndex = collectionIndex
+			logEntry.categoryIndex = categoryIndex
+			logEntry.desc = desc
+			logEntry.numBooks = numBooks
+			logEntry.hidden = hidden
+			logEntry.icon = collectionIcon
+			logEntry.collectionId = collectionId
+			uespLog.AppendDataToLog("all", logEntry)
+			
+			totalBooks = totalBooks + numBooks
+			totalKnownBooks = totalKnownBooks + numKnownBooks
+			
+			for bookIndex = 1, numBooks do
+				local title, bookIcon, known, bookId = GetLoreBookInfo(categoryIndex, collectionIndex, bookIndex)
+				local body, medium, showTitle = ReadLoreBook(categoryIndex, collectionIndex, bookIndex)
+				local itemLink = GetLoreBookLink(categoryIndex, collectionIndex, bookIndex)
+				
+				if (body ~= "") then
+					validBooks = validBooks + 1
+				end
+				
+				logEntry = {}
+				logEntry.event = "mineBook"
+				logEntry.bookId = bookId
+				logEntry.title = title
+				logEntry.medium = medium
+				logEntry.icon = bookIcon
+				logEntry.categoryIndex = categoryIndex
+				logEntry.collectionIndex = collectionIndex
+				logEntry.bookIndex = bookIndex
+				
+				uespLog.AppendDataToLog("all", logEntry)
+			end
+			
+		end
+	end
+	
+	logEntry = {}
+	logEntry.event = "mineBook:End"
+	logEntry.validBooks = validBooks
+	logEntry.totalBooks = totalBooks
+	logEntry.totalKnownBooks = totalKnownBooks
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
+	uespLog.Msg("Found "..validBooks.." / "..totalBooks.." books with "..totalKnownBooks.." known!")
+end
+

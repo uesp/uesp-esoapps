@@ -4095,13 +4095,14 @@ function uespLog.OnBeginLockPick (eventCode)
 end
 
 
-function uespLog.OnShowBook (eventCode, bookTitle, body, medium, showTitle)
+function uespLog.OnShowBook (eventCode, bookTitle, body, medium, showTitle, bookId)
 	local logData = { }
 	
 	logData.event = "ShowBook"
 	logData.bookTitle = bookTitle
 	logData.body = body
 	logData.medium = medium
+	logData.bookId = bookId
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	

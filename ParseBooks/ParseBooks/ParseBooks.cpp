@@ -164,7 +164,7 @@ int main()
 			escTitle += Buffer;
 		}
 
-		SqlFile.Printf("UPDATE book SET body='%s' WHERE title='%s';\n", escText.c_str(), escTitle.c_str());
+		SqlFile.Printf("UPDATE book SET body='%s', bookId=%d WHERE title='%s';\n", escText.c_str(), Record.Index, escTitle.c_str());
 
 		escTitle = Record.Title;
 		escTitle = ReplaceStrings(escTitle, "\"", "\\\"");

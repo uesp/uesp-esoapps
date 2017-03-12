@@ -677,6 +677,14 @@
 --			- Tweaked the position of known/unknown and trait icons in the guild trader list.
 --			- Added the "Goto UESP Sales..." right-click menu option which opens a browser to the UESP sales page
 --			  for that item link (you are prompted to open a browser).
+--			- Added several new commands to "/uespresearch":
+--					/uespresearch help         Shows command details
+--					/uespresearch includesets  [on|off]
+--							When this is off then set items do not appear in the smithing research selection list.
+--					/uespresearch maxquality   [0-5]
+--							When set to a value from 1-5 then items with a quality higher than this value do
+--							not appear in the smithing research selection list. Set to 0 to disable.
+--			
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -1515,6 +1523,8 @@ uespLog.DEFAULT_SETTINGS =
 		},
 		["nirnSound"] = false,
 		["alchemyTooltip"] = false,
+		["maxQualityForTraitResearch"] = 0,
+		["includeSetItemsForTraitResearch"] = true,
 	}
 }
 
@@ -3138,6 +3148,12 @@ function uespLog.Initialize( self, addOnName )
 	--EVENT_START_KEEP_GUILD_CLAIM_INTERACTION (integer eventCode)
 	--EVENT_START_KEEP_GUILD_RELEASE_INTERACTION (integer eventCode)
 	--EVENT_GUILD_KEEP_CLAIM_UPDATED (integer eventCode, integer guildId)
+	
+	uespLog.Old_GenerateResearchTraitCounts = ZO_SharedSmithingResearch.GenerateResearchTraitCounts
+	ZO_SharedSmithingResearch.GenerateResearchTraitCounts = uespLog.GenerateResearchTraitCounts
+	
+	uespLog.Old_ZO_SmithingResearchSelect_SetupDialog = ZO_SmithingResearchSelect.SetupDialog
+	ZO_SmithingResearchSelect.SetupDialog = uespLog.ZO_SmithingResearchSelect_SetupDialog
 		
 	uespLog.fillInfoData()
 	uespLog.Msg("Initialized uespLog...")
@@ -9977,6 +9993,49 @@ end
 
 
 SLASH_COMMANDS["/uespresearch"] = function (cmd)
+	local cmds, firstCmd = uespLog.SplitCommands(cmd)
+	
+	if (firstCmd == "includeset" or firstCmd == "includesets") then
+		local value = string.lower(cmds[2])
+
+		if (value == "on") then
+			uespLog.SetIncludeSetItemsForTraitResearch(true)
+		elseif (value == "off") then
+			uespLog.SetIncludeSetItemsForTraitResearch(false)
+		else
+			uespLog.Msg("Current include sets for research items is "..uespLog.BoolToOnOff(uespLog.GetIncludeSetItemsForTraitResearch())..".")
+			return
+		end
+		
+		uespLog.Msg("Set include sets for research items to "..uespLog.BoolToOnOff(uespLog.GetIncludeSetItemsForTraitResearch())..".")
+
+		return
+	elseif (firstCmd == "maxquality") then
+		local quality = tonumber(cmds[2])
+		
+		if (quality >= 0 and quality <= 5) then
+			uespLog.SetMaxQualityForTraitResearch(quality)
+		elseif (string.lower(cmds[2]) == "off") then
+			uespLog.SetMaxQualityForTraitResearch(0)
+		elseif (cmds[2] == nil) then
+			uespLog.Msg("Current max item quality for research items is "..uespLog.GetMaxQualityForTraitResearch()..".")
+			return
+		else
+			uespLog.Msg("Invalid quality value! Expected a number from 0 to 5.")
+			return
+		end
+		
+		uespLog.Msg("Set max quality of research items to "..uespLog.GetMaxQualityForTraitResearch()..".")
+		return
+	elseif (firstCmd == "help") then
+		uespLog.Msg("Shows and sets smithing research information:")
+		uespLog.Msg(".     /uespresearch                                   Show all current research")
+		uespLog.Msg(".     /uespresearch includesets [on||off]   Include set items in research")
+		uespLog.Msg(".     /uespresearch maxquality [0-5]       Set max quality of items to research")
+		uespLog.Msg(".     /uri                                                   Short command version")
+		return
+	end
+	
 	uespLog.ShowResearchInfo(CRAFTING_TYPE_CLOTHIER)
 	uespLog.ShowResearchInfo(CRAFTING_TYPE_BLACKSMITHING)
 	uespLog.ShowResearchInfo(CRAFTING_TYPE_WOODWORKING)
@@ -14513,6 +14572,160 @@ function uespLog.MineItemSingle(itemId, internalLevel, internalSubtype)
 	local itemLink = uespLog.MakeItemLinkEx( { itemId = itemId, level = internalLevel, quality = internalSubtype, style = 0 } )
 		
 	uespLog.LogItemLink(itemLink, "mineitem")
+end
+
+
+function uespLog.UseCustomTraitResearchCheck()
+	return uespLog.GetMaxQualityForTraitResearch() > 0 and not uespLog.GetIncludeSetItemsForTraitResearch()
+end
+
+		
+function uespLog.GetMaxQualityForTraitResearch()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.maxQualityForTraitResearch == nil) then
+		uespLog.savedVars.settings.data.maxQualityForTraitResearch = uespLog.DEFAULT_SETTINGS.data.maxQualityForTraitResearch
+	end
+	
+	return uespLog.savedVars.settings.data.maxQualityForTraitResearch
+end
+
+
+function uespLog.SetMaxQualityForTraitResearch(value)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	uespLog.savedVars.settings.data.maxQualityForTraitResearch = value
+end
+
+
+function uespLog.GetIncludeSetItemsForTraitResearch()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.includeSetItemsForTraitResearch == nil) then
+		uespLog.savedVars.settings.data.includeSetItemsForTraitResearch = uespLog.DEFAULT_SETTINGS.data.includeSetItemsForTraitResearch
+	end
+	
+	return uespLog.savedVars.settings.data.includeSetItemsForTraitResearch
+end
+
+
+function uespLog.SetIncludeSetItemsForTraitResearch(value)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	uespLog.savedVars.settings.data.includeSetItemsForTraitResearch = value
+end
+
+
+function uespLog.CanItemBeTraitResearched(bagId, slotIndex, craftingType, researchLineIndex, traitIndex)
+	local maxQuality = uespLog.GetMaxQualityForTraitResearch()
+
+	if (IsItemPlayerLocked(bagId, slotIndex)) then
+		return false
+	end
+
+	if (not CanItemBeSmithingTraitResearched(bagId, slotIndex, craftingType, researchLineIndex, traitIndex)) then
+		return false
+	end
+	
+	if (maxQuality > 0) then
+		local itemLink = GetItemLink(bagId, slotIndex)
+		local quality = GetItemLinkQuality(itemLink)
+		
+		if (quality > maxQuality) then
+			return false
+		end
+	end
+	
+	if (not uespLog.GetIncludeSetItemsForTraitResearch()) then
+		local itemLink = GetItemLink(bagId, slotIndex)
+		local hasSet = GetItemLinkSetInfo(itemLink)
+		
+		if (hasSet) then
+			return false
+		end
+	end
+	
+	return true
+end
+
+
+function uespLog.GetTraitIndexForItem(bagId, slotIndex, craftingType, researchLineIndex, numTraits)
+
+    for traitIndex = 1, numTraits do
+	
+        if (uespLog.CanItemBeTraitResearched(bagId, slotIndex, craftingType, researchLineIndex, traitIndex)) then
+            return traitIndex
+        end
+		
+    end
+	
+    return nil
+end
+
+
+--ZO_SharedSmithingResearch:GenerateResearchTraitCounts
+function uespLog:GenerateResearchTraitCounts(virtualInventoryList, craftingType, researchLineIndex, numTraits)
+
+	if (not uespLog.UseCustomTraitResearchCheck()) then
+		--return uespLog:Old_GenerateResearchTraitCounts(self, virtualInventoryList, craftingType, researchLineIndex, numTraits)
+	end
+	
+    local counts
+	
+    for itemId, itemInfo in pairs(virtualInventoryList) do
+        local traitIndex = uespLog.GetTraitIndexForItem(itemInfo.bag, itemInfo.index, craftingType, researchLineIndex, numTraits)
+		
+        if traitIndex then
+            counts = counts or {}
+            counts[traitIndex] = (counts[traitIndex] or 0) + 1
+        end
+    end
+	
+    return counts
+end
+
+
+-- ZO_SmithingResearchSelect:SetupDialog
+function uespLog:ZO_SmithingResearchSelect_SetupDialog(craftingType, researchLineIndex, traitIndex)
+
+	if (not uespLog.UseCustomTraitResearchCheck()) then
+		--return uespLog.Old_ZO_SmithingResearchSelect_SetupDialog(self, craftingType, researchLineIndex, traitIndex)
+	end
+	
+    local listDialog = ZO_InventorySlot_GetItemListDialog()
+    local _, _, _, timeRequiredForNextResearchSecs = GetSmithingResearchLineInfo(craftingType, researchLineIndex)
+    local formattedTime = ZO_FormatTime(timeRequiredForNextResearchSecs, TIME_FORMAT_STYLE_COLONS, TIME_FORMAT_PRECISION_TWELVE_HOUR)
+	
+    listDialog:SetAboveText(GetString(SI_SMITHING_RESEARCH_DIALOG_SELECT))
+    listDialog:SetBelowText(zo_strformat(SI_SMITHING_RESEARCH_DIALOG_CONSUME, formattedTime))
+    listDialog:SetEmptyListText("")
+    listDialog:ClearList()
+	
+    local function IsResearchableItem(bagId, slotIndex)
+        return uespLog.CanItemBeTraitResearched(bagId, slotIndex, craftingType, researchLineIndex, traitIndex)
+    end
+	
+    local virtualInventoryList = PLAYER_INVENTORY:GenerateListOfVirtualStackedItems(INVENTORY_BANK, IsResearchableItem, PLAYER_INVENTORY:GenerateListOfVirtualStackedItems(INVENTORY_BACKPACK, IsResearchableItem))
+	
+    for itemId, itemInfo in pairs(virtualInventoryList) do
+        itemInfo.name = zo_strformat(SI_TOOLTIP_ITEM_NAME, GetItemName(itemInfo.bag, itemInfo.index))
+        listDialog:AddListItem(itemInfo)
+    end
+	
+    listDialog:CommitList(SortComparator)
+    listDialog:AddCustomControl(self.control, LIST_DIALOG_CUSTOM_CONTROL_LOCATION_BOTTOM)
 end
 
 

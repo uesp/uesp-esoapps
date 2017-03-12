@@ -314,6 +314,24 @@ function uespLog.InitOptionControlsData()
 	})
 	
 	uespLog.optionControlsData:insert({
+		type = "checkbox",
+		name = "Include Set Items in Research",
+		tooltip = "Include or exclude set items in smithing research\n     /uespresearch includesets on/off",
+		getFunc = function() return uespLog.GetIncludeSetItemsForTraitResearch() end,
+		setFunc = function(flag) return uespLog.SetIncludeSetItemsForTraitResearch(flag) end,
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "dropdown",
+		choices = { 0, 1, 2, 3, 4, 5 },
+		name = "Max Quality for Item Research",
+		tooltip = "Sets the max quality for items to show for smithing research\n     /uespresearch maxquality [value]",
+		getFunc = function() return uespLog.GetMaxQualityForTraitResearch() end,
+		setFunc = function(value) return uespLog.SetMaxQualityForTraitResearch(value) end,
+	})
+	
+	
+	uespLog.optionControlsData:insert({
 		type = "uespdescription",
 		title = "",
 		text = uespLog.GetSettingsCraftInfoText(),
@@ -368,10 +386,6 @@ function uespLog.InitOptionControlsData()
 		text = "",
 	})
 	
-	uespLog.optionControlsData:insert({
-		type = "header",
-		name = "Time",
-	})
 	
 	uespLog.optionControlsData:insert({
 		type = "header",

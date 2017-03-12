@@ -14791,6 +14791,7 @@ function uespLog.MineBooks()
 				logEntry.categoryIndex = categoryIndex
 				logEntry.collectionIndex = collectionIndex
 				logEntry.bookIndex = bookIndex
+				logEntry.itemLink = itemLink
 				
 				uespLog.AppendDataToLog("all", logEntry)
 			end

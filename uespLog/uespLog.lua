@@ -1359,7 +1359,7 @@ uespLog.mineItemLastReloadTimeMS = GetGameTimeMilliseconds()
 uespLog.MINEITEM_AUTORELOAD_DELTATIMEMS = 260000  -- Default value, use uespLog.minedItemReloadDelay instead
 uespLog.mineItemAutoRestart = false
 uespLog.mineItemAutoRestartOutputEnd = false
-uespLog.MINEITEM_AUTO_MAXITEMID = 130000
+uespLog.MINEITEM_AUTO_MAXITEMID = 150000
 uespLog.mineItemOnlySubType = -1
 uespLog.mineItemOnlyItemType = {}
 uespLog.mineItemOnlyLevel = -1
@@ -2646,6 +2646,22 @@ function uespLog.ParseLink(link)
 	local text, color, itemId, data2, allData, niceName, niceLink = uespLog.ParseLinkID(link)
 	
 	return text, color, allData, niceName, niceLink
+end
+
+
+function uespLog.ParseLinkItemId(link)
+
+	if (link == nil or link == "") then
+		return -1, -1, -1
+	end
+	
+	local linkType, itemText, itemId, internalSubType, internalLevel = link:match("|H(.-):(.-):(.-):(.-):(.-):")	
+	
+	if (itemId == nil or internalSubType == nil or internalLevel == nil) then
+		return -1, -1, -1
+	end
+
+	return tonumber(itemId),tonumber(internalSubType), tonumber(internalLevel)
 end
 
 
@@ -8451,6 +8467,7 @@ function uespLog.GetRecipeCounts()
 	local recipeCount = 0
 	local knownCount = 0
 	local knownData = {}
+	local resultIds = {}
 	
 	knownData["Food Recipes"] = {}
 	knownData["Food Recipes"].name = "Food/Drink Recipes"
@@ -8466,7 +8483,7 @@ function uespLog.GetRecipeCounts()
 		local name, numRecipes, upIcon, downIcon, overIcon, disabledIcon, createSound = GetRecipeListInfo(recipeListIndex)
 		
 		for recipeIndex = 1, numRecipes do
-			local known = GetRecipeInfo(recipeListIndex, recipeIndex)
+			local known, recipeName = GetRecipeInfo(recipeListIndex, recipeIndex)
 			local category = "Food Recipes"
 			
 			if (recipeListIndex >= 17) then
@@ -8489,10 +8506,27 @@ function uespLog.GetRecipeCounts()
 				knownCount = knownCount + 1
 				knownData[name].known = knownData[name].known + 1
 				knownData[category].known = knownData[category].known + 1
-			end			
+			end
 			
+			local resultLink = GetRecipeResultItemLink(recipeListIndex, recipeIndex)
+			local resultId = uespLog.ParseLinkItemId(resultLink)
+			
+			if (uespLog.MineRecipeResultIds[resultId] == nil) then
+				--uespLog.Msg("" .. recipeListIndex ..":" .. recipeIndex .. " -- Missing recipe for result "..resultLink.."!")
+			end
+			
+			if (resultId < 0) then
+				--uespLog.Msg("" .. recipeListIndex ..":" .. recipeIndex .. " -- Missing result for recipe "..recipeName.."!")
+			end
+			
+			--if (resultIds[resultLink] == nil) then resultIds[resultLink] = 0 end
+			--resultIds[resultLink] = resultIds[resultLink] + 1
 		end
 	end
+	
+	--for link, count in pairs(resultIds) do
+		--if (count > 1) then uespLog.Msg("Found duplicate result for recipe "..link.." ("..count..")") end
+	--end
 	
 	return recipeCount, knownCount, knownData
 end
@@ -14809,3 +14843,124 @@ function uespLog.MineBooks()
 	uespLog.Msg("Found "..validBooks.." / "..totalBooks.." books with "..totalKnownBooks.." known!")
 end
 
+
+uespLog.MineRecipeStartId = 1
+uespLog.MineRecipeCount = 0
+uespLog.MineRecipeResultIds = {}
+
+
+function uespLog.MineRecipeDataStart()
+	local tempData = uespLog.savedVars.tempData.data
+	
+	tempData[#tempData + 1] = "Recipe Data..."
+	
+	uespLog.MineRecipeStartId = 1
+	uespLog.MineRecipeCount = 0
+	uespLog.MineRecipeResultIds = {}
+	
+	uespLog.MineRecipeData_Loop()
+end
+
+
+function uespLog.MineRecipeDataEnd()
+	local tempData = uespLog.savedVars.tempData.data
+	local numRecipeLists = GetNumRecipeLists()
+	local recipeCount = 0
+	local knownCount = 0
+	local parsedResultIds = {}
+	
+	for recipeListIndex = 1, numRecipeLists do
+		local listName, numRecipes, upIcon, downIcon, overIcon, disabledIcon = GetRecipeListInfo(recipeListIndex)
+		
+		--tempData[#tempData + 1] = "LIST: "..recipeListIndex..","..listName..","..numRecipes..","..upIcon..","..downIcon..","..overIcon..","..disabledIcon
+		tempData[#tempData + 1] = "" .. recipeListIndex .. " => array(" .. numRecipes .. ", \"" .. listName .. "\", \"" .. upIcon .. "\", " .. '1' .. "),"
+	end
+	
+	for recipeListIndex = 1, numRecipeLists do
+		local listName, numRecipes, upIcon, downIcon, overIcon, disabledIcon = GetRecipeListInfo(recipeListIndex)
+		
+		for recipeIndex = 1, numRecipes do
+			local known, name = GetRecipeInfo(recipeListIndex, recipeIndex)
+	
+			if (known and name ~= "") then
+				local resultLink = GetRecipeResultItemLink(recipeListIndex, recipeIndex)
+				local resultId = uespLog.ParseLinkItemId(resultLink)
+				
+				knownCount = knownCount + 1
+				
+				if (resultId > 0) then
+					parsedResultIds[resultId] = 1
+					local itemId = uespLog.MineRecipeResultIds[resultId] or -1
+					local resultName = GetItemLinkName(resultLink)
+					local quality = GetItemLinkQuality(resultLink)
+					
+					tempData[#tempData + 1] = "" .. resultId .. " => array(" .. itemId .. ", \"" .. listName .. "\", \"" .. resultName .. "\", " .. tostring(quality) .. "),"
+				else
+					--tempData[#tempData + 1] = "-1 = -1," .. listName
+				end
+			end
+			
+			recipeCount = recipeCount + 1
+		end
+	end
+	
+	for resultId, itemId in pairs(uespLog.MineRecipeResultIds) do
+	
+		if (parsedResultIds[resultId] == nil) then
+			local resultLink = uespLog.MakeItemLink(resultId, 1, 1)
+			local itemLink = uespLog.MakeItemLink(itemId, 1, 1)
+			local resultName = GetItemLinkName(resultLink)
+			local recipeType = "unknown"
+			local furnDataID = GetItemLinkFurnitureDataId(resultLink)
+			local itemType, specialType = GetItemLinkItemType(resultLink)
+			local furnCate, furnSubCate = GetFurnitureDataCategoryInfo(furnDataID)
+			local furnCateName = GetFurnitureCategoryName(furnCate)
+			local furnSubCateName = GetFurnitureCategoryName(furnSubCate)
+			local quality = GetItemLinkQuality(resultLink)
+			
+			if (furnCateName ~= "") then
+				recipeType = furnCateName
+			end
+			
+			tempData[#tempData + 1] = "" .. resultId .. " => array(" .. itemId .. ", \"" .. recipeType .. "\", \"" .. resultName .. "\", " .. tostring(quality) .. "),"
+		end
+		
+	end
+
+end
+
+
+function uespLog.MineRecipeData_Loop()
+	local tempData = uespLog.savedVars.tempData.data
+	local endItemId = uespLog.MineRecipeStartId + 10000
+	
+	uespLog.Msg("Mining recipe data starting at " .. uespLog.MineRecipeStartId .. "...")
+		
+	for itemId = uespLog.MineRecipeStartId, endItemId do
+		local itemLink = uespLog.MakeItemLink(itemId, 1, 1)
+		
+		if (uespLog.IsValidItemLink(itemLink)) then
+			local itemType = GetItemLinkItemType(itemLink)
+			
+			if (itemType == 29) then
+				local resultLink = GetItemLinkRecipeResultItemLink(itemLink)
+				local itemId = uespLog.ParseLinkItemId(itemLink)
+				local resultId = uespLog.ParseLinkItemId(resultLink)
+				--local furnId = GetItemLinkFurnitureDataId(resultLink)
+				
+				uespLog.MineRecipeResultIds[resultId] = itemId
+				
+				tempData[#tempData + 1] = "" .. resultId .. " = " .. itemId
+				uespLog.MineRecipeCount = uespLog.MineRecipeCount + 1
+			end
+		end
+	end
+	
+	if (endItemId < uespLog.MINEITEM_AUTO_MAXITEMID) then
+		uespLog.MineRecipeStartId = endItemId + 1
+		zo_callLater(uespLog.MineRecipeData_Loop, 1000)
+	else
+		uespLog.MineRecipeDataEnd()
+		uespLog.Msg("Finished mining recipe data...found "..uespLog.MineRecipeCount.." recipes!")
+	end
+end

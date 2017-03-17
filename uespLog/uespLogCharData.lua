@@ -489,6 +489,9 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	charData.EquipSlots = uespLog.CreateCharDataEquipSlots()
 	charData.ChampionPoints = uespLog.CreateCharDataChampionPoints()
 	charData.Crafting = uespLog.CreateCharDataCrafting()
+	charData.Recipes = uespLog.CreateCharDataRecipes()
+	charData.Achievements = uespLog.CreateCharDataAchievements()
+	charData.Books = uespLog.CreateCharDataBooks()
 		
 			-- Note: This function only works if the character is actually in Werewolf form at the time
 	if (IsWerewolf()) then
@@ -575,6 +578,119 @@ function uespLog.CreateCharDataCrafting()
 	end	
 	
 	return crafting
+end
+
+
+function uespLog.CreateCharDataRecipes()
+	local recipes = {}
+	local numRecipeLists = GetNumRecipeLists()
+	local recipeCount = 0
+	local knownCount = 0
+	
+	for recipeListIndex = 1, numRecipeLists do
+		local listName, numRecipes = GetRecipeListInfo(recipeListIndex)
+		
+		for recipeIndex = 1, numRecipes do
+			local known, name = GetRecipeInfo(recipeListIndex, recipeIndex)
+	
+			if (known and name ~= "") then
+				local resultLink = GetRecipeResultItemLink(recipeListIndex, recipeIndex)
+				local resultId = uespLog.ParseLinkItemId(resultLink)
+				
+				knownCount = knownCount + 1
+				
+				if (resultId > 0) then
+					recipes["Recipe:"..tostring(resultId)] = name
+				else
+					recipes["Recipe"] = name
+				end
+			end
+			
+			recipeCount = recipeCount + 1
+		end
+	end
+	
+	recipes.RecipeTotalCount = recipeCount
+	recipes.RecipeKnownCount = knownCount
+	
+	return recipes
+end
+
+
+function uespLog.ParseAchievementLinkId(link)
+
+	if (link == nil or link == "") then
+		return -1, -1, -1
+	end
+	
+	local linkType, itemText, achId, achData, achTimestamp = link:match("|H(.-):(.-):(.-):(.-):(.-)|h|h")	
+	
+	if (achId == nil or achData == nil or achTimestamp == nil) then
+		return -1, -1, -1
+	end
+
+	return achId, achData, achTimestamp
+end
+
+
+function uespLog.CreateCharDataAchievements()
+	local achievements = {}
+	local numTopLevelCategories = GetNumAchievementCategories()
+	
+	for topLevelIndex = 1, numTopLevelCategories do
+		local cateName, numCategories, numCateAchievements, earnedPoints, totalPoints, hidesPoints = GetAchievementCategoryInfo(topLevelIndex)
+		
+		achievements["AchievementPoints:"..tostring(topLevelIndex)] = "" .. tostring(earnedPoints) .. ", " .. tostring(totalPoints)
+		
+		for categoryIndex = 1, numCategories do
+			local subcategoryName, numAchievements, earnedSubSubPoints, totalSubSubPoints, hidesSubSubPoints = GetAchievementSubCategoryInfo(topLevelIndex, categoryIndex)
+			
+			achievements["AchievementPoints:"..tostring(topLevelIndex)..":"..tostring(categoryIndex)] = "" .. tostring(earnedSubSubPoints) .. ", " .. tostring(totalSubSubPoints)
+			
+			for achievementIndex = 1, numAchievements do
+				local achId = GetAchievementId(topLevelIndex, categoryIndex, achievementIndex)
+				local currentId = GetFirstAchievementInLine(achId)
+				
+				if (currentId == 0) then currentId = achId end
+								
+				while (currentId ~= nil and currentId > 0) do
+					local achLink = GetAchievementLink(currentId)
+					local _, progress, timestamp = uespLog.ParseAchievementLinkId(achLink)
+					
+					achievements["Achievement:"..tostring(currentId)] = "" .. tostring(progress) .. ", " .. tostring(timestamp)
+					currentId = GetNextAchievementInLine(currentId)
+				end				
+			end
+		end
+		
+		for achievementIndex = 1, numCateAchievements do
+			local achId = GetAchievementId(topLevelIndex, nil, achievementIndex)
+			local currentId = GetFirstAchievementInLine(achId)
+			
+			if (currentId == 0) then currentId = achId end
+				
+			while (currentId ~= nil and currentId > 0) do
+				local achLink = GetAchievementLink(currentId)
+				local _, progress, timestamp = uespLog.ParseAchievementLinkId(achLink)
+				
+				achievements["Achievement:"..tostring(currentId)] = "" .. tostring(progress) .. ", " .. tostring(timestamp)
+				currentId = GetNextAchievementInLine(currentId)
+			end				
+		end
+	end
+	
+	achievements.AchievementEarnedPoints = GetEarnedAchievementPoints()
+	achievements.AchievementTotalPoints = GetTotalAchievementPoints()
+		
+	return achievements
+end
+
+
+function uespLog.CreateCharDataBooks()
+	local books = {}
+	
+	
+	return books
 end
 
 

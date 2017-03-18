@@ -647,6 +647,9 @@ function uespLog.CreateCharDataAchievements()
 			
 			achievements["AchievementPoints:"..tostring(topLevelIndex)..":"..tostring(categoryIndex)] = "" .. tostring(earnedSubSubPoints) .. ", " .. tostring(totalSubSubPoints)
 			
+			earnedPoints = earnedPoints - earnedSubSubPoints
+			totalPoints = totalPoints - totalSubSubPoints
+			
 			for achievementIndex = 1, numAchievements do
 				local achId = GetAchievementId(topLevelIndex, categoryIndex, achievementIndex)
 				local currentId = GetFirstAchievementInLine(achId)
@@ -662,6 +665,8 @@ function uespLog.CreateCharDataAchievements()
 				end				
 			end
 		end
+		
+		achievements["AchievementPoints:"..tostring(topLevelIndex) .. ":0"] = "" .. tostring(earnedPoints) .. ", " .. tostring(totalPoints)
 		
 		for achievementIndex = 1, numCateAchievements do
 			local achId = GetAchievementId(topLevelIndex, nil, achievementIndex)

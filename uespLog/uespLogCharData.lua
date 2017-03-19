@@ -482,6 +482,14 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	charData.LastFoodEatenLevel = uespLog.charDataLastFoodEaten.reqLevel
 	charData.LastFoodEatenCP = uespLog.charDataLastFoodEaten.reqCP
 	
+	if (uespLog.savedVars.charInfo.data.hirelingMailTime ~= nil) then
+		charData['HirelingMailTime:Provisioning'] = uespLog.savedVars.charInfo.data.hirelingMailTime[CRAFTING_TYPE_PROVISIONING]
+		charData['HirelingMailTime:Woodworking'] = uespLog.savedVars.charInfo.data.hirelingMailTime[CRAFTING_TYPE_WOODWORKING]
+		charData['HirelingMailTime:Blacksmithing'] = uespLog.savedVars.charInfo.data.hirelingMailTime[CRAFTING_TYPE_BLACKSMITHING]
+		charData['HirelingMailTime:Enchanting'] = uespLog.savedVars.charInfo.data.hirelingMailTime[CRAFTING_TYPE_ENCHANTING]
+		charData['HirelingMailTime:Clothier'] = uespLog.savedVars.charInfo.data.hirelingMailTime[CRAFTING_TYPE_CLOTHIER]
+	end
+	
 	charData.Stats = uespLog.CreateCharDataStats(false)
 	charData.Power = uespLog.CreateCharDataPower(false)
 	charData.Buffs, charData.Vampire, charData.Werewolf = uespLog.CreateCharDataBuffs()
@@ -500,6 +508,18 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 
 	charData.Skills, charData.SkillPointsUsed = uespLog.CreateCharDataSkills()
 	charData.SkillPointsTotal = charData.SkillPointsUsed + charData.SkillPointsUnused	
+		
+	blackSkill = charData.Skills["Craft:Blacksmithing:Miner Hireling"] or { rank = 0 }
+	clothSkill = charData.Skills["Craft:Clothing:Outfitter Hireling"] or { rank = 0 }
+	enchantSkill = charData.Skills["Craft:Enchanting:Hireling"] or { rank = 0 }
+	provSkill = charData.Skills["Craft:Provisioning:Hireling"] or { rank = 0 }
+	woodSkill = charData.Skills["Craft:Woodworking:Lumberjack Hireling"] or { rank = 0 }
+	
+	charData['HirelingSkill:Provisioning'] = blackSkill.rank
+	charData['HirelingSkill:Woodworking'] = clothSkill.rank
+	charData['HirelingSkill:Blacksmithing'] = enchantSkill.rank
+	charData['HirelingSkill:Enchanting'] = provSkill.rank
+	charData['HirelingSkill:Clothier'] = woodSkill.rank
 	
 	local screenShotDeltaTime = GetTimeStamp() - uespLog.charDataLastScreenShotTimestamp 
 	

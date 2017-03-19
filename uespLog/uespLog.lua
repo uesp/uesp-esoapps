@@ -1390,6 +1390,14 @@ uespLog.DEFAULT_CHARINFO =
 {
 	data = {
 		["dailyQuestData"] = {},
+		["lastFoodEaten"] = "",
+		["hirelingMailTime"] = {
+			[CRAFTING_TYPE_PROVISIONING] = 0,
+			[CRAFTING_TYPE_WOODWORKING] = 0,
+			[CRAFTING_TYPE_BLACKSMITHING] = 0,
+			[CRAFTING_TYPE_ENCHANTING] = 0,
+			[CRAFTING_TYPE_CLOTHIER] = 0,
+		},
 	}
 }
 
@@ -2934,6 +2942,15 @@ function uespLog.Initialize( self, addOnName )
 		uespLog.savedVars.charInfo.data.skills = nil
 	end
 	
+	if (uespLog.savedVars.charInfo.data.hirelingMailTime == nil) then
+		uespLog.savedVars.charInfo.data.hirelingMailTime = {}
+		uespLog.savedVars.charInfo.data.hirelingMailTime[CRAFTING_TYPE_PROVISIONING] = 0
+		uespLog.savedVars.charInfo.data.hirelingMailTime[CRAFTING_TYPE_WOODWORKING] = 0
+		uespLog.savedVars.charInfo.data.hirelingMailTime[CRAFTING_TYPE_BLACKSMITHING] = 0
+		uespLog.savedVars.charInfo.data.hirelingMailTime[CRAFTING_TYPE_ENCHANTING] = 0
+		uespLog.savedVars.charInfo.data.hirelingMailTime[CRAFTING_TYPE_CLOTHIER] = 0
+	end	
+	
 	if (uespLog.savedVars.settings.data.charDataPassword == nil) then
 		uespLog.savedVars.settings.data.charDataPassword = ""
 	end
@@ -3038,6 +3055,8 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_CONFIRM_ITEM_PURCHASE, uespLog.OnTradingHouseConfirmPurchase)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_ERROR, uespLog.OnTradingHouseError)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_SEARCH_COOLDOWN_UPDATE, uespLog.OnTradingHouseSearchCooldownUpdate)	
+	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_MAIL_NUM_UNREAD_CHANGED, uespLog.OnMailNumUnreadChanged)
 		
 		-- Note: This event is called up to 40-50 time for each kill with some weapons (Destruction Staff)
 	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOT_UPDATED, uespLog.OnActionSlotUpdated)	
@@ -3164,7 +3183,7 @@ function uespLog.Initialize( self, addOnName )
 	--EVENT_START_KEEP_GUILD_CLAIM_INTERACTION (integer eventCode)
 	--EVENT_START_KEEP_GUILD_RELEASE_INTERACTION (integer eventCode)
 	--EVENT_GUILD_KEEP_CLAIM_UPDATED (integer eventCode, integer guildId)
-	
+		
 	uespLog.Old_GenerateResearchTraitCounts = ZO_SharedSmithingResearch.GenerateResearchTraitCounts
 	ZO_SharedSmithingResearch.GenerateResearchTraitCounts = uespLog.GenerateResearchTraitCounts
 	
@@ -14963,4 +14982,106 @@ function uespLog.MineRecipeData_Loop()
 		uespLog.MineRecipeDataEnd()
 		uespLog.Msg("Finished mining recipe data...found "..uespLog.MineRecipeCount.." recipes!")
 	end
+end
+
+
+uespLog.MailUnreadSkipOpen = false
+
+
+function uespLog.OnMailNumUnreadChanged(event, numUnread)
+
+	uespLog.DebugExtraMsg("OnMailNumUnreadChanged "..tostring(numUnread))
+	
+	if (numUnread > 0 and not uespLog.MailUnreadSkipOpen) then
+		RequestOpenMailbox()
+		uespLog.MailUnreadSkipOpen = true
+		
+		zo_callLater(uespLog.CheckHirelingMails, 500)
+	else
+		uespLog.MailUnreadSkipOpen = false
+	end
+	
+	
+	
+	-- Raw X Materials
+		-- Blacksmith
+		-- Clothier
+		-- Enchanter
+		-- Provisioner
+		-- Woodworking
+	-- senderDisplayName = ...
+	-- senderCharacterName = ""
+	-- fromSystem = true
+		
+	
+--GetNumMailItems()
+--	Returns: number numMail
+--GetNextMailId(id64:nilable lastMailId)
+--	Returns: id64:nilable nextMailId
+--GetMailItemInfo(id64 mailId)
+--	Returns: string senderDisplayName, string senderCharacterName, string subject, textureName icon, boolean unread, boolean fromSystem, boolean fromCustomerService, boolean returned, number numAttachments, number 
+--	attachedMoney, number codAmount, number expiresInDays, number secsSinceReceived
+--GetMailSender(id64 mailId)
+--	Returns: string senderDisplayName, string senderCharacterName
+--GetMailAttachmentInfo(id64 mailId)
+--	Returns: number numAttachments, number attachedMoney, number codAmount
+--GetMailFlags(id64 mailId)
+--	Returns: boolean unread, boolean returned, boolean fromSystem, boolean fromCustomerService
+
+--RequestReadMail(id64 mailId)
+--ReadMail(id64 mailId)
+--GetAttachedItemLink(id64 mailId, number attachIndex, number LinkStyle linkStyle)
+--	Returns: string link
+--GetAttachedItemInfo(id64 mailId, number attachIndex)
+--	Returns: textureName icon, number stack, string creatorName, number sellPrice, boolean meetsUsageRequirement, number equipType, number itemStyle, number quality
+--TakeMailAttachedItems(id64 mailId)
+--TakeMailAttachedMoney(id64 mailId)
+--RequestOpenMailbox()
+--IsReadMailInfoReady(id64 mailId)
+--	Returns: boolean isReady
+--DeleteMail(id64 mailId, boolean forceDelete)
+
+-- GetMailItemInfo(GetNextMailId())
+
+-- RequestOpenMailbox()
+-- RequestReadMail(GetNextMailId())
+-- 		IsReadMailInfoReady(GetNextMailId()) ?
+-- TakeMailAttachedItems(GetNextMailId())
+-- DeleteMail(GetNextMailId())
+
+end
+
+
+function uespLog.CheckHirelingMails()
+	local numMails = GetNumMailItems()
+	local mailId = GetNextMailId()
+	
+	while (mailId ~= nil) do
+		local timestamp = GetTimeStamp()
+		local senderDisplayName, senderCharacterName, subject, icon, unread, fromSystem, fromCustomerService, returned, numAttachments, attachedMoney, codAmount, expiresInDays, secsSinceReceived = GetMailItemInfo(mailId)
+		local mailSentTime = timestamp - secsSinceReceived
+		
+		if (fromSystem) then
+			tradeType = -1
+		
+			if (subject == "Raw Provisioner Materials") then
+				tradeType = CRAFTING_TYPE_PROVISIONING
+			elseif (subject == "Raw Woodworker Materials") then
+				tradeType = CRAFTING_TYPE_WOODWORKING
+			elseif (subject == "Raw Blacksmith Materials") then
+				tradeType = CRAFTING_TYPE_BLACKSMITHING
+			elseif (subject == "Raw Enchanter Materials") then
+				tradeType = CRAFTING_TYPE_ENCHANTING
+			elseif (subject == "Raw Clothier Materials") then
+				tradeType = CRAFTING_TYPE_CLOTHIER
+			end
+			
+			if (tradeType > 0) then
+				uespLog.savedVars.charInfo.data.hirelingMailTime[tradeType] = mailSentTime
+			end
+		end
+		
+		mailId = GetNextMailId(mailId)	
+	end
+	
 end

@@ -688,6 +688,13 @@
 --			- Added the /uesphireling (or /uesphire) which shows you the remaining time to receive your next hireling
 --			  mails. Note that you need to receive a hireling mail after install this addon in order to know the
 --			  time for the next mail.
+--			- Added the "/uesprawprice" command that outputs the market value (UESP or MasterMerchant) of all smithing 
+--			  raw materials along with the market value of the refined material including all temper materials expected
+--			  to be returned. The output is sorted from lowest net price to highest.
+--						/uesprawprice          -- Show all prices
+--						/uesprawprice [name]   -- Show all prices matching "name"
+--			- Item values used in /uesprawprice and /uesptrackloot now use the UESP value if it exists. Otherwise it
+--			  uses the MasterMerchant item value if present or, if not, the default game item value.
 --			
 --
 --		Future Versions (Works in Progress)
@@ -13388,6 +13395,22 @@ function uespLog.GetMMItemLinkValue(itemLink)
 end
 
 
+function uespLog.GetItemLinkValue(itemLink)
+	local mmPrice = uespLog.GetMMItemLinkValue(itemLink)
+	local uespPrice = uespLog.FindSalesPrice(itemLink)
+	
+	if (uespPrice ~= nil and uespPrice.price > 0) then
+		return uespPrice.price, "uesp"
+	end
+	
+	if (mmPrice > 0) then
+		return mmPrice, "mm"
+	end
+	
+	return GetItemLinkValue(itemLink), "default"
+end
+
+
 
 uespLog.TRACK_LOOT_TEMPER_BLACKSMITHING = 
 {
@@ -13693,7 +13716,7 @@ function uespLog.GetTrackLootTransformValue(itemName, qnt, ignoreRefinedPrice)
 	
 		for itemLink, chance in pairs(transformData.items) do
 			local itemValue = GetItemLinkValue(itemLink)
-			local itemMMValue = uespLog.GetMMItemLinkValue(itemLink)
+			local itemMMValue = uespLog.GetItemLinkValue(itemLink)
 			
 			if (itemMMValue == 0) then
 				totalValue = totalValue + itemValue * chance
@@ -13705,7 +13728,7 @@ function uespLog.GetTrackLootTransformValue(itemName, qnt, ignoreRefinedPrice)
 	
 	for itemLink, chance in pairs(transformData.tempers) do
 		local itemValue = GetItemLinkValue(itemLink)
-		local itemMMValue = uespLog.GetMMItemLinkValue(itemLink)
+		local itemMMValue = uespLog.GetItemLinkValue(itemLink)
 		
 		if (itemMMValue == 0) then
 			totalValue = totalValue + itemValue * chance
@@ -13774,7 +13797,7 @@ function uespLog.ShowTrackLoot(itemMatch)
 				end
 			else
 				local itemVendorValue = GetItemLinkValue(itemLink) * qnt
-				local itemMMValue = uespLog.GetMMItemLinkValue(itemLink) * qnt
+				local itemMMValue = uespLog.GetItemLinkValue(itemLink) * qnt
 				local transformValue = uespLog.GetTrackLootTransformValue(itemLink, qnt)
 				
 				if (transformValue ~= 0) then
@@ -13928,7 +13951,7 @@ function uespLog.CompareRawPrices (materialMatch)
 		
 		if (materialMatch == "" or itemName:lower():find(materialMatch) ~= nil) then
 			local transformValue = uespLog.GetTrackLootTransformValue(itemLink, 1)
-			local itemMMValue = uespLog.GetMMItemLinkValue(itemLink)
+			local itemMMValue = uespLog.GetItemLinkValue(itemLink)
 			local profit = transformValue - itemMMValue
 		
 			table.insert(sellData, { itemLink = itemLink, profit = profit, mmValue = itemMMValue, transformValue = transformValue})
@@ -13942,7 +13965,7 @@ function uespLog.CompareRawPrices (materialMatch)
 		local itemMMValue = string.format("%0.1f", itemData.mmValue)
 		local profit = string.format("%0.1f", itemData.profit)
 		
-		uespLog.Msg(".   "..tostring(itemData.itemLink)..": "..tostring(profit).." gold ("..tostring(transformValue).." - "..tostring(itemMMValue)..")")
+		uespLog.Msg(".   "..tostring(itemData.itemLink)..": "..tostring(profit).." gp ("..tostring(transformValue).." refined, "..tostring(itemMMValue).." raw)")
 	end
 		
 end

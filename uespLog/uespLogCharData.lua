@@ -492,6 +492,7 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	
 	charData.Stats = uespLog.CreateCharDataStats(false)
 	charData.Power = uespLog.CreateCharDataPower(false)
+	charData.NonCombat = uespLog.CreateCharDataNonCombat()
 	charData.Buffs, charData.Vampire, charData.Werewolf = uespLog.CreateCharDataBuffs()
 	charData.ActionBar = uespLog.CreateCharDataActionBar()
 	charData.EquipSlots = uespLog.CreateCharDataEquipSlots()
@@ -831,6 +832,104 @@ function uespLog.CreateCharDataPower(onlyBar)
 	end
 	
 	return power
+end
+
+
+
+
+uespLog.NONCOMBAT_BONUS_NAMES = {
+	[0] = 'Invalid',
+	[1] = 'EnchantingLevel',
+	[2] = 'AlchemyLevel',
+	[3] = 'ProvisioningLevel',
+	[4] = 'ProvisioningRarityLevel',
+	[5] = 'ProvisioningCreateExtraFood',
+	[6] = 'ProvisioningCreateExtraDrink',
+	[7] = 'ProvisioningFoodDuration',
+	[8] = 'ProvisioningDrinkDuration',
+	[9] = 'ProvisioningHirelingLevel',
+	[10] = 'AlchemyThirdSlot',
+	[11] = 'AlchemyCreateExtra',
+	[12] = 'EnchantingRarityLevel',
+	[13] = 'AlchemyCreatePercentDiscount',
+	[14] = 'AlchemyPotionDuration',
+	[15] = 'EnchantingDeconstructionUpgrade',
+	[16] = 'EnchantingHirelingLevel',
+	[17] = 'EnchantingCraftPercentDiscount',
+	[18] = 'BlacksmithingLevel',
+	[19] = 'BlacksmithingShowNodes',
+	[20] = 'BlacksmithingBoosterBonus',
+	[21] = 'BlacksmithingExtractLevel',
+	[22] = 'BlacksmithingCraftPercentDiscount',
+	[23] = 'BlacksmithingResearchLevel',
+	[24] = 'BlacksmithingHirelingLevel',
+	[25] = 'WoodworkingLevel',
+	[26] = 'WoodworkingShowNodes',
+	[27] = 'WoodworkingBoosterBonus',
+	[28] = 'WoodworkingExtractLevel',
+	[29] = 'WoodworkingCraftPercentDiscount',
+	[30] = 'WoodworkingResearchLevel',
+	[31] = 'WoodworkingHirelingLevel',
+	[32] = 'ClothierLevel',
+	[33] = 'ClothierShowNodes',
+	[34] = 'ClothierBoosterBonus',
+	[35] = 'ClothierExtractLevel',
+	[36] = 'ClothierCraftPercentDiscount',
+	[37] = 'ClothierResearchLevel',
+	[38] = 'ClothierHirelingLevel',
+	[39] = 'EnchantingSlotImprovement',
+	[40] = 'EnchantingShowNodes',
+	[41] = 'AlchemyShowNodes',
+	[42] = 'ProvisioningShowNodes',
+	[43] = 'AlchemyNegativeDuration',
+	[44] = 'SpellcraftingAbilitiesLearned',
+	[45] = 'SpellcraftingTabletCreationTime',
+	[46] = 'SpellcraftingTabletQuality',
+	[47] = 'SpellcraftingFocusUltimate',
+	[48] = 'SpellcraftingFocusCastTime',
+	[49] = 'SpellcraftingFocusDuration',
+	[50] = 'SpellcraftingFocusCheaper',
+	[51] = 'SpellcraftingFocusArea',
+	[52] = 'FortuneSeeker',
+	[53] = 'MasterGatherer',
+	[54] = 'ArmorKnowledge',
+	[55] = 'TraitIdentifier',
+	[56] = 'Impatience',
+	[57] = 'Groom',
+	[58] = 'Enlightened',
+	[59] = 'Unused',
+	[60] = 'Extraction',
+	[61] = 'PickpocketChance',
+	[62] = 'FenceSalesman',
+	[63] = 'Sly',
+	[64] = 'BountyDecay',
+	[65] = 'HeatDecay',
+	[66] = 'Haggling',
+	[67] = 'WitnessRangeReduction',
+	[68] = 'SecondaryWitnessRangeReduction',
+	[69] = 'GuardPursuitDistanceReduction',
+	[70] = 'Clemency',
+	[71] = 'TimelyEscape',
+	[72] = 'ClemencyArrestImmunity',
+	[73] = 'MurderBountyReduction',
+	[74] = 'AssaultBountyReduction',
+	[75] = 'GuardKill',
+	[76] = 'TelvarMultiplier',
+	[77] = 'MountedAggroRadiusReduction',
+	[78] = 'AvoidBladeOfWoeWitnessChance',
+	[79] = 'ShadowyConnections',
+}
+
+
+function uespLog.CreateCharDataNonCombat()
+	local nonCombat = {}
+
+	for i = 1, NON_COMBAT_BONUS_MAX_VALUE  do
+		local name = uespLog.NONCOMBAT_BONUS_NAMES[i] or tostring(i)
+		nonCombat["NonCombat:"..name] = GetNonCombatBonus(i)
+	end
+	
+	return nonCombat
 end
 
 

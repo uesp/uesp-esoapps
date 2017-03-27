@@ -589,7 +589,7 @@ end
 
 
 function uespLog.OnTradingHouseError(event, errorCode)
-	uespLog.DebugExtraMsg("OnTradingHouseError " .. tostring(errorCode))
+	uespLog.DebugExtraMsg("Trading House Error " .. tostring(errorCode))
 end
 
 

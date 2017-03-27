@@ -3057,6 +3057,7 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_SEARCH_COOLDOWN_UPDATE, uespLog.OnTradingHouseSearchCooldownUpdate)	
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_MAIL_NUM_UNREAD_CHANGED, uespLog.OnMailNumUnreadChanged)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_MAIL_OPEN_MAILBOX, uespLog.OnMailOpenMailbox)
 		
 		-- Note: This event is called up to 40-50 time for each kill with some weapons (Destruction Staff)
 	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOT_UPDATED, uespLog.OnActionSlotUpdated)	
@@ -3253,6 +3254,7 @@ function uespLog.SetupSlashCommands()
 	uespLog.SetSlashCommand("/offline", function() uespLog.AfkCommand("offline") end)
 	uespLog.SetSlashCommand("/utl", SLASH_COMMANDS["/uesptrackloot"])
 	uespLog.SetSlashCommand("/ukd", SLASH_COMMANDS["/uespkilldata"])
+	uespLog.SetSlashCommand("/home", uespLog.TeleportToPrimaryHome)
 end
 
 
@@ -8953,7 +8955,7 @@ function uespLog.MineItemIterate (itemId)
 	local itemLink = uespLog.MakeItemLink(itemId, 1, 1)
 	local itemType = GetItemLinkItemType(itemLink)
 	
-	if (#uespLog.mineItemOnlyItemType > 0 and uespLog.mineItemOnlyItemType[itemType] == nil) then
+	if (uespLog.mineItemOnlyItemType ~= {} and uespLog.mineItemOnlyItemType[itemType] == nil) then
 		uespLog.mineItemCount = uespLog.mineItemCount + 1
 		uespLog.mineItemBadCount = uespLog.mineItemBadCount + 1
 		return 1, 0
@@ -9444,7 +9446,7 @@ function uespLog.MineItemsAutoStatus ()
 	local text = uespLog.implodeKeys(uespLog.mineItemOnlyItemType, ", ")
 	
 	if (text ~= "") then
-		uespLog.MsgColor(uespLog.mineColor, ".     Only mining items with item type of "..text)
+		uespLog.MsgColor(uespLog.mineColor, ".     Only mining items with item types of "..text)
 	end
 end
 
@@ -9706,7 +9708,7 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		if (text == "") then
 			uespLog.MsgColor(uespLog.mineColor, "Mining items with all item types.")
 		else
-			uespLog.MsgColor(uespLog.mineColor, "Only mining items with item type of "..text..".")
+			uespLog.MsgColor(uespLog.mineColor, "Only mining items with item types of "..text..".")
 		end
 		
 		return
@@ -14965,7 +14967,6 @@ function uespLog.MineRecipeData_Loop()
 				local resultLink = GetItemLinkRecipeResultItemLink(itemLink)
 				local itemId = uespLog.ParseLinkItemId(itemLink)
 				local resultId = uespLog.ParseLinkItemId(resultLink)
-				--local furnId = GetItemLinkFurnitureDataId(resultLink)
 				
 				uespLog.MineRecipeResultIds[resultId] = itemId
 				
@@ -14985,99 +14986,75 @@ function uespLog.MineRecipeData_Loop()
 end
 
 
-uespLog.MailUnreadSkipOpen = false
-
-
 function uespLog.OnMailNumUnreadChanged(event, numUnread)
-
+	local isMailShowing = MAIL_INTERACTION_FRAGMENT:IsShowing();
+	
 	uespLog.DebugExtraMsg("OnMailNumUnreadChanged "..tostring(numUnread))
 	
-	if (numUnread > 0 and not uespLog.MailUnreadSkipOpen) then
-		RequestOpenMailbox()
-		uespLog.MailUnreadSkipOpen = true
+	if (numUnread > 0 and isMailShowing) then
+		uespLog.CheckHirelingMails()
+	end
+
+end
+
+
+function uespLog.IsHirelingMail(mailId)
+	local senderDisplayName, senderCharacterName, subject, icon, unread, fromSystem, fromCustomerService, returned, numAttachments, attachedMoney, codAmount, expiresInDays, secsSinceReceived = GetMailItemInfo(mailId)
+	local tradeType = -1		
 		
-		zo_callLater(uespLog.CheckHirelingMails, 500)
-	else
-		uespLog.MailUnreadSkipOpen = false
+	if (not fromSystem) then
+		return false, tradeType, secsSinceReceived
 	end
 	
+	if (subject == "Raw Provisioner Materials") then
+		tradeType = CRAFTING_TYPE_PROVISIONING
+	elseif (subject == "Raw Woodworker Materials") then
+		tradeType = CRAFTING_TYPE_WOODWORKING
+	elseif (subject == "Raw Blacksmith Materials") then
+		tradeType = CRAFTING_TYPE_BLACKSMITHING
+	elseif (subject == "Raw Enchanter Materials") then
+		tradeType = CRAFTING_TYPE_ENCHANTING
+	elseif (subject == "Raw Clothier Materials") then
+		tradeType = CRAFTING_TYPE_CLOTHIER
+	end
 	
-	
-	-- Raw X Materials
-		-- Blacksmith
-		-- Clothier
-		-- Enchanter
-		-- Provisioner
-		-- Woodworking
-	-- senderDisplayName = ...
-	-- senderCharacterName = ""
-	-- fromSystem = true
-		
-	
---GetNumMailItems()
---	Returns: number numMail
---GetNextMailId(id64:nilable lastMailId)
---	Returns: id64:nilable nextMailId
---GetMailItemInfo(id64 mailId)
---	Returns: string senderDisplayName, string senderCharacterName, string subject, textureName icon, boolean unread, boolean fromSystem, boolean fromCustomerService, boolean returned, number numAttachments, number 
---	attachedMoney, number codAmount, number expiresInDays, number secsSinceReceived
---GetMailSender(id64 mailId)
---	Returns: string senderDisplayName, string senderCharacterName
---GetMailAttachmentInfo(id64 mailId)
---	Returns: number numAttachments, number attachedMoney, number codAmount
---GetMailFlags(id64 mailId)
---	Returns: boolean unread, boolean returned, boolean fromSystem, boolean fromCustomerService
-
---RequestReadMail(id64 mailId)
---ReadMail(id64 mailId)
---GetAttachedItemLink(id64 mailId, number attachIndex, number LinkStyle linkStyle)
---	Returns: string link
---GetAttachedItemInfo(id64 mailId, number attachIndex)
---	Returns: textureName icon, number stack, string creatorName, number sellPrice, boolean meetsUsageRequirement, number equipType, number itemStyle, number quality
---TakeMailAttachedItems(id64 mailId)
---TakeMailAttachedMoney(id64 mailId)
---RequestOpenMailbox()
---IsReadMailInfoReady(id64 mailId)
---	Returns: boolean isReady
---DeleteMail(id64 mailId, boolean forceDelete)
-
--- GetMailItemInfo(GetNextMailId())
-
--- RequestOpenMailbox()
--- RequestReadMail(GetNextMailId())
--- 		IsReadMailInfoReady(GetNextMailId()) ?
--- TakeMailAttachedItems(GetNextMailId())
--- DeleteMail(GetNextMailId())
-
+	return true, tradeType, secsSinceReceived
 end
 
 
 function uespLog.CheckHirelingMails()
 	local numMails = GetNumMailItems()
 	local mailId = GetNextMailId()
+	local timestamp = GetTimeStamp()
 	
 	while (mailId ~= nil) do
-		local timestamp = GetTimeStamp()
-		local senderDisplayName, senderCharacterName, subject, icon, unread, fromSystem, fromCustomerService, returned, numAttachments, attachedMoney, codAmount, expiresInDays, secsSinceReceived = GetMailItemInfo(mailId)
-		local mailSentTime = timestamp - secsSinceReceived
+		local isHirelingMail, tradeType, secsSinceReceived = uespLog.IsHirelingMail(mailId)
 		
-		if (fromSystem) then
-			tradeType = -1
+		if (isHirelingMail) then
+			local mailSentTime = timestamp - secsSinceReceived
+			uespLog.savedVars.charInfo.data.hirelingMailTime[tradeType] = mailSentTime
+		end
 		
-			if (subject == "Raw Provisioner Materials") then
-				tradeType = CRAFTING_TYPE_PROVISIONING
-			elseif (subject == "Raw Woodworker Materials") then
-				tradeType = CRAFTING_TYPE_WOODWORKING
-			elseif (subject == "Raw Blacksmith Materials") then
-				tradeType = CRAFTING_TYPE_BLACKSMITHING
-			elseif (subject == "Raw Enchanter Materials") then
-				tradeType = CRAFTING_TYPE_ENCHANTING
-			elseif (subject == "Raw Clothier Materials") then
-				tradeType = CRAFTING_TYPE_CLOTHIER
-			end
-			
-			if (tradeType > 0) then
-				uespLog.savedVars.charInfo.data.hirelingMailTime[tradeType] = mailSentTime
+		mailId = GetNextMailId(mailId)	
+	end
+	
+end
+
+
+function uespLog.AutolootHirelingMails()
+	local numMails = GetNumMailItems()
+	local mailId = GetNextMailId()
+	local numFound = 0
+	local numLooted = 0
+	
+	while (mailId ~= nil) do
+		local isHirelingMail = uespLog.IsHirelingMail(mailId)
+		
+		if (isHirelingMail) then
+			numFound = numFound + 1
+		
+			if (uespLog.AutolootHirelingMail(mailId)) then
+				numLooted = numLooted + 1
 			end
 		end
 		
@@ -15085,3 +15062,93 @@ function uespLog.CheckHirelingMails()
 	end
 	
 end
+
+
+function uespLog.AutolootHirelingMail(mailId)
+	-- EVENT_MAIL_READABLE
+	
+	RequestReadMail(mailId)
+	
+	if (IsReadMailInfoReady(mailId)) then
+		TakeMailAttachedItems(mailId)
+		TakeMailAttachedMoney(mailId)
+		DeleteMail(mailId, true)
+		
+		return true
+	end
+	
+	return false
+end
+
+
+uespLog.CHECK_HIRELING_TRADES = {
+	[CRAFTING_TYPE_BLACKSMITHING] = NON_COMBAT_BONUS_BLACKSMITHING_HIRELING_LEVEL, 
+	[CRAFTING_TYPE_CLOTHIER] = NON_COMBAT_BONUS_CLOTHIER_HIRELING_LEVEL,
+	[CRAFTING_TYPE_ENCHANTING] = NON_COMBAT_BONUS_ENCHANTING_HIRELING_LEVEL,
+	[CRAFTING_TYPE_PROVISIONING] = NON_COMBAT_BONUS_PROVISIONING_HIRELING_LEVEL,
+	[CRAFTING_TYPE_WOODWORKING] = NON_COMBAT_BONUS_WOODWORKING_HIRELING_LEVEL,
+}
+
+
+function uespLog.CheckHirelingCommand(cmd)
+	local hireData = uespLog.savedVars.charInfo.data.hirelingMailTime
+	local currentTime = GetTimeStamp()
+	
+	if (hireData == nil) then
+		uespLog.Msg("No data available for hireling mails!")
+		return
+	end
+	
+	for trade, nonCombatBonus in pairs(uespLog.CHECK_HIRELING_TRADES) do
+		local lastMailTime = hireData[trade] or 0
+		local name = uespLog.GetCraftingName(trade)
+		local hireLevel = GetNonCombatBonus(nonCombatBonus)
+		local timePerMail = 24*3600
+		
+		if (lastMailTime > 0) then
+			if (hireLevel >= 3) then timePerMail = 12 * 3600 end
+			local timeLeft = lastMailTime + timePerMail - currentTime
+			
+			if (timeLeft <= 0) then
+				uespLog.Msg(""..name.." hireling mail ready to receive!")
+			else
+				local hour = math.floor(timeLeft / 3600)
+				local minute = math.floor((timeLeft / 60) % 60)
+				local second = math.floor((timeLeft) % 60)
+				local timeStr = string.format("%02d:%02d:%02d", hour, minute, second)
+				
+				uespLog.Msg(""..name.." hireling mail ready in "..timeStr..".")	
+			end
+		else
+			uespLog.Msg("No data available for "..name.." hireling mails!")
+		end
+	end
+
+end
+
+
+SLASH_COMMANDS["/uesphireling"] = uespLog.CheckHirelingCommand
+SLASH_COMMANDS["/uesphire"] = uespLog.CheckHirelingCommand
+
+
+
+function uespLog.OnMailOpenMailbox(event)
+	uespLog.DebugExtraMsg("OnMailOpenMailbox")
+	uespLog.CheckHirelingMails()
+end
+
+
+function uespLog.TeleportToPrimaryHome()
+	local houseId = GetHousingPrimaryHouse()
+	
+	if (houseId == nil or houseId <= 0) then
+		uespLog.Msg("You don't have a primary residence to teleport to!")
+		return
+	end
+	
+	uespLog.Msg("Trying to teleport to your primary residence...")
+	RequestJumpToHouse(GetHousingPrimaryHouse())
+end
+
+
+SLASH_COMMANDS["/uesphome"] = uespLog.TeleportToPrimaryHome

@@ -1314,8 +1314,8 @@ end
 
 function uespLog.OnActionSlotAbilitySlotted (eventCode, newAbilitySlotted)
 	--uespLog.DebugMsg("OnActionSlotAbilitySlotted "..tostring(newAbilitySlotted))
-	uespLog.SaveActionBarForCharData()
-	uespLog.SaveStatsForCharData()
+	zo_callLater(uespLog.SaveActionBarForCharData, 200)
+	zo_callLater(uespLog.SaveStatsForCharData, 300)
 end
 
 
@@ -1344,15 +1344,17 @@ end
 
 function uespLog.OnActiveQuickSlotChanged (eventCode, slotId)
 	--uespLog.DebugMsg("OnActiveQuickSlotChanged "..tostring(slotId))
-	uespLog.SaveActionBarForCharData()
-	uespLog.SaveStatsForCharData()
+	
+	zo_callLater(uespLog.SaveActionBarForCharData, 200)
+	zo_callLater(uespLog.SaveStatsForCharData, 300)
 end
 
 
 function uespLog.OnActiveWeaponPairChanged (eventCode, activeWeaponPair, locked)
 	uespLog.DebugExtraMsg("OnActiveWeaponPairChanged "..tostring(activeWeaponPair))
-	uespLog.SaveActionBarForCharData()
-	uespLog.SaveStatsForCharData()
+	
+	zo_callLater(uespLog.SaveActionBarForCharData, 400)
+	zo_callLater(uespLog.SaveStatsForCharData, 500)
 	
 		-- Far too slow
 	--uespLog.SaveSkillsForCharData()

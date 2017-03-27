@@ -684,6 +684,10 @@
 --					/uespresearch maxquality   [0-5]
 --							When set to a value from 1-5 then items with a quality higher than this value do
 --							not appear in the smithing research selection list. Set to 0 to disable.
+--			- Added the /uesphome command (and /home if not already used) which teleports you to your primary residence.
+--			- Added the /uesphireling (or /uesphire) which shows you the remaining time to receive your next hireling
+--			  mails. Note that you need to receive a hireling mail after install this addon in order to know the
+--			  time for the next mail.
 --			
 --
 --		Future Versions (Works in Progress)

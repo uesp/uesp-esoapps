@@ -15131,7 +15131,6 @@ SLASH_COMMANDS["/uesphireling"] = uespLog.CheckHirelingCommand
 SLASH_COMMANDS["/uesphire"] = uespLog.CheckHirelingCommand
 
 
-
 function uespLog.OnMailOpenMailbox(event)
 	uespLog.DebugExtraMsg("OnMailOpenMailbox")
 	uespLog.CheckHirelingMails()

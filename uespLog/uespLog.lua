@@ -695,6 +695,7 @@
 --						/uesprawprice [name]   -- Show all prices matching "name"
 --			- Item values used in /uesprawprice and /uesptrackloot now use the UESP value if it exists. Otherwise it
 --			  uses the MasterMerchant item value if present or, if not, the default game item value.
+--			- Changed the base "/uesptrackloot" command to show loot statistics instead of the help screen.
 --			
 --
 --		Future Versions (Works in Progress)
@@ -1559,6 +1560,7 @@ uespLog.DEFAULT_SETTINGS =
 		["alchemyTooltip"] = false,
 		["maxQualityForTraitResearch"] = 0,
 		["includeSetItemsForTraitResearch"] = true,
+		["autolootHirelingMails"] = false,
 	}
 }
 
@@ -1943,6 +1945,30 @@ function uespLog.SetNirnSound(flag)
 	end
 	
 	uespLog.savedVars.settings.data.nirnSound = flag
+end
+
+
+function uespLog.GetAutoLootHirelingMails()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.autolootHirelingMails == nil) then
+		uespLog.savedVars.settings.data.autolootHirelingMails = uespLog.DEFAULT_SETTINGS.autolootHirelingMails
+	end
+	
+	return uespLog.savedVars.settings.data.autolootHirelingMails
+end
+
+
+function uespLog.SetAutoLootHirelingMails(flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	uespLog.savedVars.settings.data.autolootHirelingMails = flag
 end
 
 
@@ -3080,10 +3106,12 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_GUILD_HISTORY_RESPONSE_RECEIVED, uespLog.OnGuildHistoryResponseReceived)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_CONFIRM_ITEM_PURCHASE, uespLog.OnTradingHouseConfirmPurchase)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_ERROR, uespLog.OnTradingHouseError)	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_OPERATION_TIME_OUT, uespLog.OnTradingHouseTimeOut)		
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_SEARCH_COOLDOWN_UPDATE, uespLog.OnTradingHouseSearchCooldownUpdate)	
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_MAIL_NUM_UNREAD_CHANGED, uespLog.OnMailNumUnreadChanged)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_MAIL_OPEN_MAILBOX, uespLog.OnMailOpenMailbox)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_MAIL_READABLE, uespLog.OnMailMessageReadable)
 		
 		-- Note: This event is called up to 40-50 time for each kill with some weapons (Destruction Staff)
 	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOT_UPDATED, uespLog.OnActionSlotUpdated)	
@@ -3120,8 +3148,6 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CHAT_MESSAGE_CHANNEL, uespLog.OnChatMessage)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_MAIL_TAKE_ATTACHED_ITEM_SUCCESS, uespLog.OnMailMessageTakeAttachedItem)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_MAIL_TAKE_ATTACHED_MONEY_SUCCESS, uespLog.OnMailMessageTakeAttachedMoney)
-	 
-	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_MAIL_READABLE, uespLog.OnMailMessageReadable)
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_JUSTICE_GOLD_PICKPOCKETED, uespLog.OnGoldPickpocketed)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_JUSTICE_GOLD_REMOVED, uespLog.OnGoldRemoved)
@@ -5822,6 +5848,10 @@ function uespLog.OnMailMessageReadable (eventCode, mailId)
 		uespLog.lastMailItems[attachIndex] = newItem
 	end
 	
+	if (uespLog.GetAutoLootHirelingMails() and uespLog.IsHirelingMail(mailId)) then
+		uespLog.AutolootHirelingMail(mailId)
+	end
+	
 end
 
 
@@ -5881,7 +5911,7 @@ function uespLog.OnMailMessageTakeAttachedItem (eventCode, mailId)
 	uespLog.DebugExtraMsg("Received mail item from " ..tostring(senderDisplayName).." money="..tostring(attachedMoney))
 	
 	if (mailId ~= uespLog.lastMailId or #uespLog.lastMailItems == 0) then
-		uespLog.DebugMsg("Error: No attachments in mail")
+		uespLog.DebugExtraMsg("Error: No attachments in mail")
 		return
 	end
 	
@@ -13301,7 +13331,7 @@ function uespLog.TrackLootCommand(cmds)
 		uespLog.UpdateTrackLootTime()
 		uespLog.SetTrackLoot(false)
 		uespLog.Msg("Loot tracking is now off!")
-	elseif (firstCmd == "show" or firstCmd == "items") then
+	elseif (firstCmd == "" or firstCmd == "show" or firstCmd == "items") then
 		uespLog.UpdateTrackLootTime()
 		uespLog.ShowTrackLoot(cmds[2])
 	elseif (firstCmd == "sources" or firstCmd == "src") then
@@ -13312,7 +13342,9 @@ function uespLog.TrackLootCommand(cmds)
 		uespLog.Msg("Reset loot tracking data!")
 	else
 		uespLog.Msg("Turns the tracking of loot on/off and displays tracked loot stats. This command does not alter what data is logged.")
+		uespLog.Msg(".     /uesptrackloot help                      Show command details")
 		uespLog.Msg(".     /uesptrackloot [on||off]                 Turns loot tracking on/off")
+		uespLog.Msg(".     /uesptrackloot                       Displays all items looted")
 		uespLog.Msg(".     /uesptrackloot show                   Displays all items looted")
 		uespLog.Msg(".     /uesptrackloot show [name]       Displays any matching loot items")
 		uespLog.Msg(".     /uesptrackloot sources               Displays all loot sources")
@@ -15054,13 +15086,16 @@ function uespLog.MineRecipeData_Loop()
 end
 
 
+uespLog.LastUnreadMails = 0
+
 function uespLog.OnMailNumUnreadChanged(event, numUnread)
 	local isMailShowing = MAIL_INTERACTION_FRAGMENT:IsShowing();
 	
 	uespLog.DebugExtraMsg("OnMailNumUnreadChanged "..tostring(numUnread))
 	
-	if (numUnread > 0 and isMailShowing) then
+	if (numUnread > 0 and isMailShowing and numUnread > uespLog.LastUnreadMails) then
 		uespLog.CheckHirelingMails()
+		uespLog.LastUnreadMails = numUnread
 	end
 
 end
@@ -15068,7 +15103,7 @@ end
 
 function uespLog.IsHirelingMail(mailId)
 	local senderDisplayName, senderCharacterName, subject, icon, unread, fromSystem, fromCustomerService, returned, numAttachments, attachedMoney, codAmount, expiresInDays, secsSinceReceived = GetMailItemInfo(mailId)
-	local tradeType = -1		
+	local tradeType = -1
 		
 	if (not fromSystem) then
 		return false, tradeType, secsSinceReceived
@@ -15084,6 +15119,8 @@ function uespLog.IsHirelingMail(mailId)
 		tradeType = CRAFTING_TYPE_ENCHANTING
 	elseif (subject == "Raw Clothier Materials") then
 		tradeType = CRAFTING_TYPE_CLOTHIER
+	else
+		return false, -1, secsSinceReceived
 	end
 	
 	return true, tradeType, secsSinceReceived
@@ -15133,9 +15170,7 @@ end
 
 
 function uespLog.AutolootHirelingMail(mailId)
-	-- EVENT_MAIL_READABLE
-	
-	RequestReadMail(mailId)
+	--RequestReadMail(mailId)
 	
 	if (IsReadMailInfoReady(mailId)) then
 		TakeMailAttachedItems(mailId)
@@ -15158,7 +15193,7 @@ uespLog.CHECK_HIRELING_TRADES = {
 }
 
 
-function uespLog.CheckHirelingCommand(cmd)
+function uespLog.ShowHirelingTimes()
 	local hireData = uespLog.savedVars.charInfo.data.hirelingMailTime
 	local currentTime = GetTimeStamp()
 	
@@ -15191,6 +15226,32 @@ function uespLog.CheckHirelingCommand(cmd)
 			uespLog.Msg("No data available for "..name.." hireling mails!")
 		end
 	end
+end
+
+
+function uespLog.CheckHirelingCommand(cmd)
+	local cmds, firstCmd = uespLog.SplitCommands(cmd)
+	
+	if (firstCmd == "" or firstCmd == "show" or firstCmd == "list") then
+		uespLog.ShowHirelingTimes()
+	elseif (firstCmd == "autoloot") then
+		local secondCmd = string.lower(cmds[2])
+		
+		if (secondCmd == "on") then
+			uespLog.SetAutoLootHirelingMails(true)
+			uespLog.Msg("Hireling mail autolooting is now ON.")
+		elseif (secondCmd == "off") then
+			uespLog.SetAutoLootHirelingMails(false)
+			uespLog.Msg("Hireling mail autolooting is now OFF.")
+		else
+			uespLog.Msg("Hireling mail autolooting is currently "..uespLog.BoolToOnOff(uespLog.GetAutoLootHirelingMails())..".")
+		end
+		
+	else
+		uespLog.Msg(".       /uesphireling help           Show command help")
+		uespLog.Msg(".       /uesphireling           Show next time for hireling mails")
+		uespLog.Msg(".       /uesphireling autoloot [on||off]    Turn autolooting of mails on/off")
+	end
 
 end
 
@@ -15202,6 +15263,9 @@ SLASH_COMMANDS["/uesphire"] = uespLog.CheckHirelingCommand
 function uespLog.OnMailOpenMailbox(event)
 	uespLog.DebugExtraMsg("OnMailOpenMailbox")
 	uespLog.CheckHirelingMails()
+	
+	local firstMailId = GetNextMailId(nil)
+	RequestReadMail(firstMailId)
 end
 
 

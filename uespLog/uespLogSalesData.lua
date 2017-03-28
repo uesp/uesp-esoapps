@@ -36,6 +36,7 @@ uespLog.SalesGuildSearchScanFinishIndex = 0
 uespLog.SalesGuildSearchScanAllGuilds = false 
 uespLog.SalesGuildSearchScanGuildId = 1
 uespLog.SalesGuildSearchScanGuildCount = 0
+uespLog.SalesGuildSearchLastError = false
 
 uespLog.SalesLastSearchCooldownGameTime = 0
 uespLog.SalesLastSearchCooldownUpdate = false
@@ -544,6 +545,8 @@ end
 
 function uespLog.OnTradingHouseSearchResultsReceived (eventCode, guildId, numItemsOnPage, currentPage, hasMorePages)
 
+	uespLog.DebugExtraMsg("OnTradingHouseSearchResultsReceived "..tostring(numItemsOnPage)..", "..tostring(currentPage)..", "..tostring(hasMorePages))
+
 	if (uespLog.IsSalesDataSave()) then
 		uespLog.SaveTradingHouseSalesData(guildId, numItemsOnPage, currentPage)
 		
@@ -624,6 +627,15 @@ end
 
 function uespLog.OnTradingHouseError(event, errorCode)
 	uespLog.DebugExtraMsg("Trading House Error " .. tostring(errorCode))
+	
+	if (errorCode == 8) then
+	end
+	
+end
+
+
+function uespLog.OnTradingHouseTimeOut(event, errorCode)
+	uespLog.DebugExtraMsg("Trading House Time Out " .. tostring(errorCode))
 end
 
 
@@ -646,6 +658,11 @@ function uespLog.OnTradingHouseResponseReceived(event, responseType, result)
 	uespLog.DebugExtraMsg("UESP: OnTradingHouseResponseReceived "..tostring(responseType).. " - "..tostring(result))
 	
 	if (result ~= TRADING_HOUSE_RESULT_SUCCESS) then
+	
+		if (result == 8) then
+			uespLog.SalesGuildSearchLastError = true
+		end
+		
 		return
 	end
 		
@@ -920,6 +937,7 @@ function uespLog.StartGuildSearchSalesScanAll()
 		
 	uespLog.SalesGuildSearchScanGuildCount = numTradeGuilds
 	uespLog.SalesGuildSearchScanAllGuilds = true
+	uespLog.SalesGuildSearchLastError = false
 	uespLog.SalesGuildSearchScanGuildId = 0
 	uespLog.SalesGuildSearchScanStarted = false
 	
@@ -1009,6 +1027,7 @@ function uespLog.StartGuildSearchSalesScan(startPage)
 	local guildId, guildName = GetCurrentTradingHouseGuildDetails()
 	
 	uespLog.SalesGuildSearchScanStarted = true
+	uespLog.SalesGuildSearchLastError = false
 	uespLog.SalesGuildSearchScanNumItems = 0
 	uespLog.SalesGuildSearchScanStartTime = GetTimeStamp()
 	uespLog.SalesGuildSearchScanLastTimestamp = 0
@@ -1049,6 +1068,12 @@ end
 
 function uespLog.OnGuildSearchScanItemsReceived(guildId, numItemsOnPage, currentPage, hasMorePages)
 	local _, guildName = GetCurrentTradingHouseGuildDetails()
+	
+	if (uespLog.SalesGuildSearchLastError) then
+		uespLog.SalesGuildSearchLastError = false
+		zo_callLater(uespLog.DoNextGuildListingScan, GetTradingHouseCooldownRemaining() + uespLog.SALESSCAN_EXTRADELAY)	
+		return
+	end
 	
 	uespLog.SalesGuildSearchScanPage = uespLog.SalesGuildSearchScanPage + 1
 	uespLog.SalesGuildSearchScanNumItems = uespLog.SalesGuildSearchScanNumItems + numItemsOnPage - uespLog.SalesGuildSearchScanFinishIndex
@@ -1617,7 +1642,7 @@ end
 
 function uespLog.GetTradingHouseSearchResultItemInfo(index)
 
-	if (uespLog.GetSalesShowDealType() ~= "uesp" and uespLog.Old_MM_GetTradingHouseSearchResultItemInfo ~= nil) then
+	if ((uespLog.GetSalesShowDealType() ~= "uesp" or not uespLog.IsSalesShowPrices()) and uespLog.Old_MM_GetTradingHouseSearchResultItemInfo ~= nil) then
 		return uespLog.Old_MM_GetTradingHouseSearchResultItemInfo(index)
 	end
 
@@ -1663,7 +1688,7 @@ end
 	
 function uespLog.GetTradingHouseListingItemInfo(index)
 
-	if (uespLog.GetSalesShowDealType() ~= "uesp" and uespLog.Old_MM_GetTradingHouseListingItemInfo ~= nil) then
+	if ((uespLog.GetSalesShowDealType() ~= "uesp"  or not uespLog.IsSalesShowPrices()) and uespLog.Old_MM_GetTradingHouseListingItemInfo ~= nil) then
 		return uespLog.Old_MM_GetTradingHouseListingItemInfo(index)
 	end
 	
@@ -1713,7 +1738,7 @@ uespLog.SalesDealProfits = {}
 
 function uespLog.DealCalc(setPrice, salesCount, purchasePrice, stackCount)
 
-	if (uespLog.Old_MM_DealCalc and uespLog.GetSalesShowDealType() ~= "uesp") then
+	if (uespLog.Old_MM_DealCalc and (uespLog.GetSalesShowDealType() ~= "uesp" or not uespLog.IsSalesShowPrices())) then
 		return uespLog.Old_MM_DealCalc(setPrice, salesCount, purchasePrice, stackCount)
 	end
 	
@@ -1756,7 +1781,7 @@ end
 
 function uespLog.GetDealValue(index)
 
-	if (uespLog.Old_MM_GetDealValue and uespLog.GetSalesShowDealType() ~= "uesp") then
+	if (uespLog.Old_MM_GetDealValue and (uespLog.GetSalesShowDealType() ~= "uesp" or not uespLog.IsSalesShowPrices())) then
 		return uespLog.Old_MM_GetDealValue(index)
 	end
 
@@ -1766,7 +1791,7 @@ end
 
 function uespLog.GetProfitValue(index)
 
-	if (uespLog.Old_MM_GetProfitValue and uespLog.GetSalesShowDealType() ~= "uesp") then
+	if (uespLog.Old_MM_GetProfitValue and (uespLog.GetSalesShowDealType() ~= "uesp" or not uespLog.IsSalesShowPrices())) then
 		return uespLog.Old_MM_GetProfitValue(index)
 	end
 	
@@ -1776,7 +1801,7 @@ end
 
 function uespLog.SetupTraderControls()
 
-	if (not uespLog.IsSalesDataSave() or UespSalesScanButton ~= nil) then
+	if (not uespLog.IsSalesShowPrices() or UespSalesScanButton ~= nil) then
 		return
 	end
 
@@ -1830,7 +1855,7 @@ function uespLog.UpdateUespScanSalesButton()
 		UespSalesScanButton:SetText("UESP Scan Sales...")
 	end
 	
-	if (not uespLog.IsSalesDataSave()) then
+	if (not uespLog.IsSalesShowPrices()) then
 		UespSalesScanButton:SetHidden(true)
 		UespSalesResetButton:SetHidden(true)
 	else

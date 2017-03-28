@@ -729,6 +729,7 @@
 --					/uespsales resetlist all       Reset the listing timestamps for all guilds.
 --					/uespsales resetlist current   Reset the listing timestamps for the current guild trader.
 --					/uespsales resetlist [name]    Reset the listing timestamps for that guild.
+--					/uespsales deal [uesp|mm|none] Sets how item deals are displayed in guild trader searches.
 --
 --			  When doing a manual scan of guild listings you need to be at a guild trader kiosk or bank screen.
 --			  When at a guild store bank it will scan all guilds you are currently in. A full scan can take 
@@ -744,6 +745,10 @@
 --			  be downloaded from  http://esosales.uesp.net/ . If you don't use the UESP price data at all you
 --			  can delete everything in this file with any text editor to save a little bit of memory.
 --
+--			  If sales price logging is enabled (/uespsales on) then two buttons in the bottom-left corner of the
+--			  guild trader listing window will be added that perform the equivalent of "/uespsales scan" and 
+--			  "/uespsales resetlist current".
+--
 --			  Collected price data is included in the "uespSalesPrices.lua" file. Average price data can be
 --			  viewed in item tooltips if you turn them on with "/uespsales prices on" and "/uespsales tooltip on",
 --			  much in the same manner as with the MasterMerchant add-on. 
@@ -756,6 +761,15 @@
 --			  Using only sold data would be the same as how the MasterMerchant add-on works. Using only the listed
 --			  data would be the same as how the TamrielTraderCentre add-on works. Using both gets you the best
 --			  of both worlds. 
+--
+--			  If you have MasterMerchant and AwesomeGuildStore installed you can use "/uespsales deal" to change
+--			  how the item deal label is calculated and displayed:
+--
+--					/uespsales deal mm   : Use the default MM price data and deal calculation.
+--					/uespsales deal uesp : Use the UESP price data and deal calculation.
+--
+--			  When switching between types you must close and reopen any existing guild trader searches in order
+--			  to update the data. Currently item deals are only displayed if MM and AGS are both installed.
 --
 --			- Fishing notifications (turn on with /uespfish on)
 --			- Daily quest tracking (/uespdaily)
@@ -1512,8 +1526,9 @@ uespLog.DEFAULT_SETTINGS =
 			["showPrices"] = false,
 			["showTooltip"] = true,
 			["showSaleType"] = "both",
+			["showDealType"] = "uesp",
 			["lastTimestamp"] = 0,
-			["guildListTimes"] = {},
+			["guildListTimes"] = {},			
 			[1] = {
 				["guildName"] = "",
 				["guildId"] = 1,
@@ -3229,10 +3244,36 @@ function uespLog.Initialize( self, addOnName )
 	
 	uespLog.SetupSlashCommands()
 	
+	if (MasterMerchant ~= nil) then
+		uespLog.Old_MM_DealCalc = MasterMerchant.DealCalc
+		MasterMerchant.DealCalc = uespLog.DealCalc
+		
+		uespLog.Old_MM_GetTradingHouseSearchResultItemInfo = MasterMerchant.AdjustGetTradingHouseSearchResultItemInfo
+		MasterMerchant.AdjustGetTradingHouseSearchResultItemInfo = uespLog.GetTradingHouseSearchResultItemInfo
+		
+		uespLog.Old_MM_GetTradingHouseListingItemInfo = MasterMerchant.AdjustGetTradingHouseListingItemInfo
+		MasterMerchant.AdjustGetTradingHouseListingItemInfo = uespLog.GetTradingHouseListingItemInfo
+		
+		uespLog.Old_MM_GetDealValue = MasterMerchant.GetDealValue
+		MasterMerchant.GetDealValue = uespLog.GetDealValue
+		
+		uespLog.Old_MM_GetProfitValue = MasterMerchant.GetProfitValue
+		MasterMerchant.GetProfitValue = uespLog.GetProfitValue
+	else
+		GetTradingHouseSearchResultItemInfo = uespLog.GetTradingHouseSearchResultItemInfo
+		GetTradingHouseListingItemInfo = uespLog.GetTradingHouseListingItemInfo
+	end	
+	
+	uespLog.SetupTraderControls()
+	
 	zo_callLater(uespLog.LoadSalePriceData, 500)
 	zo_callLater(uespLog.InitTradeData, 500) 
 	zo_callLater(uespLog.InitCharData, 500)
 end
+
+
+uespLog.Old_GetTradingHouseSearchResultItemInfo = GetTradingHouseSearchResultItemInfo
+uespLog.Old_GetTradingHouseListingItemInfo = GetTradingHouseListingItemInfo
 
 
 	--	Hook initialization onto the ADD_ON_LOADED event  

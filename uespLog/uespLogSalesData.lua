@@ -83,6 +83,8 @@ function uespLog.SetSalesDataSave(flag)
 	end
 	
 	uespLog.savedVars.settings.data.salesData.saveSales = flag
+	
+	uespLog.UpdateUespScanSalesButton()
 end
 
 
@@ -173,6 +175,38 @@ function uespLog.GetSalesShowSaleType()
 	end
 	
 	return uespLog.savedVars.settings.data.salesData.showSaleType
+end
+
+
+function uespLog.SetSalesShowDealType(value)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.salesData == nil) then
+		uespLog.savedVars.settings.data.salesData = uespLog.DEFAULT_SETTINGS.salesData
+	end
+	
+	uespLog.savedVars.settings.data.salesData.showDealType = value
+end
+
+
+function uespLog.GetSalesShowDealType()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.showSaleType == nil) then
+		uespLog.savedVars.settings.data.showSaleType = uespLog.DEFAULT_SETTINGS.salesData
+	end
+	
+	if (uespLog.savedVars.settings.data.salesData.showDealType == nil) then
+		uespLog.savedVars.settings.data.salesData.showDealType = "uesp"
+	end
+	
+	return uespLog.savedVars.settings.data.salesData.showDealType
 end
 
 
@@ -905,6 +939,7 @@ function uespLog.StartGuildSearchSalesScanNextGuild()
 		uespLog.Msg("Scan Aborted! You must be on a guild trader in order to perform a listing scan.")
 		uespLog.SalesGuildSearchScanStarted = false
 		uespLog.SalesGuildSearchScanAllGuilds = false
+		uespLog.UpdateUespScanSalesButton()
 		return
 	end
 	
@@ -924,6 +959,7 @@ function uespLog.StartGuildSearchSalesScanNextGuild()
 		uespLog.SalesGuildSearchScanAllGuilds = false
 		uespLog.SalesGuildSearchScanStarted = false
 		uespLog.Msg("Finished scanning listings from all guilds!")
+		uespLog.UpdateUespScanSalesButton()
 		return
 	end
 	
@@ -933,6 +969,7 @@ function uespLog.StartGuildSearchSalesScanNextGuild()
 			uespLog.SalesGuildSearchScanAllGuilds = false
 			uespLog.SalesGuildSearchScanStarted = false
 			uespLog.Msg("Error: Failed to select guild ID "..tostring(uespLog.SalesGuildSearchScanGuildId).." for listing scan!")
+			uespLog.UpdateUespScanSalesButton()
 			return
 		end
 	end
@@ -1021,6 +1058,7 @@ function uespLog.OnGuildSearchScanItemsReceived(guildId, numItemsOnPage, current
 		local deltaTime = GetTimeStamp() - uespLog.SalesGuildSearchScanStartTime
 		uespLog.Msg("Finished guild listing scan for "..tostring(guildName).."! "..uespLog.SalesGuildSearchScanNumItems.." items in "..tostring(uespLog.SalesGuildSearchScanPage-1).." pages scanned in "..tostring(deltaTime).." secs.")	
 		uespLog.SalesGuildSearchScanStarted = false
+		uespLog.UpdateUespScanSalesButton()
 		
 		local salesConfig = uespLog.GetSalesDataConfig()
 		salesConfig.guildListTimes[guildName] = uespLog.SalesGuildSearchScanListTimestamp
@@ -1048,6 +1086,7 @@ function uespLog.DoNextGuildListingScan()
 	if (GetNumTradingHouseGuilds() == 0) then
 		uespLog.Msg("Scan Aborted! You must be on a guild trader in order to perform a listing scan.")
 		uespLog.SalesGuildSearchScanStarted = false
+		uespLog.UpdateUespScanSalesButton()
 		return
 	end
 	
@@ -1495,6 +1534,23 @@ function uespLog.SalesCommand (cmd)
 		
 		uespLog.ResetLastListingSalesDataTimestamps(guildName)
 		
+	elseif (firstCmd == "deal" or firstCmd == "dealtype") then
+		local secondCmd = string.lower(cmds[2])
+		
+		if (secondCmd == "mm") then
+			uespLog.SetSalesShowDealType("mm")
+			uespLog.Msg("Item deals are now shown using MasterMerchant price data!")
+		elseif (secondCmd == "uesp") then
+			uespLog.SetSalesShowDealType("uesp")
+			uespLog.Msg("Item deals are now shown using UESP price data!")
+		elseif (secondCmd == "off" or secondCmd == "none") then
+			uespLog.SetSalesShowDealType("none")
+			uespLog.Msg("UESP item deals are not shown in guild listings!")
+		else
+			uespLog.Msg("UESP item deals setting is currently "..uespLog.GetSalesShowDealType():upper()..".")
+		end
+		
+		
 	elseif (firstCmd == "resetsold") then
 		uespLog.ResetNewSalesDataTimestamps()
 		uespLog.Msg("Reset the last scan timestamps for all sales in all guilds on account!")
@@ -1512,6 +1568,7 @@ function uespLog.SalesCommand (cmd)
 		uespLog.Msg(".       /uespsales resetlist all     Reset the listing timestamps for all guilds")
 		uespLog.Msg(".       /uespsales resetlist current Reset the listing timestamps for the current guild trader")
 		uespLog.Msg(".       /uespsales resetlist [name]  Reset the listing timestamps for that guild")
+		uespLog.Msg(".       /uespsales dealtype [uesp||mm||none]   Sets the type of item deal to display")
 		uespLog.Msg("Guild sales data logging is currently "..uespLog.BoolToOnOff(uespLog.GetSalesDataConfig().saveSales)..".")
 		uespLog.Msg("Sale price data usage is currently "..uespLog.BoolToOnOff(uespLog.IsSalesShowPrices()))
 		uespLog.Msg("Sale price item tooltips are currently "..uespLog.BoolToOnOff(uespLog.IsSalesShowTooltip()))
@@ -1555,4 +1612,230 @@ function uespLog.GotoUespSalesPageRowControl (rowControl)
 	end
 	
 	uespLog.GotoUespSalesPage(itemLink)
+end
+
+
+function uespLog.GetTradingHouseSearchResultItemInfo(index)
+
+	if (uespLog.GetSalesShowDealType() ~= "uesp" and uespLog.Old_MM_GetTradingHouseSearchResultItemInfo ~= nil) then
+		return uespLog.Old_MM_GetTradingHouseSearchResultItemInfo(index)
+	end
+
+	local icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice = uespLog.Old_GetTradingHouseSearchResultItemInfo(index)
+	local setPrice = nil
+	local salesCount = 0
+	local tipLine = nil
+	local itemLink = GetTradingHouseSearchResultItemLink(index, LINK_STYLE_DEFAULT)
+	
+	if (name ~= '' and stackCount > 0) then
+		if (itemLink) then
+			local uespPrice = uespLog.FindSalesPrice(itemLink)
+			
+			if (uespPrice ~= nil and uespPrice.price > 0) then
+				setPrice = uespPrice.price
+				salesCount = uespPrice.count
+			end
+		end
+
+		local deal, margin, profit = uespLog.DealCalc(setPrice, salesCount, purchasePrice, stackCount)
+		local dealString = ''
+		local marginString = ''
+		
+		if (deal) then 
+			dealString = string.format('%.0f', deal) 
+			uespLog.SalesDealValues[index] = deal
+		end
+		
+		if (profit) then
+			uespLog.SalesDealProfits[index] = profit
+		end
+		
+		if (margin) then 
+			marginString = string.format('%.0f', margin) 
+		end 
+
+		return icon, name, quality, stackCount, sellerName .. '|c000000;' .. dealString .. ';' .. marginString .. '|r', timeRemaining, purchasePrice
+	end
+	
+	return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice
+end
+	
+	
+function uespLog.GetTradingHouseListingItemInfo(index)
+
+	if (uespLog.GetSalesShowDealType() ~= "uesp" and uespLog.Old_MM_GetTradingHouseListingItemInfo ~= nil) then
+		return uespLog.Old_MM_GetTradingHouseListingItemInfo(index)
+	end
+	
+	local icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice = uespLog.Old_GetTradingHouseListingItemInfo(index)
+	local setPrice = nil
+	local salesCount = 0
+	local tipLine = nil
+	local itemLink = GetTradingHouseSearchResultItemLink(index, LINK_STYLE_DEFAULT)
+	
+	if (name ~= '' and stackCount > 0) then
+		if (itemLink) then
+			local uespPrice = uespLog.FindSalesPrice(itemLink)
+			
+			if (uespPrice ~= nil and uespPrice.price > 0) then
+				setPrice = uespPrice.price
+				salesCount = uespPrice.count
+			end
+		end
+
+		local deal, margin, profit = uespLog.DealCalc(setPrice, salesCount, purchasePrice, stackCount)
+		local dealString = ''
+		local marginString = ''
+		
+		if (deal) then 
+			dealString = string.format('%.0f', deal) 
+			uespLog.SalesDealValues[index] = deal
+		end
+		
+		if (profit) then
+			uespLog.SalesDealProfits[index] = profit
+		end
+
+		if (margin) then 
+			marginString = string.format('%.0f', margin) 
+		end 
+
+		return icon, name, quality, stackCount, sellerName .. '|c000000;' .. dealString .. ';' .. marginString .. '|r', timeRemaining, purchasePrice
+	end
+	
+	return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice
+end
+
+
+uespLog.SalesDealValues = {}
+uespLog.SalesDealProfits = {}
+
+
+function uespLog.DealCalc(setPrice, salesCount, purchasePrice, stackCount)
+
+	if (uespLog.Old_MM_DealCalc and uespLog.GetSalesShowDealType() ~= "uesp") then
+		return uespLog.Old_MM_DealCalc(setPrice, salesCount, purchasePrice, stackCount)
+	end
+	
+	local deal = 0
+	local margin = 0
+	local profit = 0
+	
+	if (not setPrice) then
+		return 0, 0, 0
+	end
+	
+	local unitPrice = (purchasePrice / stackCount) or 0
+	
+	profit = ((setPrice - unitPrice) * stackCount) or 0
+	margin = (math.floor(((setPrice - unitPrice) / setPrice) * 10000 + 0.5)/100) or 0
+		
+	if (margin >= 85) then
+		deal = 5
+	elseif (margin >= 65 and profit >= 1000) then
+		deal = 5
+	elseif (margin >= 50 and profit >= 3000) then
+		deal = 5
+	elseif (margin >= 50 and profit >= 500) then
+		deal = 4
+	elseif (margin >= 35 and profit >= 3000) then
+		deal = 4
+	elseif (margin >= 35 and profit >= 100) then
+		deal = 3
+	elseif (margin >= 20) then
+		deal = 2
+	elseif (margin >= -2.5) then
+		deal = 1
+	else
+		deal = 0
+	end
+
+	return deal, margin, profit
+end
+
+
+function uespLog.GetDealValue(index)
+
+	if (uespLog.Old_MM_GetDealValue and uespLog.GetSalesShowDealType() ~= "uesp") then
+		return uespLog.Old_MM_GetDealValue(index)
+	end
+
+	return uespLog.SalesDealValues[index]
+end
+
+
+function uespLog.GetProfitValue(index)
+
+	if (uespLog.Old_MM_GetProfitValue and uespLog.GetSalesShowDealType() ~= "uesp") then
+		return uespLog.Old_MM_GetProfitValue(index)
+	end
+	
+	return uespLog.SalesDealProfits[index]
+end
+
+
+function uespLog.SetupTraderControls()
+
+	if (not uespLog.IsSalesDataSave() or UespSalesScanButton ~= nil) then
+		return
+	end
+
+	local salesScanButton = CreateControlFromVirtual('UespSalesScanButton', ZO_TradingHouseLeftPane, 'ZO_DefaultButton')
+	salesScanButton:SetAnchor(CENTER, ZO_TradingHouseLeftPane, BOTTOM, 0, -25)
+	salesScanButton:SetWidth(90)
+	salesScanButton:SetHeight(20)
+	salesScanButton:SetText("UESP Scan Sales...")
+	salesScanButton:SetHandler('OnClicked', uespLog.OnUespScanSalesButton)
+	salesScanButton:SetHidden(true)
+	salesScanButton:SetFont("EsoUi/Common/Fonts/Univers57.otf|15|")
+	
+	local salesResetButton = CreateControlFromVirtual('UespSalesResetButton', ZO_TradingHouseLeftPane, 'ZO_DefaultButton')
+	salesResetButton:SetAnchor(CENTER, ZO_TradingHouseLeftPane, BOTTOM, 100, -50)
+	salesResetButton:SetWidth(90)
+	salesResetButton:SetHeight(20)
+	salesResetButton:SetText("UESP Reset Scan")
+	salesResetButton:SetHandler('OnClicked', function() uespLog.ResetLastListingSalesDataTimestamps('current') end)
+	salesResetButton:SetHidden(true)
+	salesResetButton:SetFont("EsoUi/Common/Fonts/Univers57.otf|15|")
+	
+	uespLog.UpdateUespScanSalesButton()
+end
+
+
+function uespLog.OnUespScanSalesButton()
+
+	if (not uespLog.SalesGuildSearchScanStarted) then
+		uespLog.StartGuildSearchSalesScanAll()
+	else
+		uespLog.StopGuildSearchSalesScan()
+	end
+	
+	uespLog.UpdateUespScanSalesButton()
+end
+
+
+function uespLog.UpdateUespScanSalesButton()
+
+	if (UespSalesScanButton == nil) then
+		uespLog.SetupTraderControls()
+		
+		if (UespSalesScanButton == nil) then
+			return
+		end
+	end
+	
+	if (uespLog.SalesGuildSearchScanStarted) then
+		UespSalesScanButton:SetText("UESP Stop Scan")
+	else
+		UespSalesScanButton:SetText("UESP Scan Sales...")
+	end
+	
+	if (not uespLog.IsSalesDataSave()) then
+		UespSalesScanButton:SetHidden(true)
+		UespSalesResetButton:SetHidden(true)
+	else
+		UespSalesScanButton:SetHidden(false)
+		UespSalesResetButton:SetHidden(false)
+	end
+
 end

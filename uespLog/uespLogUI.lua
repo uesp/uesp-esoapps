@@ -251,6 +251,15 @@ function uespLog.InitOptionControlsData()
 		getFunc = function () return uespLog.GetSalesShowSaleType() end,
 		setFunc = function (value) uespLog.SetSalesShowSaleType(value) end
 	})
+	
+	uespLog.optionControlsData:insert({
+		type = "dropdown",
+		name = "Deal Display Type", 
+		choices = { "uesp", "mm", "none" },
+		tooltip = "Selects which price data to use for showing deals in guild listings.\n      /uespsales deal uesp/mm/none", 
+		getFunc = function () return uespLog.GetSalesShowDealType() end,
+		setFunc = function (value) uespLog.SetSalesShowDealType(value) end
+	})
 		
 	uespLog.optionControlsData:insert({
 		type = "header",

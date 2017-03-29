@@ -695,7 +695,8 @@
 --						/uesprawprice [name]   -- Show all prices matching "name"
 --			- Item values used in /uesprawprice and /uesptrackloot now use the UESP value if it exists. Otherwise it
 --			  uses the MasterMerchant item value if present or, if not, the default game item value.
---			- Changed the base "/uesptrackloot" command to show loot statistics instead of the help screen.
+--			- Changed the base "/uesptrackloot" command to show loot statistics instead of the help text.
+--			- Changed the base "/uespkilldata" command to show kill statistics instead of the hepl text.
 --			
 --
 --		Future Versions (Works in Progress)
@@ -13938,9 +13939,11 @@ uespLog.CONTAINER_SOURCES = {
 	["Large Dwemer Jug"] = 1,
 	["Large Dwemer Pot"] = 1,
 	["Millet Sack"] = 1,
+	["Nightstand"] = 1,
 	["Sack"] = 1,
 	["Saltrice Sack"] = 1,
 	["Trunk"] = 1,
+	["Tomb Urn"] = 1,
 	["Urn"] = 1,
 	["Wardrobe"] = 1,
 }
@@ -14428,7 +14431,7 @@ function uespLog.FightDataCommand(cmd)
 	if (firstCmd == "reset" or firstCmd == "clear") then
 		uespLog.ClearFightData()
 		uespLog.Msg("Cleared kill data!")
-	elseif (firstCmd == "show" or firstCmd == "list") then
+	elseif (firstCmd == "" or firstCmd == "show" or firstCmd == "list") then
 		uespLog.ShowFightData()
 	elseif (firstCmd == "on") then
 		uespLog.SetTrackFights(true)
@@ -14438,9 +14441,9 @@ function uespLog.FightDataCommand(cmd)
 		uespLog.Msg("Turning kill data tracking off.")
 	else
 		uespLog.Msg("Collects and views data related to killing NPCs:")
-		uespLog.Msg(".     /uespkilldata on||off")
+		uespLog.Msg(".     /uespkilldata [on||off]")
 		uespLog.Msg(".     /uespkilldata reset")
-		uespLog.Msg(".     /uespkilldata show")
+		uespLog.Msg(".     /uespkilldata")
 		
 		uespLog.Msg("Kill data tracking is currently "..uespLog.BoolToOnOff(uespLog.GetTrackFights())..".")
 	end

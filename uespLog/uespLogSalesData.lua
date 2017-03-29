@@ -281,10 +281,6 @@ function uespLog.StartGuildSalesScanMore(guildIndex)
 	local guildId = GetGuildId(guildIndex)
 	local hasMore = DoesGuildHistoryCategoryHaveMoreEvents(guildId, GUILD_HISTORY_STORE)
 	
-	if (not uespLog.SalesGuildSearchScanStarted) then
-		return false
-	end
-		
 	if (not hasMore) then
 	
 		if (uespLog.SalesScanSingleGuild) then
@@ -318,11 +314,7 @@ function uespLog.ScanGuildSales(guildIndex)
 	local requested = false
 	local currentTimestamp = uespLog.GuildHistoryLastReceivedTimestamp
 	local numEvents = GetNumGuildEvents(guildId, GUILD_HISTORY_STORE)
-	
-	if (not uespLog.SalesGuildSearchScanStarted) then
-		return false
-	end
-	
+		
 	if (uespLog.SalesStartEventIndex >= numEvents and numEvents > 0) then
 		uespLog.SalesBadScanCount = uespLog.SalesBadScanCount + 1
 		uespLog.DebugExtraMsg("UESP: Bad guild sale scan "..guildIndex..":"..uespLog.SalesBadScanCount)
@@ -1036,6 +1028,8 @@ function uespLog.StartGuildSearchSalesScan(startPage)
 	uespLog.SalesGuildSearchScanPage = startPage
 	uespLog.SalesGuildSearchScanFinish = false
 	uespLog.Msg("Starting guild listing scan for "..tostring(guildName).."...do not leave trader until it is finished.")
+	
+	uespLog.UpdateUespScanSalesButton()
 	
 	local salesConfig = uespLog.GetSalesDataConfig()
 		

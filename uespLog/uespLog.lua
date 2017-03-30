@@ -697,6 +697,12 @@
 --			  uses the MasterMerchant item value if present or, if not, the default game item value.
 --			- Changed the base "/uesptrackloot" command to show loot statistics instead of the help text.
 --			- Changed the base "/uespkilldata" command to show kill statistics instead of the hepl text.
+--			- Added the "/uespmasterpotion" command. Use this command when you have an Alchemy Master Writ quest
+--			  in progress while at an Alchemy station in order to setup your solvent and reagents automatically.
+--					/uespmasterpotion help       Show command help.
+--					/uespmasterpotion            Use the first potion combination found.
+--					/uespmasterpotion [#]        Use the specified potion combination (1-N).
+--			  This command needs more testing to ensure it works for all alchemy master writs.
 --			
 --
 --		Future Versions (Works in Progress)
@@ -790,14 +796,6 @@
 --					/uesptrackstat none					  Turns off all tracking.
 --					/uesptrackstat resettime			  Resets the game time display to 0.
 --
---			- Added the /uespmasterpotion in v1.02. Use this command when you have an Alchemy Master Writ quest
---			  in progress while at an Alchemy station in order to setup your solvent and reagents automatically.
---
---					/uespmasterpotion help       Show command help.
---					/uespmasterpotion            Use the first potion combination found.
---					/uespmasterpotion [#]        Use the specified potion combination (1-N).
---
---			  This command needs more testing to ensure it works for all alchemy master writs.
 --
 
 

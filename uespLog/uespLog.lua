@@ -10497,9 +10497,15 @@ function uespLog.firstToUpper(str)
 end
 
 
+function uespLog.titleCaseHelper( first, rest )
+   return first:upper()..rest:lower()
+end
+
 function uespLog.titleCaseString(str)
-	local lStr = tostring(str):lower()
-    return lStr:gsub("(%l)(%w*)", function(a,b) return string.upper(a)..b end)
+	--local lStr = tostring(str):lower()
+    --return lStr:gsub("(%l)(%w*)", function(a,b) return string.upper(a)..b end)
+	
+	return tostring(str):gsub("(%a)([%w_']*)", uespLog.titleCaseHelper)
 end
 
 

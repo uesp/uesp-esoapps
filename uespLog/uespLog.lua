@@ -767,8 +767,8 @@
 --			  If you have MasterMerchant and AwesomeGuildStore installed you can use "/uespsales deal" to change
 --			  how the item deal label is calculated and displayed:
 --
---					/uespsales deal mm   : Use the default MM price data and deal calculation.
---					/uespsales deal uesp : Use the UESP price data and deal calculation.
+--					/uespsales deal mm      Use the default MM price data and deal calculation.
+--					/uespsales deal uesp    Use the UESP price data and deal calculation.
 --
 --			  When switching between types you must close and reopen any existing guild trader searches in order
 --			  to update the data. Currently item deals are only displayed if MM and AGS are both installed.
@@ -790,6 +790,14 @@
 --					/uesptrackstat none					  Turns off all tracking.
 --					/uesptrackstat resettime			  Resets the game time display to 0.
 --
+--			- Added the /uespmasterpotion in v1.02. Use this command when you have an Alchemy Master Writ quest
+--			  in progress while at an Alchemy station in order to setup your solvent and reagents automatically.
+--
+--					/uespmasterpotion help       Show command help.
+--					/uespmasterpotion            Use the first potion combination found.
+--					/uespmasterpotion [#]        Use the specified potion combination (1-N).
+--
+--			  This command needs more testing to ensure it works for all alchemy master writs.
 --
 
 

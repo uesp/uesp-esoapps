@@ -475,6 +475,10 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	
 	charData.Stealth = GetUnitStealthState("player")
 	
+	if (type(uespLog.charDataLastFoodEaten) == "string") then
+		uespLog.charDataLastFoodEaten = {}
+	end
+	
 	charData.LastFoodEatenName = uespLog.charDataLastFoodEaten.name
 	charData.LastFoodEatenLink = uespLog.charDataLastFoodEaten.itemLink
 	charData.LastFoodEatenType = uespLog.charDataLastFoodEaten.type
@@ -751,6 +755,10 @@ function uespLog.OnEatDrinkItem(itemLink)
 		itemTypeString = "Drink"
 	else
 		return
+	end
+	
+	if (type(uespLog.charDataLastFoodEaten) == "string") then
+		uespLog.charDataLastFoodEaten = {}
 	end
 	
 	uespLog.charDataLastFoodEaten.itemLink = itemLink

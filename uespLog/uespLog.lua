@@ -703,6 +703,7 @@
 --					/uespmasterpotion            Use the first potion combination found.
 --					/uespmasterpotion [#]        Use the specified potion combination (1-N).
 --			  This command needs more testing to ensure it works for all alchemy master writs.
+--			- The "/uespspeed" command no longer outputs 0 speed values to the chat window.
 --			
 --
 --		Future Versions (Works in Progress)
@@ -11992,7 +11993,7 @@ function uespLog.SpeedMeasureCallback()
 	local speed = uespLog.RecordSpeedParameters() * uespLog.speedMagicFactor
 	local avgSpeed = uespLog.speedTotalDelta / (uespLog.speedLastTimestamp - uespLog.speedFirstTimestamp) * uespLog.speedMagicFactor
 	
-	if (speed ~= nil) then
+	if (speed ~= nil and speed ~= 0) then
 		uespLog.Msg("Speed: "..string.format("%.2f", speed).." u/s (average = "..string.format("%.2f", avgSpeed).." u/s)")
 	end
 	

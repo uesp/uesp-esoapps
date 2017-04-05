@@ -397,6 +397,7 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	charData.Date = GetDateStringFromTimestamp(charData.Timestamp)
 	charData.APIVersion = GetAPIVersion()
 	
+	charData.CharIndex, charData.CharId, charData.LocationId = uespLog.FindCharIndex()
 	charData.CharName = GetUnitName("player")
 	charData.AccountName = GetDisplayName()
 	charData.UniqueAccountName = uespLog.GetUniqueAccountName()
@@ -538,6 +539,23 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	-- uespLog.MergeBuildDataSkills(charData)
 
 	return charData
+end
+
+
+function uespLog.FindCharIndex()
+	local numChars = GetNumCharacters()
+	local charName = GetUnitName("player"):gsub("%^.*", "")
+	
+	for charIndex = 1, numChars do
+		local name, gender, level, classId, raceId, alliance, charId, locationId = GetCharacterInfo(charIndex)
+		name = name:gsub("%^.*", "")
+		
+		if (name == charName) then
+			return charIndex, charId, locationId
+		end
+	end
+	
+	return -1, -1, -1
 end
 
 

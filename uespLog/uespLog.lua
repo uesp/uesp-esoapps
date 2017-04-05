@@ -12747,6 +12747,7 @@ end
 
 
 SLASH_COMMANDS["/uespcustomstats"] = uespLog.CustomStatsCommand
+SLASH_COMMANDS["/uespcustomstat"] = uespLog.CustomStatsCommand
 
 
 uespLog.STAT_EFFECTIVE_SPELL_POWER = -100

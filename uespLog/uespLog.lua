@@ -3064,7 +3064,8 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_QUEST_ADDED, uespLog.OnQuestAdded)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_QUEST_REMOVED, uespLog.OnQuestRemoved)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_OBJECTIVE_COMPLETED, uespLog.OnQuestObjectiveCompleted)
-	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_QUEST_COMPLETE, uespLog.OnQuestComplete)
+	 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_QUEST_ADVANCED, uespLog.OnQuestAdvanced)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_QUEST_COMPLETE_EXPERIENCE, uespLog.OnQuestCompleteExperience)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_QUEST_OPTIONAL_STEP_ADVANCED, uespLog.OnQuestOptionalStepAdvanced)
@@ -4135,8 +4136,7 @@ function uespLog.OnConversationUpdated (eventCode, conversationBodyText, convers
 	uespLog.lastConversationOption.Type = ""
 	uespLog.lastConversationOption.Gold = ""
 	uespLog.lastConversationOption.Index = ""
-	uespLog.lastConversationOption.Important = ""
-	
+	uespLog.lastConversationOption.Important = ""	
 end
 
 
@@ -4333,11 +4333,13 @@ end
 function uespLog.OnQuestAdded (eventCode, journalIndex, questName, objectiveName)
 	local logData = { }
 	
-	logData.event = "QuestAdded"
-	logData.quest = questName
-	logData.objective = objectiveName
+	--logData.event = "QuestAdded"
+	--logData.quest = questName
+	--logData.objective = objectiveName
+	--logData.stepIndex, logData.condIndex = uespLog.FindQuestCurrentStage(journalIndex, objectiveName)
+	--uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	
-	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
+	uespLog.LogQuestData(journalIndex)
 	
 	if (objectiveName ~= "") then
 		uespLog.MsgType(uespLog.MSG_QUEST, "Quest "..tostring(questName)..", "..tostring(objectiveName).." added!")
@@ -4345,9 +4347,73 @@ function uespLog.OnQuestAdded (eventCode, journalIndex, questName, objectiveName
 		uespLog.MsgType(uespLog.MSG_QUEST, "Quest "..tostring(questName).." added!")
 	end
 	
-	uespLog.CheckQuestItems(journalIndex, questName)
+	--uespLog.DebugMsg("Quest Step/Condition Index ("..tostring(journalIndex)..") :"..tostring(logData.stepIndex) .. ":"..tostring(logData.condIndex))
+	--uespLog.CheckQuestItems(journalIndex, questName)
 	
 	uespLog.DailyQuestOnQuestStart(questName, journalIndex)
+end
+
+
+function uespLog.LogQuestData (journalIndex)
+	local logData = { }
+	local numSteps = GetJournalQuestNumSteps(journalIndex)
+	local questName = GetJournalQuestName(journalIndex)
+	local numTools = 0
+	
+	logData.event = "Quest::Start"
+	logData.level = GetJournalQuestLevel(journalIndex)
+	logData.type = GetJournalQuestType(journalIndex)
+	logData.repeatType = GetJournalQuestRepeatType(journalIndex)
+	logData.displayType = GetJournalQuestInstanceDisplayType(journalIndex)
+	logData.quest, logData.bgText = GetJournalQuestInfo(journalIndex)
+	logData.jourIndex = journalIndex
+	logData.questZone, logData.objective, logData.zoneIndex, logData.poiIndex = GetJournalQuestLocationInfo(journalIndex)
+	logData.goal, logData.endDialog, logData.confirm, logData.decline, logData.endBgText, logData.endJournalText = GetJournalQuestEnding(journalIndex)
+	logData.shareable = GetIsQuestSharable(journalIndex)
+	logData.numTools = GetQuestToolCount(journalIndex)
+	logData.timerStart, logData.timerEnd, logData.timerVisible = GetJournalQuestTimerInfo(journalIndex)
+	logData.timerCaption = GetJournalQuestTimerCaption(journalIndex)
+	logData.numSteps = numSteps
+	
+	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
+	
+	numTools = logData.numTools
+	
+	for toolIndex = 1, numTools do
+		uespLog.LogQuestToolItemLink(journalIndex, toolIndex, questName)
+	end
+	
+	for stepIndex = 1, numSteps do
+		logData = {}
+		logData.event = "Quest::Step"
+		logData.quest = questName
+		logData.step = stepIndex
+		logData.text, logData.visible, logData.stepType, logData.overrideText, logData.numCond = GetJournalQuestStepInfo(journalIndex, stepIndex)
+		
+		uespLog.AppendDataToLog("all", logData)
+		
+		local numConditions = logData.numCond
+		
+		for conditionIndex = 1, numConditions do
+			logData = {}
+			logData.event = "Quest::Condition"
+			logData.quest = questName
+			logData.step = stepIndex
+			logData.condition = conditionIndex
+			logData.condType = GetJournalQuestConditionType(journalIndex, stepIndex, conditionIndex, false)
+			logData.condType2 = GetJournalQuestConditionType(journalIndex, stepIndex, conditionIndex, true)
+			logData.text, _, logData.maxValue, logData.isFail, logData.isComplete, logData.isShared, logData.isVisible = GetJournalQuestConditionInfo(journalIndex, stepIndex, conditionIndex)
+			
+			uespLog.AppendDataToLog("all", logData)
+			
+			local itemLink = GetQuestItemLink(journalIndex, stepIndex, conditionIndex)
+			
+			if (itemLink ~= "") then
+				uespLog.LogQuestItemLink(journalIndex, stepIndex, conditionIndex, questName)
+			end			
+		end		
+	end	
+
 end
 
 
@@ -4368,6 +4434,21 @@ function uespLog.OnQuestRemoved (eventCode, isCompleted, questIndex, questName, 
 end
 
 
+function uespLog.OnQuestComplete(eventCode, questName, level, previousExperience, currentExperience, championPoints, questType, instanceDisplayType)
+	local logData = { }
+	
+	logData.event = "QuestComplete"
+	logData.quest = questName
+	logData.level = level
+	logData.cp = championPoints
+	logData.questType = questType
+	logData.displayType = instanceDisplayType
+	logData.xp = currentExperience - previousExperience
+	
+	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
+end
+
+
 function uespLog.OnQuestObjectiveCompleted (eventCode, zoneIndex, poiIndex, xpGained)
 	local logData = { }
 	
@@ -4378,7 +4459,7 @@ function uespLog.OnQuestObjectiveCompleted (eventCode, zoneIndex, poiIndex, xpGa
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	
-	uespLog.DebugMsg("UESP: Quest objective completed")
+	uespLog.DebugMsg("UESP: Quest objective completed!")
 end
 
 
@@ -4398,9 +4479,51 @@ function uespLog.OnQuestCounterChanged (eventCode, journalIndex, questName, cond
 	logData.isHidden = isStepHidden
 	if (stepOverrideText ~= "") then logData.overrideText = stepOverrideText end
 	
-	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
+	--logData.stepIndex, logData.condIndex = uespLog.FindQuestCurrentStage(journalIndex, conditionText, conditionType, newConditionVal, conditionMax)
+	
+	--uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
  
 	uespLog.MsgType(uespLog.MSG_QUEST, "Quest "..questName..", "..conditionText.." now "..tostring(newConditionVal).."/"..tostring(conditionMax)..".")
+	--uespLog.DebugMsg("Quest Step/Condition Index ("..tostring(journalIndex)..") :"..tostring(logData.stepIndex) .. ":"..tostring(logData.condIndex))
+end
+
+
+function uespLog.FindQuestCurrentStage(journalIndex, activeConditionText, activeConditionType, activeConditionValue, activeConditionMax)
+	local numSteps = GetJournalQuestNumSteps(journalIndex)
+	local questName, backgroundText, activeStepText, activeStepType, activeStepTrackerOverrideText = GetJournalQuestInfo(journalQuestIndex)
+	
+	for stepIndex = 1, numSteps do
+		local stepText, visible, stepType, trakerOverride, numConditions = GetJournalQuestStepInfo(journalQuestIndex, stepIndex)	
+		
+		if (stepText == activeStepText and stepType == activeStepType) then
+			resultStepIndex = stepIndex 
+			
+			if (conditionText ~= nil) then 
+			
+				if (numConditions <= 0) then
+					return stepIndex, 0
+				end
+			
+				if (numConditions == 1) then
+					return stepIndex, 1 
+				end
+			
+				for conditionIndex = 1, numConditions do
+					local conditionText, currentValue, maxValue = GetJournalQuestConditionInfo(journalQuestIndex, stepIndex, conditionIndex)
+					local conditionType = GetJournalQuestConditionType(journalQuestIndex, stepIndex, conditionIndex)
+					
+					if (conditionText == activeConditionText and (activeConditionMax == nil or activeConditionMax == maxValue) and (conditionType == nil or conditionType == activeConditionType)) then
+						return stepIndex, conditionIndex
+					end
+				end
+			end
+			
+			return stepIndex, nil
+		end
+	
+	end
+	
+	return nil, nil
 end
 
 
@@ -4702,7 +4825,7 @@ function uespLog.OnQuestOptionalStepAdvanced (eventCode, text)
 	
 	logData.event = "QuestOptionalStep"
 	logData.text = text
-
+	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
 	uespLog.MsgType(uespLog.MSG_QUEST, "Quest optional step advanced ("..text..")")
@@ -4717,6 +4840,7 @@ function uespLog.OnQuestAdvanced (eventCode, journalIndex, questName, isPushed, 
 	logData.isPushed = isPushed
 	logData.isComplete = isComplete
 	logData.mainStepChanged = mainStepChanged
+	logData.stepIndex, logData.condIndex = uespLog.FindQuestCurrentStage(journalIndex)
 
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
@@ -11859,8 +11983,9 @@ function uespLog.LogQuestItemLink(journalIndex, stepIndex, conditionIndex, quest
 	logData.conditionIndex = conditionIndex
 	logData.questName = questName
 	
-	logData.texture, _, _, logData.questId = GetQuestItemInfo(journalIndex, stepIndex, conditionIndex)
+	logData.texture, logData.stackCount, logData.name1, logData.questId = GetQuestItemInfo(journalIndex, stepIndex, conditionIndex)
 	logData.header, logData.name, logData.desc = GetQuestItemTooltipInfo(journalIndex, stepIndex, conditionIndex)
+	logData.duration = GetQuestItemCooldownInfo(journalIndex, stepIndex, conditionIndex)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
@@ -11883,7 +12008,7 @@ function uespLog.LogQuestToolItemLink(journalIndex, toolIndex, questName)
 	logData.toolIndex = toolIndex
 	logData.questName = questName
 		
-	logData.texture, _, _, _, logData.questId = GetQuestToolInfo(journalIndex, toolIndex)
+	logData.texture, logData.stackCount, logData.isUsuable, logData.name1, logData.questId = GetQuestToolInfo(journalIndex, toolIndex)
 	logData.header, logData.name, logData.desc = GetQuestToolTooltipInfo(journalIndex, toolIndex)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())

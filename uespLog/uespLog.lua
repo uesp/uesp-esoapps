@@ -1432,6 +1432,7 @@ uespLog.DEFAULT_CHARINFO =
 			[CRAFTING_TYPE_ENCHANTING] = 0,
 			[CRAFTING_TYPE_CLOTHIER] = 0,
 		},
+		["questStageData"] = {},
 	}
 }
 
@@ -4332,13 +4333,16 @@ end
 
 function uespLog.OnQuestAdded (eventCode, journalIndex, questName, objectiveName)
 	local logData = { }
+	local questStageData = uespLog.GetCharQuestStageData()
+	
+	questStageData[questName] = 1
 	
 	--logData.event = "QuestAdded"
 	--logData.quest = questName
 	--logData.objective = objectiveName
 	--logData.stepIndex, logData.condIndex = uespLog.FindQuestCurrentStage(journalIndex, objectiveName)
 	--uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
-	
+		
 	uespLog.LogQuestData(journalIndex)
 	
 	if (objectiveName ~= "") then
@@ -4358,7 +4362,8 @@ function uespLog.LogQuestData (journalIndex)
 	local logData = { }
 	local numSteps = GetJournalQuestNumSteps(journalIndex)
 	local questName = GetJournalQuestName(journalIndex)
-	local numTools = 0
+	
+	local questStageIndex = uespLog.GetCharQuestStageData()[questName] or nil
 	
 	logData.event = "Quest::Start"
 	logData.level = GetJournalQuestLevel(journalIndex)
@@ -4368,29 +4373,57 @@ function uespLog.LogQuestData (journalIndex)
 	logData.quest, logData.bgText = GetJournalQuestInfo(journalIndex)
 	logData.jourIndex = journalIndex
 	logData.questZone, logData.objective, logData.zoneIndex, logData.poiIndex = GetJournalQuestLocationInfo(journalIndex)
-	logData.goal, logData.endDialog, logData.confirm, logData.decline, logData.endBgText, logData.endJournalText = GetJournalQuestEnding(journalIndex)
+	
+	--logData.goal, logData.endDialog, logData.confirm, logData.decline, logData.endBgText, logData.endJournalText = GetJournalQuestEnding(journalIndex)
+	
 	logData.shareable = GetIsQuestSharable(journalIndex)
 	logData.numTools = GetQuestToolCount(journalIndex)
 	logData.timerStart, logData.timerEnd, logData.timerVisible = GetJournalQuestTimerInfo(journalIndex)
 	logData.timerCaption = GetJournalQuestTimerCaption(journalIndex)
 	logData.numSteps = numSteps
+	logData.startZoneIndex = GetJournalQuestStartingZone(journalIndex)
+	logData.stageIndex = questStageIndex
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	
-	numTools = logData.numTools
+	uespLog.LogQuestStepData(journalIndex)
+end
+
+
+function uespLog.LogQuestRewardData (journalIndex)
+	local questName = GetJournalQuestName(journalIndex)
+	local numRewards = GetJournalQuestNumRewards(journalIndex)
+	local logData = { }
 	
-	for toolIndex = 1, numTools do
-		uespLog.LogQuestToolItemLink(journalIndex, toolIndex, questName)
+	for rewardIndex = 1, numRewards do
+		logData = {}
+		logData.event = "Quest::Reward"
+		
+		logData.quest = questName
+		logData.type, logData.name, logData.count, logData.icon, logData.usage, logData.quality, logData.itemType = GetJournalQuestRewardInfo(journalIndex, rewardIndex)
+		logData.itemId = GetJournalQuestRewardItemId(journalIndex, rewardIndex)
+		logData.collectId = GetJournalQuestRewardCollectibleId(journalIndex, rewardIndex)
+
+		uespLog.AppendDataToLog("all", logData)
 	end
-	
+end
+
+
+function uespLog.LogQuestStepData (journalIndex)
+	local numSteps = GetJournalQuestNumSteps(journalIndex)
+	local questName = GetJournalQuestName(journalIndex)
+	local questStageIndex = uespLog.GetCharQuestStageData()[questName] or nil
+	local logData = {}
+
 	for stepIndex = 1, numSteps do
 		logData = {}
 		logData.event = "Quest::Step"
 		logData.quest = questName
 		logData.step = stepIndex
+		logData.stageIndex = questStageIndex
 		logData.text, logData.visible, logData.stepType, logData.overrideText, logData.numCond = GetJournalQuestStepInfo(journalIndex, stepIndex)
 		
-		uespLog.AppendDataToLog("all", logData)
+		uespLog.AppendDataToLog("all", logData, logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 		
 		local numConditions = logData.numCond
 		
@@ -4399,26 +4432,36 @@ function uespLog.LogQuestData (journalIndex)
 			logData.event = "Quest::Condition"
 			logData.quest = questName
 			logData.step = stepIndex
+			logData.stageIndex = questStageIndex
 			logData.condition = conditionIndex
 			logData.condType = GetJournalQuestConditionType(journalIndex, stepIndex, conditionIndex, false)
 			logData.condType2 = GetJournalQuestConditionType(journalIndex, stepIndex, conditionIndex, true)
 			logData.text, _, logData.maxValue, logData.isFail, logData.isComplete, logData.isShared, logData.isVisible = GetJournalQuestConditionInfo(journalIndex, stepIndex, conditionIndex)
 			
-			uespLog.AppendDataToLog("all", logData)
+			uespLog.AppendDataToLog("all")
 			
 			local itemLink = GetQuestItemLink(journalIndex, stepIndex, conditionIndex)
 			
 			if (itemLink ~= "") then
 				uespLog.LogQuestItemLink(journalIndex, stepIndex, conditionIndex, questName)
-			end			
-		end		
-	end	
-
+			end
+		end
+	end
+	
+	local numTools = GetQuestToolCount(journalIndex)
+	
+	for toolIndex = 1, numTools do
+		uespLog.LogQuestToolItemLink(journalIndex, toolIndex, questName)
+	end
+	
 end
 
 
 function uespLog.OnQuestRemoved (eventCode, isCompleted, questIndex, questName, zoneIndex, poiIndex)
 	local logData = { }
+	local questStageData = uespLog.GetCharQuestStageData()
+	
+	questStageData[questName] = nil
 	
 	logData.event = "QuestRemoved"
 	logData.quest = questName
@@ -4444,8 +4487,10 @@ function uespLog.OnQuestComplete(eventCode, questName, level, previousExperience
 	logData.questType = questType
 	logData.displayType = instanceDisplayType
 	logData.xp = currentExperience - previousExperience
-	
+		
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
+	
+	uespLog.DebugMsg("Quest "..tostring(questName).." Complete: "..tostring(logData.xp).." xp gained")
 end
 
 
@@ -4536,7 +4581,7 @@ function uespLog.OnQuestCompleteExperience (eventCode, questName, xpGained)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.MsgType(uespLog.MSG_QUEST, "Finished quest "..tostring(questName).."!")
+	uespLog.MsgType(uespLog.MSG_QUEST, "Finished quest "..tostring(questName).."! "..tostring(xpGained).." xp gained.")
 end
 
 
@@ -4817,7 +4862,7 @@ end
 
 function uespLog.OnQuestOptionalStepAdvanced (eventCode, text)
 
-	if(text == "") then
+	if (text == "") then
 		return
 	end
 	
@@ -4834,19 +4879,32 @@ end
 
 function uespLog.OnQuestAdvanced (eventCode, journalIndex, questName, isPushed, isComplete, mainStepChanged)
 	local logData = { }
+	local questStageData = uespLog.GetCharQuestStageData()
+	
+	if (questStageData[questName] ~= nil) then
+		questStageData[questName] = questStageData[questName] + 1
+	end	
 	
 	logData.event = "QuestAdvanced"
 	logData.quest = questName
 	logData.isPushed = isPushed
 	logData.isComplete = isComplete
 	logData.mainStepChanged = mainStepChanged
+	logData.stageIndex = questStageData[questName]
 	logData.stepIndex, logData.condIndex = uespLog.FindQuestCurrentStage(journalIndex)
+	
+	if (isComplete) then
+		logData.goal, logData.endDialog, logData.confirm, logData.decline, logData.endBgText, logData.endJournalText = GetJournalQuestEnding(journalIndex)
+		uespLog.LogQuestRewardData(journalIndex)
+	end
 
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugExtraMsg("UESP: Quest advanced "..questName)
+	uespLog.DebugMsg("UESP: Quest advanced "..questName.." ("..tostring(journalIndex)..") mainStep="..tostring(logData.mainStepChanged).." "..tostring(logData.stageIndex)..":"..tostring(logData.stepIndex)..":"..tostring(logData.condIndex))
 	
-	uespLog.CheckQuestItems(journalIndex, questName)
+	uespLog.LogQuestStepData(journalIndex)
+	
+	--uespLog.CheckQuestItems(journalIndex, questName)
 end
 
 
@@ -15425,3 +15483,13 @@ end
 
 
 SLASH_COMMANDS["/uesphome"] = uespLog.TeleportToPrimaryHome
+
+
+function uespLog.GetCharQuestStageData()
+
+	if (uespLog.savedVars.charInfo.data.questStageData == nil) then
+		uespLog.savedVars.charInfo.data.questStageData = uespLog.DEFAULT_CHARINFO.data.questStageData
+	end
+	
+	return uespLog.savedVars.charInfo.data.questStageData
+end

@@ -4438,7 +4438,7 @@ function uespLog.LogQuestStepData (journalIndex)
 			logData.condType2 = GetJournalQuestConditionType(journalIndex, stepIndex, conditionIndex, true)
 			logData.text, _, logData.maxValue, logData.isFail, logData.isComplete, logData.isShared, logData.isVisible = GetJournalQuestConditionInfo(journalIndex, stepIndex, conditionIndex)
 			
-			uespLog.AppendDataToLog("all")
+			uespLog.AppendDataToLog("all", logData)
 			
 			local itemLink = GetQuestItemLink(journalIndex, stepIndex, conditionIndex)
 			
@@ -4490,7 +4490,7 @@ function uespLog.OnQuestComplete(eventCode, questName, level, previousExperience
 		
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	
-	uespLog.DebugMsg("Quest "..tostring(questName).." Complete: "..tostring(logData.xp).." xp gained")
+	--uespLog.DebugMsg("Quest "..tostring(questName).." Complete: "..tostring(logData.xp).." AD")
 end
 
 
@@ -4900,7 +4900,7 @@ function uespLog.OnQuestAdvanced (eventCode, journalIndex, questName, isPushed, 
 
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugMsg("UESP: Quest advanced "..questName.." ("..tostring(journalIndex)..") mainStep="..tostring(logData.mainStepChanged).." "..tostring(logData.stageIndex)..":"..tostring(logData.stepIndex)..":"..tostring(logData.condIndex))
+	uespLog.DebugMsg("UESP: Quest "..questName.." advanced to stage "..tostring(logData.stageIndex).."...")
 	
 	uespLog.LogQuestStepData(journalIndex)
 	

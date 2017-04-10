@@ -1433,6 +1433,7 @@ uespLog.DEFAULT_CHARINFO =
 			[CRAFTING_TYPE_CLOTHIER] = 0,
 		},
 		["questStageData"] = {},
+		["questUniqueIds"] = {},
 	}
 }
 
@@ -4334,8 +4335,10 @@ end
 function uespLog.OnQuestAdded (eventCode, journalIndex, questName, objectiveName)
 	local logData = { }
 	local questStageData = uespLog.GetCharQuestStageData()
+	local questUniqueIds = uespLog.GetCharQuestUniqueIds()
 	
 	questStageData[questName] = 1
+	questUniqueIds[questName] = GetGameTimeMilliseconds()
 	
 	--logData.event = "QuestAdded"
 	--logData.quest = questName
@@ -4364,6 +4367,7 @@ function uespLog.LogQuestData (journalIndex)
 	local questName = GetJournalQuestName(journalIndex)
 	
 	local questStageIndex = uespLog.GetCharQuestStageData()[questName] or nil
+	local questUniqueId = uespLog.GetCharQuestUniqueIds()[questName] or 0
 	
 	logData.event = "Quest::Start"
 	logData.level = GetJournalQuestLevel(journalIndex)
@@ -4383,6 +4387,7 @@ function uespLog.LogQuestData (journalIndex)
 	logData.numSteps = numSteps
 	logData.startZoneIndex = GetJournalQuestStartingZone(journalIndex)
 	logData.stageIndex = questStageIndex
+	logData.uniqueId = questUniqueId 
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	
@@ -4393,6 +4398,7 @@ end
 function uespLog.LogQuestRewardData (journalIndex)
 	local questName = GetJournalQuestName(journalIndex)
 	local numRewards = GetJournalQuestNumRewards(journalIndex)
+	local questUniqueId = uespLog.GetCharQuestUniqueIds()[questName] or 0
 	local logData = { }
 	
 	for rewardIndex = 1, numRewards do
@@ -4403,6 +4409,7 @@ function uespLog.LogQuestRewardData (journalIndex)
 		logData.type, logData.name, logData.count, logData.icon, logData.usage, logData.quality, logData.itemType = GetJournalQuestRewardInfo(journalIndex, rewardIndex)
 		logData.itemId = GetJournalQuestRewardItemId(journalIndex, rewardIndex)
 		logData.collectId = GetJournalQuestRewardCollectibleId(journalIndex, rewardIndex)
+		logData.uniqueId = questUniqueId
 
 		uespLog.AppendDataToLog("all", logData)
 	end
@@ -4413,6 +4420,7 @@ function uespLog.LogQuestStepData (journalIndex)
 	local numSteps = GetJournalQuestNumSteps(journalIndex)
 	local questName = GetJournalQuestName(journalIndex)
 	local questStageIndex = uespLog.GetCharQuestStageData()[questName] or nil
+	local questUniqueId = uespLog.GetCharQuestUniqueIds()[questName] or 0
 	local logData = {}
 
 	for stepIndex = 1, numSteps do
@@ -4421,6 +4429,7 @@ function uespLog.LogQuestStepData (journalIndex)
 		logData.quest = questName
 		logData.step = stepIndex
 		logData.stageIndex = questStageIndex
+		logData.uniqueId = questUniqueId
 		logData.text, logData.visible, logData.stepType, logData.overrideText, logData.numCond = GetJournalQuestStepInfo(journalIndex, stepIndex)
 		
 		uespLog.AppendDataToLog("all", logData, logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
@@ -4433,6 +4442,7 @@ function uespLog.LogQuestStepData (journalIndex)
 			logData.quest = questName
 			logData.step = stepIndex
 			logData.stageIndex = questStageIndex
+			logData.uniqueId = questUniqueId
 			logData.condition = conditionIndex
 			logData.condType = GetJournalQuestConditionType(journalIndex, stepIndex, conditionIndex, false)
 			logData.condType2 = GetJournalQuestConditionType(journalIndex, stepIndex, conditionIndex, true)
@@ -4460,8 +4470,10 @@ end
 function uespLog.OnQuestRemoved (eventCode, isCompleted, questIndex, questName, zoneIndex, poiIndex)
 	local logData = { }
 	local questStageData = uespLog.GetCharQuestStageData()
+	local questUniqueIds = uespLog.GetCharQuestUniqueIds()
 	
 	questStageData[questName] = nil
+	questUniqueIds[questName] = nil
 	
 	logData.event = "QuestRemoved"
 	logData.quest = questName
@@ -4479,6 +4491,7 @@ end
 
 function uespLog.OnQuestComplete(eventCode, questName, level, previousExperience, currentExperience, championPoints, questType, instanceDisplayType)
 	local logData = { }
+	local questUniqueId = uespLog.GetCharQuestUniqueIds()[questName] or 0
 	
 	logData.event = "QuestComplete"
 	logData.quest = questName
@@ -4487,6 +4500,7 @@ function uespLog.OnQuestComplete(eventCode, questName, level, previousExperience
 	logData.questType = questType
 	logData.displayType = instanceDisplayType
 	logData.xp = currentExperience - previousExperience
+	logData.uniqueId = questUniqueId
 		
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	
@@ -4880,6 +4894,7 @@ end
 function uespLog.OnQuestAdvanced (eventCode, journalIndex, questName, isPushed, isComplete, mainStepChanged)
 	local logData = { }
 	local questStageData = uespLog.GetCharQuestStageData()
+	local questUniqueId = uespLog.GetCharQuestUniqueIds()[questName] or 0
 	
 	if (questStageData[questName] ~= nil) then
 		questStageData[questName] = questStageData[questName] + 1
@@ -4891,6 +4906,7 @@ function uespLog.OnQuestAdvanced (eventCode, journalIndex, questName, isPushed, 
 	logData.isComplete = isComplete
 	logData.mainStepChanged = mainStepChanged
 	logData.stageIndex = questStageData[questName]
+	logData.uniqueId = questUniqueId
 	logData.stepIndex, logData.condIndex = uespLog.FindQuestCurrentStage(journalIndex)
 	
 	if (isComplete) then
@@ -15492,4 +15508,14 @@ function uespLog.GetCharQuestStageData()
 	end
 	
 	return uespLog.savedVars.charInfo.data.questStageData
+end
+
+
+function uespLog.GetCharQuestUniqueIds()
+
+	if (uespLog.savedVars.charInfo.data.questUniqueIds == nil) then
+		uespLog.savedVars.charInfo.data.questUniqueIds = uespLog.DEFAULT_CHARINFO.data.questUniqueIds
+	end
+	
+	return uespLog.savedVars.charInfo.data.questUniqueIds
 end

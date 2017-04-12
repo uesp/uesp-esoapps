@@ -5218,7 +5218,6 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 
 	logData.event = "LootGained"
 	logData.itemLink = itemLink
-	logData.itemName = GetItemLinkName(itemLink)
 	logData.qnt = quantity
 	logData.lootType = lootType
 	logData.rvcType = rcvType
@@ -6153,7 +6152,6 @@ function uespLog.OnMailMessageTakeAttachedItem (eventCode, mailId)
 		logData.event = "MailItem"
 		logData.tradeType = tradeType
 		logData.itemLink = uespLog.MakeNiceLink(lastItem.itemLink)
-		logData.itemName = GetItemLinkName(logData.itemLink)
 		logData.qnt = lastItem.stack
 		logData.icon = lastItem.icon
 		logData.sender = senderDisplayName

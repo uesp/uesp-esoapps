@@ -4958,7 +4958,7 @@ function uespLog.OnTelvarStoneUpdate (eventCode, newStones, oldStones, reason)
 		msg = "lost"
 	end
 	
-	if (reason != 35) then
+	if (reason ~= 35) then
 		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You "..msg.." "..tostring(logData.qnt).." telvar stones ("..tostring(newStones).." total)")
 	end
 	

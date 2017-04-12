@@ -4432,6 +4432,10 @@ function uespLog.LogQuestStepData (journalIndex)
 		logData.uniqueId = questUniqueId
 		logData.text, logData.visible, logData.stepType, logData.overrideText, logData.numCond = GetJournalQuestStepInfo(journalIndex, stepIndex)
 		
+		if (logData.visible == nil) then
+			logData.visible = -1
+		end
+		
 		uespLog.AppendDataToLog("all", logData, logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 		
 		local numConditions = logData.numCond
@@ -4954,7 +4958,9 @@ function uespLog.OnTelvarStoneUpdate (eventCode, newStones, oldStones, reason)
 		msg = "lost"
 	end
 	
-	uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You "..msg.." "..tostring(logData.qnt).." telvar stones ("..tostring(newStones).." total)")
+	if (reason != 35) then
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You "..msg.." "..tostring(logData.qnt).." telvar stones ("..tostring(newStones).." total)")
+	end
 	
 	if (logData.qnt > 0) then
 		uespLog.TrackLoot("telvar", logData.qnt, "loot")
@@ -5212,6 +5218,7 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 
 	logData.event = "LootGained"
 	logData.itemLink = itemLink
+	logData.itemName = GetItemLinkName(itemLink)
 	logData.qnt = quantity
 	logData.lootType = lootType
 	logData.rvcType = rcvType
@@ -6146,6 +6153,7 @@ function uespLog.OnMailMessageTakeAttachedItem (eventCode, mailId)
 		logData.event = "MailItem"
 		logData.tradeType = tradeType
 		logData.itemLink = uespLog.MakeNiceLink(lastItem.itemLink)
+		logData.itemName = GetItemLinkName(logData.itemLink)
 		logData.qnt = lastItem.stack
 		logData.icon = lastItem.icon
 		logData.sender = senderDisplayName

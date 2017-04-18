@@ -6041,7 +6041,7 @@ end
 function uespLog.OnMailMessageReadable (eventCode, mailId)
 	local senderDisplayName, senderCharacterName, subject, icon, unread, fromSystem, fromCustomerService, returned, numAttachments, attachedMoney, codAmount, expiresInDays, secsSinceReceived = GetMailItemInfo(mailId)
 	
-	uespLog.DebugExtraMsg("Read mail from " ..tostring(senderDisplayName).." with "..tostring(numAttachments).." items")
+	uespLog.DebugExtraMsg("Read mail from " ..tostring(senderDisplayName).." with "..tostring(numAttachments).." items.")
 	
 	uespLog.lastMailItems = { }
 	uespLog.lastMailId = mailId
@@ -6061,6 +6061,7 @@ function uespLog.OnMailMessageReadable (eventCode, mailId)
 	end
 	
 	if (uespLog.GetAutoLootHirelingMails() and uespLog.IsHirelingMail(mailId)) then
+		uespLog.AutolootHireMailNumAttempts = 0
 		uespLog.AutolootHirelingMail(mailId)
 	end
 	
@@ -15374,6 +15375,8 @@ function uespLog.AutolootHirelingMails()
 	local numFound = 0
 	local numLooted = 0
 	
+	uespLog.AutolootHireMailNumAttempts = 0
+	
 	while (mailId ~= nil) do
 		local isHirelingMail = uespLog.IsHirelingMail(mailId)
 		
@@ -15391,17 +15394,84 @@ function uespLog.AutolootHirelingMails()
 end
 
 
+uespLog.AutolootHireMailNumAttempts = 0
+uespLog.AutolootHireMailDelayMS = 100
+
+
 function uespLog.AutolootHirelingMail(mailId)
-	--RequestReadMail(mailId)
+
+	uespLog.DebugExtraMsg("Trying to autoloot hireling mail #"..tostring(mailId)..".")
 	
-	if (IsReadMailInfoReady(mailId)) then
-		TakeMailAttachedItems(mailId)
-		TakeMailAttachedMoney(mailId)
-		DeleteMail(mailId, true)
+	if (not IsReadMailInfoReady(mailId)) then
+		uespLog.AutolootHireMailNumAttempts = uespLog.AutolootHireMailNumAttempts + 1
+		uespLog.DebugExtraMsg(tostring(uespLog.AutolootHireMailNumAttempts)..": Hireling mail #"..tostring(mailId).." is not yet readable!")
 		
+		if (uespLog.AutolootHireMailNumAttempts >= 10) then
+			uespLog.Msg("Failed to read hireling mail ID#"..tostring(mailId).." after 10 attempts!")
+			return false
+		end
+		
+		RequestReadMail(mailId)
+		
+		zo_callLater(function() uespLog.AutolootHirelingMail(mailId) end, uespLog.AutolootHireMailDelayMS)
+		return false
+	end
+	
+	uespLog.OnMailMessageTakeAttachedItem ("manual", mailId)
+	
+	TakeMailAttachedItems(mailId)
+	TakeMailAttachedMoney(mailId)
+	
+	uespLog.AutolootHireMailNumAttempts = 0
+	zo_callLater(function() uespLog.AutolootHirelingMailDelete(mailId) end, uespLog.AutolootHireMailDelayMS)
+	
+	return true
+end
+
+
+function uespLog.AutolootHirelingMailDelete(mailId)
+	--local sender, senderChar, subject, icon, unread, system, service, returned = GetMailItemInfo(mailId)
+	local numAttachments, attachedMoney, codAmount = GetMailAttachmentInfo(mailId)
+	
+	uespLog.DebugExtraMsg("Trying to auto-delete hireling mail #"..tostring(mailId)..".")
+	
+	if (numAttachments > 0 or attachedMoney > 0) then
+		uespLog.AutolootHireMailNumAttempts = uespLog.AutolootHireMailNumAttempts + 1
+		
+		if (uespLog.AutolootHireMailNumAttempts >= 10) then
+			uespLog.Msg("Not automatically deleting hireling mail #"..tostring(mailId).." as it still contains items/money!")
+			return false
+		end
+		
+		zo_callLater(function() uespLog.AutolootHirelingMailDelete(mailId) end, uespLog.AutolootHireMailDelayMS)
+		
+		return false
+	end
+
+	DeleteMail(mailId, true)
+
+	uespLog.AutolootHireMailNumAttempts = 0	
+	zo_callLater(function() uespLog.AutolootHirelingMailCheckDelete(mailId) end, uespLog.AutolootHireMailDelayMS)
+end
+
+
+function uespLog.AutolootHirelingMailCheckDelete(mailId)
+	local sender = GetMailItemInfo(mailId)
+	
+	if (sender == nil or sender == "") then
 		return true
 	end
 	
+	uespLog.AutolootHireMailNumAttempts = uespLog.AutolootHireMailNumAttempts + 1
+	
+	if (uespLog.AutolootHireMailNumAttempts >= 10) then
+		uespLog.Msg("Failed to delete hireling mail ID#"..tostring(mailId).." after 10 attempts!")
+		return false
+	end
+	
+	DeleteMail(mailId, true)
+	
+	zo_callLater(function() uespLog.AutolootHirelingMailCheckDelete(mailId) end, uespLog.AutolootHireMailDelayMS)
 	return false
 end
 

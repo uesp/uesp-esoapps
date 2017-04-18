@@ -130,7 +130,9 @@
  *					dword UncompressedSize
  *					byte UncompressedData[UncompressedSize]
  *
- *
+ * v0.31 -- 17 April 2017
+ *		- Fixed extraction of the ZOSFT from ESO MNF in update 14 PTS files. Unsure how this 
+ *		  will work with prior file versions however (is fine with update 13 at least).
  */
 
 
@@ -1636,7 +1638,7 @@ cmdparamdef_t g_Cmds[] =
 };
 
 const char g_AppDescription[] = "\
-ExportMnf v0.30 is a simple command line application to load and export files\n\
+ExportMnf v0.31 is a simple command line application to load and export files\n\
 from ESO's MNF and DAT files. Created by Daveh (dave@uesp.net).\n\
 \n\
 WARNING: This app is in early development and is fragile. User discretion is\n\

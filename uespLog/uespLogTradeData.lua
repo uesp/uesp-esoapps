@@ -2009,6 +2009,7 @@ uespLog.POTION_EFFECTS = {
 	['minor vulnerability'] = 26,
 	['sustain restore health'] = 27,
 	['lingering restore health'] = 27,
+	['lingering health'] = 27,
 	['gradual drain health'] = 27,
 	['gradual ravage health'] = 28,
 	['creeping ravage health'] = 28,

@@ -704,6 +704,8 @@
 --					/uespmasterpotion [#]        Use the specified potion combination (1-N).
 --			  This command needs more testing to ensure it works for all alchemy master writs.
 --			- The "/uespspeed" command no longer outputs 0 speed values to the chat window.
+--			- Increased item mining max ID to 150000.
+--			- Fixed mining items of all types.
 --			
 --
 --		Future Versions (Works in Progress)
@@ -9250,7 +9252,7 @@ function uespLog.MineItemIterate (itemId)
 	local itemLink = uespLog.MakeItemLink(itemId, 1, 1)
 	local itemType = GetItemLinkItemType(itemLink)
 	
-	if (uespLog.mineItemOnlyItemType ~= {} and uespLog.mineItemOnlyItemType[itemType] == nil) then
+	if (uespLog.mineItemOnlyItemType ~= nil and next(uespLog.mineItemOnlyItemType) ~= nil and uespLog.mineItemOnlyItemType[itemType] == nil) then
 		uespLog.mineItemCount = uespLog.mineItemCount + 1
 		uespLog.mineItemBadCount = uespLog.mineItemBadCount + 1
 		return 1, 0
@@ -9731,7 +9733,7 @@ function uespLog.MineItemsAutoStatus ()
 		uespLog.MsgColor(uespLog.mineColor, "Mining item potion data.")
 		uespLog.MsgColor(uespLog.mineColor, "ext potion effect index is "..tostring(uespLog.mineItemPotionDataEffectIndex))
 	elseif (uespLog.mineItemOnlyLevel >= 0 and uespLog.mineItemOnlySubType >= 0) then
-		uespLog.MsgColor(uespLog.mineColor, "Only mining items with internal level "..tostring(uespLog.mineItemOnlyLevel).." and type of "..tostring(uespLog.mineItemOnlySubType)..".")
+		uespLog.MsgColor(uespLog.mineColor, "Only mining items with internal level "..tostring(uespLog.mineItemOnlyLevel).." and internal type of "..tostring(uespLog.mineItemOnlySubType)..".")
 	elseif (uespLog.mineItemOnlyLevel >= 0) then
 		uespLog.MsgColor(uespLog.mineColor, "Only mining items with internal level "..tostring(uespLog.mineItemOnlyLevel)..".")
 	elseif (uespLog.mineItemOnlySubType >= 0) then
@@ -14781,7 +14783,7 @@ SLASH_COMMANDS["/uespnirnsound"] = uespLog.NirnSoundCommand
 uespLog.FindNameChangeItemId = 1
 uespLog.FindNameChangeIsScanning = false
 uespLog.FindNameChangeScanIds = 2000
-uespLog.FindNameChangeScanEndId = 130000
+uespLog.FindNameChangeScanEndId = 150000
 uespLog.FindNameChangeScanDelayMS = 1000
 uespLog.FindNameChangeItemCount = 0
 

@@ -4922,7 +4922,10 @@ function uespLog.OnQuestAdvanced (eventCode, journalIndex, questName, isPushed, 
 
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.DebugMsg("UESP: Quest "..questName.." advanced to stage "..tostring(logData.stageIndex).."...")
+	if (logData.stageIndex)
+		uespLog.DebugMsg("UESP: Quest "..questName.." advanced a stage...")
+	else
+		uespLog.DebugMsg("UESP: Quest "..questName.." advanced to stage "..tostring(logData.stageIndex).."...")
 	
 	uespLog.LogQuestStepData(journalIndex)
 	

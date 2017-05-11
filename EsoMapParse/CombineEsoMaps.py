@@ -6,7 +6,7 @@ from PIL import Image
 import shutil
 import fnmatch
 
-BasePathIndex = "-13"
+BasePathIndex = "-14pts"
 InputPath  = 'e:\\esoexport\\esomnf' + BasePathIndex + '\\art\\maps\\'
 OutputPath = 'e:\\esoexport\\goodimages' + BasePathIndex + '\\combinedmaps\\'
 
@@ -149,6 +149,12 @@ for imagegroupname in ImageGroups:
     elif len(ImageGroups[imagegroupname].ImageFiles) == 49:
             TileX = 7
             TileY = 7
+    elif len(ImageGroups[imagegroupname].ImageFiles) == 64:
+            TileX = 8
+            TileY = 8
+    elif len(ImageGroups[imagegroupname].ImageFiles) == 81:
+            TileX = 9
+            TileY = 9
     else:
             print "   Don't know how to tile", len(ImageGroups[imagegroupname].ImageFiles), "images for ", imagegroupname
             del ImageGroups[imagegroupname].Images[:]

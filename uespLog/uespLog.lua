@@ -706,6 +706,7 @@
 --			- The "/uespspeed" command no longer outputs 0 speed values to the chat window.
 --			- Increased item mining max ID to 150000.
 --			- Fixed mining items of all types.
+--			- Game time returned by /uesptime incremented by one game day to match time used by the Clock 0.7.7 addon.
 --			
 --
 --		Future Versions (Works in Progress)
@@ -904,8 +905,10 @@ uespLog.savedVars = {}
 	-- 17280 / 9000 / 0
 	-- 21000 / 4475 / 207360
 uespLog.DEFAULT_GAMETIME_OFFSET = 1396569600 		-- Offset to make in-game date 1st Morning Star
+uespLog.DEFAULT_GAMETIME_OFFSET = 1396548645 		-- Fix to match time used in Clock v0.7.7
 uespLog.DEFAULT_GAMETIME_OFFSET_EXTRA = -1909707 	-- Extra offset to make in-game date on launch day 4th Rain's Hand,
 uespLog.GAMETIME_WEEKDAY_OFFSET = 5					-- Weekday offset to make launch dat Fredas
+uespLog.GAMETIME_WEEKDAY_OFFSET = 6					-- Fix to match Clock v0.7.7
 uespLog.DEFAULT_GAMETIME_YEAROFFSET = 582
 
 uespLog.DEFAULT_REALSECONDSPERGAMEDAY = 20955

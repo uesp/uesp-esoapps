@@ -82,6 +82,10 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[57]							 = "uespLog/images/mazzatun.dds",			-- Mazzatun, Leviathan Scrimshaw, 57, /esoui/art/icons/crafting_style_item_mazzatun_r2.dds
 	[44]							 = "uespLog/images/ragada.dds",				-- Ra Gada, Ancient Sandstone, 44, /esoui/art/icons/crafting_style_item_ragada_r2.dds
 	[40]							 = "uespLog/images/ebony.dds",				-- Ebony, Night Pumice, 40, /esoui/art/icons/crafting_style_item_ebony_r2.dds
+	[43]							 = "uespLog/images/moragtong.dds",			-- Morag Tong, Boiled Carapace, 43, /esoui/art/icons/crafting_style_item_morag_tong_r2.dds
+	[50]							 = "uespLog/images/militant.dds",			-- Militant Ordinator, Lustrous Sphalerite, 50, /esoui/art/icons/crafting_style_item_militant_ordinator_r2.dds
+	[52]							 = "uespLog/images/buoyant.dds",			-- Buoyant Armiger, Volcanic Viridian 52, /esoui/art/icons/crafting_style_item_buoyant_armiger_r2.dds
+	[54]							 = "uespLog/images/ashlander.dds",			-- Ashlander, Ash Canvas, 54, /esoui/art/icons/crafting_style_item_ashlander_r2.dds
 }
 
 
@@ -132,6 +136,10 @@ uespLog.STYLE_ICON_DATA = {
 	[57]							 = "/esoui/art/icons/crafting_style_item_mazzatun_r2.dds",
 	[44]							 = "/esoui/art/icons/crafting_style_item_ragada_r2.dds",
 	[40]							 = "/esoui/art/icons/crafting_style_item_ebony_r2.dds",
+	[43]							 = "/esoui/art/icons/crafting_style_item_morag_tong_r2.dds",
+	[50]							 = "/esoui/art/icons/crafting_style_item_militant_ordinator_r2.dds",
+	[52]							 = "/esoui/art/icons/crafting_style_item_buoyant_armiger_r2.dds",
+	[54]							 = "/esoui/art/icons/crafting_style_item_ashlander_r2.dds",
 }
 
 

@@ -2,6 +2,11 @@
 -- 
 -- 
 
+
+if (GetBagUseableSize == nil) then
+	GetBagUseableSize = GetBagSize
+end
+
 	-- Only save action bars at most every X seconds
 uespLog.SAVEACTIONBAR_MINDELTATIME = 5
 uespLog.LastSavedActionBar_TimeStamp = 0
@@ -119,6 +124,10 @@ uespLog.CHARDATA_CRAFTSTYLE_NAMES = {
 	'Mazzatun',
 	'Ra Gada',
 	'Ebony',
+	'Militant Ordinator',
+	'Buoyant Armiger',
+	'Ashlander',
+	'Morag Tong',
 }
 
 
@@ -247,18 +256,23 @@ function uespLog.CreateBankData ()
 	--BAG_BANK == 2
 	local bankData = { }
 	local i
-	
+	local bankSize = GetBagUseableSize(BAG_BANK)
+			
 	bankData.IsBank = 1
-	bankData.Size = GetBagSize(BAG_BANK)
-	bankData.UsedSize = GetNumBagUsedSlots(BAG_BANK)
+	bankData.Size = bankSize + GetBagUseableSize(BAG_SUBSCRIBER_BANK)
+	bankData.UsedSize = GetNumBagUsedSlots(BAG_BANK) + GetNumBagUsedSlots(BAG_SUBSCRIBER_BANK)
 	bankData.TimeStamp = GetTimeStamp()
 	bankData.Gold = GetBankedMoney()
 	bankData.Telvar = GetBankedCurrencyAmount(CURT_TELVAR_STONES)
 	bankData.UniqueAccountName = uespLog.GetUniqueAccountName()
 	bankData.Inventory = {}
 	
-	for i = 0, bankData.Size do
+	for i = 0, bankSize do
 		bankData.Inventory[#bankData.Inventory + 1] = uespLog.CreateInventorySlotData(BAG_BANK, i)
+	end
+	
+	for i = 0, bankSize do
+		bankData.Inventory[#bankData.Inventory + 1] = uespLog.CreateInventorySlotData(BAG_SUBSCRIBER_BANK, i)
 	end
 	
 	return bankData
@@ -449,9 +463,9 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	charData.WritVoucher = GetCarriedCurrencyAmount(CURT_WRIT_VOUCHERS)
 	charData.BankedTelvarStones = GetBankedTelvarStones()
 	charData.InventorySize = GetBagSize(BAG_BACKPACK)
-	charData.BankSize = GetBagSize(BAG_BANK)
-	charData.InventoryUsedSize = GetNumBagUsedSlots(BAG_BACKPACK)
-	charData.BankUsedSize = GetNumBagUsedSlots(BAG_BANK)
+	charData.InventoryUsedSize = GetNumBagUsedSlots(BAG_BACKPACK) 
+	charData.BankSize = GetBagUseableSize(BAG_BANK) + GetBagUseableSize(BAG_SUBSCRIBER_BANK)
+	charData.BankUsedSize = GetNumBagUsedSlots(BAG_BANK) + GetNumBagUsedSlots(BAG_SUBSCRIBER_BANK)
 	
 	charData.Bounty = GetBounty()
 	charData.AttributesUnspent = GetAttributeUnspentPoints()

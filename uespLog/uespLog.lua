@@ -663,7 +663,7 @@
 --			  It still rarely occurs but much less often than previously.
 --			- "/uespcount recipes" now shows counts per recipe categories.
 --
---		- v1.02
+--		- v1.10
 --			- Added the "/uespcraft alchemy on|off" command which turns on tooltips when in the alchemy crafting window.
 --			- Fixed UESP sales price not appearing in tooltips from top item rows.
 --			- Fixed price lookups for master writs and crafted potions.
@@ -707,7 +707,12 @@
 --			- Increased item mining max ID to 150000.
 --			- Fixed mining items of all types.
 --			- Game time returned by /uesptime incremented by one game day to match time used by the Clock 0.7.7 addon.
---			
+--			- "/uespstyle" now shows the full in-game style name for valid styles.
+--			- Chests, Safeboxes and Thieves Troves now display and log the lock level.
+--		Update 14 Morrowind Changes:
+--			- Expanded bank related functions to include the ESO subscriber bag.
+--			- Added the Ashlander, Buoyany Armiger, Morag Tong, and Militant Ordinator styles.
+--
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -897,6 +902,7 @@ uespLog.lastConversationOption.Important = ""
 
 uespLog.lastLootUpdateCount = -1
 uespLog.lastLootTargetName = ""
+uespLog.lastLootLockQuality = nil
 
 uespLog.savedVars = {}
 
@@ -4221,7 +4227,7 @@ function uespLog.OnBeginLockPick (eventCode)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.MsgType(uespLog.MSG_OTHER, "UESP: Found lock of quality "..tostring(logData.quality))
+	uespLog.DebugExtraMsg("UESP: Found lock of quality "..tostring(logData.quality))
 end
 
 
@@ -4654,9 +4660,9 @@ uespLog.ITEMSTYLES = {
 	[14] = "Dwemer",
 	[15] = "Ancient Elf",
 	[16] = "Order of the Hour",
-	[17] = "Reach (Barbaric)",
+	[17] = "Barbaric",
 	[18] = "Bandit",
-	[19] = "Primitive (Primal)",
+	[19] = "Primal",
 	[20] = "Daedric",
 	[21] = "Trinimac",
 	[22] = "Mage",
@@ -4679,11 +4685,15 @@ uespLog.ITEMSTYLES = {
 	[40] = "Ebony",
 	[41] = "Abah's Watch",
 	[42] = "Skinchanger",
+	[43] = "Morag Tong",
 	[44] = "Ra Gada",
 	[45] = "Dro-m'Athra",
 	[46] = "Assassins League",
 	[47] = "Outlaw",
+	[50] = "Militant Ordinator",
+	[52] = "Buoyant Armiger",
 	[53] = "Stalhrim Frostcaster",
+	[54] = "Ashlander",
 	[56] = "Silken Ring",
 	[57] = "Mazzatun",
 	[58] = "Grim Harlequin",
@@ -5105,6 +5115,7 @@ function uespLog.OnLootUpdated (eventCode)
 	uespLog.lastLootAutoLoot = false
 	uespLog.lastLootUpdateCount = GetNumLootItems()
 	uespLog.lastLootTargetName = uespLog.lastTargetData.name
+	uespLog.lastLootLockQuality = nil
 	
 	uespLog.UpdateLootWindow(eventCode)
 end
@@ -5177,6 +5188,7 @@ function uespLog.OnLootClosed (eventCode)
 	
 	uespLog.lastLootUpdateCount = -1
 	uespLog.lastLootTargetName = ""
+	uespLog.lastLootLockQuality = nil
 end
 
 
@@ -6022,17 +6034,24 @@ function uespLog.OnFoundSkyshard ()
 end
 
 
-function uespLog.OnFoundTreasure (name)
+function uespLog.OnFoundTreasure (name, lockQuality)
 	local logData = { }
+	local qualityMsg = GetString("SI_LOCKQUALITY", lockQuality)
 	
 	logData.event = "FoundTreasure"
 	logData.name = name
+	logData.lockQuality = lockQuality
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetCurrentTargetData(), uespLog.GetTimeData())
 	
-	uespLog.MsgType(uespLog.MSG_OTHER, "UESP: Found "..tostring(name).."!")
+	if (qualityMsg ~= "") then
+		uespLog.MsgType(uespLog.MSG_OTHER, "UESP: Found "..tostring(name).." ("..qualityMsg..")!")
+	else
+		uespLog.MsgType(uespLog.MSG_OTHER, "UESP: Found "..tostring(name).."!")
+	end
 
 	uespLog.lastLootTargetName = name
+	uespLog.lastLootLockQuality = lockQuality
 end
 
 
@@ -6229,7 +6248,7 @@ function uespLog.OnUpdate ()
         return
     end
 	
-	local action, name, interactionBlocked, additionalInfo, context = GetGameCameraInteractableActionInfo()
+	local action, name, interactionBlocked, isOwned, additionalInfo, context, contextualLink, isCriminalInteract = GetGameCameraInteractableActionInfo()
 	local active = IsPlayerInteractingWithObject()
 	local interactionType = GetInteractionType()
 	local x, y, z, zone
@@ -6332,15 +6351,15 @@ function uespLog.OnUpdate ()
     elseif (interactionType == INTERACTION_NONE and action == uespLog.ACTION_UNLOCK) then
 	
 		if (name == "Chest") then
-			uespLog.OnFoundTreasure("Chest")
+			uespLog.OnFoundTreasure("Chest", context)
 		end
 		
 	elseif (interactionType == INTERACTION_NONE and action == uespLog.ACTION_STEALFROM) then
 	
 		if (name == "Safebox") then
-			uespLog.OnFoundTreasure("Safebox")
+			uespLog.OnFoundTreasure("Safebox", context)
 		elseif (name == "Thieves Trove") then
-			uespLog.OnFoundTreasure("Thieves Trove")
+			uespLog.OnFoundTreasure("Thieves Trove", context)
 		end
 		
 	elseif (interactionType == INTERACTION_NONE and action == uespLog.ACTION_SEARCH) then
@@ -8270,11 +8289,12 @@ function uespLog.DumpInventory ()
 	logData.event = "InvDumpStart"
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
-	slotCount = slotCount + uespLog.DumpBag(BAG_WORN)	   --0
-	slotCount = slotCount + uespLog.DumpBag(BAG_BACKPACK)  --1
-	slotCount = slotCount + uespLog.DumpBag(BAG_BANK)	   --2
-	slotCount = slotCount + uespLog.DumpBag(BAG_BUYBACK)   --3
-	slotCount = slotCount + uespLog.DumpBag(BAG_GUILDBANK) --4
+	slotCount = slotCount + uespLog.DumpBag(BAG_WORN)	   			-- 0
+	slotCount = slotCount + uespLog.DumpBag(BAG_BACKPACK)  			-- 1
+	slotCount = slotCount + uespLog.DumpBag(BAG_BANK)	   			-- 2
+	slotCount = slotCount + uespLog.DumpBag(BAG_SUBSCRIBER_BANK)	-- ?
+	slotCount = slotCount + uespLog.DumpBag(BAG_BUYBACK)   			-- 3
+	slotCount = slotCount + uespLog.DumpBag(BAG_GUILDBANK) 			-- 4
 	
 	logData = { }
 	logData.event = "InvDumpEnd"
@@ -10521,6 +10541,24 @@ uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
 	["ra_gada"] = 44,
 	["ragada"] = 44,
 	["ebony"] = 40,
+	
+		-- Morrowind
+	["ashlander"] = 54,
+	["ash"] = 54,
+	["militant ordinator"] = 50,
+	["militant_ordinator"] = 50,
+	["militantordinator"] = 50,
+	["ordinator"] = 50,
+	["militant"] = 50,
+	["morag tong"] = 43,
+	["morag_tong"] = 43,
+	["moragtong"] = 43,
+	["morag"] = 43,
+	["buoyant armiger"] = 52,
+	["buoyant_armiger"] = 52,
+	["buoyantarmiger"] = 52,
+	["armiger"] = 52,
+	["buoyant"] = 52,
 }
 
 
@@ -10644,6 +10682,24 @@ uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
 	["ra_gada"] = { 71673, 71674, 71675, 71676, 71677, 71678, 71679, 71680, 71681, 71682, 71683, 71684, 71685, 71686 }, -- 71672, 71687,
 	["ragada"] = { 71673, 71674, 71675, 71676, 71677, 71678, 71679, 71680, 71681, 71682, 71683, 71684, 71685, 71686 }, -- 71672, 71687,
 	["ebony"] = { 75229, 75230, 75231, 75232, 75233, 75234, 75235, 75236, 75237, 75238, 75239, 75240, 75241, 75242 }, -- 75228, 75243,
+	
+		-- Morrowind
+	["ashlander"] = { 124680, 124681, 124682, 124683, 124684, 124685, 124686, 124687, 124688, 124689, 124690, 124691, 124692, 124693 }, -- 124679, 124694
+	["ash"] = { 124680, 124681, 124682, 124683, 124684, 124685, 124686, 124687, 124688, 124689, 124690, 124691, 124692, 124693 }, -- 124679, 124694
+	["militant ordinator"] =  { 121349, 121350, 121351, 121352, 121353, 121354, 121355, 121356, 121357, 121358, 121359, 121360, 121361, 121362 }, -- 121348, 121363
+	["militant_ordinator"] = { 121349, 121350, 121351, 121352, 121353, 121354, 121355, 121356, 121357, 121358, 121359, 121360, 121361, 121362 }, -- 121348, 121363
+	["militantordinator"] = { 121349, 121350, 121351, 121352, 121353, 121354, 121355, 121356, 121357, 121358, 121359, 121360, 121361, 121362 }, -- 121348, 121363
+	["ordinator"] = { 121349, 121350, 121351, 121352, 121353, 121354, 121355, 121356, 121357, 121358, 121359, 121360, 121361, 121362 }, -- 121348, 121363
+	["militant"] = { 121349, 121350, 121351, 121352, 121353, 121354, 121355, 121356, 121357, 121358, 121359, 121360, 121361, 121362 }, -- 121348, 121363
+	["morag tong"] = { 73839, 73840, 73841, 73842, 73843, 73844, 73845, 73846, 73847, 73848, 73849, 73850, 73851, 738652 }, -- 73838, 73853
+	["morag_tong"] = { 73839, 73840, 73841, 73842, 73843, 73844, 73845, 73846, 73847, 73848, 73849, 73850, 73851, 738652 }, -- 73838, 73853
+	["moragtong"] = { 73839, 73840, 73841, 73842, 73843, 73844, 73845, 73846, 73847, 73848, 73849, 73850, 73851, 738652 }, -- 73838, 73853
+	["morag"] = { 73839, 73840, 73841, 73842, 73843, 73844, 73845, 73846, 73847, 73848, 73849, 73850, 73851, 738652 }, -- 73838, 73853
+	["buoyant armiger"] = { 121316, 121317, 121318, 121319, 121320, 121321, 121322, 121323, 121324, 121325, 121326, 121327, 121328, 121329, 121330}, -- 121316, 121331
+	["buoyant_armiger"] = { 121316, 121317, 121318, 121319, 121320, 121321, 121322, 121323, 121324, 121325, 121326, 121327, 121328, 121329, 121330}, -- 121316, 121331
+	["buoyantarmiger"] = { 121316, 121317, 121318, 121319, 121320, 121321, 121322, 121323, 121324, 121325, 121326, 121327, 121328, 121329, 121330}, -- 121316, 121331
+	["armiger"] = { 121316, 121317, 121318, 121319, 121320, 121321, 121322, 121323, 121324, 121325, 121326, 121327, 121328, 121329, 121330}, -- 121316, 121331
+	["buoyant"] = { 121316, 121317, 121318, 121319, 121320, 121321, 121322, 121323, 121324, 121325, 121326, 121327, 121328, 121329, 121330}, -- 121316, 121331
 }
 
 
@@ -10677,7 +10733,7 @@ function uespLog.GetStyleKnown(styleName)
 	local knownCount = 0
 		
 	if (cmpStyleName == "" or itemStyle <= 0 or not motifId) then
-		return nil, 0
+		return nil, 0, -1, styleName
 	end
 	
 	if (type(motifId) == "table") then
@@ -10709,7 +10765,7 @@ function uespLog.GetStyleKnown(styleName)
 		knownCount = 14
 	end
 	
-	return known, knownCount
+	return known, knownCount, itemStyle, GetString("SI_ITEMSTYLE", itemStyle)
 end
 
 
@@ -10731,8 +10787,8 @@ end
 
 
 function uespLog.ShowStyles(styleName, showLong)
-	local known = uespLog.GetStyleKnown(styleName)
-	local niceName = uespLog.titleCaseString(styleName)
+	local known, knownCount, styleId, fullStyleName = uespLog.GetStyleKnown(styleName)
+	local niceName = uespLog.titleCaseString(fullStyleName)
 	
 	showLong = showLong or false
 	

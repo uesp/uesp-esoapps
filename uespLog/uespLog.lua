@@ -697,7 +697,7 @@
 --			- Item values used in /uesprawprice and /uesptrackloot now use the UESP value if it exists. Otherwise it
 --			  uses the MasterMerchant item value if present or, if not, the default game item value.
 --			- Changed the base "/uesptrackloot" command to show loot statistics instead of the help text.
---			- Changed the base "/uespkilldata" command to show kill statistics instead of the hepl text.
+--			- Changed the base "/uespkilldata" command to show kill statistics instead of the help text.
 --			- Added the "/uespmasterpotion" command. Use this command when you have an Alchemy Master Writ quest
 --			  in progress while at an Alchemy station in order to setup your solvent and reagents automatically.
 --					/uespmasterpotion help       Show command help.

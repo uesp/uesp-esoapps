@@ -714,6 +714,8 @@
 --			- Expanded bank related functions to include the ESO subscriber bag.
 --			- Added the Ashlander, Buoyany Armiger, Morag Tong, and Militant Ordinator styles.
 --
+--		- v1.10 -- 22 May 2017
+--			- Added Shroom Beetle to NPC ignore list.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -1020,6 +1022,7 @@ uespLog.ignoredNPCs = {
 	["Nuzhimeh"] = 1,
 	["Tythis Andromo"] = 1,
 	["Pirharri the Smuggler"] = 1,
+	["Shroom Beetle"] = 1,	-- Morrowind
 }
 
 uespLog.lastTargetData = {
@@ -2950,6 +2953,9 @@ function uespLog.Initialize( self, addOnName )
 		["charInfo"] = ZO_SavedVars:New("uespLogSavedVars", uespLog.DATA_VERSION, "charInfo", uespLog.DEFAULT_CHARINFO),
 		["skillCoefAbilityList"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "skillCoefAbilityList", {}),
 	}
+	
+		-- This section is no longer being used
+	uespLog.savedVars.achievements = nil
 	
 	if (uespLog.savedVars.settings.data.messageDisplay == nil) then
 		uespLog.savedVars.settings.data.messageDisplay = uespLog.DEFAULT_SETTINGS.data.messageDisplay
@@ -7714,9 +7720,6 @@ SLASH_COMMANDS["/uespcount"] = function(cmd)
 	if (cmd == "recipes") then
 		uespLog.CountRecipes()
 		return
-	elseif (cmd == "achievements") then
-		uespLog.CountAchievements()
-		return
 	elseif (cmd == "inspiration") then
 		uespLog.MsgColor(uespLog.countColor, "You have accumulated "..tostring(uespLog.GetTotalInspiration()).." crafting inspiration since the last reset")
 		return
@@ -7729,7 +7732,6 @@ SLASH_COMMANDS["/uespcount"] = function(cmd)
 	
 	local count1, size1 = uespLog.countSection("all")
 	local count2, size2 = uespLog.countSection("globals")
-	local count3, size3 = uespLog.countSection("achievements")
 	local count4, size4 = uespLog.countSection("buildData")
 	local count5, size5 = uespLog.countSection("charData")
 	local count6, size6 = uespLog.countSection("charInfo")
@@ -7737,8 +7739,8 @@ SLASH_COMMANDS["/uespcount"] = function(cmd)
 	local count8, size8 = uespLog.countSection("craftBagData")
 	local count9, size9 = uespLog.countSection("tempData")
 	local count10, size10 = uespLog.countSection("skillCoef")
-	local count = count1 + count2 + count3 + count4 + count5 + count6 + count7 + count8 + count9 + count10
-	local size = size1 + size2 + size3 + size4 + size5 + size6 + size7 + size8 + size9 + size10
+	local count = count1 + count2 + count4 + count5 + count6 + count7 + count8 + count9 + count10
+	local size = size1 + size2  + size4 + size5 + size6 + size7 + size8 + size9 + size10
 	
 	uespLog.MsgColor(uespLog.countColor, "UESP: Total of " .. tostring(count) .. " records taking up " .. string.format("%.2f", size/1000000) .. " MB")
 end
@@ -9006,7 +9008,7 @@ function uespLog.DumpAchievementPriv (achievementId, categoryIndex, subCategoryI
 	if (logData.hasTitleReward) then rewardCount = rewardCount + 1 end
 	if (logData.hasCollectibleReward) then rewardCount = rewardCount + 1 end
 
-	uespLog.AppendDataToLog("achievements", logData)
+	uespLog.AppendDataToLog("all", logData)
 		
 	for criterionIndex = 1, numCriteria do
 		local critDescription, critNumCompleted, critNumRequired = GetAchievementCriterion(achievementId, criterionIndex)
@@ -9017,7 +9019,7 @@ function uespLog.DumpAchievementPriv (achievementId, categoryIndex, subCategoryI
 		logData.description = critDescription
 		logData.numRequired = critNumRequired
 		logData.index = criterionIndex
-		uespLog.AppendDataToLog("achievements", logData)
+		uespLog.AppendDataToLog("all", logData)
 		
 		criteriaCount = criteriaCount + 1
 	end
@@ -9033,14 +9035,11 @@ function uespLog.DumpAchievements (note)
 	local criteriaCount = 0
 	local categoryCount = 0
 	local Msg = ""
-	
-		-- Clear achievements data
-	uespLog.savedVars["achievements"].data = { }
-	
 	local logData = { }
+	
 	logData.event = "Achievement::Start"
 	logData.note = note
-	uespLog.AppendDataToLog("achievements", logData, uespLog.GetTimeData())
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
 	for categoryIndex = 1, numCategories do
 		local categoryName, numSubCategories, numCateAchievements, earnedCatePoints, totalCatePoints, hidesCatePoints = GetAchievementCategoryInfo(categoryIndex)
@@ -9059,7 +9058,7 @@ function uespLog.DumpAchievements (note)
 		logData.pressedIcon = pressedIcon
 		logData.mouseoverIcon = mouseoverIcon
 		logData.gamepadIcon = gamepadIcon
-		uespLog.AppendDataToLog("achievements", logData)
+		uespLog.AppendDataToLog("all", logData)
 		categoryCount = categoryCount + 1
 		
 		for subCategoryIndex = 1, numSubCategories do
@@ -9074,7 +9073,7 @@ function uespLog.DumpAchievements (note)
 			logData.numAchievements = numSubCateAchievements
 			logData.points = totalSubCatePoints
 			logData.hidesPoints = hidesSubCatePoints
-			uespLog.AppendDataToLog("achievements", logData)
+			uespLog.AppendDataToLog("all", logData)
 			categoryCount = categoryCount + 1
 			
 			for achievementIndex = 1, numSubCateAchievements do
@@ -9096,7 +9095,7 @@ function uespLog.DumpAchievements (note)
 	
 	logData = { }
 	logData.event = "Achievement::End"
-	uespLog.AppendDataToLog("achievements", logData)
+	uespLog.AppendDataToLog("all", logData)
 	
 	uespLog.Msg("Output "..categoryCount.." categories, ".. outputCount .." achievements, ".. rewardCount.." rewards, and "..criteriaCount.." criterias to log!");
 end
@@ -10139,7 +10138,7 @@ function uespLog.ClearAllSavedVarSections()
 	
 		if (key == "settings" or key == "info" or key == "charInfo") then
 			-- Keep data
-		elseif (key == "globals" or key == "all" or key == "achievements" or key == "buildData" or key == "charData" or key == "bankData" or key == "tempData" or key == "skillCoef" or key == "craftBagData") then
+		elseif (key == "globals" or key == "all" or key == "buildData" or key == "charData" or key == "bankData" or key == "tempData" or key == "skillCoef" or key == "craftBagData") then
 			uespLog.savedVars[key].data = { }
 			uespLog.savedVars[key].version = uespLog.DATA_VERSION
 		else
@@ -10160,7 +10159,7 @@ function uespLog.ClearRootSavedVar()
 					
 					if (key4 == "settings" or key4 == "info" or key4 == "charInfo") then
 						-- Keep data
-					elseif (key4 == "globals" or key4 == "all" or key4 == "achievements" or key == "buildData" or key == "charData" or key == "bankData" or key == "tempData" or key == "skillCoef" or key == "craftBagData") then
+					elseif (key4 == "globals" or key4 == "all" or key == "buildData" or key == "charData" or key == "bankData" or key == "tempData" or key == "skillCoef" or key == "craftBagData") then
 						uespLogSavedVars[key1][key2][key3][key4].data = { }
 						uespLogSavedVars[key1][key2][key3][key4].version = uespLog.DATA_VERSION
 					else
@@ -10181,7 +10180,6 @@ SLASH_COMMANDS["/uespreset"] = function (cmd)
 	if (cmd == "all") then
 		uespLog.ClearSavedVarSection("all")
 		uespLog.ClearSavedVarSection("globals")
-		uespLog.ClearSavedVarSection("achievements")
 		uespLog.SetTotalInspiration(0)
 		uespLog.ClearAllSavedVarSections()
 		uespLog.ClearRootSavedVar()
@@ -10206,9 +10204,6 @@ SLASH_COMMANDS["/uespreset"] = function (cmd)
 	elseif (cmd == "skillcoef") then
 		uespLog.ClearSkillCoefData()
 		uespLog.Msg("Cleared all skill coefficient data.")
-	elseif (cmd == "achievements") then
-		uespLog.ClearSavedVarSection("achievements")
-		uespLog.Msg("Reset logged achievement data")
 	elseif (cmd == "inspiration") then
 		uespLog.SetTotalInspiration(0)
 		uespLog.Msg("Reset crafting inspiration total")

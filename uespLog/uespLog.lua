@@ -714,8 +714,9 @@
 --			- Expanded bank related functions to include the ESO subscriber bag.
 --			- Added the Ashlander, Buoyany Armiger, Morag Tong, and Militant Ordinator styles.
 --
---		- v1.10 -- 22 May 2017
+--		- v1.11 -- 22 May 2017
 --			- Added Shroom Beetle to NPC ignore list.
+--			- Achievement data is now saved in the normal log data section instead of a the custom "achievement" data section.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.

@@ -663,7 +663,8 @@
 --			  It still rarely occurs but much less often than previously.
 --			- "/uespcount recipes" now shows counts per recipe categories.
 --
---		- v1.10
+--		- v1.10 -- 22 May 2017
+-- 			- uespLogMonitor updated to 0.50 with several minor bug fixes and performance improvements.
 --			- Added the "/uespcraft alchemy on|off" command which turns on tooltips when in the alchemy crafting window.
 --			- Fixed UESP sales price not appearing in tooltips from top item rows.
 --			- Fixed price lookups for master writs and crafted potions.

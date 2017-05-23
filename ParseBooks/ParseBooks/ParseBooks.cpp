@@ -13,10 +13,11 @@ using namespace std;
 using namespace eso;
 
 
-const string INPUT_FILENAME = "e:\\Temp\\testexport\\000\\498404.dat";
-const string OUTPUT_PATH = "e:\\Temp\\BookExport\\";
-const string OUTPUT_SQL_FILE = "e:\\Temp\\books.sql";
-const string OUTPUT_PHP_FILE = "e:\\Temp\\BookTitles.php";
+//const string INPUT_FILENAME = "e:\\Temp\\testexport\\000\\498404.dat";
+const string INPUT_FILENAME = "e:\\esoexport\\esomnf-14\\000\\538865.EsoIdData";
+const string OUTPUT_PATH = "e:\\esoexport\\goodimages-14\\BookExport\\";
+const string OUTPUT_SQL_FILE = "e:\\esoexport\\goodimages-14\\books.sql";
+const string OUTPUT_PHP_FILE = "e:\\esoexport\\goodimages-14\\BookTitles.php";
 
 const dword TITLE_ID = 0x030D11F5;
 const dword TEXT_ID  = 0x014593B4;
@@ -130,7 +131,7 @@ int main()
 		std::replace(Title.begin(), Title.end(), '?', '_');
 		std::replace(Title.begin(), Title.end(), '"', '\'');
 		std::replace(Title.begin(), Title.end(), ':', '_');
-		
+
 		if (TitleCount > 0)
 			snprintf(OutputFilename, 1000, "%s%s_%u.txt", OUTPUT_PATH.c_str(), Title.c_str(), TitleCount);
 		else
@@ -150,7 +151,7 @@ int main()
 		escTitle = ReplaceStrings(escTitle, "\n", "\\n");
 		escTitle = ReplaceStrings(escTitle, "\r", "\\r");
 		escTitle = ReplaceStrings(escTitle, "\t", "\\t");
-
+		
 		escText = ReplaceStrings(escText, "\\", "\\\\");
 		escText = ReplaceStrings(escText, "'", "\\'");
 		escText = ReplaceStrings(escText, "\"", "\\\"");
@@ -164,6 +165,7 @@ int main()
 			escTitle += Buffer;
 		}
 
+		//SqlFile.Printf("INSERT IGNORE INTO book SET bookId=%d, title='%s';\n", Record.Index, escTitle.c_str());
 		SqlFile.Printf("UPDATE book SET body='%s', bookId=%d WHERE title='%s';\n", escText.c_str(), Record.Index, escTitle.c_str());
 
 		escTitle = Record.Title;
@@ -171,6 +173,7 @@ int main()
 		escTitle = ReplaceStrings(escTitle, "\n", "\\n");
 		escTitle = ReplaceStrings(escTitle, "\r", "\\r");
 		escTitle = ReplaceStrings(escTitle, "\t", "\\t");
+		escTitle = ReplaceStrings(escTitle, "—", "-");
 
 		if (TitleCount > 0)
 		{
@@ -178,7 +181,7 @@ int main()
 			escTitle += Buffer;
 		}
 
-		PhpFile.Printf("\t\"%s\",\n", escTitle.c_str());
+		PhpFile.Printf("\t%d => \"%s\",\n", Record.Index, escTitle.c_str());
 	}
 
 	PhpFile.Printf(");\n\n");

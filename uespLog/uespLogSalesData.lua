@@ -1394,7 +1394,7 @@ end
 function uespLog.FindSalesPrice(itemLink)
 	local linkData = uespLog.ParseItemLinkEx(itemLink)
 	
-	if (not linkData) then
+	if (not linkData or uespLog.SalesPrices == nil) then
 		return nil
 	end
 	

@@ -715,8 +715,9 @@
 --			- Added the Ashlander, Buoyany Armiger, Morag Tong, and Militant Ordinator styles.
 --
 --		- v1.11 -- 22 May 2017
---			- Added Shroom Beetle to NPC ignore list.
 --			- Achievement data is now saved in the normal log data section instead of a the custom "achievement" data section.
+--			- Skill point message received when levelling up should be correct.
+--			- Missing sales data won't trigger a Lua error.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -1024,6 +1025,9 @@ uespLog.ignoredNPCs = {
 	["Tythis Andromo"] = 1,
 	["Pirharri the Smuggler"] = 1,
 	["Shroom Beetle"] = 1,	-- Morrowind
+	["Dragonfly"] = 1,		-- Morrowind
+	["Netch Calf"] = 1,		-- Morrowind
+	["Fetcherfly"] = 1,		-- Morrowind
 }
 
 uespLog.lastTargetData = {
@@ -4873,28 +4877,37 @@ function uespLog.OnAlliancePointsUpdate (eventCode, alliancePoints, playSound, d
 	uespLog.TrackLoot("ap", logData.xpGained, "unknown")
 end
 
-
-function uespLog.OnSkillPointsChanged (eventCode, pointsBefore, pointsNow, isSkyShard)
-
+ 
+function uespLog.OnSkillPointsChanged (eventCode, pointsBefore, pointsNow, partialPointsBefore, partialPointsNow)
+	local isSkyshard = false
 	local logData = { }
+	
+	if (partialPointsBefore ~= partialPointsNow) then
+		isSkyshard = true
+	end
+	
+	--uespLog.DebugMsg("OnSkillPointsChanged:"..tostring(pointsBefore)..", "..tostring(pointsNow)..", "..tostring(partialPointsBefore)..", "..tostring(partialPointsNow)..", "..tostring(isSkyshard))
 	
 	logData.event = "SkillPointsChanged"
 	logData.points = pointsNow - pointsBefore
 	logData.pointsBefore = pointsBefore
 	logData.pointsNow = pointsNow
+	logData.partialPointsBefore = partialPointsBefore
+	logData.partialPointsNow = partialPointsNow
 		
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
 	if (pointsBefore > pointsNow) then
 		local points = -logData.points
 		uespLog.MsgType(uespLog.MSG_OTHER, "You lost ".. tostring(points) .." skill points!")
-	elseif (isSkyShard and pointsBefore == pointsNow) then
+	elseif (isSkyshard and pointsBefore == pointsNow) then
 		uespLog.MsgType(uespLog.MSG_OTHER, "You found a Skyshard ("..GetNumSkyShards().."/3 pieces)!")
-	elseif (isSkyShard and logData.points == 1) then
+	elseif (isSkyshard and logData.points == 1) then
 		uespLog.MsgType(uespLog.MSG_OTHER, "You found a Skyshard...gained ".. tostring(logData.points) .." skill point!")
 	elseif (logData.points == 1) then
 		uespLog.MsgType(uespLog.MSG_OTHER, "You gained ".. tostring(logData.points) .." skill point!")
 	else
+		--local points = partialPointsNow  - partialPointsBefore
 		uespLog.MsgType(uespLog.MSG_OTHER, "You gained ".. tostring(logData.points) .." skill points!")
 	end
 	

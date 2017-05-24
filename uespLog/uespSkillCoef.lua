@@ -167,20 +167,20 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	
 	-- Undaunted Necrotic Orb/Mystic Orb/Energy Orb
 	-- Number 2 acts like an ultimate
-	[39298] = { [2] = POWERTYPE_ULTIMATE },
-	[43400] = { [2] = POWERTYPE_ULTIMATE },
-	[43403] = { [2] = POWERTYPE_ULTIMATE },
-	[43406] = { [2] = POWERTYPE_ULTIMATE },
+	[39298] = { [3] = POWERTYPE_ULTIMATE },
+	[43400] = { [3] = POWERTYPE_ULTIMATE },
+	[43403] = { [3] = POWERTYPE_ULTIMATE },
+	[43406] = { [3] = POWERTYPE_ULTIMATE },
 	
-	[42028] = { [2] = POWERTYPE_ULTIMATE },
-	[43409] = { [2] = POWERTYPE_ULTIMATE },
-	[43412] = { [2] = POWERTYPE_ULTIMATE },
-	[43415] = { [2] = POWERTYPE_ULTIMATE },
+	[42028] = { [3] = POWERTYPE_ULTIMATE },
+	[43409] = { [3] = POWERTYPE_ULTIMATE },
+	[43412] = { [3] = POWERTYPE_ULTIMATE },
+	[43415] = { [3] = POWERTYPE_ULTIMATE },
 	
-	[42038] = { [2] = POWERTYPE_ULTIMATE },
-	[43439] = { [2] = POWERTYPE_ULTIMATE },
-	[43443] = { [2] = POWERTYPE_ULTIMATE },
-	[43447] = { [2] = POWERTYPE_ULTIMATE },
+	[42038] = { [3] = POWERTYPE_ULTIMATE },
+	[43439] = { [3] = POWERTYPE_ULTIMATE },
+	[43443] = { [3] = POWERTYPE_ULTIMATE },
+	[43447] = { [3] = POWERTYPE_ULTIMATE },
 	
 	-- Undaunted Trapping Webs/Tangling Webs/Shadow Silk	
 	-- Number 4 acts like an ultimate
@@ -339,10 +339,10 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[44951] = { [2] = uespLog.UESP_POWERTYPE_DRACONICPOWER },
 		
 	-- Vampire Devouring Swarm
-	[38931] = { [3] = uespLog.UESP_POWERTYPE_SOULTETHER },
-	[41933] = { [3] = uespLog.UESP_POWERTYPE_SOULTETHER },
-	[41936] = { [3] = uespLog.UESP_POWERTYPE_SOULTETHER },
-	[41937] = { [3] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	[38931] = { [4] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	[41933] = { [4] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	[41936] = { [4] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	[41937] = { [4] = uespLog.UESP_POWERTYPE_SOULTETHER },
 	
 	-- Werewolf Werewolf Transformation
 	[32455] = { [3] = POWERTYPE_STAMINA },
@@ -395,6 +395,47 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[41097] = { [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
 	[41100] = { [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
 	[41103] = { [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	
+	-- Warden: Budding Seeds
+	[85840] = { [4] = POWERTYPE_ULTIMATE },
+	[93805] = { [4] = POWERTYPE_ULTIMATE },
+	[93806] = { [4] = POWERTYPE_ULTIMATE },
+	[93807] = { [4] = POWERTYPE_ULTIMATE },
+	
+	-- Warden: Healing Seed
+	[85578] = { [4] = POWERTYPE_ULTIMATE },
+	[93802] = { [4] = POWERTYPE_ULTIMATE },
+	[93803] = { [4] = POWERTYPE_ULTIMATE },
+	[93804] = { [4] = POWERTYPE_ULTIMATE },
+	
+	-- Warden: Corrupting Pollen
+	[85845] = { [6] = POWERTYPE_ULTIMATE },
+	[93808] = { [6] = POWERTYPE_ULTIMATE },
+	[93809] = { [6] = POWERTYPE_ULTIMATE },
+	[93810] = { [6] = POWERTYPE_ULTIMATE },
+	
+	[93859] = { [6] = POWERTYPE_ULTIMATE },
+	[90241] = { [6] = POWERTYPE_ULTIMATE },
+	[93865] = { [6] = POWERTYPE_ULTIMATE },
+	[93871] = { [6] = POWERTYPE_ULTIMATE },	
+	
+	-- Warden: Impaling Shards
+	[86161] = POWERTYPE_HEALTH,
+	[86162] = POWERTYPE_HEALTH,
+	[86163] = POWERTYPE_HEALTH,
+	[86164] = POWERTYPE_HEALTH,
+	
+	[86165] = POWERTYPE_HEALTH,
+	[86166] = POWERTYPE_HEALTH,
+	[86167] = POWERTYPE_HEALTH,
+	[86168] = POWERTYPE_HEALTH,
+	
+	-- Warden: Artic Blast
+	[86156] = POWERTYPE_HEALTH,
+	[86157] = POWERTYPE_HEALTH,
+	[86158] = POWERTYPE_HEALTH,
+	[86159] = POWERTYPE_HEALTH,
+		
 	
 -- Passives 
 
@@ -554,11 +595,17 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[60786] = POWERTYPE_MAGICKA,
 	[60796] = POWERTYPE_MAGICKA,
 	
+	--Materialize (unknown)
+	[88158] = POWERTYPE_ULTIMATE,
+	[88174] = POWERTYPE_ULTIMATE,
+	[88176] = POWERTYPE_ULTIMATE,
+	[88178] = POWERTYPE_ULTIMATE,
+	
 	-- Sprint
 	[973] = POWERTYPE_STAMINA,
 	
 	-- Block
-	[14980] = POWERTYPE_STAMINA,
+	[14890] = POWERTYPE_STAMINA,
 	
 	-- Sneak
 	[20299] = POWERTYPE_STAMINA,
@@ -2438,3 +2485,4 @@ function uespLog.UpdateSkillCoefCounts()
 	end
 	
 end
+

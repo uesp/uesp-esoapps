@@ -714,10 +714,13 @@
 --			- Expanded bank related functions to include the ESO subscriber bag.
 --			- Added the Ashlander, Buoyany Armiger, Morag Tong, and Militant Ordinator styles.
 --
---		- v1.11 -- 22 May 2017
+--		- v1.11 -- 25 May 2017
 --			- Achievement data is now saved in the normal log data section instead of a the custom "achievement" data section.
 --			- Skill point message received when levelling up should be correct.
 --			- Missing sales data won't trigger a Lua error.
+--			- Added the uespSalesPrices.lua file back into the installation to prevent issues with some installations. This is
+--			  the PC-NA prices from this release data so be to sure to visit http://esosales.uesp.net/salesPrices.shtml and
+--			  download the latest file for your server to get the most accurate sales prices. 
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -816,8 +819,8 @@
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "1.10"
-uespLog.releaseDate = "22 May 2017"
+uespLog.version = "1.11"
+uespLog.releaseDate = "25 May 2017"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

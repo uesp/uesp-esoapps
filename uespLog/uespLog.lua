@@ -722,6 +722,10 @@
 --			  the PC-NA prices from this release data so be to sure to visit http://esosales.uesp.net/salesPrices.shtml and
 --			  download the latest file for your server to get the most accurate sales prices. 
 --
+--		- v1.12 -- ?
+--			- Improved note/book message to include collection categories. 
+--			- When reading a lore book only one console message is output.
+--
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
 --
@@ -1031,6 +1035,12 @@ uespLog.ignoredNPCs = {
 	["Dragonfly"] = 1,		-- Morrowind
 	["Netch Calf"] = 1,		-- Morrowind
 	["Fetcherfly"] = 1,		-- Morrowind
+	["Ash Hopper"] = 1,		-- Morrowind
+	["Cliff Skipper"] = 1,	-- Morrowind
+	["Feral Guardian"] = 1,	-- Morrowind
+	["Wild Guardian"] = 1,	-- Morrowind
+	["Eternal Guardian"] = 1,	-- Morrowind
+	["Vvardvark"] = 1,		-- Morrowind
 }
 
 uespLog.lastTargetData = {
@@ -1082,6 +1092,9 @@ uespLog.trackStatHeaColor = "FF3331"
 uespLog.trackStatMagColor = "29A2DE"
 uespLog.trackStatStaColor = "35F935"
 uespLog.trackStatUltColor = "FFFFFF"
+
+uespLog.LastLoreBookTitle = ""
+uespLog.LastLoreBookTime = 0
 
 uespLog.currentTargetData = {
 	name = "",
@@ -4248,16 +4261,36 @@ end
 
 function uespLog.OnShowBook (eventCode, bookTitle, body, medium, showTitle, bookId)
 	local logData = { }
+	local diffTime = GetGameTimeMilliseconds() - uespLog.LastLoreBookTime
+	
+	--uespLog.DebugMsg("ShowBook: "..tostring(bookTitle)..", " .. tostring(bookId))
 	
 	logData.event = "ShowBook"
 	logData.bookTitle = bookTitle
 	logData.body = body
 	logData.medium = medium
 	logData.bookId = bookId
+	logData.categoryIndex, logData.collectionIndex, logData.bookIndex = GetLoreBookIndicesFromBookId(bookId)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	
-	uespLog.MsgType(uespLog.MSG_OTHER, "UESP: Book "..bookTitle)
+	if (uespLog.LastLoreBookTitle == bookTitle and diffTime < 1000) then
+		uespLog.LastLoreBookTitle = ""
+		uespLog.LastLoreBookTime = 0
+		return
+	end
+	
+	if (logData.collectionIndex ~= nil and logData.categoryIndex ~= nil) then
+		local name2 = GetLoreCollectionInfo(logData.categoryIndex, logData.collectionIndex)
+		local name1 = GetLoreCategoryInfo(logData.categoryIndex)
+
+		uespLog.MsgType(uespLog.MSG_OTHER, "UESP: Book "..bookTitle.." ("..tostring(name1)..":"..tostring(name2)..")")
+	else
+		uespLog.MsgType(uespLog.MSG_OTHER, "UESP: Book "..bookTitle.." (unknown collection)")
+	end
+	
+	uespLog.LastLoreBookTitle = ""
+	uespLog.LastLoreBookTime = 0
 end
 
 
@@ -4277,7 +4310,9 @@ end
 function uespLog.OnLoreBookLearned (eventCode, categoryIndex, collectionIndex, bookIndex, guildIndex)
 	local logData = { }
     local bookTitle, icon, known = GetLoreBookInfo(categoryIndex, collectionIndex, bookIndex)
-	
+	local collectName = GetLoreCollectionInfo(categoryIndex, collectionIndex)
+	local cateName = GetLoreCategoryInfo(logData.categoryIndex)
+
 	logData.event = "LoreBook"
 	logData.bookTitle = bookTitle	
 	logData.icon = icon
@@ -4289,7 +4324,10 @@ function uespLog.OnLoreBookLearned (eventCode, categoryIndex, collectionIndex, b
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 		 
-	uespLog.MsgType(uespLog.MSG_OTHER, "UESP: Lore book "..bookTitle.." (guild "..tostring(guildIndex)..")")
+	uespLog.MsgType(uespLog.MSG_OTHER, "UESP: Lore book "..bookTitle.." (guild "..tostring(guildIndex)..", "..tostring(cateName)..":"..tostring(collectName)..")")
+	
+	uespLog.LastLoreBookTitle = bookTitle
+	uespLog.LastLoreBookTime = GetGameTimeMilliseconds()
 end
 
 
@@ -11464,7 +11502,7 @@ function uespLog.OnObjectiveControlState (eventCode, objectiveKeepId, objectiveO
 	local alliance = GetKeepAlliance(objectiveKeepId, battlegroundContext)
 	--local objName, objType, objState, param1, param2 = GetAvAObjectiveInfo(keepId, objectiveId, battlegroundContext)
 	local colorName = uespLog.GetAllianceColoredName(alliance, objectiveName.."["..uespLog.GetAllianceShortName(alliance).."]")
-	local eventDesc = GetAvAObjectiveEventDescription(objectiveKeepId, objectiveObjectiveId, colorName.."|c"..uespLog.pvpColor, objectiveType, objectiveControlEvent, objectiveParam1, objectiveParam2)
+	local eventDesc = GetAvAArtifactEventDescription(colorName.."|c"..uespLog.pvpColor, objectiveKeepId, objectiveObjectiveId, objectiveType, objectiveControlEvent, objectiveParam1, objectiveParam2)
 	
 	if (eventDesc ~= nil and eventDesc ~= "") then
 		msg = tostring(eventDesc)
@@ -15673,3 +15711,4 @@ function uespLog.GetCharQuestUniqueIds()
 	
 	return uespLog.savedVars.charInfo.data.questUniqueIds
 end
+

@@ -1650,9 +1650,19 @@ function uespLog.GetTradingHouseSearchResultItemInfo(index)
 		if (itemLink) then
 			local uespPrice = uespLog.FindSalesPrice(itemLink)
 			
-			if (uespPrice ~= nil and uespPrice.price > 0) then
-				setPrice = uespPrice.price
-				salesCount = uespPrice.count
+			if (uespPrice) then
+				local saleType = uespLog.GetSalesShowSaleType()
+				
+				if (saleType == "both") then
+					setPrice = uespPrice.price
+					salesCount = uespPrice.count
+				elseif (saleType == "list") then
+					setPrice = uespPrice.priceListed
+					salesCount = uespPrice.countListed
+				elseif (saleType == "sold") then
+					setPrice = uespPrice.priceSold
+					salesCount = uespPrice.countSold
+				end
 			end
 		end
 
@@ -1790,6 +1800,59 @@ function uespLog.GetProfitValue(index)
 	end
 	
 	return uespLog.SalesDealProfits[index]
+end
+
+
+function uespLog.SetupPendingPost(self)
+
+	if (uespLog.Old_MM_SetupPendingPost and (uespLog.GetSalesShowDealType() ~= "uesp" or not uespLog.IsSalesShowPrices())) then
+		return uespLog.Old_MM_SetupPendingPost(self)
+	end
+
+	--uespLog.OriginalSetupPendingPost(self)
+	
+	uespLog.DebugMsg("SetupPendingPost: "..tostring(self.m_pendingItemSlot))
+	
+	if (self.m_pendingItemSlot) then
+		local itemLink = GetItemLink(BAG_BACKPACK, self.m_pendingItemSlot)
+		local _, stackCount, _ = GetItemInfo(BAG_BACKPACK, self.m_pendingItemSlot)
+		local priceToUse = 0
+		
+		uespLog.DebugMsg("SPP: "..tostring(itemLink).." x"..tostring(stackCount))
+		
+		if (MasterMerchant) then
+    		local settingsToUse = MasterMerchant:ActiveSettings()
+			local theIID = string.match(itemLink, '|H.-:item:(.-):')
+			local itemIndex = MasterMerchant.makeIndexFromLink(itemLink)
+		
+			if (settingsToUse.pricingData and settingsToUse.pricingData[tonumber(theIID)] and settingsToUse.pricingData[tonumber(theIID)][itemIndex]) then
+				--priceToUse = math.floor(settingsToUse.pricingData[tonumber(theIID)][itemIndex] * stackCount)
+			end
+		end
+		
+		if (priceToUse == 0) then
+			local saleData = uespLog.FindSalesPrice(itemLink)
+			
+			if (saleData) then
+				local saleType = uespLog.GetSalesShowSaleType()
+				
+				if (saleType == "both" and saleData.count > 0) then
+					priceToUse = math.floor(saleData.price * stackCount)
+				elseif (saleType == "list" and saleData.countListed > 0) then
+					priceToUse = math.floor(saleData.priceListed * stackCount)
+				elseif (saleType == "sold" and saleData.countSold > 0) then
+					priceToUse = math.floor(saleData.priceSold * stackCount)
+				end
+			end
+			
+			uespLog.DebugMsg("SPP: Price="..tostring(priceToUse))
+		end
+		
+		if (priceToUse > 0) then
+			self:SetPendingPostPrice(priceToUse)
+			uespLog.DebugMsg("SPP: Setting Price "..tostring(priceToUse)..", "..tostring(self))
+		end
+	end
 end
 
 

@@ -16,6 +16,7 @@
 --		- Yokudan style icon (35)?
 --		- Akaviri style icon?
 --		- Ancient Elf style icon (15)?
+--		- Warning when log gets near full for upload.
 --
 --
 -- CHANGELOG:
@@ -3335,6 +3336,12 @@ function uespLog.Initialize( self, addOnName )
 		
 		uespLog.Old_MM_GetProfitValue = MasterMerchant.GetProfitValue
 		MasterMerchant.GetProfitValue = uespLog.GetProfitValue
+		
+		uespLog.OriginalSetupPendingPost = TRADING_HOUSE.SetupPendingPost
+		uespLog.Old_MM_SetupPendingPost = MasterMerchant.SetupPendingPost
+		TRADING_HOUSE.SetupPendingPost = uespLog.SetupPendingPost		
+		
+		MasterMerchant.updateCalc = function() end
 	else
 		GetTradingHouseSearchResultItemInfo = uespLog.GetTradingHouseSearchResultItemInfo
 		GetTradingHouseListingItemInfo = uespLog.GetTradingHouseListingItemInfo

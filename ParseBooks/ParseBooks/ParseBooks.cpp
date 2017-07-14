@@ -14,10 +14,10 @@ using namespace eso;
 
 
 //const string INPUT_FILENAME = "e:\\Temp\\testexport\\000\\498404.dat";
-const string INPUT_FILENAME = "e:\\esoexport\\esomnf-14\\000\\538865.EsoIdData";
-const string OUTPUT_PATH = "e:\\esoexport\\goodimages-14\\BookExport\\";
-const string OUTPUT_SQL_FILE = "e:\\esoexport\\goodimages-14\\books.sql";
-const string OUTPUT_PHP_FILE = "e:\\esoexport\\goodimages-14\\BookTitles.php";
+const string INPUT_FILENAME = "e:\\esoexport\\esomnf-15pts\\gamedata\\lang\\en.lang";
+const string OUTPUT_PATH = "e:\\esoexport\\goodimages-15pts\\BookExport\\";
+const string OUTPUT_SQL_FILE = "e:\\esoexport\\goodimages-15pts\\books.sql";
+const string OUTPUT_PHP_FILE = "e:\\esoexport\\goodimages-15pts\\BookTitles.php";
 
 const dword TITLE_ID = 0x030D11F5;
 const dword TEXT_ID  = 0x014593B4;
@@ -131,6 +131,10 @@ int main()
 		std::replace(Title.begin(), Title.end(), '?', '_');
 		std::replace(Title.begin(), Title.end(), '"', '\'');
 		std::replace(Title.begin(), Title.end(), ':', '_');
+		std::replace(Title.begin(), Title.end(), ':', '_');
+		Title = ReplaceStrings(Title, "â€", " - ");
+		//â€
+		//â€”
 
 		if (TitleCount > 0)
 			snprintf(OutputFilename, 1000, "%s%s_%u.txt", OUTPUT_PATH.c_str(), Title.c_str(), TitleCount);

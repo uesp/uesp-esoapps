@@ -51,11 +51,27 @@ function uespLog.LoadSalePriceData()
 
 	if (uespLog.IsSalesShowPrices() and uespLog.InitSalesPrices ~= nil) then
 		uespLog.InitSalesPrices()
+		uespLog.InitSalesFunctions()
 	else
 		uespLog.SalesPrices = nil
 		uespLog.SalesPricesVersion = 0
 	end
 	
+end
+
+
+function uespLog.InitSalesFunctions()
+
+	if (MasterMerchant ~= nil) then
+		MasterMerchant.SetupPendingPost = uespLog.SetupPendingPost
+	end
+	
+	TRADING_HOUSE.SetupPendingPost = uespLog.SetupPendingPost
+	
+	if (MasterMerchant == nil) then
+		
+	end
+
 end
 
 
@@ -167,8 +183,8 @@ function uespLog.GetSalesShowSaleType()
 		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
 	end
 	
-	if (uespLog.savedVars.settings.data.showSaleType == nil) then
-		uespLog.savedVars.settings.data.showSaleType = uespLog.DEFAULT_SETTINGS.salesData
+	if (uespLog.savedVars.settings.data.salesData == nil) then
+		uespLog.savedVars.settings.data.salesData = uespLog.DEFAULT_SETTINGS.salesData
 	end
 	
 	if (uespLog.savedVars.settings.data.salesData.showSaleType == nil) then
@@ -191,6 +207,39 @@ function uespLog.SetSalesShowDealType(value)
 	
 	uespLog.savedVars.settings.data.salesData.showDealType = value
 end
+
+
+function uespLog.GetSalesPostPriceType()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.salesData == nil) then
+		uespLog.savedVars.settings.data.salesData = uespLog.DEFAULT_SETTINGS.salesData
+	end
+	
+	if (uespLog.savedVars.settings.data.salesData.postPriceType == nil) then
+		uespLog.savedVars.settings.data.salesData.postPriceType = "uesp"
+	end
+	
+	return uespLog.savedVars.settings.data.salesData.postPriceType
+end
+
+
+function uespLog.SetSalesPostPriceType(value)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.salesData == nil) then
+		uespLog.savedVars.settings.data.salesData = uespLog.DEFAULT_SETTINGS.salesData
+	end
+	
+	uespLog.savedVars.settings.data.salesData.postPriceType = value
+end
+
 
 
 function uespLog.GetSalesShowDealType()
@@ -667,6 +716,9 @@ function uespLog.OnTradingHouseResponseReceived(event, responseType, result)
 		uespLog.OnTradingHouseListingNew()
 	end
 	
+    if (MasterMerchant == nil) then 
+		uespLog.InitBuyingAdvice()
+	end
 end
 
 
@@ -1553,6 +1605,19 @@ function uespLog.SalesCommand (cmd)
 		
 		uespLog.ResetLastListingSalesDataTimestamps(guildName)
 		
+	elseif (firstCmd == "postprice") then
+		local secondCmd = string.lower(cmds[2])
+		
+		if (secondCmd == "mm") then
+			uespLog.SetSalesPostPriceType("mm")
+			uespLog.Msg("Guild posted prices now use MasterMerchant price data!")
+		elseif (secondCmd == "uesp") then
+			uespLog.SetSalesPostPriceType("uesp")
+			uespLog.Msg("Guild posted prices now use UESP price data!")
+		else
+			uespLog.Msg("UESP item deals setting is currently "..uespLog.GetSalesPostPriceType():upper()..".")
+		end
+		
 	elseif (firstCmd == "deal" or firstCmd == "dealtype") then
 		local secondCmd = string.lower(cmds[2])
 		
@@ -1588,6 +1653,7 @@ function uespLog.SalesCommand (cmd)
 		uespLog.Msg(".       /uespsales resetlist current Reset the listing timestamps for the current guild trader")
 		uespLog.Msg(".       /uespsales resetlist [name]  Reset the listing timestamps for that guild")
 		uespLog.Msg(".       /uespsales dealtype [uesp||mm||none]   Sets the type of item deal to display")
+		uespLog.Msg(".       /uespsales postprice [uesp||mm]   Sets price to use when posting items for sale")
 		uespLog.Msg("Guild sales data logging is currently "..uespLog.BoolToOnOff(uespLog.GetSalesDataConfig().saveSales)..".")
 		uespLog.Msg("Sale price data usage is currently "..uespLog.BoolToOnOff(uespLog.IsSalesShowPrices()))
 		uespLog.Msg("Sale price item tooltips are currently "..uespLog.BoolToOnOff(uespLog.IsSalesShowTooltip()))
@@ -1707,8 +1773,18 @@ function uespLog.GetTradingHouseListingItemInfo(index)
 			local uespPrice = uespLog.FindSalesPrice(itemLink)
 			
 			if (uespPrice ~= nil and uespPrice.price > 0) then
-				setPrice = uespPrice.price
-				salesCount = uespPrice.count
+				local saleType = uespLog.GetSalesShowSaleType()
+				
+				if (saleType == "both") then
+					setPrice = uespPrice.price
+					salesCount = uespPrice.count
+				elseif (saleType == "list") then
+					setPrice = uespPrice.priceListed
+					salesCount = uespPrice.countListed
+				elseif (saleType == "sold") then
+					setPrice = uespPrice.priceSold
+					salesCount = uespPrice.countSold
+				end
 			end
 		end
 
@@ -1804,29 +1880,30 @@ end
 
 
 function uespLog.SetupPendingPost(self)
+	local useUespPrice = uespLog.GetSalesPostPriceType() == "uesp"
 
-	if (uespLog.Old_MM_SetupPendingPost and (uespLog.GetSalesShowDealType() ~= "uesp" or not uespLog.IsSalesShowPrices())) then
+	if (MasterMerchant and uespLog.Old_MM_SetupPendingPost and (not useUespPrice or not uespLog.IsSalesShowPrices())) then
 		return uespLog.Old_MM_SetupPendingPost(self)
 	end
 
-	--uespLog.OriginalSetupPendingPost(self)
+	uespLog.OriginalSetupPendingPost(self)
 	
-	uespLog.DebugMsg("SetupPendingPost: "..tostring(self.m_pendingItemSlot))
+	--uespLog.DebugMsg("SetupPendingPost: "..tostring(self.m_pendingItemSlot))
 	
 	if (self.m_pendingItemSlot) then
 		local itemLink = GetItemLink(BAG_BACKPACK, self.m_pendingItemSlot)
 		local _, stackCount, _ = GetItemInfo(BAG_BACKPACK, self.m_pendingItemSlot)
 		local priceToUse = 0
 		
-		uespLog.DebugMsg("SPP: "..tostring(itemLink).." x"..tostring(stackCount))
+		--uespLog.DebugMsg("SPP: "..tostring(itemLink).." x"..tostring(stackCount))
 		
-		if (MasterMerchant) then
+		if (MasterMerchant and not useUespPrice) then
     		local settingsToUse = MasterMerchant:ActiveSettings()
 			local theIID = string.match(itemLink, '|H.-:item:(.-):')
 			local itemIndex = MasterMerchant.makeIndexFromLink(itemLink)
 		
 			if (settingsToUse.pricingData and settingsToUse.pricingData[tonumber(theIID)] and settingsToUse.pricingData[tonumber(theIID)][itemIndex]) then
-				--priceToUse = math.floor(settingsToUse.pricingData[tonumber(theIID)][itemIndex] * stackCount)
+				priceToUse = math.floor(settingsToUse.pricingData[tonumber(theIID)][itemIndex] * stackCount)
 			end
 		end
 		
@@ -1845,12 +1922,13 @@ function uespLog.SetupPendingPost(self)
 				end
 			end
 			
-			uespLog.DebugMsg("SPP: Price="..tostring(priceToUse))
+			--uespLog.DebugMsg("SPP: Price="..tostring(priceToUse))
 		end
 		
 		if (priceToUse > 0) then
 			self:SetPendingPostPrice(priceToUse)
-			uespLog.DebugMsg("SPP: Setting Price "..tostring(priceToUse)..", "..tostring(self))
+			zo_callLater(function() self:SetPendingPostPrice(priceToUse) end, 50)
+			--uespLog.DebugMsg("SPP: Setting Price "..tostring(priceToUse)..", "..tostring(self))
 		end
 	end
 end
@@ -1920,4 +1998,61 @@ function uespLog.UpdateUespScanSalesButton()
 		UespSalesResetButton:SetHidden(false)
 	end
 
+end
+
+
+function uespLog.InitBuyingAdvice() 
+
+	if (MasterMerchant ~= nil) then return end
+	if (uespLog.originalSetupCallback) then return end
+
+	local dataType = TRADING_HOUSE.m_searchResultsList.dataTypes[1]
+	uespLog.originalSetupCallback = dataType.setupCallback
+	
+	if uespLog.originalSetupCallback then
+		dataType.setupCallback = function(...)
+			local row, data = ...
+			uespLog.originalSetupCallback(...)
+			zo_callLater(function() uespLog.AddBuyingAdvice(row, data) end, 25)
+		end
+	else
+		d(GetString(MM_ADVICE_ERROR))
+	end    
+end
+
+
+function uespLog.AddBuyingAdvice(rowControl, result)
+    local buyingAdvice = rowControl:GetNamedChild('BuyingAdvice')
+	
+	if (not buyingAdvice) then
+		local controlName = rowControl:GetName() .. 'BuyingAdvice'
+		buyingAdvice = rowControl:CreateControl(controlName, CT_LABEL)
+		local anchorControl = rowControl:GetNamedChild('TimeRemaining')
+		buyingAdvice:SetAnchor(RIGHT, anchorControl, LEFT, -20, 6)
+		buyingAdvice:SetFont('/esoui/common/fonts/univers67.otf|14|soft-shadow-thin')
+	end
+    
+    local sellerName, dealString, margin = zo_strsplit(';', result.sellerName)
+    --local margin = result.marginString
+    local dealValue = tonumber(dealString)
+	
+    if dealValue then 
+		if dealValue > -1 then
+			buyingAdvice:SetText(margin .. '%')  
+			local r, g, b = GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, dealValue)
+			if dealValue == 0 then r = 0.98; g = 0.01; b = 0.01; end
+			buyingAdvice:SetColor(r, g, b, 1)
+			buyingAdvice:SetHidden(false)    
+		else
+			buyingAdvice:SetHidden(true)
+		end
+		
+		local sellerControl = rowControl:GetNamedChild('SellerName')
+		sellerControl:SetText(zo_strsplit(';', sellerControl:GetText()))
+		
+	else
+		buyingAdvice:SetHidden(true)
+    end
+	
+    buyingAdvice = nil
 end

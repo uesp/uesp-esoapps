@@ -723,9 +723,16 @@
 --			  the PC-NA prices from this release data so be to sure to visit http://esosales.uesp.net/salesPrices.shtml and
 --			  download the latest file for your server to get the most accurate sales prices. 
 --
---		- v1.12 -- ?
+--		- v1.20 -- ?
 --			- Improved note/book message to include collection categories. 
 --			- When reading a lore book only one console message is output.
+--			- Fixed deal type display in guild stores that was incorrect for some items.
+--			- When posting items you can use the MasterMerchant or UESP (default) prices by using the commands:
+--					/uespsales postprice uesp
+--					/uespsales postprice mm
+--			- Listing deal display and post pricing now works whether MasterMerchant is installed or not. Basic price display
+--			  should now be working with MasterMerchant not present although more advanced features/options available with MM 
+--			  will not be available.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -1575,6 +1582,7 @@ uespLog.DEFAULT_SETTINGS =
 			["showTooltip"] = true,
 			["showSaleType"] = "both",
 			["showDealType"] = "uesp",
+			["postPriceType"] = "uesp",
 			["lastTimestamp"] = 0,
 			["guildListTimes"] = {},			
 			[1] = {
@@ -3339,12 +3347,19 @@ function uespLog.Initialize( self, addOnName )
 		
 		uespLog.OriginalSetupPendingPost = TRADING_HOUSE.SetupPendingPost
 		uespLog.Old_MM_SetupPendingPost = MasterMerchant.SetupPendingPost
-		TRADING_HOUSE.SetupPendingPost = uespLog.SetupPendingPost		
+		MasterMerchant.SetupPendingPost = uespLog.SetupPendingPost
+		--TRADING_HOUSE.SetupPendingPost = uespLog.SetupPendingPost	
 		
-		MasterMerchant.updateCalc = function() end
+		--MasterMerchant.updateCalc = function() end
 	else
+		uespLog.Old_MM_GetTradingHouseSearchResultItemInfo = GetTradingHouseSearchResultItemInfo
 		GetTradingHouseSearchResultItemInfo = uespLog.GetTradingHouseSearchResultItemInfo
-		GetTradingHouseListingItemInfo = uespLog.GetTradingHouseListingItemInfo
+		
+		uespLog.Old_MM_GetTradingHouseListingItemInfo = GetTradingHouseListingItemInfo
+		GetTradingHouseListingItemInfo = uespLog.GetTradingHouseListingItemInfo		
+		
+		uespLog.OriginalSetupPendingPost = TRADING_HOUSE.SetupPendingPost
+		TRADING_HOUSE.SetupPendingPost = uespLog.SetupPendingPost	
 	end	
 	
 	uespLog.SetupTraderControls()

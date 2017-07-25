@@ -733,6 +733,11 @@
 --			- Listing deal display and post pricing now works whether MasterMerchant is installed or not. Basic price display
 --			  should now be working with MasterMerchant not present although more advanced features/options available with MM 
 --			  will not be available.
+--			- Added ? styles.
+--			- Fixed PVP message output. Properly displays messages for captured and keeps under attack. No longer displays
+--			  messages in battlegrounds for more events.
+--			- Modified the effective power stats to include Mighty/Elemental Expert and basic forms of damage done modifiers
+--			  in order to match the online builder values.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -3224,6 +3229,9 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_KEEP_UNDER_ATTACK_CHANGED, uespLog.OnKeepUnderAttack)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_KEEP_GATE_STATE_CHANGED, uespLog.OnKeepGateStateChanged)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_GUILD_KEEP_CLAIM_UPDATED, uespLog.OnGuildKeepClaimUpdated)	
+	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ASSIGNED_CAMPAIGN_CHANGED, uespLog.OnAssignedCampaignChanged)		 
+	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CAMPAIGN_STATE_INITIALIZED, uespLog.OnAssignedCampaignChanged)	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CURRENT_CAMPAIGN_CHANGED, uespLog.OnAssignedCampaignChanged)	 
 	
 	ZO_PreHookHandler(PopupTooltip, 'OnUpdate', function() uespLog.AddStatsPopupTooltip() end)
 	ZO_PreHookHandler(PopupTooltip, 'OnHide', function() uespLog.RemoveStatsPopupTooltip() end)
@@ -11452,6 +11460,7 @@ uespLog.SHORT_ALLIANCE_COLORED_NAMES = { }
 
 uespLog.ALLIANCE_COLORS = 
 {
+	
     [ALLIANCE_ALDMERI_DOMINION] = ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ALLIANCE, ALLIANCE_ALDMERI_DOMINION)),
     [ALLIANCE_EBONHEART_PACT] = ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ALLIANCE, ALLIANCE_EBONHEART_PACT)),
     [ALLIANCE_DAGGERFALL_COVENANT] = ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ALLIANCE, ALLIANCE_DAGGERFALL_COVENANT)),
@@ -11474,7 +11483,10 @@ end
 function uespLog.GetAllianceColoredName (alliance, name)
     local color = uespLog.ALLIANCE_COLORS[alliance]
 	
-    if (color == nil) then return name end
+    if (color == nil) then 
+		color = ZO_ColorDef:New(0.75, 0.75, 0.75, 1)
+	end
+	
     return color:Colorize(name) .. "|r"
 end
 
@@ -11516,15 +11528,41 @@ function uespLog.OnCoronateEmpererNotification  (eventCode, campaignId, emperorN
 end
 
 
+uespLog.ARTIFACT_EVENT_DESCRIPTIONS =
+{
+	[OBJECTIVE_CONTROL_EVENT_CAPTURED] = function(artifactName, keepId, playerName, alliance, allianceName, campaignId)
+											return zo_strformat("<<2>> has secured <<3>> at <<4>>", playerName, allianceName, artifactName, GetKeepName(keepId)), soundId
+										end,
+														
+	[OBJECTIVE_CONTROL_EVENT_ASSAULTED] = function(artifactName, keepId, playerName, alliance, allianceName, campaignId)
+											return zo_strformat("<<3>> is under attack!", playerName, allianceName, artifactName, GetKeepName(keepId)), soundId
+										end,
+
+}
+
+
+
 function uespLog.OnObjectiveControlState (eventCode, objectiveKeepId, objectiveObjectiveId, battlegroundContext, objectiveName, objectiveType, objectiveControlEvent, objectiveControlState, objectiveParam1, objectiveParam2)
 	local msg = ""
+	
 	if (not uespLog.IsPvpUpdate()) then return end
+	
+	--uespLog.DebugExtraMsg("OnObjectiveControlState: "..tostring(objectiveKeepId)..", "..tostring(objectiveObjectiveId)..", "..tostring(battlegroundContext)..", "..tostring(objectiveName)..", "..tostring(objectiveType)..", "..tostring(objectiveControlEvent)..", "..tostring(objectiveControlState)..", "..tostring(objectiveParam1)..", "..tostring(objectiveParam2)..", ")	
 	
 	local name = GetKeepName(objectiveKeepId)
 	local alliance = GetKeepAlliance(objectiveKeepId, battlegroundContext)
-	--local objName, objType, objState, param1, param2 = GetAvAObjectiveInfo(keepId, objectiveId, battlegroundContext)
+	local objName, objType, objState = GetObjectiveInfo(objectiveKeepId, objectiveObjectiveId, battlegroundContext)
+	local currentCampaignId = GetCurrentCampaignId()
 	local colorName = uespLog.GetAllianceColoredName(alliance, objectiveName.."["..uespLog.GetAllianceShortName(alliance).."]")
-	local eventDesc = GetAvAArtifactEventDescription(colorName.."|c"..uespLog.pvpColor, objectiveKeepId, objectiveObjectiveId, objectiveType, objectiveControlEvent, objectiveParam1, objectiveParam2)
+	
+	local eventHandler = uespLog.ARTIFACT_EVENT_DESCRIPTIONS[objectiveControlEvent]
+	
+    if (eventHandler) then
+        msg = eventHandler(colorName.."|c"..uespLog.pvpColor, objectiveKeepId, "", "", objectiveControlEvent, currentCampaignId)
+	else
+		--uespLog.DebugExtraMsg("No handler for event: "..tostring(objectiveControlEvent))
+		uespLog.DebugExtraMsg("PVP control state "..tostring(objectiveControlEvent) .. " for "..tostring(objectiveName))
+    end
 	
 	if (eventDesc ~= nil and eventDesc ~= "") then
 		msg = tostring(eventDesc)
@@ -11534,16 +11572,28 @@ function uespLog.OnObjectiveControlState (eventCode, objectiveKeepId, objectiveO
 end
 
 
+uespLog.PrevKeepAlliance = {}
+
+
+function uespLog.OnAssignedCampaignChanged(eventCode, newCampaignId)
+	--uespLog.DebugMsg("Campaign changed!")
+	uespLog.PrevKeepAlliance = {}
+end
+
+
 function uespLog.OnKeepAllianceOwnerChanged (eventCode, keepId, battlegroundContext, owningAlliance)
 	local msg = ""
 	if (not uespLog.IsPvpUpdate()) then return end
 	
 	local name = GetKeepName(keepId)
 	local alliance = GetKeepAlliance(keepId, battlegroundContext)
-	local alliance
+	local oldAlliance = uespLog.PrevKeepAlliance[keepId] or 0
+	local keepName = uespLog.GetAllianceColoredName(oldAlliance, tostring(name))
 	
-	msg = tostring(name).."|c"..uespLog.pvpColor.." changed ownership to "..GetColoredAllianceName(owningAlliance).."."
+	msg = keepName.."|c"..uespLog.pvpColor.." changed ownership to "..GetColoredAllianceName(owningAlliance).."."
 	uespLog.MsgColor(uespLog.pvpColor, msg)
+	
+	uespLog.PrevKeepAlliance[keepId] = alliance
 end
 
 
@@ -11566,6 +11616,7 @@ function uespLog.OnKeepUnderAttack (eventCode, keepId, battlegroundContext, unde
 	
 	if (underAttack) then
 		msg = colorName.."|c"..uespLog.pvpColor.." is under attack!".."|r"
+		uespLog.PrevKeepAlliance[keepId] = alliance
 	else
 		msg = colorName.."|c"..uespLog.pvpColor.." is no longer under attack.".."|r"
 	end
@@ -13415,16 +13466,100 @@ function uespLog.GetEffectiveSpellPower()
 	local TargetCritResistFactor = uespLog.savedVars.settings.data.targetCritResistFactor
 	local TargetCritResistFlat = uespLog.savedVars.settings.data.targetCritResistFlat
 	local AttackCrit = SpellCrit - TargetCritResistFactor - (TargetCritResistFlat)*(0.035/250)
+	local MagicDamageDone = uespLog.GetMagicDamageDone()
+	local DamageDone = uespLog.GetDamageDone()
 	local result = 0
-
+	
 	SpellCrit = math.floor(AttackCrit / (2 * EffectiveLevel * (100 + EffectiveLevel)) * 1000 + 0.5)/1000;
 	
 		-- EffectiveSpellPower = (round(Magicka/10.5) + SpellDamage)*(1 + AttackSpellCrit*SpellCritDamage)*(AttackSpellMitigation)
 	result = math.floor(Magicka/10.5 + 0.5) + SpellDamage
 	result = result * (1 + SpellCrit * SpellCritDamage)
 	result = result * AttackSpellMitigation
+	result = result * (1 + MagicDamageDone)
+	result = result * (1 + DamageDone)
 		
 	return math.floor(result)
+end
+
+
+function uespLog.GetMagicDamageDone()
+	local description = GetChampionAbilityDescription(63848, 0)
+	local value = description:match(" by |c[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]([%d.]+)|r%%")
+	local result = 0
+		
+	if (result ~= nil) then
+		result = result + tonumber(value)/100
+	end
+	
+	return result
+end
+
+
+function uespLog.GetStaminaDamageDone()
+	local description = GetChampionAbilityDescription(63868, 0)
+	local value = description:match(" by |c[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]([%d.]+)|r%%")
+	local result = 0
+		
+	if (result ~= nil) then
+		result = result + tonumber(value)/100
+	end
+	
+	return result
+end
+
+
+function uespLog.GetDamageDone()
+	local result = 0
+	local twinBladePassiveRank = GetSkillAbilityUpgradeInfo(2, 3, 11)
+	local heavyWeaponPassiveRank = GetSkillAbilityUpgradeInfo(2, 1, 8)
+	local numSwords = uespLog.CountEquippedWeapons(WEAPONTYPE_SWORD)
+	local num2HSwords = uespLog.CountEquippedWeapons(WEAPONTYPE_TWO_HANDED_SWORD)
+	
+		-- DW Twin Blade and Blunt (30893/45482) 2-3-11
+	if (twinBladePassiveRank == 1) then
+		result = result + 0.015 * numSwords
+	elseif (twinBladePassiveRank == 2) then
+		result = result + 0.025 * numSwords
+	end
+	
+		-- 2H Heavy Weapon
+	if (heavyWeaponPassiveRank == 1) then
+		result = result + 0.03 * num2HSwords
+	elseif (heavyWeaponPassiveRank == 1) then
+		result = result + 0.05 * num2HSwords
+	end
+	
+		-- TODO: Stealthed
+		
+		-- TODO: Warden Animal Companions
+		
+		-- TODO: Essence Thief
+	
+		-- TODO: Buffs
+	local numBuffs = GetNumBuffs("player")
+	
+	for i = 1, numBuffs do
+		local buffName = GetUnitBuffInfo("player", i)
+		
+		if (buffName == "Minor Slayer") then
+			result = result + 0.05
+		elseif (buffName == "Major Slayer") then
+			result = result + 0.15
+		elseif (buffName == "Major Berserk") then
+			result = result + 0.25
+		elseif (buffName == "Minor Berserk") then
+			result = result + 0.08
+		elseif (buffName == "Major Maim") then
+			result = result - 0.30
+		elseif (buffName == "Minor Maim") then
+			result = result - 0.15
+		elseif (buffName == "Yokudan Might") then
+			result = result + 0.08
+		end
+	end
+
+	return result
 end
 
 
@@ -13439,6 +13574,8 @@ function uespLog.GetEffectiveWeaponPower()
 	local TargetCritResistFactor = uespLog.savedVars.settings.data.targetCritResistFactor
 	local TargetCritResistFlat = uespLog.savedVars.settings.data.targetCritResistFlat
 	local AttackCrit = WeaponCrit - TargetCritResistFactor - (TargetCritResistFlat)*(0.035/250)
+	local StaminaDamageDone = uespLog.GetStaminaDamageDone()
+	local DamageDone = uespLog.GetDamageDone()
 	local result = 0
 	
 	WeaponCrit = math.floor(AttackCrit / (2 * EffectiveLevel * (100 + EffectiveLevel)) * 1000 + 0.5)/1000;
@@ -13447,6 +13584,8 @@ function uespLog.GetEffectiveWeaponPower()
 	result = math.floor(Stamina/10.5 + 0.5) + WeaponDamage
 	result = result * (1 + WeaponCrit * WeaponCritDamage)
 	result = result * AttackPhysicalMitigation
+	result = result * (1 + StaminaDamageDone)
+	result = result * (1 + DamageDone)
 	
 	return math.floor(result)
 end

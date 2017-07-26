@@ -733,7 +733,8 @@
 --			- Listing deal display and post pricing now works whether MasterMerchant is installed or not. Basic price display
 --			  should now be working with MasterMerchant not present although more advanced features/options available with MM 
 --			  will not be available.
---			- Added ? styles.
+--			- Added the Telvanni, Hlaalu and Redoran styles to inventory display.
+--			- Fixed style name display to use the new built-in API function for getting the style name.
 --			- Fixed PVP message output. Properly displays messages for captured and keeps under attack. No longer displays
 --			  messages in battlegrounds for more events.
 --			- Modified the effective power stats to include Mighty/Elemental Expert and basic forms of damage done modifiers
@@ -4725,73 +4726,10 @@ function uespLog.GetItemEquipTypeStr(equipType)
 end
 
 
-uespLog.ITEMSTYLES = {
-	[0]  = "None",
-	[1]  = "Breton",
-	[2]  = "Redguard",
-	[3]  = "Orc",
-	[4]  = "Dunmer",
-	[5]  = "Nord",
-	[6]  = "Argonian",
-	[7]  = "Altmer",
-	[8]  = "Bosmer",
-	[9]  = "Khajiit",
-	[10] = "Unique",
-	[11] = "Thieves Guild",
-	[12] = "Dark Brotherhood",
-	[13] = "Malacath",
-	[14] = "Dwemer",
-	[15] = "Ancient Elf",
-	[16] = "Order of the Hour",
-	[17] = "Barbaric",
-	[18] = "Bandit",
-	[19] = "Primal",
-	[20] = "Daedric",
-	[21] = "Trinimac",
-	[22] = "Mage",
-	[23] = "Daggerfall",
-	[24] = "Ebonheart",
-	[25] = "Aldmeri",
-	[26] = "Healer",
-	[27] = "Celestial",
-	[28] = "Nightblade",
-	[29] = "Ranger",
-	[30] = "Soul-Shriven",
-	[31] = "Draugr",
-	[32] = "Maormer",
-	[33] = "Akaviri",
-	[34] = "Imperial (race)",
-	[35] = "Yokudan",
-	[36] = "Universal",
-	[37] = "Reach Winter",
-	[39] = "Minotaur",
-	[40] = "Ebony",
-	[41] = "Abah's Watch",
-	[42] = "Skinchanger",
-	[43] = "Morag Tong",
-	[44] = "Ra Gada",
-	[45] = "Dro-m'Athra",
-	[46] = "Assassins League",
-	[47] = "Outlaw",
-	[50] = "Militant Ordinator",
-	[52] = "Buoyant Armiger",
-	[53] = "Stalhrim Frostcaster",
-	[54] = "Ashlander",
-	[56] = "Silken Ring",
-	[57] = "Mazzatun",
-	[58] = "Grim Harlequin",
-	[59] = "Hollowjack",
-}
-
-
 function uespLog.GetItemStyleStr(itemStyle)
-
-	if (uespLog.ITEMSTYLES[itemStyle] ~= nil) then
-		return uespLog.ITEMSTYLES[itemStyle]
-	end
-	
-	return "Unknown ("..tostring(itemStyle)..")"
+	return GetItemStyleName(itemStyle)
 end
+
 
 uespLog.old_XPREASONS = {
 	[-1] = "none",

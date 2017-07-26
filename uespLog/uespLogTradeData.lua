@@ -86,6 +86,9 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[50]							 = "uespLog/images/militant.dds",			-- Militant Ordinator, Lustrous Sphalerite, 50, /esoui/art/icons/crafting_style_item_militant_ordinator_r2.dds
 	[52]							 = "uespLog/images/buoyant.dds",			-- Buoyant Armiger, Volcanic Viridian 52, /esoui/art/icons/crafting_style_item_buoyant_armiger_r2.dds
 	[54]							 = "uespLog/images/ashlander.dds",			-- Ashlander, Ash Canvas, 54, /esoui/art/icons/crafting_style_item_ashlander_r2.dds
+	[48]							 = "uespLog/images/redoran.dds",			-- Redoran, Polished Scarab Chitin, 48, /esoui/art/icons/crafting_style_item_redoran_r2.dds
+	[49]							 = "uespLog/images/hlaalu.dds",				-- Hlaalu, Refined White-Gold, 49, /esoui/art/icons/crafting_style_item_hlaalu_r2.dds
+	[51]							 = "uespLog/images/telvanni.dds",			-- Telvanni, Desiccated Spore Cap, 51, /esoui/art/icons/crafting_style_item_telvanni_r2.dds
 }
 
 
@@ -140,6 +143,9 @@ uespLog.STYLE_ICON_DATA = {
 	[50]							 = "/esoui/art/icons/crafting_style_item_militant_ordinator_r2.dds",
 	[52]							 = "/esoui/art/icons/crafting_style_item_buoyant_armiger_r2.dds",
 	[54]							 = "/esoui/art/icons/crafting_style_item_ashlander_r2.dds",
+	[48]							 = "/esoui/art/icons/crafting_style_item_redoran_r2.dds",
+	[49]							 = "/esoui/art/icons/crafting_style_item_hlaalu_r2.dds",
+	[51]							 = "/esoui/art/icons/crafting_style_item_telvanni_r2.dds",
 }
 
 

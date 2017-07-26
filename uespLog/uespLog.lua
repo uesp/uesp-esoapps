@@ -723,7 +723,7 @@
 --			  the PC-NA prices from this release data so be to sure to visit http://esosales.uesp.net/salesPrices.shtml and
 --			  download the latest file for your server to get the most accurate sales prices. 
 --
---		- v1.20 -- ?
+--		- v1.20 -- 7 Aug 2017
 --			- Improved note/book message to include collection categories. 
 --			- When reading a lore book only one console message is output.
 --			- Fixed deal type display in guild stores that was incorrect for some items.
@@ -837,8 +837,8 @@
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "1.11"
-uespLog.releaseDate = "25 May 2017"
+uespLog.version = "1.20"
+uespLog.releaseDate = "7 Aug 2017"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

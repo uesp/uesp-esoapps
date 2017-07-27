@@ -4726,8 +4726,82 @@ function uespLog.GetItemEquipTypeStr(equipType)
 end
 
 
+
+uespLog.ITEMSTYLES = {
+	[0]  = "None",
+	[1]  = "Breton",
+	[2]  = "Redguard",
+	[3]  = "Orc",
+	[4]  = "Dunmer",
+	[5]  = "Nord",
+	[6]  = "Argonian",
+	[7]  = "Altmer",
+	[8]  = "Bosmer",
+	[9]  = "Khajiit",
+	[10] = "Unique",
+	[11] = "Thieves Guild",
+	[12] = "Dark Brotherhood",
+	[13] = "Malacath",
+	[14] = "Dwemer",
+	[15] = "Ancient Elf",
+	[16] = "Order of the Hour",
+	[17] = "Barbaric",
+	[18] = "Bandit",
+	[19] = "Primal",
+	[20] = "Daedric",
+	[21] = "Trinimac",
+	[22] = "Mage",
+	[23] = "Daggerfall",
+	[24] = "Ebonheart",
+	[25] = "Aldmeri",
+	[26] = "Healer",
+	[27] = "Celestial",
+	[28] = "Nightblade",
+	[29] = "Ranger",
+	[30] = "Soul-Shriven",
+	[31] = "Draugr",
+	[32] = "Maormer",
+	[33] = "Akaviri",
+	[34] = "Imperial (race)",
+	[35] = "Yokudan",
+	[36] = "Universal",
+	[37] = "Reach Winter",
+	[39] = "Minotaur",
+	[40] = "Ebony",
+	[41] = "Abah's Watch",
+	[42] = "Skinchanger",
+	[43] = "Morag Tong",
+	[44] = "Ra Gada",
+	[45] = "Dro-m'Athra",
+	[46] = "Assassins League",
+	[47] = "Outlaw",
+	[48] = "Redoran",
+	[49] = "Hlaalu",
+	[50] = "Militant Ordinator",
+	[51] = "Telvanni",
+	[52] = "Buoyant Armiger",
+	[53] = "Stalhrim Frostcaster",
+	[54] = "Ashlander",
+	[56] = "Silken Ring",
+	[57] = "Mazzatun",
+	[58] = "Grim Harlequin",
+	[59] = "Hollowjack",
+}
+
+
 function uespLog.GetItemStyleStr(itemStyle)
-	return GetItemStyleName(itemStyle)
+
+	if (GetItemStyleName) then
+		return GetItemStyleName(itemStyle)
+	end
+	
+	local styleString = uespLog.ITEMSTYLES[itemStyle]
+	
+	if (styleString ~= nil) then
+		return styleString
+	end
+	
+	return "Unknown ("..tostring(itemStyle)..")"
 end
 
 

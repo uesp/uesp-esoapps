@@ -12821,12 +12821,16 @@ function uespLog.DoTrackStatCommand(cmd)
 		uespLog.SetTrackStat(POWERTYPE_STAMINA, true)
 		uespLog.SetTrackStat(POWERTYPE_HEALTH, true)
 		uespLog.SetTrackStat(POWERTYPE_ULTIMATE, true)
+		uespLog.SetTrackStat("Spell Damage", true)
+		uespLog.SetTrackStat("Weapon Damage", true)
 		uespLog.Msg("Now tracking all stats.")
 	elseif (firstCmd == "none") then
 		uespLog.SetTrackStat(POWERTYPE_MAGICKA, false)
 		uespLog.SetTrackStat(POWERTYPE_STAMINA, false)
 		uespLog.SetTrackStat(POWERTYPE_HEALTH, false)
 		uespLog.SetTrackStat(POWERTYPE_ULTIMATE, false)
+		uespLog.SetTrackStat("Spell Damage", false)
+		uespLog.SetTrackStat("Weapon Damage", false)
 		uespLog.Msg("Now tracking no stats.")
 	elseif (firstCmd == "magicka") then
 		setPowerType = POWERTYPE_MAGICKA

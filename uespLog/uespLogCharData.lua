@@ -1336,6 +1336,8 @@ function uespLog.GetCharDataBuildType()
 		return "Magicka"
 	elseif (AttributesStamina >= 20 and AttributesStamina * 0.75 > AttributesMagicka) then
 		return "Stamina"
+	elseif (AttributesHealth >= 30) then
+		return "Health"
 	end
 	
 	return "Other"

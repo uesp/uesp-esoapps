@@ -723,7 +723,7 @@
 --			  the PC-NA prices from this release data so be to sure to visit http://esosales.uesp.net/salesPrices.shtml and
 --			  download the latest file for your server to get the most accurate sales prices. 
 --
---		- v1.20 -- 7 Aug 2017
+--		- v1.20 -- 14 Aug 2017
 --			- Improved note/book message to include collection categories. 
 --			- When reading a lore book only one console message is output.
 --			- Fixed deal type display in guild stores that was incorrect for some items.
@@ -739,6 +739,15 @@
 --			  messages in battlegrounds for more events.
 --			- Modified the effective power stats to include Mighty/Elemental Expert and basic forms of damage done modifiers
 --			  in order to match the online builder values.
+--			- Added the "/uesppvpqueue" command which queues you for a specific PVP campaign by name or ID. You can queue for
+--			  any valid campaign that you are able to enter and it bypasses the home/guest check (unless you enter your home
+--			  campaign you will act as a guest).
+--						/uesppvpqueue [name]        Queue using the campaign name
+--						/uesppvpqueue [number]      Queue using the campaign ID (1-87)
+--						/uesppvpqueue home          Queue for your assigned home campaign
+--						/uesppvpqueue guest         Queue for your assigned guest campaign
+--						/uesppvpqueue list          List all open campaigns
+--						/uesppvpqueue listall       List all known campaigns
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -838,7 +847,7 @@
 uespLog = { }
 
 uespLog.version = "1.20"
-uespLog.releaseDate = "7 Aug 2017"
+uespLog.releaseDate = "14 Aug 2017"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -15889,3 +15898,162 @@ function uespLog.GetCharQuestUniqueIds()
 	return uespLog.savedVars.charInfo.data.questUniqueIds
 end
 
+	-- TODO: Is there an API/constant for this?
+uespLog.MAXCAMPAIGN = 100
+
+
+function uespLog.FindCampaignId(name)
+	name = name:lower()
+	
+	for i = 1, uespLog.MAXCAMPAIGN do 
+		local name1 = tostring(GetCampaignName(i)):lower()
+			
+		if (name1 == name) then 
+			return i
+		end
+	end
+	
+	return -1
+end
+
+
+function uespLog.GetCampaignIdToIndexTable()
+	local numCampaigns = GetNumSelectionCampaigns()
+	local result = {}
+	
+	for i = 1, numCampaigns do
+		local campaignId = GetSelectionCampaignId(i)
+		result[campaignId] = i
+	end
+	
+	return result
+end
+
+
+function uespLog.ChangePVPCampaignCommand(cmd)
+	QueryCampaignSelectionData()
+	
+	local cmds, firstCmd = uespLog.SplitCommands(cmd)
+	local campaignId = tonumber(firstCmd)
+	local campaignIdToIndex = uespLog.GetCampaignIdToIndexTable()
+	local campaignName = cmd
+	
+	if (firstCmd == "help") then
+		firstCmd = ""
+		cmd = ""
+		campaignName = ""
+	end
+		
+	if (campaignId ~= nil) then
+		campaignName = GetCampaignName(campaignId)
+		uespLog.Msg("Queuing for the "..campaignName.." campaign...")
+		QueueForCampaign(campaignId)
+		return
+	elseif (firstCmd == "list" or firstCmd == "listall") then
+		uespLog.Msg("Listing all valid campaigns:")
+	
+		for i = 1, uespLog.MAXCAMPAIGN do 
+			local name = tostring(GetCampaignName(i))
+			local campaignIndex = campaignIdToIndex[i]
+			local homeId = GetAssignedCampaignId()
+			local guestId = GetGuestCampaignId()
+			
+			if (name ~= "") then
+				local msg = ".    "..tostring(i)..": "..name
+				
+				if (campaignIndex ~= nil) then
+					msg = msg .. " (open)"
+					
+					if (i == homeId) then
+						msg = msg .. " home"
+					elseif (i == guestId) then
+						msg = msg .. " guest"
+					end
+					
+					uespLog.Msg(msg)
+				elseif (firstCmd == "listall") then
+					uespLog.Msg(msg)
+				end				
+
+			end
+		end
+	
+		return
+		
+	elseif (firstCmd == "home") then
+		local campaignId = GetAssignedCampaignId()
+		campaignName = GetCampaignName(campaignId)
+		
+		if (campaignId <= 0) then
+			uespLog.Msg("You have no home campaign assigned!")
+			return
+		end
+		
+		uespLog.Msg("Queuing for the "..campaignName.." (home) campaign...")		
+		QueueForCampaign(campaignId)
+		
+		return
+	elseif (firstCmd == "quest") then
+		local campaignId = GetGuestCampaignId()
+		campaignName = GetCampaignName(campaignId)
+		
+		if (campaignId <= 0) then
+			uespLog.Msg("You have no guest campaign assigned!")
+			return
+		end
+		
+		uespLog.Msg("Queuing for the "..campaignName.." (guest) campaign...")		
+		QueueForCampaign(campaignId)
+		
+		return
+	elseif (campaignName ~= "") then
+		local msg = ""
+		local playerAlliance = GetUnitAlliance("player")
+		
+		campaignId = uespLog.FindCampaignId(campaignName)
+		
+		local campaignIndex = campaignIdToIndex[campaignId]
+		
+		if (campaignId <= 0) then
+			uespLog.Msg("The campaign '"..campaignName.."' is not valid! Use '/uesppvpqueue list' to show all open campaigns.")
+			return
+		end		
+		
+		if (not DoesPlayerMeetCampaignRequirements(campaignId)) then
+			msg = "You don't meet the requirements for the "..campaignName.." campaign but trying to queue for it anyways..."
+		end
+		
+		if (campaignIndex == nil) then
+			msg = "The "..campaignName.." campaign is not open but trying to queue for it anyways..."
+		else
+			local popCount = GetSelectionCampaignPopulationData(campaignIndex, playerAlliance)
+			
+			if (popCount == CAMPAIGN_POP_FULL) then
+				msg = "The "..campaignName.." campaign may be full but trying to queue for it anyways..."
+			end
+		end
+		
+		--GetSelectionCampaignQueueWaitTime(number campaignIndex)
+			--Returns: number queueWaitTimeSeconds
+		
+		if (msg == "") then
+			msg = "Queuing for the "..campaignName.." campaign..."
+		end
+		
+		uespLog.Msg(msg)
+		
+		QueueForCampaign(campaignId)
+		return		
+	end
+	
+	uespLog.Msg("Queues you for a specific PVP campaign.")
+	uespLog.Msg("            /uesppvpqueue [name]        Queue using the campaign name")
+	uespLog.Msg("            /uesppvpqueue [number]      Queue using the campaign ID")
+	uespLog.Msg("            /uesppvpqueue home          Queue for your assigned home campaign")
+	uespLog.Msg("            /uesppvpqueue guest         Queue for your assigned guest campaign")
+	uespLog.Msg("            /uesppvpqueue list          List all open campaigns")
+	uespLog.Msg("            /uesppvpqueue listall       List all known campaigns")
+end
+
+
+SLASH_COMMANDS["/uesppvpqueue"] = uespLog.ChangePVPCampaignCommand

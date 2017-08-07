@@ -128,6 +128,9 @@ uespLog.CHARDATA_CRAFTSTYLE_NAMES = {
 	'Buoyant Armiger',
 	'Ashlander',
 	'Morag Tong',
+	'Hlaalu',
+	'Redoran',
+	'Telvanni',
 }
 
 
@@ -264,6 +267,8 @@ function uespLog.CreateBankData ()
 	bankData.TimeStamp = GetTimeStamp()
 	bankData.Gold = GetBankedMoney()
 	bankData.Telvar = GetBankedCurrencyAmount(CURT_TELVAR_STONES)
+	bankData.AP = GetBankedCurrencyAmount(CURT_ALLIANCE_POINTS)
+	bankData.WritVouchers = GetBankedCurrencyAmount(CURT_WRIT_VOUCHERS)
 	bankData.UniqueAccountName = uespLog.GetUniqueAccountName()
 	bankData.Inventory = {}
 	
@@ -462,6 +467,8 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	charData.TelvarStones = GetCarriedCurrencyAmount(CURT_TELVAR_STONES)
 	charData.WritVoucher = GetCarriedCurrencyAmount(CURT_WRIT_VOUCHERS)
 	charData.BankedTelvarStones = GetBankedTelvarStones()
+	charData.BankedAP = GetBankedCurrencyAmount(CURT_ALLIANCE_POINTS)
+	charData.BankedWritVouchers = GetBankedCurrencyAmount(CURT_WRIT_VOUCHERS)
 	charData.InventorySize = GetBagSize(BAG_BACKPACK)
 	charData.InventoryUsedSize = GetNumBagUsedSlots(BAG_BACKPACK) 
 	charData.BankSize = GetBagUseableSize(BAG_BANK) + GetBagUseableSize(BAG_SUBSCRIBER_BANK)

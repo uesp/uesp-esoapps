@@ -748,6 +748,7 @@
 --						/uesppvpqueue guest         Queue for your assigned guest campaign
 --						/uesppvpqueue list          List all open campaigns
 --						/uesppvpqueue listall       List all known campaigns
+--			- Character data now saves banked writ vouchers and AP.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -10661,6 +10662,11 @@ uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
 	["buoyantarmiger"] = 52,
 	["armiger"] = 52,
 	["buoyant"] = 52,
+	
+		-- Horns of the Reach
+	["redoran"] = 48,
+	["hlaalu"] = 49,
+	["telvanni"] = 51,
 }
 
 
@@ -10802,6 +10808,11 @@ uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
 	["buoyantarmiger"] = { 121316, 121317, 121318, 121319, 121320, 121321, 121322, 121323, 121324, 121325, 121326, 121327, 121328, 121329, 121330}, -- 121316, 121331
 	["armiger"] = { 121316, 121317, 121318, 121319, 121320, 121321, 121322, 121323, 121324, 121325, 121326, 121327, 121328, 121329, 121330}, -- 121316, 121331
 	["buoyant"] = { 121316, 121317, 121318, 121319, 121320, 121321, 121322, 121323, 121324, 121325, 121326, 121327, 121328, 121329, 121330}, -- 121316, 121331
+	
+			-- TODO: Horns of the Reach
+	["redoran"] = { 130010, 130011, 130012, 130013, 130014, 130015, 130016, 130017, 130018, 130019, 130020, 130021, 130022, 130023, 130024 }, -- 130025, ?
+	["hlaalu"] = { 129994, 129995, 129996, 129997, 129998, 129999, 130000, 130001, 130002, 130003, 130004, 130005, 130006, 130007, 130008 }, -- 130009, ?
+	["telvanni"] = { 121332, 121333, 121334, 121335, 121336, 121337, 121338, 121339, 121340, 121341, 121342, 121343, 121344, 121345, 121346 }, -- 121347, ?
 }
 
 

@@ -7,7 +7,7 @@ import math
 import errno
 import csv
 
-BasePathIndex = "-15pts"
+BasePathIndex = "-15"
 INPUTPATH = "e:\\esoexport\\goodimages" + BasePathIndex + "\\combinedmaps\\"
 OUTPUTPATH = "e:\\esoexport\\goodimages" + BasePathIndex + "\\maps\\"
 DEFAULTNULLTILE = "e:\\esoexport\\goodimages" + BasePathIndex + "\\maps\\blacknulltile.jpg"

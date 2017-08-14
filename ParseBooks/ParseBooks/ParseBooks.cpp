@@ -14,10 +14,10 @@ using namespace eso;
 
 
 //const string INPUT_FILENAME = "e:\\Temp\\testexport\\000\\498404.dat";
-const string INPUT_FILENAME = "e:\\esoexport\\esomnf-15pts\\gamedata\\lang\\en.lang";
-const string OUTPUT_PATH = "e:\\esoexport\\goodimages-15pts\\BookExport\\";
-const string OUTPUT_SQL_FILE = "e:\\esoexport\\goodimages-15pts\\books.sql";
-const string OUTPUT_PHP_FILE = "e:\\esoexport\\goodimages-15pts\\BookTitles.php";
+const string INPUT_FILENAME = "e:\\esoexport\\esomnf-15\\gamedata\\lang\\en.lang";
+const string OUTPUT_PATH = "e:\\esoexport\\goodimages-15\\BookExport\\";
+const string OUTPUT_SQL_FILE = "e:\\esoexport\\goodimages-15\\books.sql";
+const string OUTPUT_PHP_FILE = "e:\\esoexport\\goodimages-15\\BookTitles.php";
 
 const dword TITLE_ID = 0x030D11F5;
 const dword TEXT_ID  = 0x014593B4;
@@ -31,6 +31,8 @@ unordered_map<dword, bool> BookIdenticalText;
 int main()
 {
 	CEsoLangFile LangData;
+
+	OpenLog("ParseBooks.log");
 
 	printf("Loading language file %s...\n", INPUT_FILENAME.c_str());
 
@@ -132,7 +134,10 @@ int main()
 		std::replace(Title.begin(), Title.end(), '"', '\'');
 		std::replace(Title.begin(), Title.end(), ':', '_');
 		std::replace(Title.begin(), Title.end(), ':', '_');
+		std::replace(Title.begin(), Title.end(), '\t', ' ');
 		Title = ReplaceStrings(Title, "â€", " - ");
+		Title = ReplaceStrings(Title, "\xE2\x80\xA6", "...");
+		Title = ReplaceStrings(Title, "\xE2\x80\x94", " - ");
 		//â€
 		//â€”
 

@@ -144,6 +144,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <Text Include="ParseBooks.log" />
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>

@@ -749,6 +749,7 @@
 --						/uesppvpqueue list          List all open campaigns
 --						/uesppvpqueue listall       List all known campaigns
 --			- Character data now saves banked writ vouchers and AP.
+--			- Updated sales prices with latest from PC-NA (remember to download PC-EU prices manually if needed).
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -1600,7 +1601,8 @@ uespLog.DEFAULT_SETTINGS =
 			["showDealType"] = "uesp",
 			["postPriceType"] = "uesp",
 			["lastTimestamp"] = 0,
-			["guildListTimes"] = {},			
+			["guildListTimes"] = {},
+			["savedPrices"] = {},
 			[1] = {
 				["guildName"] = "",
 				["guildId"] = 1,
@@ -3102,6 +3104,10 @@ function uespLog.Initialize( self, addOnName )
 	
 	if (uespLog.savedVars.settings.data.TREASURE_TIMER_DURATIONS["thieves trove"] == nil) then
 		uespLog.savedVars.settings.data.TREASURE_TIMER_DURATIONS["thieves trove"] = uespLog.DEFAULT_SETTINGS.data.TREASURE_TIMER_DURATIONS["thieves trove"]
+	end
+	
+	if (uespLog.savedVars.settings.data.salesData.savedPrices == nil) then
+		uespLog.savedVars.settings.data.salesData.savedPrices = {}
 	end
 	
 	if (uespLog.savedVars.charInfo.data.mercStyle ~= nil) then

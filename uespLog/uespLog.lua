@@ -754,6 +754,9 @@
 --		- v1.21 --
 --			- Fixed the /uespstyle output and saved character data for several styles (Morag Tong, Armiger, Redoran, Telvanni, Hlaalu)
 --			  that was not correct.
+--			- The /uesppvpqueue command no longer works to queue for a campaign that is not your home or guest due to a 
+-- 			  change in the game's API.
+--			- The "/uesppvpqueue list" command displays a message if campaign data has not yet been 
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -3396,6 +3399,8 @@ function uespLog.Initialize( self, addOnName )
 	zo_callLater(uespLog.LoadSalePriceData, 500)
 	zo_callLater(uespLog.InitTradeData, 500) 
 	zo_callLater(uespLog.InitCharData, 500)
+	
+	QueryCampaignSelectionData()
 end
 
 
@@ -15958,7 +15963,7 @@ function uespLog.ChangePVPCampaignCommand(cmd)
 	local campaignId = tonumber(firstCmd)
 	local campaignIdToIndex = uespLog.GetCampaignIdToIndexTable()
 	local campaignName = cmd
-	
+
 	if (firstCmd == "help") then
 		firstCmd = ""
 		cmd = ""
@@ -15971,6 +15976,7 @@ function uespLog.ChangePVPCampaignCommand(cmd)
 		QueueForCampaign(campaignId)
 		return
 	elseif (firstCmd == "list" or firstCmd == "listall") then
+		local outputCount = 0
 		uespLog.Msg("Listing all valid campaigns:")
 	
 		for i = 1, uespLog.MAXCAMPAIGN do 
@@ -15992,11 +15998,17 @@ function uespLog.ChangePVPCampaignCommand(cmd)
 					end
 					
 					uespLog.Msg(msg)
+					outputCount = outputCount + 1
 				elseif (firstCmd == "listall") then
 					uespLog.Msg(msg)
+					outputCount = outputCount + 1
 				end				
 
 			end
+		end
+		
+		if (outputCount == 0) then
+			uespLog.Msg("No campaigns found...wait a few seconds and try again (waiting for campaign data to be received).")
 		end
 	
 		return
@@ -16030,6 +16042,8 @@ function uespLog.ChangePVPCampaignCommand(cmd)
 	elseif (campaignName ~= "") then
 		local msg = ""
 		local playerAlliance = GetUnitAlliance("player")
+		local guestId = GetGuestCampaignId()
+		local homeId = GetAssignedCampaignId()
 		
 		campaignId = uespLog.FindCampaignId(campaignName)
 		
@@ -16042,6 +16056,10 @@ function uespLog.ChangePVPCampaignCommand(cmd)
 		
 		if (not DoesPlayerMeetCampaignRequirements(campaignId)) then
 			msg = "You don't meet the requirements for the "..campaignName.." campaign but trying to queue for it anyways..."
+		end
+		
+		if (campaignId ~= guestId and campaignId ~= homeId) then
+			uespLog.Msg("Warning: The campaign '"..campaignName.."' is not your guest or home campaign (queuing probably won't work).")
 		end
 		
 		if (campaignIndex == nil) then
@@ -16078,3 +16096,4 @@ end
 
 
 SLASH_COMMANDS["/uesppvpqueue"] = uespLog.ChangePVPCampaignCommand
+

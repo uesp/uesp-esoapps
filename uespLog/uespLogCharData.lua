@@ -458,7 +458,7 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	
 	charData.Alliance = GetAllianceName(GetUnitAlliance("player"))
 	charData.AllianceRank = GetUnitAvARank("player")
-	charData.AlliancePoints = GetAlliancePoints()
+	charData.AlliancePoints = GetCarriedCurrencyAmount(CURT_ALLIANCE_POINTS)	--GetAlliancePoints()	
 	charData.AllianceCampaign = GetCampaignName(GetAssignedCampaignId())
 	charData.AllianceGuestCampaign = GetCampaignName(GetGuestCampaignId())
 	

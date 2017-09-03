@@ -757,6 +757,8 @@
 --			- The /uesppvpqueue command no longer works to queue for a campaign that is not your home or guest due to a 
 -- 			  change in the game's API.
 --			- The "/uesppvpqueue list" command displays a message if campaign data has not yet been 
+--			- Fixed /uespstyle to work with the new style API functions.
+--			- Fixed reporting of Alliance Points carried by character in saved data.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -10893,7 +10895,7 @@ function uespLog.GetStyleKnown(styleName)
 		knownCount = 14
 	end
 	
-	return known, knownCount, itemStyle, GetString("SI_ITEMSTYLE", itemStyle)
+	return known, knownCount, itemStyle, GetItemStyleName(itemStyle)
 end
 
 
@@ -11009,7 +11011,7 @@ function uespLog.ShowStyleSummary()
 	
 	for i = 1, numStyles do
 		local styleItemName, _, _, _, itemStyle = GetSmithingStyleItemInfo(i)
-		local styleName = GetString("SI_ITEMSTYLE", itemStyle)
+		local styleName = GetItemStyleName(itemStyle)
 		
 		if (styleItemName ~= "" and styleName ~= "") then 
 			styleData[#styleData + 1] = { ["name"] = styleName, ["style"] = itemStyle }

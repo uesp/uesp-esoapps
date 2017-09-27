@@ -751,7 +751,7 @@
 --			- Character data now saves banked writ vouchers and AP.
 --			- Updated sales prices with latest from PC-NA (remember to download PC-EU prices manually if needed).
 --
---		- v1.21 --
+--		- v1.30 -- 6 Nov 2017 (Clockwork City)
 --			- Fixed the /uespstyle output and saved character data for several styles (Morag Tong, Armiger, Redoran, Telvanni, Hlaalu)
 --			  that was not correct.
 --			- The /uesppvpqueue command no longer works to queue for a campaign that is not your home or guest due to a 
@@ -759,6 +759,7 @@
 --			- The "/uesppvpqueue list" command displays a message if campaign data has not yet been 
 --			- Fixed /uespstyle to work with the new style API functions.
 --			- Fixed reporting of Alliance Points carried by character in saved data.
+--			- Updated API to 100021.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -857,8 +858,8 @@
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "1.20"
-uespLog.releaseDate = "14 Aug 2017"
+uespLog.version = "1.30"
+uespLog.releaseDate = "6 Nov 2017"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

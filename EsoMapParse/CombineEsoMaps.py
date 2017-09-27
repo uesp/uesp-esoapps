@@ -6,7 +6,7 @@ from PIL import Image
 import shutil
 import fnmatch
 
-BasePathIndex = "-15"
+BasePathIndex = "-16pts"
 InputPath  = 'e:\\esoexport\\esomnf' + BasePathIndex + '\\art\\maps\\'
 OutputPath = 'e:\\esoexport\\goodimages' + BasePathIndex + '\\combinedmaps\\'
 
@@ -121,6 +121,9 @@ for imagegroupname in ImageGroups:
             elif len(ImageGroups[imagegroupname].ImageFiles) == 36:
                     TileX = 5
                     TileY = 5
+            elif len(ImageGroups[imagegroupname].ImageFiles) == 100 and imagegroupname == "clockwork\\clockwork_base":
+                    TileX = 4
+                    TileY = 4
             else:
                     print "   Skipping group", imagegroupname, "with mismatched sizes"
                     del ImageGroups[imagegroupname].Images[:]

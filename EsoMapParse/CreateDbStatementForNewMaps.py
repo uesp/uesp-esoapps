@@ -5,14 +5,14 @@ import math
 import errno
 import csv
 
-BASEPATHINDEX = "-15pts"
+BASEPATHINDEX = "-16pts"
 MAPINFOFILE = "e:\\esoexport\\goodimages" + BASEPATHINDEX + "\\maps\\mapinfo.txt"
 NEWMAPSFILE = "e:\\esoexport\\goodimages" + BASEPATHINDEX + "\\maps_new.txt"
 OUTPUTPATH = "e:\\esoexport\\goodimages" + BASEPATHINDEX + "\\maps\\"
 
 MAX_ZOOM_VALUE = 11
 
-FIRSTID = 1397
+FIRSTID = 1402
 MAPNAME = 0
 MAXZOOM = 1
 MINZOOM = 2

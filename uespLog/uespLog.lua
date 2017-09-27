@@ -760,6 +760,7 @@
 --			- Fixed /uespstyle to work with the new style API functions.
 --			- Fixed reporting of Alliance Points carried by character in saved data.
 --			- Updated API to 100021.
+--			- Added the Bloodforge, Dreadhorn, Apostle, and Ebonshadow styles.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -4814,6 +4815,10 @@ uespLog.ITEMSTYLES = {
 	[57] = "Mazzatun",
 	[58] = "Grim Harlequin",
 	[59] = "Hollowjack",
+	[61] = "Bloodforge",
+	[62] = "Dreadhorn",
+	[65] = "Apostle",
+	[66] = "Ebonshadow",
 }
 
 
@@ -10685,6 +10690,13 @@ uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
 	["redoran"] = 48,
 	["hlaalu"] = 49,
 	["telvanni"] = 51,
+	
+		-- Clockwork City
+	["bloodforge"] = 61,
+	["dreadhorn"] = 62,
+	["apostle"] = 65,
+	["ebonshadow"] = 66,
+		
 }
 
 
@@ -10827,10 +10839,16 @@ uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
 	["armiger"] = { 121317, 121318, 121319, 121320, 121321, 121322, 121323, 121324, 121325, 121326, 121327, 121328, 121329, 121330 }, -- 121316, 121331
 	["buoyant"] = { 121317, 121318, 121319, 121320, 121321, 121322, 121323, 121324, 121325, 121326, 121327, 121328, 121329, 121330 }, -- 121316, 121331
 	
-			-- TODO: Horns of the Reach
+			-- Horns of the Reach
 	["redoran"] = { 130011, 130012, 130013, 130014, 130015, 130016, 130017, 130018, 130019, 130020, 130021, 130022, 130023, 130024 }, -- 130025, 130010
 	["hlaalu"] = { 129995, 129996, 129997, 129998, 129999, 130000, 130001, 130002, 130003, 130004, 130005, 130006, 130007, 130008 }, -- 130009, 129994
 	["telvanni"] = { 121333, 121334, 121335, 121336, 121337, 121338, 121339, 121340, 121341, 121342, 121343, 121344, 121345, 121346 }, -- 121347, 121332
+	
+		-- Clockwork City
+	["bloodforge"] = { 132534, 132535, 132536, 132537, 132538, 132539, 132540, 132541, 132542, 132543, 132544, 132545, 132546, 132547 }, -- 132533, 132548
+	["dreadhorn"] = { 132566, 132567, 132568, 132569, 132570, 132571, 132572, 132573, 132574, 132575, 132576, 132577, 132578, 132579 }, -- 132565, 132580
+	["apostle"] = { 132550, 132551, 132552, 132553, 132554, 132555, 132556, 132557, 132558, 132559, 132560, 132561, 132562, 132563 }, -- 132549, 132564
+	["ebonshadow"] = { 132582, 132583, 132584, 132585, 132586, 132587, 132588, 132589, 132590, 132591, 132592, 132593, 132594, 132595 }, -- 132581, 132596
 }
 
 

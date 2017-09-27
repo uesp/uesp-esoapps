@@ -89,6 +89,10 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[48]							 = "uespLog/images/redoran.dds",			-- Redoran, Polished Scarab Elytra, 48, /esoui/art/icons/crafting_style_item_redoran_r2.dds
 	[49]							 = "uespLog/images/hlaalu.dds",				-- Hlaalu, Refined Bonemold Resin, 49, /esoui/art/icons/crafting_style_item_hlaalu_r2.dds
 	[51]							 = "uespLog/images/telvanni.dds",			-- Telvanni, Wrought Ferrofungus, 51, /esoui/art/icons/crafting_style_item_telvanni_r2.dds
+	[61]							 = "uespLog/images/bloodforge.dds",			-- Bloodforge, Bloodroot Flux, 61, /esoui/art/icons/quest_dragonfire_dust.dds
+	[62]							 = "uespLog/images/dreadhorn.dds",			-- Dreadhorn, Minotaur Bezoar, 62, /esoui/art/icons/crafting_style_item_dreadhorn_r2.dds
+	[65]							 = "uespLog/images/apostle.dds",			-- Apostle, Tempered Brass, 65, /esoui/art/icons/justice_stolen_prop_sesnits_paperweight.dds
+	[66]							 = "uespLog/images/ebonshadow.dds",			-- Ebonshadow, Tenebrous Cord, 66, /esoui/art/icons/crafting_style_item_ebonshadow_r2.dds
 }
 
 
@@ -146,6 +150,10 @@ uespLog.STYLE_ICON_DATA = {
 	[48]							 = "/esoui/art/icons/crafting_style_item_redoran_r2.dds",
 	[49]							 = "/esoui/art/icons/crafting_style_item_hlaalu_r2.dds",
 	[51]							 = "/esoui/art/icons/crafting_style_item_telvanni_r2.dds",
+	[61]							 = "/esoui/art/icons/quest_dragonfire_dust.dds",
+	[62]							 = "/esoui/art/icons/crafting_style_item_dreadhorn_r2.dds",
+	[65]							 = "/esoui/art/icons/justice_stolen_prop_sesnits_paperweight.dds",
+	[66]							 = "/esoui/art/icons/crafting_style_item_ebonshadow_r2.dds",
 }
 
 

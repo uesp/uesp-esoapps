@@ -761,6 +761,8 @@
 --			- Fixed reporting of Alliance Points carried by character in saved data.
 --			- Updated API to 100021.
 --			- Added the Bloodforge, Dreadhorn, Apostle, and Ebonshadow styles.
+--			- The new patch displays Ornate, Intricate, and research icons in inventory lists by default now. The uespLog equivalent
+--			  features can be disabled by "/uespcraft" command or in the settings menu.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.

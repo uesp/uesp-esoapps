@@ -462,10 +462,16 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	charData.AllianceCampaign = GetCampaignName(GetAssignedCampaignId())
 	charData.AllianceGuestCampaign = GetCampaignName(GetGuestCampaignId())
 	
+		-- TODO: Crowns, Crown Gems?
 	charData.Money = GetCurrentMoney()
 	charData.BankedMoney = GetBankedMoney()
 	charData.TelvarStones = GetCarriedCurrencyAmount(CURT_TELVAR_STONES)
 	charData.WritVoucher = GetCarriedCurrencyAmount(CURT_WRIT_VOUCHERS)
+	
+	if (GetCurrencyAmount ~= nil) then
+		charData.TransmuteCrystals = GetCurrencyAmount(CURT_CHAOTIC_CREATIA, CURRENCY_LOCATION_ACCOUNT)
+	end
+	
 	charData.BankedTelvarStones = GetBankedTelvarStones()
 	charData.BankedAP = GetBankedCurrencyAmount(CURT_ALLIANCE_POINTS)
 	charData.BankedWritVouchers = GetBankedCurrencyAmount(CURT_WRIT_VOUCHERS)

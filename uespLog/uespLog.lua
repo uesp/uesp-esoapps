@@ -764,6 +764,8 @@
 --			- The new patch displays Ornate, Intricate, and research icons in inventory lists by default now. The uespLog equivalent
 --			  features can be disabled by "/uespcraft" command or in the settings menu.
 --			- Number of Transmute Crystal saved for offline character data.
+--			- Fixed error message if using the Mailr addon.
+--			- Hireling mail timers are now ignored if the character has not purchased the relevant passive.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -15852,7 +15854,9 @@ function uespLog.ShowHirelingTimes()
 		local hireLevel = GetNonCombatBonus(nonCombatBonus)
 		local timePerMail = 24*3600
 		
-		if (lastMailTime > 0) then
+		if (hireLevel <= 0) then
+			-- Do nothing
+		elseif (lastMailTime > 0) then
 			if (hireLevel >= 3) then timePerMail = 12 * 3600 end
 			local timeLeft = lastMailTime + timePerMail - currentTime
 			
@@ -15909,6 +15913,11 @@ function uespLog.OnMailOpenMailbox(event)
 	uespLog.CheckHirelingMails()
 	
 	local firstMailId = GetNextMailId(nil)
+	
+	if (type(firstMailId) == "string") then
+		return
+	end
+	
 	RequestReadMail(firstMailId)
 end
 

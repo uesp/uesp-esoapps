@@ -513,15 +513,7 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	charData.LastFoodEatenDesc = uespLog.charDataLastFoodEaten.desc
 	charData.LastFoodEatenLevel = uespLog.charDataLastFoodEaten.reqLevel
 	charData.LastFoodEatenCP = uespLog.charDataLastFoodEaten.reqCP
-	
-	if (uespLog.savedVars.charInfo.data.hirelingMailTime ~= nil) then
-		charData['HirelingMailTime:Provisioning'] = uespLog.savedVars.charInfo.data.hirelingMailTime[CRAFTING_TYPE_PROVISIONING]
-		charData['HirelingMailTime:Woodworking'] = uespLog.savedVars.charInfo.data.hirelingMailTime[CRAFTING_TYPE_WOODWORKING]
-		charData['HirelingMailTime:Blacksmithing'] = uespLog.savedVars.charInfo.data.hirelingMailTime[CRAFTING_TYPE_BLACKSMITHING]
-		charData['HirelingMailTime:Enchanting'] = uespLog.savedVars.charInfo.data.hirelingMailTime[CRAFTING_TYPE_ENCHANTING]
-		charData['HirelingMailTime:Clothier'] = uespLog.savedVars.charInfo.data.hirelingMailTime[CRAFTING_TYPE_CLOTHIER]
-	end
-	
+		
 	charData.Stats = uespLog.CreateCharDataStats(false)
 	charData.Power = uespLog.CreateCharDataPower(false)
 	charData.NonCombat = uespLog.CreateCharDataNonCombat()
@@ -554,6 +546,40 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	charData['HirelingSkill:Enchanting'] = provSkill.rank
 	charData['HirelingSkill:Clothier'] = woodSkill.rank
 	
+	if (uespLog.savedVars.charInfo.data.hirelingMailTime ~= nil) then
+	
+		if (blackSkill.rank > 0) then
+			charData['HirelingMailTime:Blacksmithing'] = uespLog.savedVars.charInfo.data.hirelingMailTime[CRAFTING_TYPE_BLACKSMITHING]
+		else
+			charData['HirelingMailTime:Blacksmithing'] = -1
+		end
+		
+		if (clothSkill.rank > 0) then
+			charData['HirelingMailTime:Clothier'] = uespLog.savedVars.charInfo.data.hirelingMailTime[CRAFTING_TYPE_CLOTHIER]
+		else
+			charData['HirelingMailTime:Clothier'] = -1
+		end
+		
+		if (enchantSkill.rank > 0) then
+			charData['HirelingMailTime:Enchanting'] = uespLog.savedVars.charInfo.data.hirelingMailTime[CRAFTING_TYPE_ENCHANTING]
+		else
+			charData['HirelingMailTime:Enchanting'] = -1
+		end
+		
+		if (provSkill.rank > 0) then
+			charData['HirelingMailTime:Provisioning'] = uespLog.savedVars.charInfo.data.hirelingMailTime[CRAFTING_TYPE_PROVISIONING]
+		else
+			charData['HirelingMailTime:Provisioning'] = -1
+		end
+		
+		if (woodSkill.rank > 0) then
+			charData['HirelingMailTime:Woodworking'] = uespLog.savedVars.charInfo.data.hirelingMailTime[CRAFTING_TYPE_WOODWORKING]
+		else
+			charData['HirelingMailTime:Woodworking'] = -1
+		end
+		
+	end
+		
 	local screenShotDeltaTime = GetTimeStamp() - uespLog.charDataLastScreenShotTimestamp 
 	
 	if (screenShotDeltaTime >= 0 and screenShotDeltaTime <= 200) then

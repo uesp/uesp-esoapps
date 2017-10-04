@@ -766,6 +766,8 @@
 --			- Number of Transmute Crystal saved for offline character data.
 --			- Fixed error message if using the Mailr addon.
 --			- Hireling mail timers are now ignored if the character has not purchased the relevant passive.
+--			- Fixed skill coefficient calculations for the Malevolent Offering, Dragonkngith Standard, and Healing Seed skills 
+--			  and their morphs.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.

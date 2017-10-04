@@ -119,6 +119,22 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[37989] = { [1] = POWERTYPE_MAGICKA, [2] = POWERTYPE_STAMINA, },
 	[38002] = { [1] = POWERTYPE_MAGICKA, [2] = POWERTYPE_STAMINA, },
 	[38015] = { [1] = POWERTYPE_MAGICKA, [2] = POWERTYPE_STAMINA, },
+	
+	-- Malevolent Offering / Shrewd Offering / Healthy Offering
+	[33308] = POWERTYPE_MAGICKA,
+	[36098] = POWERTYPE_MAGICKA,
+	[36104] = POWERTYPE_MAGICKA,
+	[36109] = POWERTYPE_MAGICKA,
+	
+	[34721] = POWERTYPE_MAGICKA,
+	[36118] = POWERTYPE_MAGICKA,
+	[36124] = POWERTYPE_MAGICKA,
+	[36129] = POWERTYPE_MAGICKA,
+	
+	[34727] = POWERTYPE_MAGICKA,
+	[36134] = POWERTYPE_MAGICKA,
+	[36139] = POWERTYPE_MAGICKA,
+	[36144] = POWERTYPE_MAGICKA,
 		
 	-- 1H+Shield Absorb Magic
 	-- Is a stamina ability but scales off of health
@@ -295,22 +311,22 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[34080] = { [2] = POWERTYPE_ULTIMATE },
 	
 	-- Dragonknight Standard
-	[28988] = { [5] = POWERTYPE_HEALTH },
-	[33955] = { [5] = POWERTYPE_HEALTH },
-	[33959] = { [5] = POWERTYPE_HEALTH },
-	[33963] = { [5] = POWERTYPE_HEALTH },
+	--[28988] = { [5] = POWERTYPE_HEALTH },
+	--[33955] = { [5] = POWERTYPE_HEALTH },
+	--[33959] = { [5] = POWERTYPE_HEALTH },
+	--[33963] = { [5] = POWERTYPE_HEALTH },
 	
 	-- Dragonknight Standard of Might	
-	[32947] = { [6] = POWERTYPE_HEALTH },
-	[34009] = { [6] = POWERTYPE_HEALTH },
-	[34015] = { [6] = POWERTYPE_HEALTH },
-	[34021] = { [6] = POWERTYPE_HEALTH },
+	--[32947] = { [6] = POWERTYPE_HEALTH },
+	--[34009] = { [6] = POWERTYPE_HEALTH },
+	--[34015] = { [6] = POWERTYPE_HEALTH },
+	--[34021] = { [6] = POWERTYPE_HEALTH },
 	
 	-- Dragonknight Shifting Standard	
-	[32958] = { [5] = POWERTYPE_HEALTH },	
-	[33967] = { [5] = POWERTYPE_HEALTH },
-	[33977] = { [5] = POWERTYPE_HEALTH },
-	[33987] = { [5] = POWERTYPE_HEALTH },
+	--[32958] = { [5] = POWERTYPE_HEALTH },	
+	--[33967] = { [5] = POWERTYPE_HEALTH },
+	--[33977] = { [5] = POWERTYPE_HEALTH },
+	--[33987] = { [5] = POWERTYPE_HEALTH },
 	
 	-- Dragonknight Choking Talons	
 	[20251] = { [5] = POWERTYPE_ULTIMATE },
@@ -397,16 +413,16 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[41103] = { [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
 	
 	-- Warden: Budding Seeds
-	[85840] = { [4] = POWERTYPE_ULTIMATE },
+	[85840] = { [3] = POWERTYPE_ULTIMATE, [4] = POWERTYPE_ULTIMATE },
 	[93805] = { [4] = POWERTYPE_ULTIMATE },
 	[93806] = { [4] = POWERTYPE_ULTIMATE },
 	[93807] = { [4] = POWERTYPE_ULTIMATE },
 	
 	-- Warden: Healing Seed
-	[85578] = { [4] = POWERTYPE_ULTIMATE },
-	[93802] = { [4] = POWERTYPE_ULTIMATE },
-	[93803] = { [4] = POWERTYPE_ULTIMATE },
-	[93804] = { [4] = POWERTYPE_ULTIMATE },
+	[85578] = { [3] = POWERTYPE_ULTIMATE },
+	[93802] = { [3] = POWERTYPE_ULTIMATE },
+	[93803] = { [3] = POWERTYPE_ULTIMATE },
+	[93804] = { [3] = POWERTYPE_ULTIMATE },
 	
 	-- Warden: Corrupting Pollen
 	[85845] = { [6] = POWERTYPE_ULTIMATE },

@@ -1,4 +1,5 @@
 
+uespLog.ACTION_MINE = "採掘する"
 uespLog.ACTION_CUT = "切る"
 uespLog.ACTION_COLLECT = "集める"
 uespLog.FISHING_HOLE = "釣り穴"

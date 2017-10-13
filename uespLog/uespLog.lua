@@ -768,6 +768,8 @@
 --			- Hireling mail timers are now ignored if the character has not purchased the relevant passive.
 --			- Fixed skill coefficient calculations for the Malevolent Offering, Dragonkngith Standard, and Healing Seed skills 
 --			  and their morphs.
+--			- Added messages for received/losing writ vouchers and transmute stones (classed as "other messages" in settings).
+--			- Fixed logging of Blacksmithing raw material nodes (not confirmed to work in non-english clients).
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -3178,7 +3180,8 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_INVENTORY_ITEM_USED, uespLog.OnInventoryItemUsed)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_BUY_RECEIPT, uespLog.OnBuyReceipt)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SELL_RECEIPT, uespLog.OnSellReceipt)
-	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TELVAR_STONE_UPDATE, uespLog.OnTelvarStoneUpdate)	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TELVAR_STONE_UPDATE, uespLog.OnTelvarStoneUpdate)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CARRIED_CURRENCY_UPDATE, uespLog.OnCarriedCurrencyUpdate)	 
 	
     EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LORE_BOOK_ALREADY_KNOWN, uespLog.OnLoreBookAlreadyKnown)
     EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LORE_BOOK_LEARNED, uespLog.OnLoreBookLearned)
@@ -5096,6 +5099,34 @@ function uespLog.OnRecipeLearned (eventCode, recipeListIndex, recipeIndex)
 	
 	local known, recipeName = GetRecipeInfo(recipeListIndex, recipeIndex)
 	uespLog.MsgType(uespLog.MSG_OTHER, "You learned a new recipe " ..tostring(recipeName).."!")
+end
+
+
+function uespLog.OnCarriedCurrencyUpdate (eventCode, currency, newValue, oldValue, reason)
+	local diff = newValue - oldValue
+	
+	--uespLog.DebugMsg("Currency Reason: "..tostring(reason))
+	
+	if (reason == CURRENCY_CHANGE_REASON_PLAYER_INIT) then
+		return
+	end
+
+	if (CURT_CHAOTIC_CREATIA ~= nil and currency == CURT_CHAOTIC_CREATIA) then
+	
+		if (diff < 0) then
+			uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "You lost "..tostring(-diff).." transmute stones.")
+		elseif (diff > 0) then
+			uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "You received "..tostring(diff).." transmute stones.")
+		end
+	elseif (currency == CURT_WRIT_VOUCHERS) then
+	
+		if (diff < 0) then
+			uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "You lost "..tostring(-diff).." writ vouchers.")
+		elseif (diff > 0) then
+			uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "You received "..tostring(diff).." writ vouchers.")
+		end
+	
+	end
 end
 
 

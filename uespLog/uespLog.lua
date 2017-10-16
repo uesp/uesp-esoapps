@@ -751,7 +751,7 @@
 --			- Character data now saves banked writ vouchers and AP.
 --			- Updated sales prices with latest from PC-NA (remember to download PC-EU prices manually if needed).
 --
---		- v1.30 -- 6 Nov 2017 (Clockwork City)
+--		- v1.30 -- 23 Oct 2017 (Clockwork City)
 --			- Fixed the /uespstyle output and saved character data for several styles (Morag Tong, Armiger, Redoran, Telvanni, Hlaalu)
 --			  that was not correct.
 --			- The /uesppvpqueue command no longer works to queue for a campaign that is not your home or guest due to a 
@@ -874,7 +874,7 @@
 uespLog = { }
 
 uespLog.version = "1.30"
-uespLog.releaseDate = "6 Nov 2017"
+uespLog.releaseDate = "23 Oct 2017"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

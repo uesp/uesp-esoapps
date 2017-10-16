@@ -286,7 +286,7 @@ function uespLog.InitOptionControlsData()
 		type = "dropdown",
 		choices = { "none", "tooltip", "inventory", "both" },
 		name = "Item Style Display",
-		tooltip = "Enable/disable the display of styles on items info\n     /uespcraft style on/off",
+		tooltip = "Enable/disable the display of styles on items info\n     /uespcraft style ...",
 		getFunc = function() return uespLog.GetCraftStyleDisplay() end,
 		setFunc = function(value) return uespLog.SetCraftStyleDisplay(value) end,
 		disabled = function() return not uespLog.IsCraftDisplay() end
@@ -295,11 +295,19 @@ function uespLog.InitOptionControlsData()
 	uespLog.optionControlsData:insert({
 		type = "dropdown",
 		choices = { "none", "tooltip", "inventory", "both" },
-		name = "Item Trait Display",
-		tooltip = "Enable/disable the display of traits on items info\n     /uespcraft trait on/off",
+		name = "Trait Known Display",
+		tooltip = "Enable/disable the display of traits on items info\n     /uespcraft trait ...",
 		getFunc = function() return uespLog.GetCraftTraitDisplay() end,
 		setFunc = function(value) return uespLog.SetCraftTraitDisplay(value) end,
 		disabled = function() return not uespLog.IsCraftDisplay() end
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "checkbox",
+		name = "Trait Icon Display",
+		tooltip = "Enable/disable the display of intricate/ornate icons in the inventory window\n     /uespcraft traiticon on/off",
+		getFunc = function() return uespLog.GetShowTraitIcon() end,
+		setFunc = function(value) return uespLog.SetShowTraitIcon(value) end,
 	})
 	
 	uespLog.optionControlsData:insert({

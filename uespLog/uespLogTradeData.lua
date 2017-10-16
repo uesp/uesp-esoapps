@@ -597,16 +597,16 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 
 	local isResearchable = uespLog.CheckIsItemLinkResearchable(itemLink)
 	
-	if (isResearchable >= 0 and uespLog.IsCraftTraitDisplay("tooltip")) then
+	if (isResearchable == uespLog.ORNATE_TRAIT_INDEX) then
+		--itemText = "Ornate"
+		--iconColor = uespLog.TRADE_ORNATE_COLOR
+	elseif (isResearchable == uespLog.INTRICATE_TRAIT_INDEX) then
+		--itemText = "Intricate"
+		--iconColor = uespLog.TRADE_INTRICATE_COLOR
+	elseif (isResearchable >= 0 and uespLog.IsCraftTraitDisplay("tooltip")) then
 		local isResearching = uespLog.IsResearchingItemLink(itemLink)
 	
-		if (isResearchable == uespLog.ORNATE_TRAIT_INDEX) then
-			itemText = "Ornate"
-			iconColor = uespLog.TRADE_ORNATE_COLOR
-		elseif (isResearchable == uespLog.INTRICATE_TRAIT_INDEX) then
-			itemText = "Intricate"
-			iconColor = uespLog.TRADE_INTRICATE_COLOR
-		elseif (isResearchable > 0) then
+		if (isResearchable > 0) then
 			itemText = "Trait Unknown"
 			iconColor = uespLog.TRADE_UNKNOWN_COLOR
 		elseif (isResearching) then
@@ -769,18 +769,26 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 		return
 	end
 
-	if (uespLog.IsCraftTraitDisplay("inventory") and uespLog.IsCraftDisplay()) then
+	if (isResearchable == uespLog.ORNATE_TRAIT_INDEX) then
 	
-		if (isResearchable == uespLog.ORNATE_TRAIT_INDEX) then
+		if (uespLog.GetShowTraitIcon()) then
 			iconControl:SetHidden(false)		
 			iconControl:SetTexture(uespLog.TRADE_ORNATE_TEXTURE)
 			iconControl:SetColor(unpack(uespLog.TRADE_UNKNOWN_COLOR))
 			iconControl:SetColor(unpack(uespLog.TRADE_ORNATE_COLOR))
-		elseif (isResearchable == uespLog.INTRICATE_TRAIT_INDEX) then
+		end
+	
+	elseif (isResearchable == uespLog.INTRICATE_TRAIT_INDEX) then
+	
+		if (uespLog.GetShowTraitIcon()) then
 			iconControl:SetHidden(false)		
 			iconControl:SetTexture(uespLog.TRADE_INTRICATE_TEXTURE)
 			iconControl:SetColor(unpack(uespLog.TRADE_INTRICATE_COLOR))
-		elseif (isResearchable > 0) then
+		end
+	
+	elseif (uespLog.IsCraftTraitDisplay("inventory") and uespLog.IsCraftDisplay()) then
+	
+		if (isResearchable > 0) then
 			iconControl:SetHidden(false)
 			iconControl:SetTexture(uespLog.TRADE_UNKNOWN_TEXTURE)
 			iconControl:SetColor(unpack(uespLog.TRADE_UNKNOWN_COLOR))
@@ -1233,7 +1241,8 @@ function uespLog.DisplayUespCraftHelp()
 	uespLog.Msg("/uespcraft [on||off]            -- Turns all crafting displays on/off")
 	uespLog.Msg("/uespcraft alchemy [on||off]   -- Turns tooltips on/off in alchemy crafting")
 	uespLog.Msg("/uespcraft style [option]      -- Adjusts display of styles")
-	uespLog.Msg("/uespcraft trait [option]     -- Adjusts display of traits")
+	uespLog.Msg("/uespcraft trait [option]     -- Sets display of traits known/unknown")
+	uespLog.Msg("/uespcraft traiticon [on||off]     -- Shows ornate/intricate icons in inventory lists")
 	uespLog.Msg("/uespcraft recipe [option]     -- Adjusts display of recipe/motif status")
 	uespLog.Msg("/uespcraft ingredient [option] -- Adjust display of ingredient types")
 	uespLog.Msg(".             [option] = none || both || tooltip || inventory")
@@ -1241,7 +1250,8 @@ function uespLog.DisplayUespCraftHelp()
     uespLog.Msg("Craft display is "..uespLog.BoolToOnOff(uespLog.IsCraftDisplay()))
 	uespLog.Msg("Craft alchemy tooltip display is "..uespLog.BoolToOnOff(uespLog.GetCraftAlchemyTooltipDisplay()))
 	uespLog.Msg("Craft style display is "..uespLog.GetCraftStyleDisplay())
-	uespLog.Msg("Craft trait display is "..uespLog.GetCraftTraitDisplay())
+	uespLog.Msg("Craft trait known display is "..uespLog.GetCraftTraitDisplay())
+	uespLog.Msg("Craft trait icon display is "..uespLog.BoolToOnOff(uespLog.GetShowTraitIcon()))
 	uespLog.Msg("Craft recipe/motif display is "..uespLog.GetCraftRecipeDisplay())
 	uespLog.Msg("Craft ingredient display is "..uespLog.GetCraftIngredientDisplay())
 end
@@ -1591,6 +1601,16 @@ SLASH_COMMANDS["/uespcraft"] = function (cmd)
 		
 		uespLog.Msg("Craft trait display is "..uespLog.GetCraftTraitDisplay())
 	
+	elseif (cmdWords[1] == "traiticon") then
+		
+		if (cmdWords[2] == "on") then
+			uespLog.SetShowTraitIcon(true)
+		elseif (cmdWords[2] == "off") then
+			uespLog.SetShowTraitIcon(false)
+		end
+		
+		uespLog.Msg("Craft alchemy tooltip display is "..uespLog.BoolToOnOff(uespLog.GetShowTraitIcon()))
+	
 	elseif (cmdWords[1] == "alchemy") then
 	
 		if (cmdWords[2] == "on") then
@@ -1832,18 +1852,27 @@ function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
 	
 	local isResearchable = uespLog.CheckIsItemLinkResearchable(itemLink)
 
-	if (isResearchable >= 0 and uespLog.IsCraftTraitDisplay("inventory") and uespLog.IsCraftDisplay()) then
+	if (isResearchable == uespLog.ORNATE_TRAIT_INDEX) then
 	
-		if (isResearchable == uespLog.ORNATE_TRAIT_INDEX) then
+		if (uespLog.GetShowTraitIcon()) then 
 			iconControl:SetHidden(false)		
 			iconControl:SetTexture(uespLog.TRADE_ORNATE_TEXTURE)
 			iconControl:SetColor(unpack(uespLog.TRADE_UNKNOWN_COLOR))
 			iconControl:SetColor(unpack(uespLog.TRADE_ORNATE_COLOR))
-		elseif (isResearchable == uespLog.INTRICATE_TRAIT_INDEX) then
+		end
+	
+	elseif (isResearchable == uespLog.INTRICATE_TRAIT_INDEX) then
+	
+		if (uespLog.GetShowTraitIcon()) then 
 			iconControl:SetHidden(false)		
 			iconControl:SetTexture(uespLog.TRADE_INTRICATE_TEXTURE)
 			iconControl:SetColor(unpack(uespLog.TRADE_INTRICATE_COLOR))
-		elseif (isResearchable > 0) then
+		end
+	
+	elseif (isResearchable >= 0 and uespLog.IsCraftTraitDisplay("inventory") and uespLog.IsCraftDisplay()) then
+	uespLog.GetShowTraitIcon()
+	
+		if (isResearchable > 0) then
 			iconControl:SetHidden(false)
 			iconControl:SetTexture(uespLog.TRADE_UNKNOWN_TEXTURE)
 			iconControl:SetColor(unpack(uespLog.TRADE_UNKNOWN_COLOR))

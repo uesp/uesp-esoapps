@@ -325,7 +325,7 @@ function uespLog.InitOptionControlsData()
 	uespLog.optionControlsData:insert({
 		type = "checkbox",
 		name = "Include Set Items in Research",
-		tooltip = "Include or exclude set items in smithing research\n     /uespresearch includesets on/off",
+		tooltip = "Include or exclude set items in smithing research listings\n     /uespresearch includesets on/off",
 		getFunc = function() return uespLog.GetIncludeSetItemsForTraitResearch() end,
 		setFunc = function(flag) return uespLog.SetIncludeSetItemsForTraitResearch(flag) end,
 	})
@@ -334,11 +334,18 @@ function uespLog.InitOptionControlsData()
 		type = "dropdown",
 		choices = { 0, 1, 2, 3, 4, 5 },
 		name = "Max Quality for Item Research",
-		tooltip = "Sets the max quality for items to show for smithing research\n     /uespresearch maxquality [value]",
+		tooltip = "Sets the max quality for items to show for smithing research listings\n     /uespresearch maxquality [value]",
 		getFunc = function() return uespLog.GetMaxQualityForTraitResearch() end,
 		setFunc = function(value) return uespLog.SetMaxQualityForTraitResearch(value) end,
 	})
 	
+	uespLog.optionControlsData:insert({
+		type = "checkbox",
+		name = "Autoloot Hireling Mails",
+		tooltip = "Turn the automatic looting of mails from Hirelings on and off\n      /uesphireling autoloot [on||off]",
+		getFunc = function() return uespLog.GetAutoLootHirelingMails() end,
+		setFunc = function(value) return uespLog.SetAutoLootHirelingMails(value) end,
+	})	
 	
 	uespLog.optionControlsData:insert({
 		type = "uespdescription",

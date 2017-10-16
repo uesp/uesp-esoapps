@@ -770,6 +770,8 @@
 --			  and their morphs.
 --			- Added messages for received/losing writ vouchers and transmute stones (classed as "other messages" in settings).
 --			- Fixed logging of Blacksmithing raw material nodes (not confirmed to work in non-english clients).
+-- 			- Fixed the custom stat display settings for new installation.
+--			- Added setting for automatic hireling mail looting to the UI menu (/uesphireling autoloot).
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -1598,7 +1600,7 @@ uespLog.DEFAULT_SETTINGS =
 			["Spell Damage"] = false,
 		},
 		["containerAutoLoot"] = false,
-		["customStatDisplay"] = false,
+		["customStatDisplay"] = "off",
 		["targetResistance"] = 18200,
 		["targetCritResistFactor"] = 0,
 		["targetCritResistFlat"] = 0,

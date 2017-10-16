@@ -772,6 +772,9 @@
 --			- Fixed logging of Blacksmithing raw material nodes (not confirmed to work in non-english clients).
 -- 			- Fixed the custom stat display settings for new installation.
 --			- Added setting for automatic hireling mail looting to the UI menu (/uesphireling autoloot).
+--			- Removed the ornate/intricate text on item tooltips.
+--			- Added the "/uespcraft traiticon on/off" option which controls the display of ornate and intricate trait icons in
+--			  inventory displays. By default this is off as the base game API now should display these.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -1562,6 +1565,7 @@ uespLog.DEFAULT_SETTINGS =
 		["craftStyle"] = "both",
 		["craftTrait"] = "both",
 		["craftRecipe"] = "both",
+		["showTraitIcon"] = false,
 		["craftIngredient"] = "both",
 		["craftAutoLoot"] = false,
 		["craftAutoLootMinProvLevel"] = 1,
@@ -2040,6 +2044,34 @@ function uespLog.SetNirnSound(flag)
 	end
 	
 	uespLog.savedVars.settings.data.nirnSound = flag
+end
+
+
+function uespLog.GetShowTraitIcon()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.showTraitIcon == nil) then
+		uespLog.savedVars.settings.data.showTraitIcon = uespLog.DEFAULT_SETTINGS.showTraitIcon
+	end
+	
+	return uespLog.savedVars.settings.data.showTraitIcon
+end
+
+
+function uespLog.SetShowTraitIcon(flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.showTraitIcon == nil) then
+		uespLog.savedVars.settings.data.showTraitIcon = uespLog.DEFAULT_SETTINGS.showTraitIcon
+	end
+	
+	uespLog.savedVars.settings.data.showTraitIcon = flag
 end
 
 

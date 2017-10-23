@@ -1706,7 +1706,7 @@ function uespLog.GetTradingHouseSearchResultItemInfo(index)
 		return uespLog.Old_MM_GetTradingHouseSearchResultItemInfo(index)
 	end
 
-	local icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice = uespLog.Old_GetTradingHouseSearchResultItemInfo(index)
+	local icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType = uespLog.Old_GetTradingHouseSearchResultItemInfo(index)
 	local setPrice = nil
 	local salesCount = 0
 	local tipLine = nil
@@ -1749,10 +1749,10 @@ function uespLog.GetTradingHouseSearchResultItemInfo(index)
 			marginString = string.format('%.0f', margin) 
 		end 
 
-		return icon, name, quality, stackCount, sellerName .. '|c000000;' .. dealString .. ';' .. marginString .. '|r', timeRemaining, purchasePrice
+		return icon, name, quality, stackCount, sellerName .. '|c000000;' .. dealString .. ';' .. marginString .. '|r', timeRemaining, purchasePrice, currencyType
 	end
 	
-	return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice
+	return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType
 end
 	
 	
@@ -1939,20 +1939,38 @@ function uespLog.SetupTraderControls()
 	if (not uespLog.IsSalesShowPrices() or UespSalesScanButton ~= nil) then
 		return
 	end
+	
+	local isAGSInstalled = AwesomeGuildStore ~= nil
 
 	local salesScanButton = CreateControlFromVirtual('UespSalesScanButton', ZO_TradingHouseLeftPane, 'ZO_DefaultButton')
-	salesScanButton:SetAnchor(CENTER, ZO_TradingHouseLeftPane, BOTTOM, 0, -25)
-	salesScanButton:SetWidth(90)
-	salesScanButton:SetHeight(20)
+	
+	if (isAGSInstalled) then
+		salesScanButton:SetAnchor(CENTER, ZO_TradingHouseLeftPane, BOTTOM, 0, -25)
+		salesScanButton:SetWidth(90)
+		salesScanButton:SetHeight(20)
+	else
+		salesScanButton:SetAnchor(CENTER, ZO_TradingHouseLeftPane, BOTTOM, 0, -50)
+		salesScanButton:SetWidth(120)
+		salesScanButton:SetHeight(20)
+	end
+	
 	salesScanButton:SetText("UESP Scan Sales...")
 	salesScanButton:SetHandler('OnClicked', uespLog.OnUespScanSalesButton)
 	salesScanButton:SetHidden(true)
 	salesScanButton:SetFont("EsoUi/Common/Fonts/Univers57.otf|15|")
 	
 	local salesResetButton = CreateControlFromVirtual('UespSalesResetButton', ZO_TradingHouseLeftPane, 'ZO_DefaultButton')
-	salesResetButton:SetAnchor(CENTER, ZO_TradingHouseLeftPane, BOTTOM, 100, -50)
-	salesResetButton:SetWidth(90)
-	salesResetButton:SetHeight(20)
+	
+	if (isAGSInstalled) then
+		salesResetButton:SetAnchor(CENTER, ZO_TradingHouseLeftPane, BOTTOM, 100, -50)
+		salesResetButton:SetWidth(90)
+		salesResetButton:SetHeight(20)
+	else
+		salesResetButton:SetAnchor(CENTER, ZO_TradingHouseLeftPane, BOTTOM, 0, -15)
+		salesResetButton:SetWidth(120)
+		salesResetButton:SetHeight(20)
+	end
+	
 	salesResetButton:SetText("UESP Reset Scan")
 	salesResetButton:SetHandler('OnClicked', function() uespLog.ResetLastListingSalesDataTimestamps('current') end)
 	salesResetButton:SetHidden(true)

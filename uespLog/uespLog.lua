@@ -781,6 +781,7 @@
 --					/uespmasterpotion queue		Sets up the top potion/poison in queue to be created
 --					/uespmasterpotion popqueue	Sets up the top potion/poison in queue to be created and removes it from the queue
 --			  This queue is *not* saved to the character's saved variable data and it reset on load or UI reload.
+--			- Updated sales prices with latest from PC-NA (remember to download PC-EU prices manually if needed).
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.

@@ -783,6 +783,10 @@
 --			  This queue is *not* saved to the character's saved variable data and it reset on load or UI reload.
 --			- Updated sales prices with latest from PC-NA (remember to download PC-EU prices manually if needed).
 --
+--		- v1.31 -- 23 Oct 2017
+--			- Fixed Lua error when purchasing something from a guild store.
+--			- Fixed the position of the scan/reset sales button when Awesome Guild Store is not installed.
+--
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
 --
@@ -880,7 +884,7 @@
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "1.30"
+uespLog.version = "1.31"
 uespLog.releaseDate = "23 Oct 2017"
 uespLog.DATA_VERSION = 3
 
@@ -5184,6 +5188,10 @@ function uespLog.OnTelvarStoneUpdate (eventCode, newStones, oldStones, reason)
 	local logData = { }
 	local posData = uespLog.GetLastTargetData()
 	
+	if (reason == CURRENCY_CHANGE_REASON_PLAYER_INIT) then
+		return
+	end
+	
 	if (posData.x == nil or posData.x == "") then
 		posData = uespLog.GetPlayerPositionData()
 	end
@@ -5215,6 +5223,10 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 	local logData = { }
 	local posData = uespLog.GetLastTargetData()
 	local lootMsg = ""
+	
+	if (reason == CURRENCY_CHANGE_REASON_PLAYER_INIT) then
+		return
+	end
 	
 	if (posData.x == nil or posData.x == "") then
 		posData = uespLog.GetPlayerPositionData()

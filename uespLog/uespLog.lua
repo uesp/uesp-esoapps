@@ -775,6 +775,12 @@
 --			- Removed the ornate/intricate text on item tooltips.
 --			- Added the "/uespcraft traiticon on/off" option which controls the display of ornate and intricate trait icons in
 --			  inventory displays. By default this is off as the base game API now should display these.
+--			- Added the "Queue Writ Potion" right-click context menu item for Alchemy Master Writ items in your inventory. When
+--			  this is choosen the writ is added to a list of potions/poisons to create. When at an Alchemy Station you can use
+--			  the following commands to setup a potion from this list:
+--					/uespmasterpotion queue		Sets up the top potion/poison in queue to be created
+--					/uespmasterpotion popqueue	Sets up the top potion/poison in queue to be created and removes it from the queue
+--			  This queue is *not* saved to the character's saved variable data and it reset on load or UI reload.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -3572,7 +3578,7 @@ function uespLog.EnchantingOnTooltipMouseUp(control, button, upInside)
 				AddMenuItem("UESP Price to Chat", function() uespLog.SalesPriceToChat(link) end)
 				AddMenuItem("Goto UESP Sales..." , function() uespLog.GotoUespSalesPage(link) end)
 			end
-				
+							
 			ShowMenu(ENCHANTING)
 		end
 	end
@@ -3716,7 +3722,7 @@ function uespLog.OnTooltipMouseUp (control, button, upInside)
 	if upInside and button == 2 then
 		local link = PopupTooltip.lastLink
 		
-		if link ~= "" then
+		if (link ~= "") then
 			PopupTooltip:GetOwningWindow():SetDrawTier(ZO_Menus:GetDrawTier() - 1)
 			ClearMenu()
 
@@ -3736,6 +3742,10 @@ function uespLog.OnTooltipMouseUp (control, button, upInside)
 				AddMenuItem("UESP Price to Chat", function() ZO_PopupTooltip_Hide() uespLog.SalesPriceToChat(link) end)
 				AddMenuItem("Goto UESP Sales..." , function() ZO_PopupTooltip_Hide() uespLog.GotoUespSalesPage(link) end)
 			end
+			
+			if (uespLog.IsItemLinkAlchemyWrit(link)) then
+				AddMenuItem("Queue Writ Potion" , function() uespLog.QueueMasterWritPotion(link) end)
+			end
 				
 			ShowMenu(PopupTooltip)
 		end
@@ -3752,13 +3762,17 @@ function uespLog.ZO_LinkHandler_OnLinkMouseUp (link, button, control)
 		if (not handled) then
             uespLog.Orig_ZO_LinkHandler_OnLinkMouseUp(link, button, control)
 			
-            if (button == 2 and link ~= '') then				
-	            AddMenuItem("Show Item Info", function() uespLog.ShowItemInfo(link) end)
+            if (button == 2 and link ~= '') then
+				AddMenuItem("Show Item Info", function() uespLog.ShowItemInfo(link) end)
 				AddMenuItem("Copy Item Link", function() ZO_PopupTooltip_Hide() uespLog.CopyItemLink(link) end)
 								
 				if (uespLog.IsSalesShowPrices()) then
 					AddMenuItem("UESP Price to Chat", function() ZO_PopupTooltip_Hide() uespLog.SalesPriceToChat(link) end)
 					AddMenuItem("Goto UESP Sales..." , function() ZO_PopupTooltip_Hide() uespLog.GotoUespSalesPage(link) end)
+				end
+				
+				if (uespLog.IsItemLinkAlchemyWrit(link)) then
+					AddMenuItem("Queue Writ Potion" , function() uespLog.QueueMasterWritPotion(link) end)
 				end
 				
                 ShowMenu(control)

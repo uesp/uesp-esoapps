@@ -377,12 +377,18 @@ end
 
 
 function uespLog.UpdateInventoryContextMenu(rowControl)
+	local itemLink = uespLog.GetItemLinkRowControl(rowControl)
+	
 	AddMenuItem("Show Item Info", function() uespLog.ShowItemInfoRowControl(rowControl) end, MENU_ADD_OPTION_LABEL)
 	AddMenuItem("Copy Item Link", function() uespLog.CopyItemLinkRowControl(rowControl) end, MENU_ADD_OPTION_LABEL)
 	
 	if (uespLog.IsSalesShowPrices()) then
 		AddMenuItem("UESP Price to Chat", function() uespLog.SalesPriceToChatRowControl(rowControl) end, MENU_ADD_OPTION_LABEL)
 		AddMenuItem("Goto UESP Sales..." , function() uespLog.GotoUespSalesPageRowControl(rowControl) end, MENU_ADD_OPTION_LABEL)
+	end
+	
+	if (uespLog.IsItemLinkAlchemyWrit(itemLink)) then
+		AddMenuItem("Queue Writ Potion" , function() uespLog.QueueMasterWritPotion(itemLink) end)
 	end
 	
 	ShowMenu(self)
@@ -2303,6 +2309,9 @@ function uespLog.FindAllPotionsMatchingEffects(effect1, effect2, effect3)
 end
 
 
+uespLog.MasterWritPotionQueue = {}
+
+
 function uespLog.MakeMasterWritPotion(useIndex)
 	local questIndex = uespLog.FindJournalMasterWritPotionQuest()
 	local startTime = GetGameTimeMilliseconds()
@@ -2392,16 +2401,144 @@ function uespLog.MakeMasterWritPotion(useIndex)
 end
 
 
+function uespLog.QueueMasterWritPotion(itemLink)
+	local lastIndex = #uespLog.MasterWritPotionQueue + 1
+	
+	uespLog.MasterWritPotionQueue[lastIndex] = itemLink
+	uespLog.Msg("Added "..tostring(itemLink).." to master writ potion queue ("..tostring(lastIndex).." writs in queue)")
+	--uespLog.Msg("Use '/uespmasterpotion queue' or '/uespmasterpotion popqueue' while at an alchemy station to create.")
+end
+
+
+function uespLog.MakePotionFromMasterWritQueue(itemLink)
+	local linkData = uespLog.ParseItemLinkEx(itemLink)
+	--local icon = GetItemLinkInfo(itemLink)
+	--local name = GetItemLinkName(itemLink)
+	
+	if (linkData == false) then
+		uespLog.DebugMsg("Alchemy writ item link is not valid")
+		return false
+	end
+	
+	local alchemyItems = uespLog.ScanInventoryForAlchemyItems()
+	local useIndex = 1
+	local isPoison = linkData.writ1 == 239
+	local effectId1 = linkData.writ2 or 0
+	local effectId2 = linkData.writ3 or 0
+	local effectId3 = linkData.writ4 or 0
+	
+	ALCHEMY:ClearSelections()
+	
+	local solventData = alchemyItems["lorkhan's tears"]
+	
+	if (isPoison) then
+		solventData = alchemyItems["alkahest"]
+	end
+	
+	if (solventData == nil) then
+		uespLog.Msg("No solvent found in character inventory!")
+	else
+		ALCHEMY:SetSolventItem(solventData.bagId, solventData.slotIndex)
+	end
+	
+	local potions = uespLog.FindAllPotionsMatchingEffects(effectId1, effectId2, effectId3)
+	local potion = potions[useIndex]
+		
+	uespLog.Msg("Found "..tostring(#potions).." potion combination with effects matching "..tostring(itemLink))
+	
+	if (potion == nil) then
+		uespLog.Msg("Potion combination #"..useIndex.." does not exist!")
+		return false
+	end
+	
+	local niceName1 = uespLog.titleCaseString(potion.name1)
+	local niceName2 = uespLog.titleCaseString(potion.name2)
+	local niceName3 = uespLog.titleCaseString(potion.name3)
+	
+	uespLog.Msg("Using potion combination #"..useIndex..": "..niceName1.." + " ..niceName2 .. " + " .. niceName3)
+	 
+	local reagentData1 = alchemyItems[potion.name1]
+	local reagentData2 = alchemyItems[potion.name2]
+	local reagentData3 = alchemyItems[potion.name3]
+	
+	if (reagentData1) then
+		ALCHEMY:SetReagentItem(1, reagentData1.bagId, reagentData1.slotIndex)
+	else
+		uespLog.Msg("No "..tostring(niceName1).." found in character inventory!")
+	end
+	
+	if (reagentData2) then
+		ALCHEMY:SetReagentItem(2, reagentData2.bagId, reagentData2.slotIndex)
+	else
+		uespLog.Msg("No "..tostring(niceName2).." found in character inventory!")
+	end
+	
+	if (reagentData3) then
+		ALCHEMY:SetReagentItem(3, reagentData3.bagId, reagentData3.slotIndex)
+	else
+		uespLog.Msg("No "..tostring(niceName3).." found in character inventory!")
+	end
+	
+	return true
+end
+
+
+function uespLog.IsItemLinkAlchemyWrit(itemLink)
+	local type1, type2 = GetItemLinkItemType(itemLink)
+	
+	if (type1 ~= 60) then
+		return false
+	end
+	
+	local linkData = uespLog.ParseItemLinkEx(itemLink)
+	
+	if (linkData == false) then
+		return false
+	end
+	
+	return (linkData.itemId == 119696 or linkData.itemId == 119698 or linkData.itemId == 119699 or linkData.itemId == 119700 or
+			linkData.itemId == 119701 or linkData.itemId == 119702 or linkData.itemId == 119703 or linkData.itemId == 119704 or
+			linkData.itemId == 119705 or linkData.itemId == 119818 or linkData.itemId == 119819 or linkData.itemId == 119820)
+end
+
+
 function uespLog.MakeMasterWritPotionCommand(cmd)
 	local cmds, firstCmd = uespLog.SplitCommands(cmd)
 	
-	if (tonumber(firstCmd) ~= nil or firstCmd == "") then
-		uespLog.MakeMasterWritPotion(firstCmd)
+	if (firstCmd == "queue") then
+		local lastQueue = #uespLog.MasterWritPotionQueue
+		local itemLink = uespLog.MasterWritPotionQueue[lastQueue]
+		
+		if (lastQueue > 0) then
+			uespLog.MakePotionFromMasterWritQueue(itemLink)
+			
+			uespLog.Msg("Setup "..tostring(itemLink).." from master alchemy writ queue...")
+		else
+			uespLog.Msg("No alchemy writs currently in queue!")
+		end
+		
+	elseif (firstCmd == "popqueue") then
+		local lastQueue = #uespLog.MasterWritPotionQueue
+		local itemLink = uespLog.MasterWritPotionQueue[lastQueue]
+		
+		if (lastQueue > 0) then
+			uespLog.MasterWritPotionQueue[lastQueue] = nil
+			uespLog.MakePotionFromMasterWritQueue(itemLink)
+			
+			uespLog.Msg("Removed "..tostring(itemLink).." from master alchemy writ queue...")
+		else
+			uespLog.Msg("No alchemy writs currently in queue!")
+		end
+	
+	elseif (tonumber(firstCmd) ~= nil or firstCmd == "") then
+		uespLog.MakeMasterWritPotion(firstCmd)	
 	else
 		uespLog.Msg("Sets up the alchemy solvent and reagents for an alchemy master writ quest:")
 		uespLog.Msg(".    /uespmasterpotion help       Show command help")
 		uespLog.Msg(".    /uespmasterpotion              Use the first potion combination found")
 		uespLog.Msg(".    /uespmasterpotion [#]        Use the specified potion combination #")
+		uespLog.Msg(".    /uespmasterpotion queue       Setup potion in top of master writ queue")
+		uespLog.Msg(".    /uespmasterpotion popqueue     Setup potion and remove it from of top queue")
 	end
 	
 end

@@ -6,7 +6,7 @@ from PIL import Image
 import shutil
 import fnmatch
 
-BasePathIndex = "-16pts"
+BasePathIndex = "-16"
 InputPath  = 'e:\\esoexport\\esomnf' + BasePathIndex + '\\art\\maps\\'
 OutputPath = 'e:\\esoexport\\goodimages' + BasePathIndex + '\\combinedmaps\\'
 

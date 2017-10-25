@@ -787,6 +787,10 @@
 --			- Fixed Lua error when purchasing something from a guild store.
 --			- Fixed the position of the scan/reset sales button when Awesome Guild Store is not installed.
 --
+--		- v1.32 -- ?
+--				- Added NPCs to ignore from Clockwork City.
+--				- Fixed dumping of global data.
+--
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
 --
@@ -1102,6 +1106,8 @@ uespLog.ignoredNPCs = {
 	["Wild Guardian"] = 1,	-- Morrowind
 	["Eternal Guardian"] = 1,	-- Morrowind
 	["Vvardvark"] = 1,		-- Morrowind
+	["Skeevaton"] = 1,		-- Clockwork City
+	["Scorpion Fabricant"] = 1,		-- Clockwork City
 }
 
 uespLog.lastTargetData = {
@@ -8636,8 +8642,9 @@ function uespLog.DumpObjectInnerLoop(dumpObject, nextIndex, parentName, level, m
 	end
 	
 	if (not status) then
+		local oldTableIndex = tableIndex
 		tableIndex = uespLog.DumpObjectPrivate(tableIndex, value, parentName, level)
-		uespLog.DebugExtraMsg("UESP: Error on dump object iteration...("..tostring(tableIndex)..")")
+		uespLog.DebugExtraMsg("UESP: Error on dump object iteration...("..tostring(oldTableIndex)..", "..tostring(value)..", "..tostring(parentName)..")")
 	elseif (skipObject) then
 		uespLog.DebugExtraMsg("UESP: Skipping dump for object "..tostring(tableIndex))
 	elseif (tableIndex == "__index" and uespLog.EndsWith(parentName, "__index")) then
@@ -8807,7 +8814,7 @@ end
 
 
 function uespLog.DumpObjectPrivate (objectName, objectValue, parentName, varLevel)
-	local errIndex = string.match(objectName, "attempt to access a private function '(%w*)' from")
+	local errIndex = string.match(objectName, "Attempt to access a private function '(%w*)' from")
 	local logData = {} 
 	
 	logData.event = "Global"

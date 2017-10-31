@@ -10212,11 +10212,9 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		if (option == "on") then
 			uespLog.mineItemPotionData = true
 			uespLog.savedVars.settings.data.mineItemPotionData = true
-			
 		elseif (option == "off") then
 			uespLog.mineItemPotionData = false
 			uespLog.savedVars.settings.data.mineItemPotionData = false
-			uespLog.MsgColor(uespLog.mineColor, "Mining regular item data.")
 		end
 		
 		if (uespLog.mineItemPotionData) then
@@ -16230,4 +16228,5 @@ end
 
 
 SLASH_COMMANDS["/uesppvpqueue"] = uespLog.ChangePVPCampaignCommand
+
 

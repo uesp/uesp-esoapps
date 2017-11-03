@@ -208,6 +208,14 @@ function uespLog.InitOptionControlsData()
 	
 	uespLog.optionControlsData:insert({
 		type = "checkbox",
+		name = "Keep Chat Open", 
+		tooltip = "Keeps the chat window open all the time when entering trade, crown store, and other windows.\n", 
+		getFunc = function () return uespLog.GetKeepChatOpen()  end,
+		setFunc = function (value) uespLog.SetKeepChatOpen(value) uespLog.UpdateKeepChatOpen() end
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "checkbox",
 		name = "Play Nirncrux Sound", 
 		tooltip = "Plays a sound when you loot a Potent or Fortified Nirncrux.\n      /uespnirnsound on/off", 
 		getFunc = function () return uespLog.GetNirnSound() end,

@@ -790,6 +790,8 @@
 --		- v1.32 -- ?
 --				- Added NPCs to ignore from Clockwork City.
 --				- Fixed dumping of global data.
+--				- Added the "Keep Chat Open" option. Defaults to off but when turned on it will keep the chat window open
+--				  in certain cases where it is closed by default (trader, dye station, crown store, etc...).
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -1677,6 +1679,7 @@ uespLog.DEFAULT_SETTINGS =
 		["maxQualityForTraitResearch"] = 0,
 		["includeSetItemsForTraitResearch"] = true,
 		["autolootHirelingMails"] = false,
+		["keepChatOpen"] = false,
 	}
 }
 
@@ -2033,6 +2036,34 @@ function uespLog.SetTrackLoot(flag)
 	end
 	
 	uespLog.savedVars.settings.data.trackLoot = flag
+end
+
+
+function uespLog.GetKeepChatOpen()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.keepChatOpen == nil) then
+		uespLog.savedVars.settings.data.keepChatOpen = uespLog.DEFAULT_SETTINGS.keepChatOpen
+	end
+	
+	return uespLog.savedVars.settings.data.keepChatOpen
+end
+
+
+function uespLog.SetKeepChatOpen(flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.keepChatOpen == nil) then
+		uespLog.savedVars.settings.data.keepChatOpen = uespLog.DEFAULT_SETTINGS.keepChatOpen
+	end
+	
+	uespLog.savedVars.settings.data.keepChatOpen = flag
 end
 
 
@@ -3459,13 +3490,52 @@ function uespLog.Initialize( self, addOnName )
 		TRADING_HOUSE.SetupPendingPost = uespLog.SetupPendingPost	
 	end	
 	
+	uespLog.UpdateKeepChatOpen()
+		
 	uespLog.SetupTraderControls()
-	
+		
 	zo_callLater(uespLog.LoadSalePriceData, 500)
 	zo_callLater(uespLog.InitTradeData, 500) 
 	zo_callLater(uespLog.InitCharData, 500)
 	
 	QueryCampaignSelectionData()
+end
+
+
+function uespLog.UpdateKeepChatOpen()
+
+	if (uespLog.LastKeepChatOpen == uespLog.GetKeepChatOpen()) then
+		return
+	end
+	
+	local storeScene = SCENE_MANAGER:GetScene("store")
+	local furnitureBrowserScene = SCENE_MANAGER:GetScene(HOUSING_FURNITURE_KEYBOARD_SCENE_NAME)
+	local helpTutorialsScene = ZO_Scene:New("helpTutorials", SCENE_MANAGER)
+	local marketScene = ZO_RemoteScene:New("market", SCENE_MANAGER)
+		
+	if (uespLog.GetKeepChatOpen()) then
+		TRADING_HOUSE_SCENE:RemoveFragment(MINIMIZE_CHAT_FRAGMENT)
+		helpTutorialsScene:RemoveFragment(MINIMIZE_CHAT_FRAGMENT)
+		HELP_EMOTES_SCENE:RemoveFragment(MINIMIZE_CHAT_FRAGMENT)
+		storeScene:RemoveFragment(MINIMIZE_CHAT_FRAGMENT)
+		furnitureBrowserScene:RemoveFragment(MINIMIZE_CHAT_FRAGMENT)
+		DYE_STAMP_CONFIRMATION_KEYBOARD_SCENE:RemoveFragment(MINIMIZE_CHAT_FRAGMENT)
+		CROWN_CRATE_KEYBOARD_SCENE:RemoveFragment(MINIMIZE_CHAT_FRAGMENT)
+		marketScene:RemoveFragment(MINIMIZE_CHAT_FRAGMENT)
+		CHAMPION_PERKS_SCENE:RemoveFragment(MINIMIZE_CHAT_FRAGMENT)
+	else
+		TRADING_HOUSE_SCENE:AddFragment(MINIMIZE_CHAT_FRAGMENT)
+		helpTutorialsScene:AddFragment(MINIMIZE_CHAT_FRAGMENT)
+		HELP_EMOTES_SCENE:AddFragment(MINIMIZE_CHAT_FRAGMENT)
+		storeScene:AddFragment(MINIMIZE_CHAT_FRAGMENT)
+		furnitureBrowserScene:AddFragment(MINIMIZE_CHAT_FRAGMENT)
+		DYE_STAMP_CONFIRMATION_KEYBOARD_SCENE:AddFragment(MINIMIZE_CHAT_FRAGMENT)
+		CROWN_CRATE_KEYBOARD_SCENE:AddFragment(MINIMIZE_CHAT_FRAGMENT)
+		marketScene:AddFragment(MINIMIZE_CHAT_FRAGMENT)
+		CHAMPION_PERKS_SCENE:AddFragment(MINIMIZE_CHAT_FRAGMENT)
+	end
+	
+	uespLog.LastKeepChatOpen = uespLog.GetKeepChatOpen()
 end
 
 

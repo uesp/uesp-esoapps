@@ -131,6 +131,10 @@ uespLog.CHARDATA_CRAFTSTYLE_NAMES = {
 	'Hlaalu',
 	'Redoran',
 	'Telvanni',
+	'Bloodforge',
+	'Dreadhorn',
+	'Apostle',
+	'Ebonshadow',
 }
 
 

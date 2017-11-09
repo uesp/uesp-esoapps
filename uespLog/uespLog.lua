@@ -788,11 +788,12 @@
 --			- Fixed the position of the scan/reset sales button when Awesome Guild Store is not installed.
 --
 --		- v1.32 -- ?
---				- Added NPCs to ignore from Clockwork City.
---				- Fixed dumping of global data.
---				- Added the "Keep Chat Open" option. Defaults to off but when turned on it will keep the chat window open
---				  in certain cases where it is closed by default (trader, dye station, crown store, etc...).
---				- Added the 4 new motifs in CWC to saved character data.
+--			- Added NPCs to ignore from Clockwork City.
+--			- Fixed dumping of global data.
+--			- Added the "Keep Chat Open" option. Defaults to off but when turned on it will keep the chat window open
+--			  in certain cases where it is closed by default (trader, dye station, crown store, etc...).
+--			- Added the 4 new motifs in CWC to saved character data.
+--			- /uespskillpoints now ignores "free" passive skills in the total count.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -8232,13 +8233,14 @@ function uespLog.CreateItemLinkLog (itemLink)
 	end
 	
 	logData.trait, logData.traitDesc = GetItemLinkTraitInfo(itemLink)
-	local isSetItem, setName, numSetBonuses, numSetEquipped, maxSetEquipped = GetItemLinkSetInfo(itemLink)
+	local isSetItem, setName, numSetBonuses, numSetEquipped, maxSetEquipped, setId = GetItemLinkSetInfo(itemLink)
 	
 	if (logData.traitDesc == "") then
 		logData.traitDesc = nil
 	end
 	
 	if (isSetItem) then
+		logData.setId = setId
 		logData.setName = setName
 		logData.setBonusCount = numSetBonuses
 		logData.setMaxCount = maxSetEquipped

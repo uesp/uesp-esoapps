@@ -174,6 +174,84 @@ uespLog.charDataLastFoodEaten = {
 }
 
 
+uespLog.FREE_PASSIVES = {
+		[78219] = 1,
+		[74580] = 1,
+		[45542] = 1,
+		[45547] = 1,
+		[45550] = 1,
+		[45551] = 1,
+		[45552] = 1,
+		[49163] = 1,
+		[70042] = 1,
+		[70043] = 1,
+		[47276] = 1,
+		[47277] = 1,
+		[47278] = 1,
+		[47279] = 1,
+		[47280] = 1,
+		[47280] = 1,
+		[48157] = 1,
+		[48158] = 1,
+		[48159] = 1,
+		[70041] = 1,
+		[47288] = 1,
+		[47289] = 1,
+		[47290] = 1,
+		[47291] = 1,
+		[47292] = 1,
+		[47293] = 1,
+		[48187] = 1,
+		[48188] = 1,
+		[48189] = 1,
+		[70044] = 1,
+		[46727] = 1,
+		[46729] = 1,
+		[46731] = 1,
+		[46735] = 1,
+		[46736] = 1,
+		[46740] = 1,
+		[49112] = 1,
+		[49113] = 1,
+		[49114] = 1,
+		[70045] = 1,
+		[44590] = 1,
+		[44595] = 1,
+		[44597] = 1,
+		[44598] = 1,
+		[44599] = 1,
+		[44650] = 1,
+		[47282] = 1,
+		[47283] = 1,
+		[47284] = 1,
+		[47285] = 1,
+		[47286] = 1,
+		[47287] = 1,
+		[48172] = 1,
+		[47283] = 1,
+		[47284] = 1,
+		[70046] = 1,
+		[46758] = 1,
+		[46759] = 1,
+		[46760] = 1,
+		[46763] = 1,
+		[44625] = 1,
+		[44630] = 1,
+		[44631] = 1,
+		[69953] = 1,
+		[36582] = 1,
+		[36247] = 1,
+		[36588] = 1,
+		[35965] = 1,
+		[36312] = 1,
+		[36063] = 1,
+		[36626] = 1,
+		[33293] = 1,
+		[84680] = 1,
+		[36008] = 1,
+}
+
+
 uespLog.CHARDATA_MINTIMESTAMP_DIFF = 60
 uespLog.charDataLastSaveTimestamp = 0
 uespLog.charDataLogoutSave = false
@@ -1553,6 +1631,7 @@ function uespLog.GetSkillPointsUsed()
 				local name, texture, rank, passive, ultimate, purchase, progressionIndex = GetSkillAbilityInfo(skillType, skillIndex, abilityIndex)
 				local abilityId = GetSkillAbilityId(skillType, skillIndex, abilityIndex, false)
 				local currentUpgradeLevel, maxUpgradeLevel = GetSkillAbilityUpgradeInfo(skillType, skillIndex, abilityIndex)
+				local isFree = uespLog.FREE_PASSIVES[abilityId] ~= nil
 				
 				progressionIndex = progressionIndex or 0
 				currentUpgradeLevel = currentUpgradeLevel or 0
@@ -1561,8 +1640,18 @@ function uespLog.GetSkillPointsUsed()
 				
 					if (passive and currentUpgradeLevel > 0) then
 						totalSkillPoints = totalSkillPoints + currentUpgradeLevel
+						
+						if (isFree) then
+							totalSkillPoints = totalSkillPoints - 1
+						end
+						
 					elseif (passive and currentUpgradeLevel == 0) then
 						totalSkillPoints = totalSkillPoints + 1
+						
+						if (isFree) then
+							totalSkillPoints = totalSkillPoints - 1
+						end
+						
 					elseif (progressionIndex > 0) then
 						local name, morph, skillRank = GetAbilityProgressionInfo(progressionIndex)
 						totalSkillPoints = totalSkillPoints + 1 + math.floor(morph/2)

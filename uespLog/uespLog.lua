@@ -14682,6 +14682,7 @@ uespLog.CONTAINER_SOURCES = {
 	["Dwemer Pot"] = 1,
 	["Flour Sack"] = 1,
 	["Jug"] = 1,
+	["Keg"] = 1,
 	["Large Dwemer Jug"] = 1,
 	["Large Dwemer Pot"] = 1,
 	["Millet Sack"] = 1,

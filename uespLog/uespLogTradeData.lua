@@ -2484,6 +2484,11 @@ end
 
 
 function uespLog.IsItemLinkAlchemyWrit(itemLink)
+
+	if (itemLink == nil or itemLink == "") then
+		return false
+	end
+	
 	local type1, type2 = GetItemLinkItemType(itemLink)
 	
 	if (type1 ~= 60) then
@@ -2502,6 +2507,24 @@ function uespLog.IsItemLinkAlchemyWrit(itemLink)
 end
 
 
+function uespLog.AddAllMasterWritPotions()
+	local addCount = 0
+	local numItems = GetBagSize(BAG_BACKPACK)
+	
+	for slotId = 1, numItems do
+	
+		local itemLink = GetItemLink(BAG_BACKPACK, slotId)
+		
+		if (uespLog.IsItemLinkAlchemyWrit(itemLink)) then
+			uespLog.QueueMasterWritPotion(itemLink)
+			addCount = addCount + 1
+		end
+	end
+	
+	uespLog.Msg("Added "..tostring(addCount).." alchemy writ potions to queue!")	
+end
+
+
 function uespLog.MakeMasterWritPotionCommand(cmd)
 	local cmds, firstCmd = uespLog.SplitCommands(cmd)
 	
@@ -2517,7 +2540,12 @@ function uespLog.MakeMasterWritPotionCommand(cmd)
 			uespLog.Msg("No alchemy writs currently in queue!")
 		end
 		
-	elseif (firstCmd == "popqueue") then
+	elseif (firstCmd == "clearqueue") then
+	
+		uespLog.MasterWritPotionQueue = {}
+		uespLog.Msg("Removed all writ potions currently in queue!")
+	
+	elseif (firstCmd == "popqueue" or firstCmd == "pop") then
 		local lastQueue = #uespLog.MasterWritPotionQueue
 		local itemLink = uespLog.MasterWritPotionQueue[lastQueue]
 		
@@ -2529,6 +2557,9 @@ function uespLog.MakeMasterWritPotionCommand(cmd)
 		else
 			uespLog.Msg("No alchemy writs currently in queue!")
 		end
+		
+	elseif (firstCmd == "addall") then
+		uespLog.AddAllMasterWritPotions()	
 	
 	elseif (tonumber(firstCmd) ~= nil or firstCmd == "") then
 		uespLog.MakeMasterWritPotion(firstCmd)	
@@ -2538,7 +2569,9 @@ function uespLog.MakeMasterWritPotionCommand(cmd)
 		uespLog.Msg(".    /uespmasterpotion              Use the first potion combination found")
 		uespLog.Msg(".    /uespmasterpotion [#]        Use the specified potion combination #")
 		uespLog.Msg(".    /uespmasterpotion queue       Setup potion in top of master writ queue")
-		uespLog.Msg(".    /uespmasterpotion popqueue     Setup potion and remove it from of top queue")
+		uespLog.Msg(".    /uespmasterpotion pop        Setup potion and remove it from queue")
+		uespLog.Msg(".    /uespmasterpotion clearqueue    Remove all writ potions from queue")
+		uespLog.Msg(".    /uespmasterpotion addall       Add all alchemy writs in inventory")
 	end
 	
 end

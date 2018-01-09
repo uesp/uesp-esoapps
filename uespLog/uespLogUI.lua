@@ -134,13 +134,13 @@ function uespLog.InitOptionControlsData()
 					end,
 		setFunc = 	function(choice) 
 						if (choice == "custom") then 
-							uespLog.GetInventoryStatsConfig("custom")
+							uespLog.SetInventoryStatsConfig("custom")
 							
 							if (uespLog.GetInventoryStatsConfig() == "off") then
 								uespLog.SetInventoryStatsConfig("on")
 								uespLog.ModifyInventoryStatsWindow()
 							end
-						elseif (choice == "on") then
+						elseif (choice == "on" or choice == true) then
 							uespLog.SetCustomStatDisplay(true)
 							
 							if (uespLog.GetInventoryStatsConfig() == "off") then

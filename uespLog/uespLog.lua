@@ -795,6 +795,7 @@
 --			- Added the 4 new motifs in CWC to saved character data.
 --			- /uespskillpoints now ignores "free" passive skills in the total count.
 --			- Added most daily quests from the last several expansions.
+--			- Updated the LibAddOnMenu and LibStub libraries. This fixes a UI error bug.
 --
 --		  Dragon Bones Related Changes
 --			- Fixed bug with custom stat display and setting it via the UI menu.
@@ -896,8 +897,8 @@
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "1.32"
-uespLog.releaseDate = "23 Oct 2017"
+uespLog.version = "1.40"
+uespLog.releaseDate = "Feb 2018"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

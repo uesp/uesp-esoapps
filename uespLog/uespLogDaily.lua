@@ -31,6 +31,147 @@
 
 uespLog.DAILY_QUESTS = 
 {
+
+	["Clockwork City"] = 
+	{
+		["Bursar of Tributes"] = 
+		{
+			["maxCount"] = -1,
+			["quests"] = 
+			{
+				"A Matter of Leisure",
+				"A Matter of Respect",
+				"A Matter of Tributes",
+				"Glitter and Gleam",
+				"Nibbles and Bits",
+				"Morsels and Pecks",
+			},
+		},
+		
+		["Razgurug"] = 
+		{
+			["maxCount"] = -1,
+			["quests"] = 
+			{
+				"Enchanted Accumulation",
+				"A Bitter Pill",
+				"Fuel for our Fires",
+				"A Daily Grind",
+				"Loose Strands",
+				"A Sticky Solution",
+			},
+		},
+		
+		["Clockwork Facilitator"] = 
+		{
+			["maxCount"] = -1,
+			["quests"] = 
+			{
+				"Inciting the Imperfect",
+				"A Fine-Feathered Foe",
+			},
+		},
+		
+		["Novice Holli"] = 
+		{
+			["maxCount"] = -1,
+			["quests"] = 
+			{
+				"Replacing the Commutators",
+				"The Shadow Cleft",
+				"Again Into the Shadows",
+				"A Shadow Malfunction",
+				"Changing the Filters",
+				"Oiling the Fans",
+				"A Shadow Misplaced",
+			},
+		},
+	},
+
+	["Morrowind"] = 
+	{
+		["Traylan Omoril"] = 
+		{
+			["maxCount"] = -1,
+			["quests"] = 
+			{
+				"Daedric Disruptions",
+				"Kwama Conundrum",
+				"Planting Misinformation",
+				"Tax Deduction",
+				"Tribal Troubles",
+				"Unsettled Syndicate",
+			},
+		},
+		
+		["Beleru Omoril"] = 
+		{
+			["maxCount"] = -1,
+			["quests"] = 
+			{
+				"The Anxious Apprentice",
+				"A Creeping Hunger",
+				"Culling the Swarm",
+				"Oxen Free",
+				"Salothan's Curse",
+				"Siren's Song",
+			},
+		},
+		
+		["Numani-Rasi"] = 
+		{
+			["maxCount"] = -1,
+			["quests"] = 
+			{
+				"Relics of Ashurnabitashpi",
+				"Relics of Ebernanit",
+				"Relics of Yasammidan",
+				"Relics of Assarnatamat",
+				"Relics of Dushariran",
+				"Relics of Ashalmawia",
+				"Relics of Maelkashishi",
+			},
+		},
+		
+		["Huntmaster Sorim-Nakar"] = 
+		{
+			["maxCount"] = -1,
+			["quests"] = 
+			{
+				"Mother Jagged-Claw Hunt",
+				"Ash-Eater Hunt",
+				"Tarra-Suj Hunt",
+				"Writhing Sveeth Hunt",
+				"Old Stomper Hunt",
+				"King Razor-Tusk Hunt",
+				"Great Zexxin Hunt",
+			},
+		},
+	},
+
+	["Gold Coast"] = 
+	{
+		["Kvatch Bounty Board"] = 
+		{
+			["maxCount"] = -1,
+			["quests"] = 
+			{
+				"Looming Shadows",
+				"The Roar of the Crowds",
+			},
+		},
+		
+		["Anvil Bounty Board"] = 
+		{
+			["maxCount"] = -1,
+			["quests"] = 
+			{
+				"The Common Good",
+				"Buried Evil",
+			},
+		},
+	},
+	
 	["Hew's Bane"] = 
 	{
 		["Heists"] = 
@@ -307,6 +448,20 @@ uespLog.DAILYQUEST_GROUPS =
 	["thievesguild"] = "Hew's Bane",
 	["tg"] = "Hew's Bane",
 	["thieves"] = "Hew's Bane",
+	
+	["goldcoast"] = "Gold Coast",
+	["gold"] = "Gold Coast",
+	["darkbrotherhood"] = "Gold Coast",
+	["db"] = "Gold Coast",
+	
+	["morrowind"] = "Morrowind",
+	["morrow"] = "Morrowind",
+	["mw"] = "Morrowind",
+	["vvardenfell"] = "Morrowind",
+	
+	["clockworkcity"] = "Clockwork City",
+	["clockwork"] = "Clockwork City",
+	["cwc"] = "Clockwork City",
 }
 
 
@@ -327,6 +482,14 @@ function uespLog.DailyCommand(cmd)
 	if (groupName ~= nil) then
 		uespLog.Msg("Showing daily quests for "..tostring(groupName)..":")
 		uespLog.ShowDailyQuestStatus(groupName)
+		return
+	elseif (firstCmd == "help") then
+		uespLog.Msg("Shows information on daily quests done by this character:")
+		uespLog.Msg(".     /uespdaily                 Show all daily quests")
+		uespLog.Msg(".     /uespdaily [group]      Show daily quests for the given group")
+		uespLog.Msg(".           Valid Groups: writ, craglorn, cyrodiil, goldcoast, wrothgar,")
+		uespLog.Msg(".                               hewsbane, goldcoast, morrowind, clockwork")
+		uespLog.Msg(".     /uespdaily help          Show help for command")
 		return
 	else
 		uespLog.ShowDailyQuestStatusAll()
@@ -740,6 +903,8 @@ function uespLog.DailyQuestOnQuestComplete(questName, journalIndex, isComplete)
 	
 	return true
 end
+
+
 
 
 

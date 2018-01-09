@@ -787,13 +787,17 @@
 --			- Fixed Lua error when purchasing something from a guild store.
 --			- Fixed the position of the scan/reset sales button when Awesome Guild Store is not installed.
 --
---		- v1.32 -- ?
+--		- v1.40 -- Feb 2018
 --			- Added NPCs to ignore from Clockwork City.
 --			- Fixed dumping of global data.
 --			- Added the "Keep Chat Open" option. Defaults to off but when turned on it will keep the chat window open
 --			  in certain cases where it is closed by default (trader, dye station, crown store, etc...).
 --			- Added the 4 new motifs in CWC to saved character data.
 --			- /uespskillpoints now ignores "free" passive skills in the total count.
+--			- Added most daily quests from the last several expansions.
+--
+--		  Dragon Bones Related Changes
+--			- Fixed bug with custom stat display and setting it via the UI menu.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -892,7 +896,7 @@
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "1.31"
+uespLog.version = "1.32"
 uespLog.releaseDate = "23 Oct 2017"
 uespLog.DATA_VERSION = 3
 
@@ -3363,6 +3367,7 @@ function uespLog.Initialize( self, addOnName )
 	uespLog.Old_ZO_CharacterWindowStats_ShowComparisonValues = ZO_CharacterWindowStats_ShowComparisonValues
 	uespLog.Old_ZO_CharacterWindowStats_HideComparisonValues = ZO_CharacterWindowStats_HideComparisonValues
 	uespLog.Old_ZO_StatEntry_Keyboard_ShowComparisonValue = ZO_StatEntry_Keyboard.ShowComparisonValue
+	uespLog.Old_ZO_StatEntry_Keyboard_GetDisplayValue = ZO_StatEntry_Keyboard.GetDisplayValue
 	
 	uespLog.Old_ZO_InventorySlot_OnMouseEnter = ZO_InventorySlot_OnMouseEnter
 	ZO_InventorySlot_OnMouseEnter = uespLog.ZO_InventorySlot_OnMouseEnter
@@ -3576,6 +3581,7 @@ function uespLog.SetupSlashCommands()
 	uespLog.SetSlashCommand("/utl", SLASH_COMMANDS["/uesptrackloot"])
 	uespLog.SetSlashCommand("/ukd", SLASH_COMMANDS["/uespkilldata"])
 	uespLog.SetSlashCommand("/home", uespLog.TeleportToPrimaryHome)
+	uespLog.SetSlashCommand("/ump", SLASH_COMMANDS["/uespmasterpotion"])
 end
 
 
@@ -3596,10 +3602,12 @@ function uespLog.ModifyInventoryStatsWindow()
 		ZO_CharacterWindowStats_ShowComparisonValues = uespLog.ZO_CharacterWindowStats_ShowComparisonValues
 		ZO_CharacterWindowStats_HideComparisonValues = uespLog.ZO_CharacterWindowStats_HideComparisonValues
 		ZO_StatEntry_Keyboard.ShowComparisonValue = uespLog.ZO_StatEntry_Keyboard_ShowComparisonValue
+		ZO_StatEntry_Keyboard.GetDisplayValue = uespLog.ZO_StatEntry_Keyboard_GetDisplayValue
 	else
 		ZO_CharacterWindowStats_ShowComparisonValues = uespLog.Old_ZO_CharacterWindowStats_ShowComparisonValues
 		ZO_CharacterWindowStats_HideComparisonValues = uespLog.Old_ZO_CharacterWindowStats_HideComparisonValues
 		ZO_StatEntry_Keyboard.ShowComparisonValue = uespLog.Old_ZO_StatEntry_Keyboard_ShowComparisonValue
+		ZO_StatEntry_Keyboard.GetDisplayValue = uespLog.Old_ZO_StatEntry_Keyboard_GetDisplayValue
 	end
 	
 end
@@ -13263,7 +13271,7 @@ function uespLog.MineCollectibleIDs(note)
 	logData.note = note
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
-	for collectibleId = 1, 10000 do
+	for collectibleId = 1, 50000 do
 		local name, description, icon, lockedIcon, unlocked, purchasable, isActive, categoryType, hint, isPlaceholder = GetCollectibleInfo(collectibleId)
 		
 		if (name ~= nil and name ~= "") then
@@ -14845,6 +14853,7 @@ function uespLog.ZO_CharacterWindowStats_ShowComparisonValues(bagId, slotId)
 	
 end
 
+
 function uespLog.ZO_CharacterWindowStats_HideComparisonValues()
 
     for _, statGroup in ipairs(ZO_INVENTORY_STAT_GROUPS) do
@@ -14859,16 +14868,32 @@ function uespLog.ZO_CharacterWindowStats_HideComparisonValues()
     end
 	
 end
+
+
+function uespLog:ZO_StatEntry_Keyboard_GetDisplayValue(targetValue)
+    local value = targetValue or self:GetValue()
+    local statType = self.statType
+
+	if (statType <= -100) then
+	   return value
+    elseif(statType == STAT_CRITICAL_STRIKE or statType == STAT_SPELL_CRITICAL) then
+        return zo_strformat(SI_STAT_VALUE_PERCENT, GetCriticalStrikeChance(value))
+    else
+        return zo_strformat(SI_NUMBER_FORMAT, ZO_CommaDelimitNumber(value))
+    end
+end
 -- End of Overridden functions from esoui\ingame\characterwindow\keyboard\characterwindow_keyboard.lua
 
 
 -- Begin Overridden function from esoui\ingame\stats\keyboard\zo_statentry_keyboard.lua
 -- TODO: Is there a way to not override/copy this function?
 function uespLog:ZO_StatEntry_Keyboard_ShowComparisonValue(statDelta)
+
     if statDelta and statDelta ~= 0 then
         local comparisonStatValue = self:GetValue() + statDelta
         local color
         local icon
+		
         if statDelta > 0 then
             color = ZO_SUCCEEDED_TEXT
             icon = "EsoUI/Art/Buttons/Gamepad/gp_upArrow.dds"
@@ -14886,6 +14911,7 @@ function uespLog:ZO_StatEntry_Keyboard_ShowComparisonValue(statDelta)
 		
 		--comparisonValueString = "" .. color:Colorize(self:GetDisplayValue(statDelta) .. " " .. zo_iconFormatInheritColor(icon, 24, 24) .. self:GetDisplayValue(self:GetValue()))
 
+		self.currentStatDelta = statDelta
         self.control.value:SetHidden(true)
         self.control.comparisonValue:SetHidden(false)
         self.control.comparisonValue:SetText(comparisonValueString)

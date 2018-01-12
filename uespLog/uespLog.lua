@@ -3603,12 +3603,19 @@ function uespLog.ModifyInventoryStatsWindow()
 		ZO_CharacterWindowStats_ShowComparisonValues = uespLog.ZO_CharacterWindowStats_ShowComparisonValues
 		ZO_CharacterWindowStats_HideComparisonValues = uespLog.ZO_CharacterWindowStats_HideComparisonValues
 		ZO_StatEntry_Keyboard.ShowComparisonValue = uespLog.ZO_StatEntry_Keyboard_ShowComparisonValue
-		ZO_StatEntry_Keyboard.GetDisplayValue = uespLog.ZO_StatEntry_Keyboard_GetDisplayValue
+		
+		if (GetAPIVersion() > 100021) then
+			ZO_StatEntry_Keyboard.GetDisplayValue = uespLog.ZO_StatEntry_Keyboard_GetDisplayValue
+		end
+		
 	else
 		ZO_CharacterWindowStats_ShowComparisonValues = uespLog.Old_ZO_CharacterWindowStats_ShowComparisonValues
 		ZO_CharacterWindowStats_HideComparisonValues = uespLog.Old_ZO_CharacterWindowStats_HideComparisonValues
 		ZO_StatEntry_Keyboard.ShowComparisonValue = uespLog.Old_ZO_StatEntry_Keyboard_ShowComparisonValue
-		ZO_StatEntry_Keyboard.GetDisplayValue = uespLog.Old_ZO_StatEntry_Keyboard_GetDisplayValue
+		
+		if (GetAPIVersion() > 100021) then
+			ZO_StatEntry_Keyboard.GetDisplayValue = uespLog.Old_ZO_StatEntry_Keyboard_GetDisplayValue
+		end
 	end
 	
 end

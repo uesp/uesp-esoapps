@@ -12,6 +12,9 @@ uespLog.SAVEACTIONBAR_MINDELTATIME = 5
 uespLog.LastSavedActionBar_TimeStamp = 0
 uespLog.LastSavedActionBar_WeaponPair = 0
 
+uespLog.SavedHouseStorage = nil
+uespLog.LastBankingBag = 0
+
 
 uespLog.CHARDATA_STATS = {
 	[1] = "AttackPower",
@@ -312,6 +315,11 @@ function uespLog.CreateCharData (note)
 	charData.Inventory = uespLog.CreateInventoryData()
 	charData.Research = uespLog.GetCharDataResearchInfo()
 	
+		-- Only save house storage if it has been accessed on this character
+	if (uespLog.SavedHouseStorage) then
+		charData.HouseStorage = uespLog.SavedHouseStorage
+	end
+	
 	return charData
 end
 
@@ -334,6 +342,62 @@ function uespLog.CreateInventoryData ()
 	end
 	
 	return inventory
+end
+
+
+function uespLog.GetCharDataHouseStorageInfo()
+	local storage = { }
+	local i, j
+	
+	if (GetCollectibleForHouseBankBag == nil or BAG_HOUSE_BANK_ONE == nil) then
+		return nil
+	end
+		
+	storage.TimeStamp = GetTimeStamp()
+	storage.TotalSize = 0
+	storage.TotalUsedSize = 0
+	
+	for i = BAG_HOUSE_BANK_ONE, BAG_HOUSE_BANK_TEN do
+		local box = { }
+		
+		box.CollectId = GetCollectibleForHouseBankBag(i)
+		box.Size = GetBagSize(i)
+		box.UsedSize = GetNumBagUsedSlots(i)
+		
+		if (box.CollectId > 0 and not IsCollectibleUnlocked(box.CollectId)) then
+			box.Size = 0
+		end
+		
+		storage.TotalSize = storage.TotalSize + box.Size
+		storage.TotalUsedSize = storage.TotalUsedSize + box.UsedSize
+				
+		for j = 0, box.Size do
+			box[#box + 1] = uespLog.CreateInventorySlotData(i, j)
+		end
+						
+		storage[i] = box
+	end
+	
+	return storage
+end
+
+
+function uespLog.OnBankOpened(event)
+
+	if (GetBankingBag) then
+		uespLog.LastBankingBag = GetBankingBag()
+	end
+	
+end
+
+
+function uespLog.OnBankClosed(event)
+
+	if (IsHouseBankBag == nil or not IsHouseBankBag(uespLog.LastBankingBag)) then
+		return
+	end
+	
+	uespLog.SavedHouseStorage = uespLog.GetCharDataHouseStorageInfo()
 end
 
 

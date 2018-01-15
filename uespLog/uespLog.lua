@@ -3271,6 +3271,8 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SELL_RECEIPT, uespLog.OnSellReceipt)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TELVAR_STONE_UPDATE, uespLog.OnTelvarStoneUpdate)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CARRIED_CURRENCY_UPDATE, uespLog.OnCarriedCurrencyUpdate)	 
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CLOSE_BANK, uespLog.OnBankClosed)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_OPEN_BANK, uespLog.OnBankOpened)
 	
     EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LORE_BOOK_ALREADY_KNOWN, uespLog.OnLoreBookAlreadyKnown)
     EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LORE_BOOK_LEARNED, uespLog.OnLoreBookLearned)

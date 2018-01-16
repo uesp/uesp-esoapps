@@ -799,6 +799,7 @@
 --
 --		  Dragon Bones Related Changes
 --			- Fixed bug with custom stat display and setting it via the UI menu.
+--			- Added house storage to character data.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -13320,6 +13321,14 @@ function uespLog.MineCollectibleIDs(note)
 			_, logData.cooldown = GetCollectibleCooldownAndDuration(collectibleId)
 			logData.isHidden, logData.visualPriority = WouldCollectibleBeHidden(collectibleId)
 			logData.hasAppearance = DoesCollectibleHaveVisibleAppearance(collectibleId)
+			
+			logData.furnId = GetCollectibleFurnitureDataId(collectibleId)
+			
+			if (logData.furnId) then
+				logData.furnCateId, logData.furnSubcateId, logData.furnTheme = GetFurnitureDataInfo(logData.furnId)
+				logData.furnCateName = GetFurnitureCategoryName(logData.furnCateId)
+				logData.furnSubcateName = GetFurnitureCategoryName(logData.furnSubcateId)
+			end
 
 			uespLog.AppendDataToLog("all", logData)
 			

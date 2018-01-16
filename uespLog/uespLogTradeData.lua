@@ -93,6 +93,7 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[62]							 = "uespLog/images/dreadhorn.dds",			-- Dreadhorn, Minotaur Bezoar, 62, /esoui/art/icons/crafting_style_item_dreadhorn_r2.dds
 	[65]							 = "uespLog/images/apostle.dds",			-- Apostle, Tempered Brass, 65, /esoui/art/icons/justice_stolen_prop_sesnits_paperweight.dds
 	[66]							 = "uespLog/images/ebonshadow.dds",			-- Ebonshadow, Tenebrous Cord, 66, /esoui/art/icons/crafting_style_item_ebonshadow_r2.dds
+	[55]							 = "uespLog/images/wormcult.dds",			-- Worm Cult, Desecrated Grave Soil, 55, /esoui/art/icons/quest_monster_ash_001.dds
 }
 
 
@@ -154,6 +155,7 @@ uespLog.STYLE_ICON_DATA = {
 	[62]							 = "/esoui/art/icons/crafting_style_item_dreadhorn_r2.dds",
 	[65]							 = "/esoui/art/icons/justice_stolen_prop_sesnits_paperweight.dds",
 	[66]							 = "/esoui/art/icons/crafting_style_item_ebonshadow_r2.dds",
+	[55]							 = "/esoui/art/icons/quest_monster_ash_001.dds",
 }
 
 

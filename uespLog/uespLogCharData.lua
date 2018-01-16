@@ -138,6 +138,7 @@ uespLog.CHARDATA_CRAFTSTYLE_NAMES = {
 	'Dreadhorn',
 	'Apostle',
 	'Ebonshadow',
+	'Worm Cult',
 }
 
 

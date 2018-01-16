@@ -796,10 +796,12 @@
 --			- /uespskillpoints now ignores "free" passive skills in the total count.
 --			- Added most daily quests from the last several expansions.
 --			- Updated the LibAddOnMenu and LibStub libraries. This fixes a UI error bug.
+--			- Added '/uespstyles' to be the same as '/uespstyle'.
 --
 --		  Dragon Bones Related Changes
 --			- Fixed bug with custom stat display and setting it via the UI menu.
 --			- Added house storage to character data.
+--			- Added the Worm Cult style.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -4971,6 +4973,7 @@ uespLog.ITEMSTYLES = {
 	[52] = "Buoyant Armiger",
 	[53] = "Stalhrim Frostcaster",
 	[54] = "Ashlander",
+	[55] = "Worm Cult",
 	[56] = "Silken Ring",
 	[57] = "Mazzatun",
 	[58] = "Grim Harlequin",
@@ -10892,6 +10895,11 @@ uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
 	["dreadhorn"] = 62,
 	["apostle"] = 65,
 	["ebonshadow"] = 66,
+	
+		-- Dragon Bones
+	['worm cult'] = 55,
+	['wormcult'] = 55,
+	['worm'] = 55,
 		
 }
 
@@ -11045,6 +11053,11 @@ uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
 	["dreadhorn"] = { 132566, 132567, 132568, 132569, 132570, 132571, 132572, 132573, 132574, 132575, 132576, 132577, 132578, 132579 }, -- 132565, 132580
 	["apostle"] = { 132550, 132551, 132552, 132553, 132554, 132555, 132556, 132557, 132558, 132559, 132560, 132561, 132562, 132563 }, -- 132549, 132564
 	["ebonshadow"] = { 132582, 132583, 132584, 132585, 132586, 132587, 132588, 132589, 132590, 132591, 132592, 132593, 132594, 132595 }, -- 132581, 132596
+	
+		-- Dragon Bones
+	['worm cult'] = { 134740, 134741, 134742, 134743, 134744, 134745, 134746, 134747, 134748, 134749, 134750, 134741, 134742, 134743 }, -- 134739, 134754
+	['wormcult'] = { 134740, 134741, 134742, 134743, 134744, 134745, 134746, 134747, 134748, 134749, 134750, 134741, 134742, 134743 }, -- 134739, 134754
+	['worm'] = { 134740, 134741, 134742, 134743, 134744, 134745, 134746, 134747, 134748, 134749, 134750, 134741, 134742, 134743 }, -- 134739, 134754
 }
 
 
@@ -11273,6 +11286,9 @@ SLASH_COMMANDS["/uespstyle"] = function (cmd)
 	end	
 	
 end
+
+
+SLASH_COMMANDS["/uespstyles"] = SLASH_COMMANDS["/uespstyle"]
 
 
 function uespLog.ShowTargetInfo ()

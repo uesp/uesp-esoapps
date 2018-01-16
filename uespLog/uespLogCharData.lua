@@ -386,6 +386,10 @@ function uespLog.OnBankOpened(event)
 
 	if (GetBankingBag) then
 		uespLog.LastBankingBag = GetBankingBag()
+		
+		if (IsHouseBankBag(uespLog.LastBankingBag)) then
+			uespLog.SavedHouseStorage = uespLog.GetCharDataHouseStorageInfo()
+		end	
 	end
 	
 end

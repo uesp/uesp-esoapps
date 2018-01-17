@@ -797,6 +797,8 @@
 --			- Added most daily quests from the last several expansions.
 --			- Updated the LibAddOnMenu and LibStub libraries. This fixes a UI error bug.
 --			- Added '/uespstyles' to be the same as '/uespstyle'.
+--			- Added '/uespstyle known' and '/uespstyle unknown' commands to list known/unknown styles.
+--			- The '/uespstyle' command no longer displays the Universal style in summary outputs.
 --
 --		  Dragon Bones Related Changes
 --			- Fixed bug with custom stat display and setting it via the UI menu.
@@ -11228,14 +11230,21 @@ function uespLog.ListValidStyles()
 end
 
 
-function uespLog.ShowStyleSummary()
+function uespLog.ShowStyleSummary(showKnown, showUnknown)
 	local numStyles = GetNumSmithingStyleItems()
 	local totalKnown = 0
 	local totalUnknown = 0
 	local validStyles = 0
 	local styleData = {}
+	local displayCount = 0
 				
-	uespLog.MsgColor(uespLog.craftColor, "Showing summary for all styles:")
+	if (showKnown) then
+		uespLog.MsgColor(uespLog.craftColor, "Showing summary for all completely known styles:")
+	elseif (showUnknown) then
+		uespLog.MsgColor(uespLog.craftColor, "Showing summary for all unknown styles:")
+	else
+		uespLog.MsgColor(uespLog.craftColor, "Showing summary for all styles:")
+	end
 	
 	for i = 1, numStyles do
 		local styleItemName, _, _, _, itemStyle = GetSmithingStyleItemInfo(i)
@@ -11252,17 +11261,33 @@ function uespLog.ShowStyleSummary()
 		local styleName = data.name
 		local itemStyle = data.style
 		local known, knownCount = uespLog.GetStyleKnown(styleName)	
+		local displayStyle = true
 		
-		if (styleItemName ~= "" and styleName ~= "") then 
-			totalKnown = totalKnown + knownCount
-			totalUnknown = totalUnknown + 14 - knownCount
+		if (styleItemName ~= "" and styleName ~= "" and styleName ~= "Universal") then 
 			validStyles = validStyles + 1
+			
+			if (showKnown and knownCount < 14) then
+				displayStyle = false
+			elseif (showUnknown and knownCount >= 14) then
+				displayStyle = false
+			end
 		
-			uespLog.MsgColor(uespLog.craftColor, ".    "..tostring(styleName).." (" .. itemStyle .. ") = "..knownCount.."/14")			
+			if (displayStyle) then
+				totalKnown = totalKnown + knownCount
+				totalUnknown = totalUnknown + 14 - knownCount
+				displayCount = displayCount + 1
+				uespLog.MsgColor(uespLog.craftColor, ".    "..tostring(styleName).." (" .. itemStyle .. ") = "..knownCount.."/14")			
+			end
 		end
 	end
 	
-	uespLog.MsgColor(uespLog.craftColor, "You know a total of "..totalKnown.."/"..tostring(14*validStyles).." possible style chapters")
+	if (showKnown) then
+		uespLog.MsgColor(uespLog.craftColor, "You completely know "..displayCount.."/"..validStyles.." styles.")
+	elseif (showUnknown) then
+		uespLog.MsgColor(uespLog.craftColor, "You do not know "..displayCount.."/"..validStyles.." styles.")
+	else
+		uespLog.MsgColor(uespLog.craftColor, "You know "..totalKnown.."/"..tostring(14*validStyles).." style chapters.")
+	end
 end
 
 
@@ -11275,6 +11300,10 @@ SLASH_COMMANDS["/uespstyle"] = function (cmd)
 		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle long [stylename]    Shows chapters in old long format")
 		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle list                          Lists all valid styles")
 		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle summary                     Displays a summary of all styles")
+	elseif (firstCmd == "unknown") then
+		uespLog.ShowStyleSummary(false, true)
+	elseif (firstCmd == "known") then
+		uespLog.ShowStyleSummary(true, false)
 	elseif (firstCmd == "liststyles" or firstCmd == "list") then
 		uespLog.ListValidStyles()
 	elseif (firstCmd == "summary" or firstCmd == "all") then

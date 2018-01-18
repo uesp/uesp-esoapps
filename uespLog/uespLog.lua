@@ -799,6 +799,8 @@
 --			- Added '/uespstyles' to be the same as '/uespstyle'.
 --			- Added '/uespstyle known' and '/uespstyle unknown' commands to list known/unknown styles.
 --			- The '/uespstyle' command no longer displays the Universal style in summary outputs.
+--			- Added the '/uespsales bank', '/uespsales craftbag' and '/uespsales inventory' which display the estimated
+--			  value of all sellable items with valid prices in the given bags.
 --
 --		  Dragon Bones Related Changes
 --			- Fixed bug with custom stat display and setting it via the UI menu.

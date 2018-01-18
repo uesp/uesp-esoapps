@@ -1527,6 +1527,90 @@ function uespLog.FindSalesPrice(itemLink)
 end
 
 
+function uespLog.SumBagValue(bagId)
+
+	if (bagId == BAG_VIRTUAL) then
+		return uespLog.SumCraftBagValue()
+	end
+	
+	local numItems = GetBagSize(bagId)
+	local totalItems = 0
+	local validItems = 0
+	local totalValue = 0
+	
+	for i = 0, numItems do
+		local itemLink = GetItemLink(bagId, i)
+		
+		if (itemLink ~= "") then
+			local prices = uespLog.FindSalesPrice(itemLink)
+			validItems = validItems + 1
+			
+			if (prices) then
+				local icon, qnt = GetItemInfo(bagId, i)
+				totalItems = totalItems + 1
+				totalValue = totalValue + prices.price*qnt
+			end
+		end
+	end
+	
+	return totalItems, totalValue, validItems
+end
+
+
+function uespLog.SumCraftBagValue()
+	local totalItems = 0
+	local validItems = 0
+	local totalValue = 0
+	local slotId = GetNextVirtualBagSlotId(nil)
+	
+	while (slotId) do
+		local itemLink = GetItemLink(BAG_VIRTUAL, slotId)
+		
+		if (itemLink ~= "") then
+			local prices = uespLog.FindSalesPrice(itemLink)
+			validItems = validItems + 1
+			
+			if (prices) then
+				local icon, qnt = GetItemInfo(BAG_VIRTUAL, slotId)
+				totalItems = totalItems + 1
+				totalValue = totalValue + prices.price*qnt
+			end
+		end
+		
+		slotId = GetNextVirtualBagSlotId(slotId)
+	end
+	
+	return totalItems, totalValue, validItems
+	
+end
+
+
+function uespLog.ShowInventoryValue(bag1, bag2)
+	local numItems = 0
+	local totalValue = 0
+	local validItems = 0
+
+	if (bag1) then
+		local items, value, valid = uespLog.SumBagValue(bag1)
+		numItems = numItems + items
+		totalValue = totalValue + value
+		validItems = validItems + valid
+	end
+	
+	if (bag2) then
+		local items, value, valid = uespLog.SumBagValue(bag2)
+		numItems = numItems + items
+		totalValue = totalValue + value
+		validItems = validItems + valid
+	end
+	
+	totalValue = math.floor(totalValue)
+	totalValue = ZO_CommaDelimitNumber(totalValue)
+	
+	uespLog.Msg("Found "..numItems.." sellable items out of "..validItems.." total items worth "..totalValue.." gold!")
+end
+
+
 function uespLog.SalesCommand (cmd)
 	local cmds, firstCmd = uespLog.SplitCommands(cmd)
 	
@@ -1638,6 +1722,12 @@ function uespLog.SalesCommand (cmd)
 	elseif (firstCmd == "resetsold") then
 		uespLog.ResetNewSalesDataTimestamps()
 		uespLog.Msg("Reset the last scan timestamps for all sales in all guilds on account!")
+	elseif (firstCmd == "craftbag" or firstCmd == "craft") then
+		uespLog.ShowInventoryValue(BAG_VIRTUAL)
+	elseif (firstCmd == "bank") then
+		uespLog.ShowInventoryValue(BAG_BANK, BAG_SUBSCRIBER_BANK)
+	elseif (firstCmd == "inventory") then
+		uespLog.ShowInventoryValue(BAG_BACKPACK)
 	else
 		uespLog.Msg("Logs various guild sales data:")
 		uespLog.Msg(".       /uespsales [on||off]     Turns logging on/off")
@@ -1654,6 +1744,9 @@ function uespLog.SalesCommand (cmd)
 		uespLog.Msg(".       /uespsales resetlist [name]  Reset the listing timestamps for that guild")
 		uespLog.Msg(".       /uespsales dealtype [uesp||mm||none]   Sets the type of item deal to display")
 		uespLog.Msg(".       /uespsales postprice [uesp||mm]   Sets price to use when posting items for sale")
+		uespLog.Msg(".       /uespsales craftbag      Shows total estimated value of your craft bag.")
+		uespLog.Msg(".       /uespsales bank        Shows total estimated value of your bank.")
+		uespLog.Msg(".       /uespsales inventory       Shows total estimated value of your inventory.")
 		uespLog.Msg("Guild sales data logging is currently "..uespLog.BoolToOnOff(uespLog.GetSalesDataConfig().saveSales)..".")
 		uespLog.Msg("Sale price data usage is currently "..uespLog.BoolToOnOff(uespLog.IsSalesShowPrices()))
 		uespLog.Msg("Sale price item tooltips are currently "..uespLog.BoolToOnOff(uespLog.IsSalesShowTooltip()))

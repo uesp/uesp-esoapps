@@ -801,11 +801,17 @@
 --			- The '/uespstyle' command no longer displays the Universal style in summary outputs.
 --			- Added the '/uespsales bank', '/uespsales craftbag' and '/uespsales inventory' which display the estimated
 --			  value of all sellable items with valid prices in the given bags.
+--			- '/uespskillpoints' now shows your total number of skills points.
+--			- Added a few more "free" skills that don't contribute to your total skill point count with '/uespskillpoints'.
+--			- Fixed '/uespskillpoints' that incorrectly didn't count the first morph of skills as a point.
+--			- Added the '/uespskillpoints debug' that outputs skill point information used to generate the count.
 --
 --		  Dragon Bones Related Changes
 --			- Fixed bug with custom stat display and setting it via the UI menu.
 --			- Added house storage to character data.
 --			- Added the Worm Cult style.
+--			- '/uespskillpoints' only counts skills in discovered skill lines. This prevents issues with some racial passives
+--			  that are shared between 2 races that don't properly reset to 0 in this update.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.

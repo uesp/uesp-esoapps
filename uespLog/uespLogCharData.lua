@@ -178,81 +178,97 @@ uespLog.charDataLastFoodEaten = {
 }
 
 
-uespLog.FREE_PASSIVES = {
-		[78219] = 1,
-		[74580] = 1,
-		[45542] = 1,
-		[45547] = 1,
-		[45550] = 1,
-		[45551] = 1,
-		[45552] = 1,
-		[49163] = 1,
-		[70042] = 1,
-		[70043] = 1,
-		[47276] = 1,
-		[47277] = 1,
-		[47278] = 1,
-		[47279] = 1,
-		[47280] = 1,
-		[47280] = 1,
-		[48157] = 1,
-		[48158] = 1,
-		[48159] = 1,
-		[70041] = 1,
-		[47288] = 1,
-		[47289] = 1,
-		[47290] = 1,
-		[47291] = 1,
-		[47292] = 1,
-		[47293] = 1,
-		[48187] = 1,
-		[48188] = 1,
-		[48189] = 1,
-		[70044] = 1,
-		[46727] = 1,
-		[46729] = 1,
-		[46731] = 1,
-		[46735] = 1,
-		[46736] = 1,
-		[46740] = 1,
-		[49112] = 1,
-		[49113] = 1,
-		[49114] = 1,
-		[70045] = 1,
-		[44590] = 1,
-		[44595] = 1,
-		[44597] = 1,
-		[44598] = 1,
-		[44599] = 1,
-		[44650] = 1,
-		[47282] = 1,
-		[47283] = 1,
-		[47284] = 1,
-		[47285] = 1,
-		[47286] = 1,
-		[47287] = 1,
-		[48172] = 1,
-		[47283] = 1,
-		[47284] = 1,
-		[70046] = 1,
-		[46758] = 1,
-		[46759] = 1,
-		[46760] = 1,
-		[46763] = 1,
-		[44625] = 1,
-		[44630] = 1,
-		[44631] = 1,
-		[69953] = 1,
-		[36582] = 1,
-		[36247] = 1,
-		[36588] = 1,
-		[35965] = 1,
-		[36312] = 1,
-		[36063] = 1,
-		[36626] = 1,
-		[33293] = 1,
-		[84680] = 1,
-		[36008] = 1,
+	-- Active and passive skills where the first level is given free (does not count towards character's total skill points)
+uespLog.FREE_SKILLS = {
+	[33293] = 1,		-- Craftsman (Orc)
+	[35965] = 1,		-- Highborn (High Elf)
+	[36008] = 1,		-- Acrobat (Wood Elf)
+	[36063] = 1,		-- Cutpurse (Khajiit)
+	[36247] = 1,		-- Opportunist (Breton)
+	[36312] = 1,		-- Diplomat (Imperial)
+	[36582] = 1,		-- Amphibian (Argonian)
+	[36588] = 1,		-- Ashlander (Dark Elf)
+	[36626] = 1,		-- Reveler (Nord)
+	[84680] = 1,		-- Wayfarer (Redguard)
+	
+	[74580] = 1,		-- Finders Keepers
+	[78219] = 1,		-- Blade of Woe
+	
+	[26768] = 1,		-- Soul Trap 1
+	[43050] = 1,		-- Soul Trap 2
+	[43053] = 1,		-- Soul Trap 3
+	[43056] = 1,		-- Soul Trap 4	
+	[40328] = 1,		-- Soul Splitting Trap 1
+	[43059] = 1,		-- Soul Splitting Trap 2
+	[43063] = 1,		-- Soul Splitting Trap 3
+	[43067] = 1,		-- Soul Splitting Trap 4
+	[40317] = 1,		-- Consuming Trap 1
+	[43071] = 1,		-- Consuming Trap 2
+	[43077] = 1,		-- Consuming Trap 3
+	[43083] = 1,		-- Consuming Trap 4
+	
+	[44590] = 1,		-- Recipe Improvement 1
+	[44595] = 1,		-- Recipe Improvement 2
+	[44597] = 1,		-- Recipe Improvement 3
+	[44598] = 1,		-- Recipe Improvement 4
+	[44599] = 1,		-- Recipe Improvement 5
+	[44650] = 1,		-- Recipe Improvement 6
+	[44625] = 1,		-- Recipe Quality     1
+	[44630] = 1,		-- Recipe Quality     2
+	[44631] = 1,		-- Recipe Quality     3
+	[69953] = 1,		-- Recipe Quality     4
+	[45542] = 1,		-- Solvent Proficiency 1
+	[45547] = 1,		-- Solvent Proficiency 2
+	[45550] = 1,		-- Solvent Proficiency 3
+	[45551] = 1,		-- Solvent Proficiency 4
+	[45552] = 1,		-- Solvent Proficiency 5
+	[49163] = 1,		-- Solvent Proficiency 6
+	[70042] = 1,		-- Solvent Proficiency 7
+	[70043] = 1,		-- Solvent Proficiency 8
+	[46727] = 1,		-- Potency Improvement 1
+	[46729] = 1,		-- Potency Improvement 2
+	[46731] = 1,		-- Potency Improvement 3
+	[46735] = 1,		-- Potency Improvement 4
+	[46736] = 1,		-- Potency Improvement 5
+	[46740] = 1,		-- Potency Improvement 6
+	[49112] = 1,		-- Potency Improvement 7
+	[49113] = 1,		-- Potency Improvement 8
+	[49114] = 1,		-- Potency Improvement 9
+	[70045] = 1,		-- Potency Improvement 10
+	[46758] = 1,		-- Aspect Improvement 1
+	[46759] = 1,		-- Aspect Improvement 2
+	[46760] = 1,		-- Aspect Improvement 3
+	[46763] = 1,		-- Aspect Improvement 4
+	[47276] = 1,		-- Metalworking 1
+	[47277] = 1,		-- Metalworking 2
+	[47278] = 1,		-- Metalworking 3
+	[47279] = 1,		-- Metalworking 4
+	[47280] = 1,		-- Metalworking 5
+	[47281] = 1,		-- Metalworking 6
+	[48157] = 1,		-- Metalworking 7
+	[48158] = 1,		-- Metalworking 8
+	[48159] = 1,		-- Metalworking 9
+	[70041] = 1,		-- Metalworking 10
+	[47282] = 1,		-- Woodworking 1
+	[47283] = 1,		-- Woodworking 2
+	[47284] = 1,		-- Woodworking 3
+	[47285] = 1,		-- Woodworking 4
+	[47286] = 1,		-- Woodworking 5
+	[47287] = 1,		-- Woodworking 6
+	[48172] = 1,		-- Woodworking 7
+	[48173] = 1,		-- Woodworking 8
+	[48174] = 1,		-- Woodworking 9
+	[70046] = 1,		-- Woodworking 10
+	[47288] = 1,		-- Tailoring 1
+	[47289] = 1,		-- Tailoring 2
+	[47290] = 1,		-- Tailoring 3
+	[47291] = 1,		-- Tailoring 4
+	[47292] = 1,		-- Tailoring 5
+	[47293] = 1,		-- Tailoring 6
+	[48187] = 1,		-- Tailoring 7
+	[48188] = 1,		-- Tailoring 8
+	[48189] = 1,		-- Tailoring 9
+	[70044] = 1,		-- Tailoring 10
 }
 
 
@@ -1683,7 +1699,7 @@ function uespLog.EndQueuedCharDataScreenshot()
 end
 
 
-function uespLog.GetSkillPointsUsed()
+function uespLog.GetSkillPointsUsed(showDebug)
 	local numSkillTypes = GetNumSkillTypes()
 	local skillType
 	local skillIndex
@@ -1695,38 +1711,72 @@ function uespLog.GetSkillPointsUsed()
 		
 		for skillIndex = 1, numSkillLines do
 			local numSkillAbilities = GetNumSkillAbilities(skillType, skillIndex)
+			local skillLineName, skillLineRank, discovered = GetSkillLineInfo(skillType, skillIndex)
 			
-			for abilityIndex = 1, numSkillAbilities do
-				local name, texture, rank, passive, ultimate, purchase, progressionIndex = GetSkillAbilityInfo(skillType, skillIndex, abilityIndex)
-				local abilityId = GetSkillAbilityId(skillType, skillIndex, abilityIndex, false)
-				local currentUpgradeLevel, maxUpgradeLevel = GetSkillAbilityUpgradeInfo(skillType, skillIndex, abilityIndex)
-				local isFree = uespLog.FREE_PASSIVES[abilityId] ~= nil
+			if (discovered) then
 				
-				progressionIndex = progressionIndex or 0
-				currentUpgradeLevel = currentUpgradeLevel or 0
-				
-				if (purchase and abilityId > 0) then
-				
-					if (passive and currentUpgradeLevel > 0) then
-						totalSkillPoints = totalSkillPoints + currentUpgradeLevel
-						
-						if (isFree) then
-							totalSkillPoints = totalSkillPoints - 1
+				for abilityIndex = 1, numSkillAbilities do
+					local name, texture, rank, passive, ultimate, purchase, progressionIndex, rankIndex = GetSkillAbilityInfo(skillType, skillIndex, abilityIndex)
+					local abilityId = GetSkillAbilityId(skillType, skillIndex, abilityIndex, false)
+					local currentUpgradeLevel, maxUpgradeLevel = GetSkillAbilityUpgradeInfo(skillType, skillIndex, abilityIndex)
+					local isFree = uespLog.FREE_SKILLS[abilityId] ~= nil
+
+					--uespLog.DebugMsg(name..": "..abilityId..", "..skillType..":"..skillIndex..":"..abilityIndex)
+					
+					progressionIndex = progressionIndex or 0
+					currentUpgradeLevel = currentUpgradeLevel or 0
+					
+					if (purchase and abilityId > 0) then
+					
+						if (passive and currentUpgradeLevel > 0) then
+							totalSkillPoints = totalSkillPoints + currentUpgradeLevel
+							
+							if (showDebug) then
+								uespLog.DebugMsg(name..": "..currentUpgradeLevel.." skill points from passive")
+							end
+							
+							if (isFree) then
+								totalSkillPoints = totalSkillPoints - 1
+								
+								if (showDebug) then
+									uespLog.DebugMsg(name.." Ignoring first passive skill point!")
+								end
+							end
+							
+						elseif (passive and currentUpgradeLevel == 0) then
+							totalSkillPoints = totalSkillPoints + 1
+							
+							if (showDebug) then
+								uespLog.DebugMsg(name..": 1 skill point from passive")
+							end
+							
+							if (isFree) then
+								totalSkillPoints = totalSkillPoints - 1
+								
+								if (showDebug) then
+									uespLog.DebugMsg(name..": Ignoring first passive skill point!")
+								end
+							end
+							
+						elseif (progressionIndex > 0) then
+							local name, morph, skillRank = GetAbilityProgressionInfo(progressionIndex)
+							local points = 1 + math.ceil(morph/2)
+							totalSkillPoints = totalSkillPoints + points
+							
+							if (showDebug) then
+								uespLog.DebugMsg(name..": "..points.." skill points from active")
+							end
+							
+							if (isFree) then
+								totalSkillPoints = totalSkillPoints - 1
+								
+								if (showDebug) then
+									uespLog.DebugMsg(name..": Ignoring first active skill point!")
+								end
+							end
 						end
-						
-					elseif (passive and currentUpgradeLevel == 0) then
-						totalSkillPoints = totalSkillPoints + 1
-						
-						if (isFree) then
-							totalSkillPoints = totalSkillPoints - 1
-						end
-						
-					elseif (progressionIndex > 0) then
-						local name, morph, skillRank = GetAbilityProgressionInfo(progressionIndex)
-						totalSkillPoints = totalSkillPoints + 1 + math.floor(morph/2)
 					end
 				end
-				
 			end
 		end
 	
@@ -1879,11 +1929,12 @@ SLASH_COMMANDS["/uespsavebuild"] = uespLog.Command_SaveBuildData
 
 
 SLASH_COMMANDS["/uespskillpoints"] = function (cmd)
-	local skillPointsUsed = uespLog.GetSkillPointsUsed()
+	local skillPointsUsed = uespLog.GetSkillPointsUsed(cmd == "debug")
 	local skillPointsUnused = GetAvailableSkillPoints()
+	local totalPoints = skillPointsUsed + skillPointsUnused
 	local skyShards = GetNumSkyShards()
 	
-	uespLog.Msg("You have used "..tostring(skillPointsUsed).." skill points, "..tostring(skillPointsUnused).." unused skill points and "..tostring(skyShards).." skyshards.")
+	uespLog.Msg("You have used "..tostring(skillPointsUsed).." skill points, "..tostring(skillPointsUnused).." unused skill points ("..totalPoints.." total) and "..tostring(skyShards).." skyshards.")
 end
 
 

@@ -799,6 +799,12 @@
 --			- Added '/uespstyles' to be the same as '/uespstyle'.
 --			- Added '/uespstyle known' and '/uespstyle unknown' commands to list known/unknown styles.
 --			- The '/uespstyle' command no longer displays the Universal style in summary outputs.
+--			- '/uespstyle' now accepts any short abbreviation of the style name. For example '/uespstyle x' would show the
+--			  known pieces for the Xivkyn style. 
+--			- Added the '/uespstyle master' or '/uespstyle writ' commands which display a summary of all styles that
+--			  contribute to your chances of receiving a master writ.
+--			- Character data saves motif data for all game styles by default.
+--			- Output for '/uespstyle list' shows just the full names for all valid styles in the game.
 --			- Added the '/uespsales bank', '/uespsales craftbag' and '/uespsales inventory' which display the estimated
 --			  value of all sellable items with valid prices in the given bags.
 --			- '/uespskillpoints' now shows your total number of skills points.
@@ -11089,6 +11095,27 @@ uespLog.CRAFTMOTIF_CHAPTERNAME = {
 }
 
 
+function uespLog.MatchUnknownStylePrefix(styleName)
+	local maxStyle = GetHighestItemStyleId()
+	
+	styleName = styleName:lower()
+		
+	for i = 1, maxStyle do
+		local name = GetItemStyleName(i) or ""
+		name = name:lower()
+		
+		if (name == styleName) then
+			return styleName, i
+		elseif (uespLog.BeginsWith(name, styleName)) then
+			return GetItemStyleName(i), i
+		end
+	
+	end
+	
+	return nil, -1
+end
+
+
 function uespLog.GetStyleKnown(styleName)
 	local known = false
 	local knowAll = true
@@ -11100,7 +11127,20 @@ function uespLog.GetStyleKnown(styleName)
 	local motifId = uespLog.CRAFTSTYLENAME_TO_MOTIFID[cmpStyleName] or false
 	local knownCount = 0
 		
-	if (cmpStyleName == "" or itemStyle <= 0 or not motifId) then
+	if (cmpStyleName == "") then
+		return nil, 0, -1, styleName
+	end	
+	
+	if (itemStyle <= 0 or not motifId) then
+		cmpStyleName, itemStyle = uespLog.MatchUnknownStylePrefix(styleName)
+		
+		if (cmpStyleName) then
+			cmpStyleName = string.lower(cmpStyleName)
+			motifId = uespLog.CRAFTSTYLENAME_TO_MOTIFID[cmpStyleName] or false
+		end
+	end
+	
+	if (itemStyle <= 0 or not motifId) then
 		return nil, 0, -1, styleName
 	end
 	
@@ -11169,7 +11209,7 @@ function uespLog.ShowStyles(styleName, showLong)
 		local unknownPieces = {}
 		local totalPieces = 14
 	
-		for i = 1,totalPieces do
+		for i = 1, totalPieces do
 			local chapterName = tostring(uespLog.CRAFTMOTIF_CHAPTERNAME[i])
 			local knownString = "UNKNOWN"
 			
@@ -11205,11 +11245,50 @@ end
 
 
 function uespLog.ListValidStyles()
+	local maxStyle = GetHighestItemStyleId()
+	local universalStyle = GetUniversalStyleId()
+	local orderedNames = {}
+	local output = ""
+	local j = 1
+	
+	uespLog.MsgColor(uespLog.craftColor, "Valid style names are:")
+	
+	for i = 1, maxStyle do
+		local name = GetItemStyleName(i)
+		
+		if (name ~= "" and name ~= nil and i ~= universalStyle) then
+			orderedNames[i] = name
+		end
+	end
+	
+	table.sort(orderedNames)
+	
+	for i = 1, #orderedNames do
+		local niceName = uespLog.titleCaseString(orderedNames[i])
+		
+		output = output .. niceName .. string.rep(" ", 20 - #niceName/1.5)
+		j = j + 1
+					
+		if (j >= 4) then
+			j = 1
+			uespLog.MsgColor(uespLog.craftColor, output)
+			output = ""
+		end
+	end
+	
+	if (output ~= "") then
+		uespLog.MsgColor(uespLog.craftColor, output)
+	end
+		
+end
+
+
+function uespLog.ListValidStyles_Old()
 	local orderedNames = {}
 	local j = 1
 	local output = ""
 	
-	uespLog.MsgColor(uespLog.craftColor, "UESP:Valid style names for /uespstyle are:")
+	uespLog.MsgColor(uespLog.craftColor, "Valid style names for /uespstyle are:")
 
 	for k in pairs(uespLog.CRAFTSTYLENAME_TO_MOTIFID) do
 		table.insert(orderedNames, k)
@@ -11238,18 +11317,37 @@ function uespLog.ListValidStyles()
 end
 
 
-function uespLog.ShowStyleSummary(showKnown, showUnknown)
+uespLog.EXCLUDE_STYLES_MASTERWRIT = {
+	[ITEMSTYLE_RACIAL_NORD] 		 = true,
+	[ITEMSTYLE_RACIAL_REDGUARD]  	 = true,
+	[ITEMSTYLE_RACIAL_ORC]  		 = true,
+	[ITEMSTYLE_RACIAL_KHAJIIT]  	 = true,
+	[ITEMSTYLE_RACIAL_HIGH_ELF]  	 = true,
+	[ITEMSTYLE_RACIAL_WOOD_ELF]  	 = true,
+	[ITEMSTYLE_RACIAL_ARGONIAN]  	 = true,
+	[ITEMSTYLE_RACIAL_BRETON]  		 = true,
+	[ITEMSTYLE_RACIAL_DARK_ELF] 	 = true,
+	[ITEMSTYLE_UNIVERSAL]			 = true,
+	[53]							 = true,
+	[58]							 = true,
+}
+
+	
+function uespLog.ShowStyleSummary(showKnown, showUnknown, showMasterWrit)
 	local numStyles = GetNumSmithingStyleItems()
 	local totalKnown = 0
 	local totalUnknown = 0
 	local validStyles = 0
 	local styleData = {}
 	local displayCount = 0
+	local writCount = 0
 				
 	if (showKnown) then
 		uespLog.MsgColor(uespLog.craftColor, "Showing summary for all completely known styles:")
 	elseif (showUnknown) then
 		uespLog.MsgColor(uespLog.craftColor, "Showing summary for all unknown styles:")
+	elseif (showMasterWrit) then
+		uespLog.MsgColor(uespLog.craftColor, "Showing summary for all styles contributing to master writ chance:")
 	else
 		uespLog.MsgColor(uespLog.craftColor, "Showing summary for all styles:")
 	end
@@ -11278,12 +11376,19 @@ function uespLog.ShowStyleSummary(showKnown, showUnknown)
 				displayStyle = false
 			elseif (showUnknown and knownCount >= 14) then
 				displayStyle = false
+			elseif (showMasterWrit and uespLog.EXCLUDE_STYLES_MASTERWRIT[itemStyle] ~= nil) then
+				displayStyle = false
 			end
 		
 			if (displayStyle) then
 				totalKnown = totalKnown + knownCount
 				totalUnknown = totalUnknown + 14 - knownCount
 				displayCount = displayCount + 1
+				
+				if (knownCount >= 14) then
+					writCount = writCount + 1
+				end
+				
 				uespLog.MsgColor(uespLog.craftColor, ".    "..tostring(styleName).." (" .. itemStyle .. ") = "..knownCount.."/14")			
 			end
 		end
@@ -11293,6 +11398,8 @@ function uespLog.ShowStyleSummary(showKnown, showUnknown)
 		uespLog.MsgColor(uespLog.craftColor, "You completely know "..displayCount.."/"..validStyles.." styles.")
 	elseif (showUnknown) then
 		uespLog.MsgColor(uespLog.craftColor, "You do not know "..displayCount.."/"..validStyles.." styles.")
+	elseif (showMasterWrit) then
+		uespLog.MsgColor(uespLog.craftColor, "You completely know "..writCount.."/"..displayCount.." styles.")
 	else
 		uespLog.MsgColor(uespLog.craftColor, "You know "..totalKnown.."/"..tostring(14*validStyles).." style chapters.")
 	end
@@ -11304,14 +11411,20 @@ SLASH_COMMANDS["/uespstyle"] = function (cmd)
 	
 	if (cmd == "") then
 		uespLog.MsgColor(uespLog.craftColor, "Shows which chapters of the item style you know.")
-		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle [stylename]            Shows which chapters you know")
-		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle long [stylename]    Shows chapters in old long format")
-		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle list                          Lists all valid styles")
-		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle summary                     Displays a summary of all styles")
+		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle [style]              Shows which chapters you know")
+		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle long [style]      Shows chapters in old long format")
+		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle list                     Lists all valid styles")
+		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle summary           Displays a summary of all styles")
+		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle summary           Displays a summary of all styles")
+		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle known               Show all completely known styles")
+		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle unknown           Show any styles not completely known")
+		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle master              Show styles related to master writ chance")
+	elseif (firstCmd == "master" or firstCmd == "writ") then
+		uespLog.ShowStyleSummary(false, false, true)
 	elseif (firstCmd == "unknown") then
-		uespLog.ShowStyleSummary(false, true)
+		uespLog.ShowStyleSummary(false, true, false)
 	elseif (firstCmd == "known") then
-		uespLog.ShowStyleSummary(true, false)
+		uespLog.ShowStyleSummary(true, false, false)
 	elseif (firstCmd == "liststyles" or firstCmd == "list") then
 		uespLog.ListValidStyles()
 	elseif (firstCmd == "summary" or firstCmd == "all") then

@@ -81,67 +81,6 @@ uespLog.CHARDATA_POWER = {
 }
 
 
-uespLog.CHARDATA_CRAFTSTYLE_NAMES = {
-	'Altmer',
-	'Dunmer',
-	'Bosmer',
-	'Nord',
-	'Breton',
-	'Redguard',
-	'Khajiit',
-	'Orc',
-	'Argonian',
-	'Imperial',
-	'Ancient Elf',
-	'Barbaric',
-	'Primal',
-	'Daedric',
-	'Dwemer',
-	'Glass',
-	'Xivkyn',
-	'Akaviri',
-	'Mercenary',
-	'Yokudan',
-	'Ancient Orc',
-	'Outlaw',
-	'Trinimac',
-	'Malacath',
-	'Daggerfall',
-	'Aldmeri',
-	'Ebonheart',
-	'Soul Shriven',
-	'Minotaur',
-	"Dro-m'athra",
-	'Order of the Hour',
-	'Thieves Guild',
-	"Assassins League",
-	'Celestial',
-	'Hollowjack',
-	'Grim Harlequin',
-	'Dark Brotherhood',
-	"Abah's Watch",
-	'Draugr',
-	'Skinchanger',
-	'Stalhrim',
-	'Silken Ring',
-	'Mazzatun',
-	'Ra Gada',
-	'Ebony',
-	'Militant Ordinator',
-	'Buoyant Armiger',
-	'Ashlander',
-	'Morag Tong',
-	'Hlaalu',
-	'Redoran',
-	'Telvanni',
-	'Bloodforge',
-	'Dreadhorn',
-	'Apostle',
-	'Ebonshadow',
-	'Worm Cult',
-}
-
-
 uespLog.charData_ActionBarData = { 
 	[1] = { },
 	[2] = { },
@@ -819,11 +758,15 @@ end
 
 function uespLog.CreateCharDataCrafting()
 	local crafting = {}
-	
-	for k, styleName in ipairs(uespLog.CHARDATA_CRAFTSTYLE_NAMES) do
+	local maxStyle = GetHighestItemStyleId()
+
+	for k = 1, maxStyle do
+		local styleName = GetItemStyleName(k) or ""
 		local known = uespLog.GetStyleKnown(styleName)
 		
-		if (type(known) == "table") then
+		if (styleName == "") then
+			-- Do nothing
+		elseif (type(known) == "table") then
 			crafting[styleName] = {}
 			
 			for k, v in ipairs(known) do

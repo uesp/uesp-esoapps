@@ -811,6 +811,8 @@
 --			- Added a few more "free" skills that don't contribute to your total skill point count with '/uespskillpoints'.
 --			- Fixed '/uespskillpoints' that incorrectly didn't count the first morph of skills as a point.
 --			- Added the '/uespskillpoints debug' that outputs skill point information used to generate the count.
+--			- Fixed the PC-NA sales price file data file which had become larger than allowed in Lua. Changed the way
+--			  the sales data is initialized to get around that limit.
 --
 --		  Dragon Bones Related Changes
 --			- Fixed bug with custom stat display and setting it via the UI menu.

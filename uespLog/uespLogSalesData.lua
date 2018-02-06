@@ -1089,16 +1089,33 @@ function uespLog.StartGuildSearchSalesScan(startPage)
 	uespLog.SalesGuildSearchScanNumItems = 0
 	uespLog.SalesGuildSearchScanPage = startPage
 	uespLog.SalesGuildSearchScanFinish = false
-	uespLog.Msg("Starting guild listing scan for "..tostring(guildName).."...do not leave trader until it is finished.")
-	
+		
 	uespLog.UpdateUespScanSalesButton()
 	
 	local salesConfig = uespLog.GetSalesDataConfig()
 		
 	if (salesConfig.guildListTimes[guildName] == nil) then
 		uespLog.SalesGuildSearchScanLastTimestamp = 0
+		uespLog.Msg("Starting guild listing scan for "..tostring(guildName).."(all items)...do not leave trader until it is finished.")
 	else
 		uespLog.SalesGuildSearchScanLastTimestamp = salesConfig.guildListTimes[guildName]
+		local diff = GetTimeStamp() - uespLog.SalesGuildSearchScanLastTimestamp
+		local diffTime = ""
+		
+		if (diff > 86400) then
+			local days = diff/86400
+			diffTime = string.format("%.1f days", days)
+		elseif (diff > 3600) then
+			local hours = diff/3600
+			diffTime = string.format("%.1f hours", hours)
+		elseif (diff > 60) then
+			local minutes = diff/60
+			diffTime = string.format("%.1f mins", minutes)
+		else
+			diffTime = tostring(diff) .. " secs"
+		end
+		
+		uespLog.Msg("Starting guild listing scan for "..tostring(guildName).." (new items in last "..diffTime..")...do not leave trader until it is finished.")
 	end
 		
 	uespLog.SalesGuildSearchScanListTimestamp = GetTimeStamp()

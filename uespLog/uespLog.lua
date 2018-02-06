@@ -814,6 +814,7 @@
 --			- Fixed the PC-NA sales price file data file which had become larger than allowed in Lua. Changed the way
 --			  the sales data is initialized to get around that limit.
 --			- Fixed guild listed items scan that would incorrectly not scan new items (seems to be due to a bug in the API).
+--			- Tweaked output of guild listed items scan to show how long it has been since the last scan.
 --
 --		  Dragon Bones Related Changes
 --			- Fixed bug with custom stat display and setting it via the UI menu.

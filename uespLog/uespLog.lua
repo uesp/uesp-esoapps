@@ -813,6 +813,7 @@
 --			- Added the '/uespskillpoints debug' that outputs skill point information used to generate the count.
 --			- Fixed the PC-NA sales price file data file which had become larger than allowed in Lua. Changed the way
 --			  the sales data is initialized to get around that limit.
+--			- Fixed guild listed items scan that would incorrectly not scan new items (seems to be due to a bug in the API).
 --
 --		  Dragon Bones Related Changes
 --			- Fixed bug with custom stat display and setting it via the UI menu.

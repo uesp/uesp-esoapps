@@ -587,6 +587,13 @@ end
 function uespLog.OnTradingHouseSearchResultsReceived (eventCode, guildId, numItemsOnPage, currentPage, hasMorePages)
 
 	uespLog.DebugExtraMsg("OnTradingHouseSearchResultsReceived "..tostring(numItemsOnPage)..", "..tostring(currentPage)..", "..tostring(hasMorePages))
+	
+		-- Sometimes this event is called before the actual data is available via the API
+	zo_callLater(function () uespLog.OnTradingHouseSearchResultsReceived_Delay(eventCode, guildId, numItemsOnPage, currentPage, hasMorePages) end, 50)
+end
+
+
+function uespLog.OnTradingHouseSearchResultsReceived_Delay (eventCode, guildId, numItemsOnPage, currentPage, hasMorePages)
 
 	if (uespLog.IsSalesDataSave()) then
 		uespLog.SaveTradingHouseSalesData(guildId, numItemsOnPage, currentPage)
@@ -650,6 +657,9 @@ function uespLog.SaveTradingHouseSalesItem(guildId, itemIndex, currentTimestamp,
 	
 	if (checkScan and uespLog.SalesGuildSearchScanStarted and listTimestamp < uespLog.SalesGuildSearchScanLastTimestamp) then
 		uespLog.SalesGuildSearchScanFinish = true
+		--uespLog.DebugMsg("Finished Scan: "..itemIndex..", "..tostring(uespLog.SalesGuildSearchScanStarted)..", "..tostring(listTimestamp)..", "..uespLog.SalesGuildSearchScanLastTimestamp)
+		--uespLog.DebugMsg(".   "..currentTimestamp..", "..logData.timeRemaining..", "..uespLog.SALES_MAX_LISTING_TIME)
+		--uespLog.DebugMsg(".   ".. GetTradingHouseSearchResultItemLink(itemIndex))
 		return false
 	end
 	
@@ -2166,4 +2176,28 @@ function uespLog.AddBuyingAdvice(rowControl, result)
     end
 	
     buyingAdvice = nil
+end
+
+
+function uespLog.ShowGuildTime()
+	local salesConfig = uespLog.GetSalesDataConfig()
+	local _, guildName = GetCurrentTradingHouseGuildDetails()
+	local lastTime = salesConfig.guildListTimes[guildName]
+	local nowTimestamp = GetTimeStamp()
+	
+	if (lastTime == nil) then
+		uespLog.DebugMsg("Nil guild time, "..nowTimestamp.." now")
+	else
+		local diff = nowTimestamp - lastTime
+		uespLog.DebugMsg("" ..lastTime.." guild time, "..nowTimestamp.." now ("..diff.." diff)")		
+	end
+end
+
+
+function uespLog.SetGuildTime(timestamp)
+	local salesConfig = uespLog.GetSalesDataConfig()
+	local _, guildName = GetCurrentTradingHouseGuildDetails()
+	
+	salesConfig.guildListTimes[guildName] = timestamp
+	uespLog.ShowGuildTime()
 end

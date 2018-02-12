@@ -787,7 +787,7 @@
 --			- Fixed Lua error when purchasing something from a guild store.
 --			- Fixed the position of the scan/reset sales button when Awesome Guild Store is not installed.
 --
---		- v1.40 -- Feb 2018
+--		- v1.40 -- 12 Feb 2018
 --			- Added NPCs to ignore from Clockwork City.
 --			- Fixed dumping of global data.
 --			- Added the "Keep Chat Open" option. Defaults to off but when turned on it will keep the chat window open
@@ -921,7 +921,7 @@
 uespLog = { }
 
 uespLog.version = "1.40"
-uespLog.releaseDate = "Feb 2018"
+uespLog.releaseDate = "12 Feb 2018"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

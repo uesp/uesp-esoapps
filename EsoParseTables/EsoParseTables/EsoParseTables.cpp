@@ -11,8 +11,9 @@
 #include <iostream>
 
 
-const std::string INPUT_FILENAME = "E:\\Temp\\testexport\\000\\498177_Uncompressed.dat";
-const std::string INPUT_FILENAME1 = "E:\\Temp\\testexport\\000\\497777_Uncompressed.dat";
+//const std::string INPUT_FILENAME = "E:\\Temp\\testexport\\000\\498177_Uncompressed.dat";
+//const std::string INPUT_FILENAME1 = "E:\\Temp\\testexport\\000\\497777_Uncompressed.dat";
+const std::string INPUT_FILENAME1 = "E:\\esoexport\\esomnf-17pts\\000\\589807_Uncompressed.EsoFileData";
 
 
 typedef unsigned int dword;

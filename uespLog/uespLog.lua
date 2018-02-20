@@ -823,6 +823,9 @@
 --			- '/uespskillpoints' only counts skills in discovered skill lines. This prevents issues with some racial passives
 --			  that are shared between 2 races that don't properly reset to 0 in this update.
 --
+--		- v1.41 --
+--			- Fixed missing preview option in crown store.
+--
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
 --
@@ -920,7 +923,7 @@
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "1.40"
+uespLog.version = "1.41"
 uespLog.releaseDate = "12 Feb 2018"
 uespLog.DATA_VERSION = 3
 
@@ -1191,6 +1194,8 @@ uespLog.trackStatHeaColor = "FF3331"
 uespLog.trackStatMagColor = "29A2DE"
 uespLog.trackStatStaColor = "35F935"
 uespLog.trackStatUltColor = "FFFFFF"
+
+uespLog.LastKeepChatOpen = false
 
 uespLog.LastLoreBookTitle = ""
 uespLog.LastLoreBookTime = 0
@@ -3543,9 +3548,9 @@ function uespLog.UpdateKeepChatOpen()
 	
 	local storeScene = SCENE_MANAGER:GetScene("store")
 	local furnitureBrowserScene = SCENE_MANAGER:GetScene(HOUSING_FURNITURE_KEYBOARD_SCENE_NAME)
-	local helpTutorialsScene = ZO_Scene:New("helpTutorials", SCENE_MANAGER)
-	local marketScene = ZO_RemoteScene:New("market", SCENE_MANAGER)
-		
+	local helpTutorialsScene = SCENE_MANAGER:GetScene("helpTutorials")
+	local marketScene = SCENE_MANAGER:GetScene("market")
+			
 	if (uespLog.GetKeepChatOpen()) then
 		TRADING_HOUSE_SCENE:RemoveFragment(MINIMIZE_CHAT_FRAGMENT)
 		helpTutorialsScene:RemoveFragment(MINIMIZE_CHAT_FRAGMENT)

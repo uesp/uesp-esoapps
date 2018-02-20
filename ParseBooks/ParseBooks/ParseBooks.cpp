@@ -14,10 +14,10 @@ using namespace eso;
 
 
 //const string INPUT_FILENAME = "e:\\Temp\\testexport\\000\\498404.dat";
-const string INPUT_FILENAME = "e:\\esoexport\\esomnf-16\\gamedata\\lang\\en.lang";
-const string OUTPUT_PATH = "e:\\esoexport\\goodimages-16\\BookExport\\";
-const string OUTPUT_SQL_FILE = "e:\\esoexport\\goodimages-16\\books.sql";
-const string OUTPUT_PHP_FILE = "e:\\esoexport\\goodimages-16\\BookTitles.php";
+const string INPUT_FILENAME = "e:\\esoexport\\esomnf-17\\gamedata\\lang\\en.lang";
+const string OUTPUT_PATH = "e:\\esoexport\\goodimages-17\\BookExport\\";
+const string OUTPUT_SQL_FILE = "e:\\esoexport\\goodimages-17\\books.sql";
+const string OUTPUT_PHP_FILE = "e:\\esoexport\\goodimages-17\\BookTitles.php";
 
 const dword TITLE_ID = 0x030D11F5;
 const dword TEXT_ID  = 0x014593B4;

@@ -823,8 +823,9 @@
 --			- '/uespskillpoints' only counts skills in discovered skill lines. This prevents issues with some racial passives
 --			  that are shared between 2 races that don't properly reset to 0 in this update.
 --
---		- v1.41 --
+--		- v1.41 -- 16 March 2018
 --			- Fixed missing preview option in crown store.
+--			- Removed notification of rising skill rank in undiscovered racial lines.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -924,7 +925,7 @@
 uespLog = { }
 
 uespLog.version = "1.41"
-uespLog.releaseDate = "12 Feb 2018"
+uespLog.releaseDate = "16 Mar 2018"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -4580,7 +4581,11 @@ end
 
 function uespLog.OnSkillRankUpdate (eventCode, skillType, skillIndex, rank)
 	local logData = { }
-	local name, rank1 = GetSkillLineInfo(skillType, skillIndex)
+	local name, rank1, discovered = GetSkillLineInfo(skillType, skillIndex)
+	
+	if (not discovered and skillType == SKILL_TYPE_RACIAL) then
+		return
+	end
 
 	logData.event = "SkillRankUpdate"
 	logData.skillType = skillType	

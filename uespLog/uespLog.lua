@@ -827,6 +827,9 @@
 --			- Fixed missing preview option in crown store.
 --			- Removed notification of rising skill rank in undiscovered racial lines.
 --
+--		- v1.42 -- 
+--			- Added journal quests, completed quests, books, Collectibles, and guilds to saved character data.
+--
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
 --
@@ -924,7 +927,7 @@
 --	GLOBAL DEFINITIONS
 uespLog = { }
 
-uespLog.version = "1.41"
+uespLog.version = "1.42"
 uespLog.releaseDate = "16 Mar 2018"
 uespLog.DATA_VERSION = 3
 

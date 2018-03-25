@@ -829,6 +829,9 @@
 --
 --		- v1.42 -- 
 --			- Added journal quests, completed quests, books, Collectibles, and guilds to saved character data.
+--			- Added the command "/uespchardata extended [on/off]". This is enabled by default and permits the saving
+--			  of book, collectible, recipe, quest, and achievement character data. Turning it off can reduce the size of
+--			  the saved character data (around 400k per character).
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -1649,6 +1652,7 @@ uespLog.DEFAULT_SETTINGS =
 		},
 		["loreBookMsg"] = true,
 		["autoSaveCharData"] = false,
+		["saveExtendedCharData"] = true,
 		["autoSaveZoneCharData"] = false,
 		["charDataPassword"] = "",
 		["charDataOldPassword"] = "",
@@ -2312,6 +2316,30 @@ function uespLog.SetShowCursorMapCoordsFlag(flag)
 	end
 	
 	uespLog.savedVars.settings.data.showCursorMapCoords = flag 
+end
+
+
+function uespLog.GetSaveExtendedCharData()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.saveExtendedCharData == nil) then
+		uespLog.savedVars.settings.data.saveExtendedCharData = uespLog.DEFAULT_SETTINGS.saveExtendedCharData
+	end
+	
+	return uespLog.savedVars.settings.data.saveExtendedCharData
+end
+
+
+function uespLog.SetSaveExtendedCharData(flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	uespLog.savedVars.settings.data.saveExtendedCharData = flag
 end
 
 
@@ -12334,7 +12362,7 @@ SLASH_COMMANDS["/uespchardata"] = function (cmd)
 		uespLog.SetAutoSaveCharData(false)
 		uespLog.Msg("Set auto saving of character data to: "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
 	elseif (cmd == 'zonesave') then
-		cmd2 = string.lower(cmds[2] or "")
+		local cmd2 = string.lower(cmds[2] or "")
 		
 		if (cmd2 == 'on') then
 			uespLog.SetAutoSaveZoneCharData(true)
@@ -12353,12 +12381,28 @@ SLASH_COMMANDS["/uespchardata"] = function (cmd)
 			uespLog.Msg("Error saving the current character data!")
 		end
 		
+	elseif (cmd == 'extended') then
+		local cmd2 = string.lower(cmds[2] or "")
+		
+		if (cmd2 == "on") then
+			uespLog.SetSaveExtendedCharData(true)
+		elseif (cmd2 == "off") then
+			uespLog.SetSaveExtendedCharData(false)
+		else
+			uespLog.Msg("Turning extended character data on enables the saving of:")
+			uespLog.Msg(".      Achievements, Books, Quests, Collectibles, Recipes")
+			uespLog.Msg("Turning this off can reduce the size of the saved variable file.")
+		end
+
+		uespLog.Msg("Extended character data is currently "..uespLog.BoolToOnOff(uespLog.GetSaveExtendedCharData()) )
 	else
 		uespLog.Msg("Turns on/off the automatic saving of character data. Use the format:")
 		uespLog.Msg(".     /uespchardata [on/off]                     Turn automatic saving on/off")
 		uespLog.Msg(".     /uespchardata save                        Manually save the character data")
+		uespLog.Msg(".     /uespchardata extended [on/off]    Save extended character data")
 		uespLog.Msg(".     /uespchardata password [text]       Change the character data password")
 		uespLog.Msg(".     /uespchardata password clear      Set no password")
+		uespLog.Msg(".          Extended saving is currently "..uespLog.BoolToOnOff(uespLog.GetSaveExtendedCharData()) )
 		uespLog.Msg(".          Automatic saving is currently "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
 		--uespLog.Msg(".          Automatic saving when zoning is "..uespLog.BoolToOnOff(uespLog.GetAutoSaveZoneCharData()) )
 	end

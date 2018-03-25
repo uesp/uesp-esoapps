@@ -268,8 +268,16 @@ function uespLog.CreateCharData (note)
 	
 	charData.Password = uespLog.GetCharDataPassword()
 	charData.OldPassword = uespLog.GetCharDataOldPassword()
+
+	charData.Guilds = uespLog.CreateGuildsCharData()
+	charData.Recipes = uespLog.CreateCharDataRecipes()
+	charData.Achievements = uespLog.CreateCharDataAchievements()
+	charData.Books = uespLog.CreateCharDataBooks()
+	charData.Collectibles = uespLog.CreateCharDataCollectibles()
 	charData.Inventory = uespLog.CreateInventoryData()
 	charData.Research = uespLog.GetCharDataResearchInfo()
+	charData.Journal = uespLog.CreateJournalCharData()
+	charData.CompletedQuests = uespLog.CreateCompletedQuestCharData()
 	
 		-- Only save house storage if it has been accessed on this character
 	if (uespLog.SavedHouseStorage) then
@@ -628,10 +636,7 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	charData.EquipSlots = uespLog.CreateCharDataEquipSlots()
 	charData.ChampionPoints = uespLog.CreateCharDataChampionPoints()
 	charData.Crafting = uespLog.CreateCharDataCrafting()
-	charData.Recipes = uespLog.CreateCharDataRecipes()
-	charData.Achievements = uespLog.CreateCharDataAchievements()
-	charData.Books = uespLog.CreateCharDataBooks()
-		
+			
 			-- Note: This function only works if the character is actually in Werewolf form at the time
 	if (IsWerewolf()) then
 		charData.Werewolf = 2
@@ -899,9 +904,80 @@ end
 
 function uespLog.CreateCharDataBooks()
 	local books = {}
-	
+	local numCategories = GetNumLoreCategories()
+	local categoryIndex
+	local collectionIndex
+	local bookIndex
+
+	for categoryIndex = 1, numCategories do
+		local catName, numCollections, categoryId = GetLoreCategoryInfo(categoryIndex)
+		
+		for collectionIndex = 1, numCollections do
+			local colName, colDesc, numKnownBooks, numBooks, hidden = GetLoreCollectionInfo(categoryIndex, collectionIndex)
+			
+			for bookIndex = 1, numBooks do
+				local title, icon, known, bookId = GetLoreBookInfo(categoryIndex, collectionIndex, bookIndex)
+				
+				if (known) then
+					known = 1
+				else
+					known = 0
+				end
+				
+				books["Book:"..tostring(bookId)] = known
+			end
+		end
+	end
 	
 	return books
+end
+
+
+
+function uespLog.CreateCharDataCollectibles()
+	local collect = {}
+	local numCategories = GetNumCollectibleCategories()
+	local categoryIndex
+	local subCategoryIndex
+	local collectibleIndex
+	local collectibleId 
+		
+	for categoryIndex = 1, numCategories do
+		local catName, numSubCategories, numCollectibles = GetCollectibleCategoryInfo(categoryIndex)
+		
+		for collectibleIndex = 1, numCollectibles do
+			collectibleId = GetCollectibleId(categoryIndex, nil, collectibleIndex)
+			local name, desc, icon, lockedIcon, purchased = GetCollectibleInfo(collectibleId)
+			
+			if (purchased) then
+				purchased = 1
+			else
+				purchased = 0
+			end
+			
+			collect["Collectible:"..tostring(collectibleId)] = purchased
+		end
+		
+		for subCategoryIndex = 1, numSubCategories do
+			local subCatName, numCollectibles = GetCollectibleSubCategoryInfo(categoryIndex, subCategoryIndex)
+			
+			for collectibleIndex = 1, numCollectibles do
+				collectibleId = GetCollectibleId(categoryIndex, subCategoryIndex, collectibleIndex)
+				local name, desc, icon, lockedIcon, purchased = GetCollectibleInfo(collectibleId)
+				
+				if (purchased) then
+					purchased = 1
+				else
+					purchased = 0
+				end
+			
+				collect["Collectible:"..tostring(collectibleId)] = purchased
+			end
+		end
+
+	end	
+	
+	return collect
 end
 
 
@@ -1928,4 +2004,105 @@ function uespLog.IsInOverloadState()
 	end
 	
 	return false
+end
+
+
+function uespLog.LogQuestData()
+	local data = uespLog.savedVars.tempData.data
+	local questId = GetNextCompletedQuestId(nil)
+	
+	while (questId ~= nil) do
+		local name, questType = GetCompletedQuestInfo(questId)
+		local zoneName, objectiveName, zoneIndex, poiIndex = GetCompletedQuestLocationInfo(questId)
+		
+		data[#data + 1] = ""..questId..",'" .. name .. "',"..questType..",'"..zoneName.."','"..objectiveName.."'"
+	
+		questId = GetNextCompletedQuestId(questId)
+	end
+end
+
+
+function uespLog.CreateJournalCharData()
+	local journalData = {}
+	local numQuests = GetNumJournalQuests()
+	local journalIndex
+	local conditionIndex
+	
+	journalData["NumJournalQuests"] = numQuests
+	
+	for journalIndex = 1, numQuests do
+		journalData["Journal:"..journalIndex..":Name"] = GetJournalQuestName(journalIndex)
+		journalData["Journal:"..journalIndex..":Type"] = GetJournalQuestType(journalIndex)
+		journalData["Journal:"..journalIndex..":Repeat"] = GetJournalQuestRepeatType(journalIndex)
+		journalData["Journal:"..journalIndex..":Zone"] = GetJournalQuestLocationInfo(journalIndex)
+		journalData["Journal:"..journalIndex..":Tasks"] = ""
+		
+		local questName, backgroundText, activeStepText, activeStepType, overrideText = GetJournalQuestInfo(journalIndex)
+		journalData["Journal:"..journalIndex..":Text"] = backgroundText
+		journalData["Journal:"..journalIndex..":ActiveText"] = activeStepText
+		journalData["Journal:"..journalIndex..":ActiveType"] = activeStepType
+		
+		local numSteps = GetJournalQuestNumSteps(journalIndex)
+		
+		if (overrideText ~= "") then
+			journalData["Journal:"..journalIndex..":Tasks"] = " * "..tostring(overrideText).."\n"
+		elseif (numSteps >= 1) then
+			local numConditions = GetJournalQuestNumConditions(journalIndex, 1)
+			local text = ""
+			
+			for conditionIndex = 1, numConditions do
+				local text, current, maxCount, isFail, isComplete, isCreditShared, isVisible = GetJournalQuestConditionInfo(journalIndex, stepIndex, conditionIndex)		
+				local taskText = ""
+				
+				if (isVisible) then
+					taskText = text
+				end
+
+				text = text .. " * " .. taskText .. "\n"
+			end		
+			
+			journalData["Journal:"..journalIndex..":Tasks"] = text
+		end
+
+	end
+	
+	return journalData
+end
+
+
+function uespLog.CreateCompletedQuestCharData()
+	local questData = {}
+	local questId = GetNextCompletedQuestId(nil)
+	local questCount = 0
+	
+	while (questId ~= nil) do
+		local name, questType = GetCompletedQuestInfo(questId)
+		local zoneName, objectiveName, zoneIndex, poiIndex = GetCompletedQuestLocationInfo(questId)
+		
+		questCount = questCount + 1
+		questData["Quest:"..questCount] = tostring(questId).."|"..tostring(name).."|"..tostring(questType).."|"..tostring(zoneName).."|"..tostring(objectiveName)
+		
+		questId = GetNextCompletedQuestId(questId)
+	end	
+	
+	questData["NumCompletedQuests"] = questCount
+	
+	return questData
+end
+
+
+function uespLog.CreateGuildsCharData()
+	local guildData = {}
+	local numGuilds = GetNumGuilds()
+	local guildIndex
+	
+	guildData["NumGuilds"] = numGuilds
+	
+	for guildIndex = 1, numGuilds do
+		local name = GetGuildName(guildIndex)
+		
+		guildData["Guild:"..tostring(guildIndex)] = name
+	end
+
+	return guildData
 end

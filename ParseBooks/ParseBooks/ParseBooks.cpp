@@ -15,37 +15,37 @@ using namespace eso;
 
 //const string INPUT_FILENAME = "e:\\Temp\\testexport\\000\\498404.dat";
 const string INPUT_FILENAME = "e:\\esoexport\\esomnf-17\\gamedata\\lang\\en.lang";
-const string OUTPUT_PATH = "e:\\esoexport\\goodimages-17\\BookExport\\";
-const string OUTPUT_SQL_FILE = "e:\\esoexport\\goodimages-17\\books.sql";
-const string OUTPUT_PHP_FILE = "e:\\esoexport\\goodimages-17\\BookTitles.php";
+const string BOOK_OUTPUT_PATH = "e:\\esoexport\\goodimages-17\\BookExport\\";
+const string BOOK_OUTPUT_SQL_FILE = "e:\\esoexport\\goodimages-17\\books.sql";
+const string BOOK_OUTPUT_PHP_FILE = "e:\\esoexport\\goodimages-17\\BookTitles.php";
 
-const dword TITLE_ID = 0x030D11F5;
-const dword TEXT_ID  = 0x014593B4;
+const string QUEST_OUTPUT_SQL_FILE = "e:\\esoexport\\goodimages-17\\quests.sql";
+const string QUEST_OUTPUT_PHP_FILE = "e:\\esoexport\\goodimages-17\\Quests.php";
+
+const dword BOOK_TITLE_ID = 0x030D11F5;
+const dword BOOK_TEXT_ID  = 0x014593B4;
+
+const dword QUEST_NAME_ID = 52420949;
+const dword QUEST_JOURNAL_ID = 265851556;
 
 unordered_map<dword, bookdata_t> BookTexts;
 unordered_map<string, dword> BookUniqueTitles;
 unordered_map<string, vector<dword>> BookUniqueIds;
 unordered_map<dword, bool> BookIdenticalText;
 
+unordered_map<dword, questdata_t> QuestData;
+unordered_map<string, dword> QuestUniqueNames;
 
-int main()
+
+bool ParseBooks(CEsoLangFile& LangData)
 {
-	CEsoLangFile LangData;
-
-	OpenLog("ParseBooks.log");
-
-	printf("Loading language file %s...\n", INPUT_FILENAME.c_str());
-
-	LangData.Load(INPUT_FILENAME);
-	printf("Loaded %u records from language data!\n", LangData.GetNumRecords());
-
 	printf("Parsing book titles and texts...\n");
 
 	for (dword i = 0; i < LangData.GetNumRecords(); ++i)
 	{
 		lang_record_t& Record = LangData.GetRecord(i);
 
-		if (Record.Id == TITLE_ID)
+		if (Record.Id == BOOK_TITLE_ID)
 		{
 			BookTexts[Record.Index].Index = Record.Index;
 			BookTexts[Record.Index].Title = Record.Text;
@@ -53,7 +53,7 @@ int main()
 			BookUniqueIds[Record.Text].push_back(Record.Index);
 			BookIdenticalText[Record.Index] = false;
 		}
-		else if (Record.Id == TEXT_ID)
+		else if (Record.Id == BOOK_TEXT_ID)
 		{
 			BookTexts[Record.Index].Index = Record.Index;
 			BookTexts[Record.Index].Text = Record.Text;
@@ -107,13 +107,13 @@ int main()
 
 	printf("Exporting all book texts and SQL file...\n");
 
-	EnsurePathExists(OUTPUT_PATH);
+	EnsurePathExists(BOOK_OUTPUT_PATH);
 	unordered_map<string, dword> BookTitleCount;
 	CFile SqlFile;
 	CFile PhpFile;
 
-	if (!SqlFile.Open(OUTPUT_SQL_FILE, "wb")) return -1;
-	if (!PhpFile.Open(OUTPUT_PHP_FILE, "wb")) return -1;
+	if (!SqlFile.Open(BOOK_OUTPUT_SQL_FILE, "wb")) return false;
+	if (!PhpFile.Open(BOOK_OUTPUT_PHP_FILE, "wb")) return false;
 
 	PhpFile.Printf("<?php\n");
 	PhpFile.Printf("$BOOK_TITLES = array(\n");
@@ -142,9 +142,9 @@ int main()
 		//â€”
 
 		if (TitleCount > 0)
-			snprintf(OutputFilename, 1000, "%s%s_%u.txt", OUTPUT_PATH.c_str(), Title.c_str(), TitleCount);
+			snprintf(OutputFilename, 1000, "%s%s_%u.txt", BOOK_OUTPUT_PATH.c_str(), Title.c_str(), TitleCount);
 		else
-			snprintf(OutputFilename, 1000, "%s%s.txt", OUTPUT_PATH.c_str(), Title.c_str());
+			snprintf(OutputFilename, 1000, "%s%s.txt", BOOK_OUTPUT_PATH.c_str(), Title.c_str());
 
 		if (!File.Open(OutputFilename, "wb")) continue;
 
@@ -160,7 +160,7 @@ int main()
 		escTitle = ReplaceStrings(escTitle, "\n", "\\n");
 		escTitle = ReplaceStrings(escTitle, "\r", "\\r");
 		escTitle = ReplaceStrings(escTitle, "\t", "\\t");
-		
+
 		escText = ReplaceStrings(escText, "\\", "\\\\");
 		escText = ReplaceStrings(escText, "'", "\\'");
 		escText = ReplaceStrings(escText, "\"", "\\\"");
@@ -207,6 +207,109 @@ int main()
 		}
 	}
 
-    return 0;
+	return true;
 }
 
+
+bool ParseQuests(CEsoLangFile& LangData)
+{
+	printf("Parsing quest names and journal texts...\n");
+
+	for (dword i = 0; i < LangData.GetNumRecords(); ++i)
+	{
+		lang_record_t& Record = LangData.GetRecord(i);
+
+		if (Record.Id == QUEST_NAME_ID)
+		{
+			QuestData[Record.Index].Id = Record.Index;
+			QuestData[Record.Index].Name = Record.Text;
+			QuestUniqueNames[Record.Text] += 1;
+		}
+		else if (Record.Id == QUEST_JOURNAL_ID)
+		{
+			QuestData[Record.Index].Id = Record.Index;
+			QuestData[Record.Index].Journal = Record.Text;
+		}
+	}
+
+	printf("Found %u quests with %u unique names...\n", QuestData.size(), QuestUniqueNames.size());
+	printf("Exporting all quest data and SQL file...\n");
+
+	CFile SqlFile;
+	CFile PhpFile;
+
+	if (!SqlFile.Open(QUEST_OUTPUT_SQL_FILE, "wb")) return false;
+	if (!PhpFile.Open(QUEST_OUTPUT_PHP_FILE, "wb")) return false;
+
+	PhpFile.Printf("<?php\n");
+	PhpFile.Printf("$ESO_QUEST_DATA = array(\n");
+
+	for (auto it : QuestData)
+	{
+		questdata_t& Record = it.second;
+		CFile File;
+
+		string QuestName = Record.Name;
+		string escName = Record.Name;
+		string escJournal = Record.Journal;
+
+		escName = ReplaceStrings(escName, "\\", "\\\\");
+		escName = ReplaceStrings(escName, "'", "\\'");
+		escName = ReplaceStrings(escName, "\"", "\\\"");
+		escName = ReplaceStrings(escName, "\n", "\\n");
+		escName = ReplaceStrings(escName, "\r", "\\r");
+		escName = ReplaceStrings(escName, "\t", "\\t");
+
+		escJournal = ReplaceStrings(escJournal, "\\", "\\\\");
+		escJournal = ReplaceStrings(escJournal, "'", "\\'");
+		escJournal = ReplaceStrings(escJournal, "\"", "\\\"");
+		escJournal = ReplaceStrings(escJournal, "\n", "\\n");
+		escJournal = ReplaceStrings(escJournal, "\r", "\\r");
+		escJournal = ReplaceStrings(escJournal, "\t", "\\t");
+
+		SqlFile.Printf("UPDATE quest SET internalId='%d' WHERE name='%s';\n", Record.Id, escName.c_str());
+
+		escName = Record.Name;
+		escName = ReplaceStrings(escName, "\"", "\\\"");
+		escName = ReplaceStrings(escName, "\n", "\\n");
+		escName = ReplaceStrings(escName, "\r", "\\r");
+		escName = ReplaceStrings(escName, "\t", "\\t");
+		escName = ReplaceStrings(escName, "—", "-");
+
+		escJournal = Record.Journal;
+		escJournal = ReplaceStrings(escJournal, "\"", "\\\"");
+		escJournal = ReplaceStrings(escJournal, "\n", "\\n");
+		escJournal = ReplaceStrings(escJournal, "\r", "\\r");
+		escJournal = ReplaceStrings(escJournal, "\t", "\\t");
+		escJournal = ReplaceStrings(escJournal, "—", "-");
+
+		PhpFile.Printf("\t%d => array(\n", Record.Id);
+		PhpFile.Printf("\t\t\t'name'    => \"%s\",\n",  escName.c_str());
+		PhpFile.Printf("\t\t\t'journal' => \"%s\",\n", escJournal.c_str());
+		PhpFile.Printf("\t\t),\n");
+	}
+
+	PhpFile.Printf(");\n\n");
+	PhpFile.Close();
+	SqlFile.Close();
+
+	return true;
+}
+
+
+int main()
+{
+	CEsoLangFile LangData;
+
+	OpenLog("ParseBooks.log");
+
+	printf("Loading language file %s...\n", INPUT_FILENAME.c_str());
+
+	LangData.Load(INPUT_FILENAME);
+	printf("Loaded %u records from language data!\n", LangData.GetNumRecords());
+
+	//ParseBooks(LangData);
+	ParseQuests(LangData);
+
+    return 0;
+}

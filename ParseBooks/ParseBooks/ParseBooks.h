@@ -20,4 +20,11 @@ namespace eso
 		std::string Text;
 	};
 
+	struct questdata_t
+	{
+		dword Id;
+		std::string Name;
+		std::string Journal;
+	};
+
 };

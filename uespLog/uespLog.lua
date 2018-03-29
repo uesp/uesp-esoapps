@@ -16576,3 +16576,145 @@ end
 SLASH_COMMANDS["/uesppvpqueue"] = uespLog.ChangePVPCampaignCommand
 
 
+function uespLog.MineBookTree()
+	local tempData = uespLog.savedVars.tempData.data
+	local numCategories = GetNumLoreCategories()
+	local categoryIndex
+	local collectionIndex
+	local bookIndex
+	local totalBooks = 0
+	local validBooks = 0
+	local totalKnownBooks = 0
+	
+	for categoryIndex = 1, numCategories do
+		local name1, numCollections, categoryId = GetLoreCategoryInfo(categoryIndex)
+		local totalCatBooks = 0
+		
+		name1 = name1:gsub("'", "`")
+		
+		for collectionIndex = 1, numCollections do
+			local _, _, _, numBooks = GetLoreCollectionInfo(categoryIndex, collectionIndex)
+			totalCatBooks = totalCatBooks + numBooks
+		end
+		
+		tempData[#tempData + 1] = ""..tostring(categoryIndex).." => array("
+		tempData[#tempData + 1] = "0 => array( 'id' => "..tostring(categoryId)..", 'name' => '"..tostring(name1).."', 'numCollect' => "..tostring(numCollections)..", 'numBooks' => "..tostring(totalCatBooks).." ),"
+		
+		for collectionIndex = 1, numCollections do
+			local name2, desc, numKnownBooks, numBooks, hidden, collectionIcon, collectionId = GetLoreCollectionInfo(categoryIndex, collectionIndex)
+
+			name2 = name2:gsub("'", "`")
+			
+			tempData[#tempData + 1] = ""..tostring(collectionIndex).." => array( 'id' => "..tostring(collectionId)..", 'name' => '"..tostring(name2).."', 'numBooks' => "..tostring(numBooks)..", 'icon' => '"..tostring(collectionIcon).."',"
+						
+			totalBooks = totalBooks + numBooks
+			totalKnownBooks = totalKnownBooks + numKnownBooks
+			
+			tempData[#tempData + 1] = "'books' => array("
+			
+			for bookIndex = 1, numBooks do
+				local title, bookIcon, known, bookId = GetLoreBookInfo(categoryIndex, collectionIndex, bookIndex)
+				--local body, medium, showTitle = ReadLoreBook(categoryIndex, collectionIndex, bookIndex)
+				--local itemLink = GetLoreBookLink(categoryIndex, collectionIndex, bookIndex)
+				
+				title = title:gsub("'", "`")
+				
+				tempData[#tempData + 1] = ""..tostring(bookId).." => array( 'title' => '"..tostring(title).."', 'icon' => '"..tostring(bookIcon).."'),"
+				
+				if (body ~= "") then
+					validBooks = validBooks + 1
+				end			
+			end	
+			
+			tempData[#tempData + 1] = "),"
+			tempData[#tempData + 1] = "),"
+		end
+		
+		tempData[#tempData + 1] = "),"
+	end
+		
+	uespLog.Msg("Found "..validBooks.." / "..totalBooks.." books with "..totalKnownBooks.." known!")
+end
+
+
+function uespLog.MineCollectibleTree()
+	local tempData = uespLog.savedVars.tempData.data
+	local numCategories = GetNumCollectibleCategories()
+	local categoryIndex
+	local subCategoryIndex
+	local collectibleIndex
+	local collectibleCount = 0
+	local knownCount = 0
+	
+	for categoryIndex = 1, numCategories do
+		local catName, numSubCategories, numCatCollectibles, unlocked, totalCollectibles = GetCollectibleCategoryInfo(categoryIndex)
+		local special = GetCollectibleCategorySpecialization(categoryIndex)
+		local icon = GetCollectibleCategoryKeyboardIcons(categoryIndex)
+		
+		catName = catName:gsub("'", "`")
+		
+		tempData[#tempData + 1] = ""..tostring(categoryIndex).." => array("
+		tempData[#tempData + 1] = "0 => array( 'categoryIndex' => "..tostring(categoryIndex)..", 'name' => '"..tostring(catName).."', 'icon' => '"..tostring(icon).."', 'special' => "..tostring(special)..", 'numSubCategories' => "..tostring(numSubCategories)..", 'numCollectibles' => "..tostring(numCatCollectibles)..", "
+		tempData[#tempData + 1] = "'collectibles' => array("
+		
+		for collectibleIndex = 1, numCatCollectibles do
+			local collectibleId = GetCollectibleId(categoryIndex, nil, collectibleIndex)
+			local name, desc, icon, _, unlocked, purchaseable, _, categoryType, hint = GetCollectibleInfo(collectibleId)
+			local bgImage = GetCollectibleKeyboardBackgroundImage(collectibleId)
+			local nickname = GetCollectibleNickname(collectibleId)
+			
+			collectibleCount = collectibleCount + 1
+			
+			if (unlocked) then
+				knownCount = knownCount + 1	
+			end
+			
+			name = name:gsub("'", "`")
+			desc = desc:gsub("'", "`")
+			nickname = nickname:gsub("'", "`")
+			
+			tempData[#tempData + 1] = ""..tostring(collectibleIndex).." => array( 'id' => "..tostring(collectibleId)..", 'name' => '"..tostring(name).."', 'icon' => '"..tostring(icon).."', 'desc' => '"..tostring(desc).."', 'type' => "..tostring(categoryType)..", 'image' => '"..tostring(bgImage).."', 'nickname' => '"..tostring(nickname).."'),"
+		end
+		
+		tempData[#tempData + 1] = "),"
+		tempData[#tempData + 1] = "),"
+		
+		for subCategoryIndex = 1, numSubCategories do
+			local subCatName, numCollectibles, unlocked, totalCollectibles = GetCollectibleSubCategoryInfo(categoryIndex, subCategoryIndex)
+			
+			subCatName = subCatName:gsub("'", "`")
+			
+			tempData[#tempData + 1] = ""..tostring(subCategoryIndex).." => array( 'subCategoryIndex' => "..tostring(subCategoryIndex)..", 'name' => '"..tostring(subCatName).."', 'numCollectibles' => "..tostring(numCollectibles)..", "
+			tempData[#tempData + 1] = "'collectibles' => array("
+			
+			for collectibleIndex = 1, numCollectibles do
+				local collectibleId = GetCollectibleId(categoryIndex, subCategoryIndex, collectibleIndex)
+				local name, desc, icon, _, unlocked, purchaseable, _, categoryType, hint = GetCollectibleInfo(collectibleId)
+				local bgImage = GetCollectibleKeyboardBackgroundImage(collectibleId)
+				local nickname = GetCollectibleNickname(collectibleId)
+				
+				collectibleCount = collectibleCount + 1
+				
+				if (unlocked) then
+					knownCount = knownCount + 1	
+				end
+				
+				name = name:gsub("'", "`")
+				desc = desc:gsub("'", "`")
+				nickname = nickname:gsub("'", "`")
+				
+				tempData[#tempData + 1] = ""..tostring(collectibleIndex).." => array( 'id' => "..tostring(collectibleId)..", 'name' => '"..tostring(name).."', 'icon' => '"..tostring(icon).."', 'desc' => '"..tostring(desc).."', 'type' => "..tostring(categoryType)..", 'image' => '"..tostring(bgImage).."', 'nickname' => '"..tostring(nickname).."'),"
+			end
+
+			tempData[#tempData + 1] = "),"
+			tempData[#tempData + 1] = "),"
+		end
+		
+		tempData[#tempData + 1] = "),"
+	end
+	
+	uespLog.Msg("Found "..knownCount.." / "..collectibleCount.." collectibles!")
+end
+
+
+

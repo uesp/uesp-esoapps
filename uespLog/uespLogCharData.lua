@@ -911,6 +911,9 @@ function uespLog.CreateCharDataBooks()
 	local categoryIndex
 	local collectionIndex
 	local bookIndex
+	local totalBooks = 0
+	local knownBooks = 0
+	
 
 	for categoryIndex = 1, numCategories do
 		local catName, numCollections, categoryId = GetLoreCategoryInfo(categoryIndex)
@@ -918,11 +921,14 @@ function uespLog.CreateCharDataBooks()
 		for collectionIndex = 1, numCollections do
 			local colName, colDesc, numKnownBooks, numBooks, hidden = GetLoreCollectionInfo(categoryIndex, collectionIndex)
 			
+			totalBooks = totalBooks + numBooks
+			
 			for bookIndex = 1, numBooks do
 				local title, icon, known, bookId = GetLoreBookInfo(categoryIndex, collectionIndex, bookIndex)
 				
 				if (known) then
 					known = 1
+					knownBooks = knownBooks + 1
 				else
 					known = 0
 				end
@@ -931,6 +937,9 @@ function uespLog.CreateCharDataBooks()
 			end
 		end
 	end
+	
+	books['TotalBooks'] = totalBooks
+	books['KnownBooks'] = knownBooks
 	
 	return books
 end
@@ -944,6 +953,9 @@ function uespLog.CreateCharDataCollectibles()
 	local subCategoryIndex
 	local collectibleIndex
 	local collectibleId 
+	local maxCollectibleId = 0
+	local numCollectibles = 0
+	local knownCollectibles = 0
 		
 	for categoryIndex = 1, numCategories do
 		local catName, numSubCategories, numCollectibles = GetCollectibleCategoryInfo(categoryIndex)
@@ -954,11 +966,17 @@ function uespLog.CreateCharDataCollectibles()
 			
 			if (purchased) then
 				purchased = 1
+				knownCollectibles = knownCollectibles + 1
 			else
 				purchased = 0
 			end
 			
+			if (maxCollectibleId < collectibleId) then
+				maxCollectibleId = collectibleId
+			end
+			
 			collect["Collectible:"..tostring(collectibleId)] = purchased
+			numCollectibles = numCollectibles + 1
 		end
 		
 		for subCategoryIndex = 1, numSubCategories do
@@ -970,15 +988,25 @@ function uespLog.CreateCharDataCollectibles()
 				
 				if (purchased) then
 					purchased = 1
+					knownCollectibles = knownCollectibles + 1
 				else
 					purchased = 0
 				end
+				
+				if (maxCollectibleId < collectibleId) then
+					maxCollectibleId = collectibleId
+				end
 			
 				collect["Collectible:"..tostring(collectibleId)] = purchased
+				numCollectibles = numCollectibles + 1
 			end
 		end
 
 	end	
+	
+	collect['KnownCollectibles'] = knownCollectibles
+	collect['NumCollectibles'] = numCollectibles
+	collect['MaxCollectibleId'] = maxCollectibleId
 	
 	return collect
 end
@@ -2048,23 +2076,26 @@ function uespLog.CreateJournalCharData()
 		local numSteps = GetJournalQuestNumSteps(journalIndex)
 		
 		if (overrideText ~= "") then
-			journalData["Journal:"..journalIndex..":Tasks"] = " * "..tostring(overrideText).."\n"
+			journalData["Journal:"..journalIndex..":Tasks"] = tostring(overrideText)
 		elseif (numSteps >= 1) then
 			local numConditions = GetJournalQuestNumConditions(journalIndex, 1)
-			local text = ""
+			local taskText = ""
 			
 			for conditionIndex = 1, numConditions do
 				local text, current, maxCount, isFail, isComplete, isCreditShared, isVisible = GetJournalQuestConditionInfo(journalIndex, stepIndex, conditionIndex)		
-				local taskText = ""
 				
 				if (isVisible) then
-					taskText = text
+					if (taskText ~= "") then
+						taskText = taskText .. "|"
+					end
+					
+					taskText = taskText .. text
 				end
-
-				text = text .. " * " .. taskText .. "\n"
-			end		
+				
+			end
 			
-			journalData["Journal:"..journalIndex..":Tasks"] = text
+			taskText = taskText:gsub("•", "~*")			
+			journalData["Journal:"..journalIndex..":Tasks"] = taskText
 		end
 
 	end
@@ -2103,8 +2134,13 @@ function uespLog.CreateGuildsCharData()
 	
 	for guildIndex = 1, numGuilds do
 		local name = GetGuildName(guildIndex)
+		local memberIndex = GetPlayerGuildMemberIndex(guildIndex)
+		local _, _, rankIndex, playerStatus = GetGuildMemberInfo(guildIndex, memberIndex)
 		
 		guildData["Guild:"..tostring(guildIndex)] = name
+		guildData["Guild:"..tostring(guildIndex)..":Members"] = GetNumGuildMembers(guildIndex)
+		guildData["Guild:"..tostring(guildIndex)..":Rank"] = GetGuildRankCustomName(guildIndex, rankIndex)
+		guildData["Guild:"..tostring(guildIndex)..":Founded"] = GetGuildFoundedDate(guildIndex)
 	end
 
 	return guildData

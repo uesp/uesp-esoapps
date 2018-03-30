@@ -13,7 +13,8 @@
 
 //const std::string INPUT_FILENAME = "E:\\Temp\\testexport\\000\\498177_Uncompressed.dat";
 //const std::string INPUT_FILENAME1 = "E:\\Temp\\testexport\\000\\497777_Uncompressed.dat";
-const std::string INPUT_FILENAME1 = "E:\\esoexport\\esomnf-17pts\\000\\589807_Uncompressed.EsoFileData";
+//const std::string INPUT_FILENAME1 = "E:\\esoexport\\esomnf-17pts\\000\\589807_Uncompressed.EsoFileData";
+const std::string INPUT_FILENAME1 = "E:\\esoexport\\esomnf-17\\000\\589825_Uncompressed.EsoFileData";
 
 
 typedef unsigned int dword;
@@ -153,7 +154,7 @@ public:
 
 	void DumpHeaders (FILE* pOutput = stdout)
 	{
-		fprintf(pOutput, "%d = %s\n", m_Index2, m_Name.c_str());
+		fprintf(pOutput, "%d) %d = %s\n", m_RecordIndex, m_Index2, m_Name.c_str());
 	}
 
 
@@ -433,7 +434,7 @@ bool LoadTableHeaders(const std::string Filename)
 int main()
 {
 	
-	if (!LoadTableHeaders(INPUT_FILENAME1))
+	if (!LoadTables(INPUT_FILENAME1))
 	{
 		ReportError("Failed to load file!");
 		return -1;

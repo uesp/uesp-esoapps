@@ -24,7 +24,12 @@ namespace eso
 	{
 		dword Id;
 		std::string Name;
+		std::string InternalName;
 		std::string Journal;
+		dword ZoneId;
+		std::string ZoneName;
+		dword Type;
+
 	};
 
 };

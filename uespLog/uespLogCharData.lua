@@ -834,16 +834,16 @@ end
 function uespLog.ParseAchievementLinkId(link)
 
 	if (link == nil or link == "") then
-		return -1, -1, -1
+		return -1, 0, 0
 	end
 	
 	local linkType, itemText, achId, achData, achTimestamp = link:match("|H(.-):(.-):(.-):(.-):(.-)|h|h")	
 	
 	if (achId == nil or achData == nil or achTimestamp == nil) then
-		return -1, -1, -1
+		return -1, 0, 0
 	end
 
-	return achId, achData, achTimestamp
+	return achId, tonumber(achData), tonumber(achTimestamp)
 end
 
 
@@ -874,7 +874,10 @@ function uespLog.CreateCharDataAchievements()
 					local achLink = GetAchievementLink(currentId)
 					local _, progress, timestamp = uespLog.ParseAchievementLinkId(achLink)
 					
-					achievements["Achievement:"..tostring(currentId)] = "" .. tostring(progress) .. ", " .. tostring(timestamp)
+					if (progress ~= 0 or timestamp ~= 0) then
+						achievements["Achievement:"..tostring(currentId)] = "" .. tostring(progress) .. ", " .. tostring(timestamp)
+					end
+					
 					currentId = GetNextAchievementInLine(currentId)
 				end				
 			end
@@ -892,7 +895,10 @@ function uespLog.CreateCharDataAchievements()
 				local achLink = GetAchievementLink(currentId)
 				local _, progress, timestamp = uespLog.ParseAchievementLinkId(achLink)
 				
-				achievements["Achievement:"..tostring(currentId)] = "" .. tostring(progress) .. ", " .. tostring(timestamp)
+				if (progress ~= 0 or timestamp ~= 0) then
+					achievements["Achievement:"..tostring(currentId)] = "" .. tostring(progress) .. ", " .. tostring(timestamp)
+				end
+				
 				currentId = GetNextAchievementInLine(currentId)
 			end				
 		end
@@ -913,7 +919,6 @@ function uespLog.CreateCharDataBooks()
 	local bookIndex
 	local totalBooks = 0
 	local knownBooks = 0
-	
 
 	for categoryIndex = 1, numCategories do
 		local catName, numCollections, categoryId = GetLoreCategoryInfo(categoryIndex)
@@ -933,7 +938,9 @@ function uespLog.CreateCharDataBooks()
 					known = 0
 				end
 				
-				books["Book:"..tostring(bookId)] = known
+				if (known ~= 0) then
+					books["Book:"..tostring(bookId)] = known
+				end
 			end
 		end
 	end
@@ -975,7 +982,10 @@ function uespLog.CreateCharDataCollectibles()
 				maxCollectibleId = collectibleId
 			end
 			
-			collect["Collectible:"..tostring(collectibleId)] = purchased
+			if (purchased ~= 0) then
+				collect["Collectible:"..tostring(collectibleId)] = purchased
+			end
+			
 			numCollectibles = numCollectibles + 1
 		end
 		
@@ -997,7 +1007,10 @@ function uespLog.CreateCharDataCollectibles()
 					maxCollectibleId = collectibleId
 				end
 			
-				collect["Collectible:"..tostring(collectibleId)] = purchased
+				if (purchased ~= 0) then
+					collect["Collectible:"..tostring(collectibleId)] = purchased
+				end
+				
 				numCollectibles = numCollectibles + 1
 			end
 		end

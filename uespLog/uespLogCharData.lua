@@ -605,6 +605,7 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	charData.AttributesTotal = charData.AttributesUnspent + charData.AttributesHealth + charData.AttributesMagicka + charData.AttributesStamina
 	charData.SkillPointsUnused = GetAvailableSkillPoints()
 	charData.SkyShards = GetNumSkyShards()
+	charData.SkyshardsFound, charData.SkyshardsTotal = uespLog.GetSkyshardsFound()
 
 	local inventoryBonus, maxInventoryBonus, staminaBonus, maxStaminaBonus, speedBonus, maxSpeedBonus = GetRidingStats()
 	charData.RidingInventory = inventoryBonus
@@ -645,7 +646,8 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 		charData.Werewolf = 2
 	end
 
-	charData.Skills, charData.SkillPointsUsed = uespLog.CreateCharDataSkills()
+	charData.Skills = uespLog.CreateCharDataSkills()
+	charData.SkillPointsUsed = uespLog.GetSkillPointsUsed(showDebug)
 	charData.SkillPointsTotal = charData.SkillPointsUsed + charData.SkillPointsUnused	
 		
 	blackSkill = charData.Skills["Craft:Blacksmithing:Miner Hireling"] or { rank = 0 }
@@ -1316,7 +1318,6 @@ function uespLog.CreateCharDataSkills()
 	local skillType
 	local skillIndex
 	local abilityIndex
-	local totalSkillPoints = 0
 	local barIndex = uespLog.GetBuildDataActiveBarIndex()
 	
 	for skillType = 1, numSkillTypes do
@@ -1353,16 +1354,13 @@ function uespLog.CreateCharDataSkills()
 				
 					if (passive and currentUpgradeLevel > 0) then
 						rank = currentUpgradeLevel
-						totalSkillPoints = totalSkillPoints + rank
 						skillType = "passive"
 					elseif (passive and currentUpgradeLevel == 0) then
 						rank = 1
-						totalSkillPoints = totalSkillPoints + 1
 						skillType = "passive"
 					elseif (progressionIndex > 0) then
 						local progName, morph, skillRank = GetAbilityProgressionInfo(progressionIndex)
 						rank = skillRank + morph * 4
-						totalSkillPoints = totalSkillPoints + 1 + math.floor(morph/2)
 					else
 						rank = 0
 					end
@@ -1420,7 +1418,7 @@ function uespLog.CreateCharDataSkills()
 	
 	end
 	
-	return skills, totalSkillPoints
+	return skills
 end
 
 
@@ -1996,8 +1994,10 @@ SLASH_COMMANDS["/uespskillpoints"] = function (cmd)
 	local skillPointsUnused = GetAvailableSkillPoints()
 	local totalPoints = skillPointsUsed + skillPointsUnused
 	local skyShards = GetNumSkyShards()
+	local foundSkyshards, totalSkyshards = uespLog.GetSkyshardsFound()
 	
 	uespLog.Msg("You have used "..tostring(skillPointsUsed).." skill points, "..tostring(skillPointsUnused).." unused skill points ("..totalPoints.." total) and "..tostring(skyShards).." skyshards.")
+	uespLog.Msg("You found a total of "..tostring(foundSkyshards).." out of "..tostring(totalSkyshards).." skyshards!");
 end
 
 

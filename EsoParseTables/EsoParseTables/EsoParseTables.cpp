@@ -14,7 +14,8 @@
 //const std::string INPUT_FILENAME = "E:\\Temp\\testexport\\000\\498177_Uncompressed.dat";
 //const std::string INPUT_FILENAME1 = "E:\\Temp\\testexport\\000\\497777_Uncompressed.dat";
 //const std::string INPUT_FILENAME1 = "E:\\esoexport\\esomnf-17pts\\000\\589807_Uncompressed.EsoFileData";
-const std::string INPUT_FILENAME1 = "E:\\esoexport\\esomnf-17\\000\\589825_Uncompressed.EsoFileData";
+//const std::string INPUT_FILENAME1 = "E:\\esoexport\\esomnf-17\\000\\589825_Uncompressed.EsoFileData";
+const std::string INPUT_FILENAME1 = "E:\\esoexport\\esomnf-17\\000\\590243_Uncompressed.EsoFileData";
 
 
 typedef unsigned int dword;
@@ -113,6 +114,27 @@ public:
 			while (i < m_Entries.size() && m_Entries[i].Level == LastLevel)
 			{
 				fprintf(pOutput, "%u ", m_Entries[i].Value);
+				++i;
+			}
+
+			fprintf(pOutput, "\n");
+		}
+	}
+
+
+	void DumpCsv(FILE* pOutput = stdout)
+	{
+		fprintf(pOutput, "%s (%d):\n", m_Name.c_str(), m_Index2);
+		dword LastLevel = 1;
+
+		for (size_t i = 0; i < m_Entries.size(); )
+		{
+			LastLevel = m_Entries[i].Level;
+			fprintf(pOutput, "\t %u, ", LastLevel);
+
+			while (i < m_Entries.size() && m_Entries[i].Level == LastLevel)
+			{
+				fprintf(pOutput, "%u, ", m_Entries[i].Value);
 				++i;
 			}
 
@@ -303,7 +325,7 @@ public:
 
 public:
 
-
+	
 	void Dump (FILE* pOutput = stdout)
 	{
 		for (auto &Record : m_Records)
@@ -311,6 +333,16 @@ public:
 			Record.Dump(pOutput);
 		}
 	}
+
+
+	void DumpCsv(FILE* pOutput = stdout)
+	{
+		for (auto &Record : m_Records)
+		{
+			Record.DumpCsv(pOutput);
+		}
+	}
+
 
 
 	void DumpHeaders(FILE* pOutput = stdout)
@@ -442,7 +474,8 @@ int main()
 
 	g_DataTable.DumpHeaders();
 	//g_DataTable.DumpPhp();
-	//g_DataTable.DumpSummary();
+	g_DataTable.DumpCsv();
+	g_DataTable.DumpSummary();
 
     return 0;
 }

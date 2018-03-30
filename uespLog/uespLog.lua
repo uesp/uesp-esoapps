@@ -832,6 +832,9 @@
 --			- Added the command "/uespchardata extended [on/off]". This is enabled by default and permits the saving
 --			  of book, collectible, recipe, quest, and achievement character data. Turning it off can reduce the size of
 --			  the saved character data (around 400k per character).
+--			- /uespskillpoints now outputs the number of skyshards found and in total. 
+--			- Added overall found/total skyshards to saved character data.
+--			- Fixed the used/total skill points as saved in character data.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -16717,4 +16720,104 @@ function uespLog.MineCollectibleTree()
 end
 
 
+function uespLog.CheckAchievementForSkyshards(achievementId)
+	local name = GetAchievementInfo(achievementId)
+	local findIndex = name:find("Skyshard")
+	
+		-- 989 = Tamriel Skyshard Hunter
+	if (findIndex == nil or achievementId == 989) then
+		return 0, 0 
+	end
+	
+	local totalSkyshards = GetAchievementNumCriteria(achievementId)
+	local achLink = GetAchievementLink(achievementId)
+	local _, progress, timestamp = uespLog.ParseAchievementLinkId(achLink)
+	local foundSkyshards = uespLog.CountSetBits(progress)
+					
+	return foundSkyshards, totalSkyshards
+end
 
+
+uespLog.COUNT_SET_BITS = {
+    ['0'] = 0,
+    ['1'] = 1,
+    ['2'] = 1,
+    ['3'] = 2,
+    ['4'] = 1,
+    ['5'] = 2,
+    ['6'] = 2,
+    ['7'] = 3,
+}
+
+
+function uespLog.CountSetBits(value)
+	local s = string.format("%o", value)
+	local result = 0
+	
+	for i = 1, #s do
+		local c = s:sub(i,i)
+		local value = uespLog.COUNT_SET_BITS[c]
+		
+		if (value ~= nil) then
+			result = result + value
+		end
+	end
+	
+	return result
+end
+
+
+function uespLog.GetSkyshardsFound()
+	local totalSkyshards = 1	-- One in wailing prison not in achievements
+	local foundSkyshards = 0
+	local topLevelIndex
+	local numTopLevelCategories = GetNumAchievementCategories()
+	local categoryIndex
+	local achievementIndex
+	
+	for topLevelIndex = 1, numTopLevelCategories do
+		local cateName, numCategories, numCateAchievements, earnedPoints, totalPoints, hidesPoints = GetAchievementCategoryInfo(topLevelIndex)
+		
+		for categoryIndex = 1, numCategories do
+			local subcategoryName, numAchievements, earnedSubSubPoints, totalSubSubPoints, hidesSubSubPoints = GetAchievementSubCategoryInfo(topLevelIndex, categoryIndex)
+			
+			for achievementIndex = 1, numAchievements do
+				local achId = GetAchievementId(topLevelIndex, categoryIndex, achievementIndex)
+				local currentId = GetFirstAchievementInLine(achId)
+				
+				if (currentId == 0) then currentId = achId end
+								
+				while (currentId ~= nil and currentId > 0) do
+					local found, total = uespLog.CheckAchievementForSkyshards(currentId)
+					totalSkyshards = totalSkyshards + total
+					foundSkyshards = foundSkyshards + found
+					
+					currentId = GetNextAchievementInLine(currentId)
+				end				
+			end
+		end
+		
+		for achievementIndex = 1, numCateAchievements do
+			local achId = GetAchievementId(topLevelIndex, nil, achievementIndex)
+			local currentId = GetFirstAchievementInLine(achId)
+			
+			if (currentId == 0) then currentId = achId end
+				
+			while (currentId ~= nil and currentId > 0) do
+				local found, total = uespLog.CheckAchievementForSkyshards(currentId)
+				totalSkyshards = totalSkyshards + total
+				foundSkyshards = foundSkyshards + found
+				
+				currentId = GetNextAchievementInLine(currentId)
+			end			
+			
+		end
+	end	
+	
+		-- Wailing prison
+	if (uespLog.CheckAchievementForSkyshards(993)) then
+		foundSkyshards = foundSkyshards + 1
+	end
+	
+	return foundSkyshards, totalSkyshards
+end

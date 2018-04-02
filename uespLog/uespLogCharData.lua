@@ -1987,6 +1987,7 @@ end
 
 
 SLASH_COMMANDS["/uespsavebuild"] = uespLog.Command_SaveBuildData
+SLASH_COMMANDS["/uespbuild"] = uespLog.Command_SaveBuildData
 
 
 SLASH_COMMANDS["/uespskillpoints"] = function (cmd)

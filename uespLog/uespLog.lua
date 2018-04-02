@@ -439,14 +439,6 @@
 --						/ucd							  Short command name
 --						/uespchardata [on/off]            Turn automatic saving on/off (default off)
 --						/uespchardata save                Manually save the character data
---						/uespchardata password [text]     Change the character data password
---						/uespchardata password clear      Set no password
---	
---			  PASSWORDS: You can and should set a character data password with the command:
---						/uespchardata password [text]
---			  By default there is no password which means anyone can potentially upload and overwrite your character 
---			  data. If a password is set then only uploads with that password will be permitted. You can clear a
---			  set password with "/uespchardata password clear".
 --
 --			  Data saved by the offline character data system includes:
 --					* All skills/abilities/champion points and character stats
@@ -835,6 +827,8 @@
 --			- /uespskillpoints now outputs the number of skyshards found and in total. 
 --			- Added overall found/total skyshards to saved character data.
 --			- Fixed the used/total skill points as saved in character data.
+--			- Removed the "/uespchardata password ..." commands as they are no longer needed.
+--			- Added "/uespbuild" command as an alias for "/uespsavebuild"
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -12356,11 +12350,6 @@ SLASH_COMMANDS["/uespchardata"] = function (cmd)
 	if (cmd == 'on') then
 		uespLog.SetAutoSaveCharData(true)
 		uespLog.Msg("Set auto saving of character data to: "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
-		
-		if (uespLog.GetCharDataPassword() == "") then
-			uespLog.MsgColor(uespLog.warningColor, "Warning: You should set a char data password with the command:")
-			uespLog.MsgColor(uespLog.warningColor, ".                   /uespchardata password [something]")
-		end
 	elseif (cmd == 'off') then
 		uespLog.SetAutoSaveCharData(false)
 		uespLog.Msg("Set auto saving of character data to: "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
@@ -12374,8 +12363,6 @@ SLASH_COMMANDS["/uespchardata"] = function (cmd)
 		end
 		
 		uespLog.Msg("Auto zone saving of character data is "..uespLog.BoolToOnOff(uespLog.GetAutoSaveZoneCharData()) )
-	elseif (cmd == 'password') then
-		uespLog.UpdateCharDataPassword(cmds[2], cmds[3])
 	elseif (cmd == 'save') then
 		
 		if (uespLog.SaveCharData()) then
@@ -12403,8 +12390,6 @@ SLASH_COMMANDS["/uespchardata"] = function (cmd)
 		uespLog.Msg(".     /uespchardata [on/off]                     Turn automatic saving on/off")
 		uespLog.Msg(".     /uespchardata save                        Manually save the character data")
 		uespLog.Msg(".     /uespchardata extended [on/off]    Save extended character data")
-		uespLog.Msg(".     /uespchardata password [text]       Change the character data password")
-		uespLog.Msg(".     /uespchardata password clear      Set no password")
 		uespLog.Msg(".          Extended saving is currently "..uespLog.BoolToOnOff(uespLog.GetSaveExtendedCharData()) )
 		uespLog.Msg(".          Automatic saving is currently "..uespLog.BoolToOnOff(uespLog.GetAutoSaveCharData()) )
 		--uespLog.Msg(".          Automatic saving when zoning is "..uespLog.BoolToOnOff(uespLog.GetAutoSaveZoneCharData()) )
@@ -16820,4 +16805,42 @@ function uespLog.GetSkyshardsFound()
 	end
 	
 	return foundSkyshards, totalSkyshards
+end
+
+
+function uespLog.CountConstantsInObject(object, origConstants)
+	local constants = origConstants or {}
+	local k
+	local v
+		
+	if (object == nil) then
+		return 0
+	end
+	
+	for k, v in pairs(object) do
+		local vType = type(v)
+		local kType = type(k)
+		
+		if (kType == "string" or kType == "number" or kType == "boolean") then
+			constants[k] = (constants[k] or 0) + 1
+		end
+		
+		if (vType == "string" or vType == "number" or vType == "boolean") then
+			constants[v] = (constants[v] or 0) + 1
+		elseif (vType == "table") then
+			testNone.CountConstants(v, constants)
+		end
+	end
+	
+	if (origConstants == nil) then
+		local count = 0
+		
+		for k in pairs(constants) do
+			count = count + 1
+		end
+		
+		return count
+	end
+	
+	return 0
 end

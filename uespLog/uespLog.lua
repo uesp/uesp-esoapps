@@ -829,6 +829,7 @@
 --			- Fixed the used/total skill points as saved in character data.
 --			- Removed the "/uespchardata password ..." commands as they are no longer needed.
 --			- Added "/uespbuild" command as an alias for "/uespsavebuild"
+--			- Updated uespLogMonitor to v0.60 to include support for automatically uploading build/character screenshots.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.

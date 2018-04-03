@@ -106,8 +106,10 @@ typedef std::unordered_map<std::string, std::string> CUlmLogMap;
 struct ulm_screenshot_t 
 {
 	CFileByteArray	FileData;
+	std::string		EncodedFileData;
 	std::string		Filename;
 	std::string		JpgFilename;
+	std::string		ConvertFilename;
 	bool			IsValid;
 };
 
@@ -237,7 +239,7 @@ protected:
 	bool ParseSavedVarCharacterAccount(const std::string VarName, void* pUserData);
   
 	bool ParseBuildDataScreenshots();
-	bool SendScreenshots();
+	std::string GetScreenshotFormQuery();
 	bool LoadScreenshots();
 	bool LoadScreenshot(ulm_screenshot_t& Screenshot);
 	bool ConvertScreenshotToJpg(ulm_screenshot_t& Screenshot);
@@ -269,6 +271,7 @@ protected:
 	bool BackupLogData (const std::string Section, const ulm_sectiondata_t Data);
 	bool SendQueuedData ();
 	std::string EncodeLogDataForQuery (const std::string Data);
+	std::string EncodeLogDataForQuery (const CFileByteArray Data);
 	bool SendFormData (const std::string FormURL, std::string FormQuery, bool Compress, size_t& SentSize);
 	bool HasQueuedData (void) { return m_SendQueue.size() > 0; }
 

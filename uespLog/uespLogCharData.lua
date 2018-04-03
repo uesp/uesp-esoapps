@@ -701,6 +701,8 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	
 	if (uespLog.charDataLastScreenShotTaken or (screenShotDeltaTime >= 0 and screenShotDeltaTime <= 200)) then
 		charData.ScreenShot = uespLog.charDataLastScreenShot
+		uespLog.charDataLastScreenShotTaken = false
+		uespLog.charDataLastScreenShotTimestamp  = 0
 	else
 		charData.ScreenShot = ""
 	end

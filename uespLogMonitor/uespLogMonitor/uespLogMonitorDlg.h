@@ -110,6 +110,7 @@ struct ulm_screenshot_t
 	std::string		Filename;
 	std::string		JpgFilename;
 	std::string		ConvertFilename;
+	std::string		Caption;
 	bool			IsValid;
 };
 

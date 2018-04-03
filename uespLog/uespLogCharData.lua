@@ -107,6 +107,7 @@ uespLog.charData_StatsData = {
 
 uespLog.charDataLastScreenShot = ""
 uespLog.charDataLastScreenShotTimestamp = 0
+uespLog.charDataLastScreenShotTaken = false
 
 uespLog.charDataLastFoodEaten = {
 	['itemLink'] = '',
@@ -698,8 +699,8 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 		
 	local screenShotDeltaTime = GetTimeStamp() - uespLog.charDataLastScreenShotTimestamp 
 	
-	if (screenShotDeltaTime >= 0 and screenShotDeltaTime <= 200) then
-		charData.ScreenShot = uespLog.charDataLastScreenShot	
+	if (uespLog.charDataLastScreenShotTaken or (screenShotDeltaTime >= 0 and screenShotDeltaTime <= 200)) then
+		charData.ScreenShot = uespLog.charDataLastScreenShot
 	else
 		charData.ScreenShot = ""
 	end
@@ -1079,6 +1080,7 @@ end
 function uespLog.OnScreenShotSaved(eventCode, directory, filename)
 	uespLog.charDataLastScreenShot = tostring(directory)..""..tostring(filename)
 	uespLog.charDataLastScreenShotTimestamp = GetTimeStamp()
+	uespLog.charDataLastScreenShotTaken = uespLog.isTakingCharDataScreenshot
 	uespLog.DebugMsg("Screenshot Saved: "..uespLog.charDataLastScreenShot)
 end
 

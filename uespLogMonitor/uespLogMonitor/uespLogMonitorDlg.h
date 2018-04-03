@@ -112,6 +112,8 @@ struct ulm_screenshot_t
 	std::string		ConvertFilename;
 	std::string		Caption;
 	bool			IsValid;
+	bool			IsCharData;
+	bool			IsBuildData;
 };
 
 class CuespLogMonitorDlg;
@@ -239,8 +241,9 @@ protected:
 	bool ParseSavedVarInfo			  (const std::string VarName, void* pUserData);
 	bool ParseSavedVarCharacterAccount(const std::string VarName, void* pUserData);
   
-	bool ParseBuildDataScreenshots();
-	std::string GetScreenshotFormQuery();
+	bool ParseBuildDataScreenshots(const int NumBuilds);
+	bool ParseCharDataScreenshots(const bool isCharData);
+	std::string GetScreenshotFormQuery(const bool isCharData);
 	bool LoadScreenshots();
 	bool LoadScreenshot(ulm_screenshot_t& Screenshot);
 	bool ConvertScreenshotToJpg(ulm_screenshot_t& Screenshot);

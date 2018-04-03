@@ -34,7 +34,7 @@
 		- Added support for parsing crafting bag data from log files.
 		- Fixed "Send Other File" to include build and character data.
 
-	v0.50 - ? March 2017
+	v0.50 - 22 May 2017
 		- Improved mutex handling to prevent many "Failed to wait for send queue mutex!" errors.
 		- Scrolling of log text improved to stay at bottom of log unless you manually scrolled elsewhere.
 		- Log text is no longer all selected at startup.

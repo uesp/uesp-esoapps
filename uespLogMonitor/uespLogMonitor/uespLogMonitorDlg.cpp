@@ -657,7 +657,7 @@ bool CuespLogMonitorDlg::ParseSavedVarBuildData(const std::string VarName, void*
 	m_BuildData += m_Options.UespWikiAccountName;
 	m_BuildData += "'\n";
 
-	ParseBuildDataScreenshots();
+	ParseBuildDataScreenshots(numObjects);
 
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Found the buildData section with %d characters (%u bytes).", numObjects, m_BuildData.length());
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Found %d valid screenShot files for the character data.", m_BuildDataValidScreenshotCount);
@@ -717,7 +717,7 @@ bool CuespLogMonitorDlg::ParseSavedVarCharData(const std::string VarName, void* 
 	m_CharData += m_Options.UespWikiAccountName;
 	m_CharData += "'\n";
 
-	ParseBuildDataScreenshots();
+	ParseCharDataScreenshots(true);
 
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Found the charData section with %d rows (%u bytes).", numObjects, m_CharData.length());
 	lua_pop(m_pLuaState, 1);
@@ -844,12 +844,35 @@ bool CuespLogMonitorDlg::ParseSavedVarCraftBagData(const std::string VarName, vo
 }
 
 
-bool CuespLogMonitorDlg::ParseBuildDataScreenshots()
+bool CuespLogMonitorDlg::ParseBuildDataScreenshots(const int NumBuilds)
+{
+	bool Result = true;
+
+	for (int i = 1; i <= NumBuilds; ++i)
+	{
+		lua_rawgeti(m_pLuaState, -1, i);
+
+		if (!lua_isnil(m_pLuaState, -1))
+		{
+			Result &= ParseCharDataScreenshots(false);
+		}
+
+		lua_pop(m_pLuaState, 1);
+	}
+
+	return Result;
+}
+
+
+bool CuespLogMonitorDlg::ParseCharDataScreenshots(const bool isCharData)
 {
 	int index = lua_gettop(m_pLuaState);
 	int i = 1;
 	ulm_screenshot_t Screenshot;
+
 	Screenshot.IsValid = false;
+	Screenshot.IsBuildData = !isCharData;
+	Screenshot.IsCharData = isCharData;
 
 	lua_getfield(m_pLuaState, -1, "ScreenShot");
 
@@ -899,13 +922,14 @@ bool CuespLogMonitorDlg::ParseBuildDataScreenshots()
 }
 
 
-std::string CuespLogMonitorDlg::GetScreenshotFormQuery()
+std::string CuespLogMonitorDlg::GetScreenshotFormQuery(const bool isCharData)
 {
 	std::string FormQuery;
 
 	for (auto & it : m_Screenshots)
 	{
 		if (!it.IsValid) continue;
+		if (it.IsCharData != isCharData) continue;
 
 		FormQuery += "screenshot[]=";
 		FormQuery += it.EncodedFileData;
@@ -1639,7 +1663,7 @@ bool CuespLogMonitorDlg::SendQueuedBuildDataThread()
 	FormQuery += "chardata=";
 	FormQuery += TempData;
 	FormQuery += "&";
-	FormQuery += GetScreenshotFormQuery();
+	FormQuery += GetScreenshotFormQuery(false);
 
 	bool Result = SendFormData(m_Options.BuildDataFormURL, FormQuery, true, SentSize);
 
@@ -1694,7 +1718,7 @@ bool CuespLogMonitorDlg::SendQueuedCharDataThread()
 	FormQuery += "chardata=";
 	FormQuery += TempData;
 	FormQuery += "&";
-	FormQuery += GetScreenshotFormQuery();
+	FormQuery += GetScreenshotFormQuery(true);
 
 	if (!SendFormData(m_Options.CharDataFormURL, FormQuery, true, SentSize))
 	{

@@ -108,6 +108,10 @@ uespLog.charData_StatsData = {
 uespLog.charDataLastScreenShot = ""
 uespLog.charDataLastScreenShotTimestamp = 0
 uespLog.charDataLastScreenShotTaken = false
+uespLog.charDataLastScreenShotCaption = ""
+uespLog.guiHiddenBefore = false
+uespLog.isTakingCharDataScreenshot = false
+
 
 uespLog.charDataLastFoodEaten = {
 	['itemLink'] = '',
@@ -701,10 +705,13 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	
 	if (uespLog.charDataLastScreenShotTaken or (screenShotDeltaTime >= 0 and screenShotDeltaTime <= 200)) then
 		charData.ScreenShot = uespLog.charDataLastScreenShot
+		charData.ScreenShotCaption = uespLog.charDataLastScreenShotCaption
 		uespLog.charDataLastScreenShotTaken = false
+		uespLog.charDataLastScreenShotCaption = ""
 		uespLog.charDataLastScreenShotTimestamp  = 0
 	else
 		charData.ScreenShot = ""
+		charData.ScreenShotCaption = ""
 	end
 	
 	uespLog.MergeBuildDataStats(charData)
@@ -1696,12 +1703,12 @@ function uespLog.Command_SaveBuildData (cmd)
 	
 	if (firstCmd == "help" or cmd == "" or (firstCmd == "forcesave" and #cmdWords <= 1)) then
 		uespLog.Msg("Saves current character build data to the log file (or '/usb').")
-		uespLog.Msg(".     /usb help             = Shows basic command format")
-		uespLog.Msg(".     /usb reset            = Clears character log")
-		uespLog.Msg(".     /usb status           = Shows current character log status")
-		uespLog.Msg(".     /usb [buildName]      = Saves current character with given build name")
-		uespLog.Msg(".     /usb forcesave [name] = Saves character ignoring any errors")
-		uespLog.Msg(".     /usb screenshot       = Takes a 'nice' screenshot of your character")
+		uespLog.Msg(".     /usb help          Shows basic command format")
+		uespLog.Msg(".     /usb reset          Clears character log")
+		uespLog.Msg(".     /usb status          Shows current character log status")
+		uespLog.Msg(".     /usb [buildName]       Saves current character with given build name")
+		uespLog.Msg(".     /usb forcesave [name]     Saves character ignoring any errors")
+		uespLog.Msg(".     /usb screenshot [caption]  Takes a 'nice' screenshot of your character")
 	elseif (firstCmd == "status") then
 		uespLog.Msg("Currently there are "..tostring(#uespLog.savedVars.buildData.data).." character builds saved in log.")
 	elseif (firstCmd == "reset" or firstCmd == "clear") then
@@ -1711,7 +1718,13 @@ function uespLog.Command_SaveBuildData (cmd)
 		buildName = table.concat(cmdWords, ' ')
 		uespLog.SaveBuildData(buildName, true)
 	elseif (firstCmd == "ss" or firstCmd == "screenshot") then
-		uespLog.TakeCharDataScreenshot()
+		local caption = uespLog.trim(cmd:sub(12))
+		
+		if (firstCmd == "ss") then
+			caption = uespLog.trim(cmd:sub(4))
+		end
+		
+		uespLog.TakeCharDataScreenshot(caption)
 	else
 		uespLog.SaveBuildData(cmd, false)
 	end
@@ -1719,11 +1732,8 @@ function uespLog.Command_SaveBuildData (cmd)
 end
 
 
-uespLog.guiHiddenBefore = false
-uespLog.isTakingCharDataScreenshot = false
-
-
-function uespLog.TakeCharDataScreenshot()
+function uespLog.TakeCharDataScreenshot(caption)
+	caption = caption or ""
 
 	if (uespLog.isTakingCharDataScreenshot) then
 		return false
@@ -1732,6 +1742,7 @@ function uespLog.TakeCharDataScreenshot()
 	uespLog.Msg("UESP:Taking character screenshot in 1 sec...don't touch anything!")
 	
 	uespLog.isTakingCharDataScreenshot = true
+	uespLog.charDataLastScreenShotCaption = caption
 
 	SetFrameLocalPlayerInGameCamera(true)
 	SetFrameLocalPlayerTarget(0.5, 0.65)

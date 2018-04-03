@@ -59,6 +59,9 @@
 		- Added menu items in the "File" menu to delete log/build/character backup data if it exists.
 		- Added "Check File Size" to the "View" menu to show the file sizes in the log.
 
+	v0.60 - ? April 2018
+		- Now is able to upload screenshot files taken along with character or build data.
+
 	TODO:
 		- Proper UI threading.
 
@@ -858,8 +861,17 @@ bool CuespLogMonitorDlg::ParseBuildDataScreenshots()
 	}
 
 	Screenshot.Filename = lua_tostring(m_pLuaState, -1);
-
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Found the ScreenShot field: %s", Screenshot.Filename.c_str());
+	lua_pop(m_pLuaState, 1);
+
+	lua_getfield(m_pLuaState, -1, "ScreenShotCaption");
+
+	if (!lua_isnil(m_pLuaState, -1))
+	{
+		Screenshot.Caption = lua_tostring(m_pLuaState, -1);
+		PrintLogLine(ULM_LOGLEVEL_INFO, "Found the ScreenShot caption: %s", Screenshot.Caption.c_str());
+	}
+
 	lua_pop(m_pLuaState, 1);
 
 	if (Screenshot.Filename.length() <= 0)
@@ -903,6 +915,9 @@ std::string CuespLogMonitorDlg::GetScreenshotFormQuery()
 		FormQuery += "&";
 		FormQuery += "origfilename[]=";
 		FormQuery += it.Filename;
+		FormQuery += "&";
+		FormQuery += "sscaption[]=";
+		FormQuery += it.Caption;
 		FormQuery += "&";
 	}
 

@@ -61,6 +61,7 @@
 
 	v0.60 - ? April 2018
 		- Now is able to upload screenshot files taken along with character or build data.
+		- Fix crash bug if the info data section has table data values.
 
 	TODO:
 		- Proper UI threading.

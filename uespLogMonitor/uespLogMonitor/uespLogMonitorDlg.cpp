@@ -588,7 +588,7 @@ bool CuespLogMonitorDlg::ParseSavedVarDataMap (CUlmLogMap& Output, const std::st
 	
     while (lua_next(m_pLuaState, index) != 0)
 	{
-		if (lua_type(m_pLuaState, -2) == LUA_TSTRING) 
+		if (lua_type(m_pLuaState, -2) == LUA_TSTRING && lua_type(m_pLuaState, -1) == LUA_TSTRING)
 		{
 			KeyName = lua_tostring(m_pLuaState, -2);
 			ValueName = lua_tostring(m_pLuaState, -1);

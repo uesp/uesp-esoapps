@@ -829,7 +829,12 @@
 --			- Fixed the used/total skill points as saved in character data.
 --			- Removed the "/uespchardata password ..." commands as they are no longer needed.
 --			- Added "/uespbuild" command as an alias for "/uespsavebuild"
---			- Updated uespLogMonitor to v0.60 to include support for automatically uploading build/character screenshots.
+--			- Updated uespLogMonitor to v0.60 to include support for automatically uploading build/character screenshots
+--			  as well as a crash bug when it encounters certain data.
+--			- Transmute Stones gained/lost are now displayed in the chat log.
+--			- Writ Vouchers and Transmute stones are now logged with /uesptrackloot.
+--			- Buying chat logs now display the correct currency type.
+--			- Fixed house storage character data when you logged in and didn't access the storage.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -3158,6 +3163,7 @@ function uespLog.Initialize( self, addOnName )
 		["achievements"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "achievements", uespLog.DEFAULT_DATA),
 		["globals"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "globals", uespLog.DEFAULT_DATA),
 		["info"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "info", uespLog.DEFAULT_DATA),
+		["houseStorage"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "houseStorage", uespLog.DEFAULT_DATA),
 		["settings"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "settings", uespLog.DEFAULT_SETTINGS),
 		["buildData"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "buildData", uespLog.DEFAULT_BUILDDATA),
 		["bankData"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "bankData", uespLog.DEFAULT_BANKDATA),
@@ -3328,7 +3334,7 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_BUY_RECEIPT, uespLog.OnBuyReceipt)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SELL_RECEIPT, uespLog.OnSellReceipt)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TELVAR_STONE_UPDATE, uespLog.OnTelvarStoneUpdate)
-	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CARRIED_CURRENCY_UPDATE, uespLog.OnCarriedCurrencyUpdate)	 
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CURRENCY_UPDATE, uespLog.OnCurrencyUpdate)	 
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CLOSE_BANK, uespLog.OnBankClosed)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_OPEN_BANK, uespLog.OnBankOpened)
 	
@@ -4631,6 +4637,8 @@ end
 function uespLog.OnBuyReceipt (eventCode, itemLink, entryType, entryQuantity, money, specialCurrencyType1, specialCurrencyInfo1, specialCurrencyQuantity1, specialCurrencyType2, specialCurrencyInfo2, specialCurrencyQuantity2, itemSoundCategory)
 	local logData = { }
 	local itemText, itemColor, itemData, niceName, niceLink = uespLog.ParseLink(itemLink)
+	local currency = GetCurrencyName(CURT_MONEY, false, true)
+	local amount = money
 	
 	logData.event = "Buy"
 	logData.itemLink = itemLink
@@ -4641,17 +4649,23 @@ function uespLog.OnBuyReceipt (eventCode, itemLink, entryType, entryQuantity, mo
 	
 	if (specialCurrencyQuantity1 > 0) then 
 		logData.currency1 = specialCurrencyInfo1
+		logData.type1 = specialCurrencyType1
 		logData.currencyQnt1 = specialCurrencyQuantity1
+		amount = specialCurrencyQuantity1
+		currency = GetCurrencyName(specialCurrencyType1, false, true)
 	end
 	
 	if (specialCurrencyQuantity2 > 0) then 
 		logData.currency2 = specialCurrencyInfo2
+		logData.type2 = specialCurrencyType2
 		logData.currencyQnt2 = specialCurrencyQuantity2
+		amount = specialCurrencyQuantity2
+		currency = GetCurrencyName(specialCurrencyType2, false, true)
 	end
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
-	uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "Bought "..niceLink.." for "..tostring(money).."gp")
+	uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "Bought "..niceLink.." for "..tostring(amount).." "..tostring(currency))
 	uespLog.TrackLoot(itemLink, entryQuantity, "bought")
 end
 
@@ -4668,9 +4682,9 @@ function uespLog.OnSellReceipt (eventCode, itemLink, itemQuantity, money)
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
 	if (itemQuantity == 1) then
-		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "Sold "..niceLink.." for "..tostring(money).."gp")
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "Sold "..niceLink.." for "..tostring(money).." gold")
 	else
-		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "Sold "..niceLink.." (x"..tostring(itemQuantity)..") for "..tostring(money).."gp")
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "Sold "..niceLink.." (x"..tostring(itemQuantity)..") for "..tostring(money).." gold")
 	end
 	
 	uespLog.TrackLoot("gold", money, "sold")
@@ -5314,10 +5328,10 @@ function uespLog.OnRecipeLearned (eventCode, recipeListIndex, recipeIndex)
 end
 
 
-function uespLog.OnCarriedCurrencyUpdate (eventCode, currency, newValue, oldValue, reason)
+function uespLog.OnCurrencyUpdate (eventCode, currency, currencyLocation, newValue, oldValue, reason)
 	local diff = newValue - oldValue
 	
-	--uespLog.DebugMsg("Currency Reason: "..tostring(reason))
+	--uespLog.DebugMsg("Currency Update: "..tostring(currency)..", "..tostring(currencyLocation)..", "..tostring(newValue).." to "..tostring(oldValue).." ("..tostring(diff).."), "..tostring(reason))
 	
 	if (reason == CURRENCY_CHANGE_REASON_PLAYER_INIT) then
 		return
@@ -5325,17 +5339,21 @@ function uespLog.OnCarriedCurrencyUpdate (eventCode, currency, newValue, oldValu
 
 	if (CURT_CHAOTIC_CREATIA ~= nil and currency == CURT_CHAOTIC_CREATIA) then
 	
-		if (diff < 0) then
+		if (diff < 0 and reason ~= CURRENCY_CHANGE_REASON_VENDOR) then
 			uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "You lost "..tostring(-diff).." transmute stones.")
 		elseif (diff > 0) then
 			uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "You received "..tostring(diff).." transmute stones.")
+			uespLog.TrackLoot("transmute stone", diff, "loot")
 		end
+		
 	elseif (currency == CURT_WRIT_VOUCHERS) then
 	
 		if (diff < 0) then
-			uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "You lost "..tostring(-diff).." writ vouchers.")
+		    -- This is 
+			--uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "You lost "..tostring(-diff).." writ vouchers.")
 		elseif (diff > 0) then
 			uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "You received "..tostring(diff).." writ vouchers.")
+			uespLog.TrackLoot("writ voucher", diff, "loot")
 		end
 	
 	end

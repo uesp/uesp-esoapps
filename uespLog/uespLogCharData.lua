@@ -12,7 +12,6 @@ uespLog.SAVEACTIONBAR_MINDELTATIME = 5
 uespLog.LastSavedActionBar_TimeStamp = 0
 uespLog.LastSavedActionBar_WeaponPair = 0
 
-uespLog.SavedHouseStorage = nil
 uespLog.LastBankingBag = 0
 
 
@@ -288,8 +287,8 @@ function uespLog.CreateCharData (note)
 	end
 		
 		-- Only save house storage if it has been accessed on this character
-	if (uespLog.SavedHouseStorage) then
-		charData.HouseStorage = uespLog.SavedHouseStorage
+	if (uespLog.savedVars.houseStorage and uespLog.savedVars.houseStorage.data) then
+		charData.HouseStorage = uespLog.savedVars.houseStorage.data
 	end
 	
 	return charData
@@ -360,7 +359,7 @@ function uespLog.OnBankOpened(event)
 		uespLog.LastBankingBag = GetBankingBag()
 		
 		if (IsHouseBankBag(uespLog.LastBankingBag)) then
-			uespLog.SavedHouseStorage = uespLog.GetCharDataHouseStorageInfo()
+			uespLog.savedVars.houseStorage.data = uespLog.GetCharDataHouseStorageInfo()
 		end	
 	end
 	
@@ -373,7 +372,7 @@ function uespLog.OnBankClosed(event)
 		return
 	end
 	
-	uespLog.SavedHouseStorage = uespLog.GetCharDataHouseStorageInfo()
+	uespLog.savedVars.houseStorage.data = uespLog.GetCharDataHouseStorageInfo()
 end
 
 

@@ -2067,7 +2067,7 @@ function uespLog.IsInOverloadState()
 end
 
 
-function uespLog.LogQuestData()
+function uespLog.LogCompletedQuestData()
 	local data = uespLog.savedVars.tempData.data
 	local questId = GetNextCompletedQuestId(nil)
 	

@@ -835,6 +835,8 @@
 --			- Writ Vouchers and Transmute stones are now logged with /uesptrackloot.
 --			- Buying chat logs now display the correct currency type.
 --			- Fixed house storage character data when you logged in and didn't access the storage.
+--			- Looted master writs will display the number of writ vouchers after the item link in chat like:
+--					You looted [Sealed Blacksmithing Writ] (24 writ vouchers) from footlocker.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -5611,6 +5613,7 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 	local msgType = "item"
 	local rcvType = "looted"
 	local icon, sellPrice, meetsUsageRequirement, equipType, itemStyle = GetItemLinkInfo(itemLink)
+	local itemType = GetItemLinkItemType(itemLink)
 	local itemText, itemColor, itemId, itemLevel, itemData, niceName, niceLink = uespLog.ParseLinkID(itemLink)
 	local itemStyleStr = uespLog.GetItemStyleStr(itemStyle)
 	local lootMsg = ""
@@ -5660,8 +5663,17 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 		posData = uespLog.GetPlayerPositionData()
 	end
 	
+	if (itemType == ITEMTYPE_MASTER_WRIT) then
+		local linkData = uespLog.ParseItemLinkEx(itemLink)
+		local vouchers = math.floor(linkData.potionData/10000)
+		
+		if (vouchers > 0) then
+			lootMsg = lootMsg .. " (" .. vouchers .. " writ vouchers) "
+		end
+	end
+	
 	if (posData.lastTarget ~= nil) then
-		lootMsg = " from "..tostring(posData.lastTarget)
+		lootMsg = lootMsg .. " from "..tostring(posData.lastTarget)
 	end
 
 	if (self) then

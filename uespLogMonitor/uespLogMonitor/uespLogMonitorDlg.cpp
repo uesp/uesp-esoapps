@@ -358,6 +358,7 @@ bool CuespLogMonitorDlg::LuaIterateSimpleTableInOrder (const int StackIndex, ULM
 	return true;
 }
 
+
 bool CuespLogMonitorDlg::ParseSavedVarFirstLevel (const std::string VarName, void* pUserData)
 {
 	LuaIterateSimpleTable(-1, &CuespLogMonitorDlg::ParseSavedVarUserName, nullptr);

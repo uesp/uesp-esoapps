@@ -62,6 +62,7 @@
 	v0.60 - ? April 2018
 		- Now is able to upload screenshot files taken along with character or build data.
 		- Fix crash bug if the info data section has table data values.
+		- Price list downloads are no longer cached in order to ensure the latest version is received.
 
 	TODO:
 		- Proper UI threading.
@@ -2565,6 +2566,7 @@ bool CuespLogMonitorDlg::DownloadPriceList()
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Attempting to download price list from '%s'...", DownloadURL);
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Attempting to save price list to '%s'...", TmpFile);
 
+	DeleteUrlCacheEntry(DownloadURL);
 	HRESULT hResult = URLDownloadToFile(NULL, DownloadURL, TmpFile, 0, NULL);
 
 	if (hResult != S_OK)

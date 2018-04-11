@@ -161,6 +161,7 @@ protected:
 
 	HANDLE				m_hSendQueueThread;
 	HANDLE				m_hSendQueueMutex;
+	HANDLE				m_hPriceDownloadThread;
 	LONG				m_StopSendQueueThread;
 	int					m_FormErrorRetryCount;
 
@@ -213,7 +214,6 @@ protected:
 	bool HasLogChanged();
 	bool DoLogCheck(const bool OverrideEnable = false);
 	bool DoPriceDownloadCheck();
-	bool DownloadPriceList();
 	void UpdateLogFileSize();
 
 	void ClearLog();
@@ -323,6 +323,8 @@ public:
 	virtual ~CuespLogMonitorDlg();
 
 	DWORD SendQueueThreadProc();
+	bool DoDownloadPriceListThread();
+	bool DownloadPriceList();
 
 
 protected:

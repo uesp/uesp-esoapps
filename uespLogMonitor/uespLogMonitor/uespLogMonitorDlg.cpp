@@ -63,6 +63,7 @@
 		- Now is able to upload screenshot files taken along with character or build data.
 		- Fix crash bug if the info data section has table data values.
 		- Price list downloads are no longer cached in order to ensure the latest version is received.
+		- Price list downloads are now done asynchronously.
 
 	TODO:
 		- Proper UI threading.
@@ -194,7 +195,8 @@ CuespLogMonitorDlg::CuespLogMonitorDlg(CWnd* pParent) :
 	m_FormErrorRetryCount(0),
 	m_LastLogCheckTime(0),
 	m_LastPriceDownloadTime(0),
-	m_hFileMonitor(INVALID_HANDLE_VALUE)
+	m_hFileMonitor(INVALID_HANDLE_VALUE),
+	m_hPriceDownloadThread(NULL)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
@@ -2534,15 +2536,31 @@ bool CuespLogMonitorDlg::DoPriceDownloadCheck()
 
 	if (DeltaTime < ULM_PRICEDOWNLOAD_PERIODMS) return false;
 
-	if (!DownloadPriceList())
+	DoDownloadPriceListThread();
+	
+	return true;
+}
+
+
+DWORD WINAPI l_DoDownloadPriceListThread(LPVOID lpParameter)
+{
+	CuespLogMonitorDlg* pThis = (CuespLogMonitorDlg *)lpParameter;
+	return pThis->DownloadPriceList();
+}
+
+
+bool CuespLogMonitorDlg::DoDownloadPriceListThread()
+{
+	DWORD result = WaitForSingleObject(m_hPriceDownloadThread, 0);
+
+	if (m_hPriceDownloadThread == NULL || result == WAIT_OBJECT_0 || result == WAIT_FAILED)
 	{
-		m_LastPriceDownloadTime = CurrentTime - ULM_PRICEDOWNLOAD_PERIODMS + 30000;
-		return false;
+		m_hPriceDownloadThread = CreateThread(NULL, 0, l_DoDownloadPriceListThread, this, 0, NULL);
+		return true;
 	}
 
-	PrintLogLine(ULM_LOGLEVEL_WARNING, "Next automatic price download will be in %d minutes...", ULM_PRICEDOWNLOAD_PERIODMS / 60000);
-	m_LastPriceDownloadTime = CurrentTime;
-	return true;
+	PrintLogLine(ULM_LOGLEVEL_WARNING, "Price download is currently in progress...");
+	return false;
 }
 
 
@@ -2590,6 +2608,10 @@ bool CuespLogMonitorDlg::DownloadPriceList()
 	eso::GetFileSize(FileSize, (const char *) TargetFile);
 
 	PrintLogLine("Successfully downloaded the latest %s price list data (%.1f MB)!", m_Options.PriceServer.c_str(), (float)FileSize/1000000);
+
+	PrintLogLine(ULM_LOGLEVEL_WARNING, "Next automatic price download will be in %d minutes...", ULM_PRICEDOWNLOAD_PERIODMS / 60000);
+	m_LastPriceDownloadTime = GetTickCount64();
+
 	return true;
 }
 
@@ -3160,7 +3182,7 @@ BOOL CuespLogMonitorDlg::PreTranslateMessage(MSG* pMsg)
 
 void CuespLogMonitorDlg::OnFileDownloadpricelist()
 {
-	DownloadPriceList();
+	DoDownloadPriceListThread();
 }
 
 

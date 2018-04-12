@@ -837,6 +837,8 @@
 --			- Fixed house storage character data when you logged in and didn't access the storage.
 --			- Looted master writs will display the number of writ vouchers after the item link in chat like:
 --					You looted [Sealed Blacksmithing Writ] (24 writ vouchers) from footlocker.
+--			- The "/uesprawprice" command now works regardless of if MasterMerchant is installed. Either MM or UESP
+--			  sales prices need to be enabled for it to work.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -15025,11 +15027,6 @@ end
 function uespLog.CompareRawPrices (materialMatch)
 	local sellData = {}
 
-	if (MasterMerchant == nil) then
-		uespLog.Msg("This feature needs the MasterMerchant addon to be installed!")
-		return 0
-	end
-	
 	if (materialMatch == nil) then
 		materialMatch = ""
 		uespLog.Msg("Outputting prices for all raw materials:")

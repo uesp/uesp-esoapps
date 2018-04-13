@@ -1,0 +1,1 @@
+This directory contains various scripts to help export ESO data after a Live/PTS patch.

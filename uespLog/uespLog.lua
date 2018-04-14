@@ -839,6 +839,7 @@
 --					You looted [Sealed Blacksmithing Writ] (24 writ vouchers) from footlocker.
 --			- The "/uesprawprice" command now works regardless of if MasterMerchant is installed. Either MM or UESP
 --			  sales prices need to be enabled for it to work.
+--			- Fixed the known display for a few Worm Cult motifs.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -11146,9 +11147,9 @@ uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
 	["ebonshadow"] = { 132582, 132583, 132584, 132585, 132586, 132587, 132588, 132589, 132590, 132591, 132592, 132593, 132594, 132595 }, -- 132581, 132596
 	
 		-- Dragon Bones
-	['worm cult'] = { 134740, 134741, 134742, 134743, 134744, 134745, 134746, 134747, 134748, 134749, 134750, 134741, 134742, 134743 }, -- 134739, 134754
-	['wormcult'] = { 134740, 134741, 134742, 134743, 134744, 134745, 134746, 134747, 134748, 134749, 134750, 134741, 134742, 134743 }, -- 134739, 134754
-	['worm'] = { 134740, 134741, 134742, 134743, 134744, 134745, 134746, 134747, 134748, 134749, 134750, 134741, 134742, 134743 }, -- 134739, 134754
+	['worm cult'] = { 134740, 134741, 134742, 134743, 134744, 134745, 134746, 134747, 134748, 134749, 134750, 134751, 134752, 134753 }, -- 134739, 134754
+	['wormcult'] = { 134740, 134741, 134742, 134743, 134744, 134745, 134746, 134747, 134748, 134749, 134750, 134751, 134752, 134753 }, -- 134739, 134754
+	['worm'] = { 134740, 134741, 134742, 134743, 134744, 134745, 134746, 134747, 134748, 134749, 134750, 134751, 134752, 134753 }, -- 134739, 134754
 }
 
 

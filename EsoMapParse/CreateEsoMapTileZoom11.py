@@ -8,10 +8,24 @@ import errno
 import csv
 import re
 
-BasePathIndex = "-17"
-INPUTPATH = "e:\\esoexport\\goodimages" + BasePathIndex + "\\CombinedMaps\\"
-OUTPUTPATH = "e:\\esoexport\\goodimages" + BasePathIndex + "\\maps\\"
-DEFAULTNULLTILE = "e:\\esoexport\\goodimages" + BasePathIndex + "\\maps\\blacknulltile.jpg"
+USE_COMMAND_ARGS = True
+
+if (not USE_COMMAND_ARGS):
+    BasePathIndex = "17"
+    BasePath = "e:/esoexport/"
+elif (len(sys.argv) < 3):
+    print("Missing required command line arguments!")
+    exit
+else:
+    BasePathIndex = sys.argv[1]
+    BasePath = sys.argv[2]
+    print("\tUsing Base Path:" + BasePath)
+    print("\tUsing Version:" + BasePathIndex)
+
+
+INPUTPATH = BasePath + "goodimages-" + BasePathIndex + "/CombinedMaps/"
+OUTPUTPATH = BasePath + "goodimages-" + BasePathIndex + "/maps/"
+DEFAULTNULLTILE = BasePath + "goodimages-" + BasePathIndex + "/maps/blacknulltile.jpg"
 
 MAPEXTENSION = ".jpg"
 CREATEZOOMLEVEL = 11
@@ -22,7 +36,7 @@ g_DefaultNullImage = Image.open(DEFAULTNULLTILE)
 
 
 def MakeMapTileFilename(OutputPath, MapName, X, Y, Zoom):
-    return "{0}\\zoom{4}\\{1}-{2}-{3}.jpg".format(OutputPath, MapName, X, Y, Zoom)
+    return "{0}/zoom{4}/{1}-{2}-{3}.jpg".format(OutputPath, MapName, X, Y, Zoom)
 
 
 def mkdir_p(path):

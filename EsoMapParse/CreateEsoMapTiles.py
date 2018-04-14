@@ -7,10 +7,24 @@ import math
 import errno
 import csv
 
-BasePathIndex = "-17"
-INPUTPATH = "e:\\esoexport\\goodimages" + BasePathIndex + "\\combinedmaps\\"
-OUTPUTPATH = "e:\\esoexport\\goodimages" + BasePathIndex + "\\maps\\"
-DEFAULTNULLTILE = "e:\\esoexport\\goodimages" + BasePathIndex + "\\maps\\blacknulltile.jpg"
+USE_COMMAND_ARGS = True
+
+if (not USE_COMMAND_ARGS):
+    BasePathIndex = "17"
+    BasePath = "e:/esoexport/"
+elif (len(sys.argv) < 3):
+    print("Missing required command line arguments!")
+    exit
+else:
+    BasePathIndex = sys.argv[1]
+    BasePath = sys.argv[2]
+    print("\tUsing Base Path:" + BasePath)
+    print("\tUsing Version:" + BasePathIndex)
+
+
+INPUTPATH = BasePath + "goodimages-" + BasePathIndex + "/combinedmaps/"
+OUTPUTPATH = BasePath + "goodimages-" + BasePathIndex + "/maps/"
+DEFAULTNULLTILE = BasePath + "goodimages-" + BasePathIndex + "/maps/blacknulltile.jpg"
 
 MAPEXTENSION = ".jpg"
 MAXZOOMLEVEL = 10
@@ -34,7 +48,7 @@ class CMapInfo:
 
 
 def MakeMapTileFilename(OutputPath, MapName, X, Y, Zoom):
-    return "{0}\\zoom{4}\\{1}-{2}-{3}.jpg".format(OutputPath, MapName, X, Y, Zoom)
+    return "{0}/zoom{4}/{1}-{2}-{3}.jpg".format(OutputPath, MapName, X, Y, Zoom)
 
 
 def mkdir_p(path):

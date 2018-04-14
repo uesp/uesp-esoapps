@@ -6,14 +6,28 @@ from PIL import Image
 import shutil
 import fnmatch
 
-BasePathIndex = "-17"
-InputPath  = 'e:\\esoexport\\esomnf' + BasePathIndex + '\\art\\maps\\'
-OutputPath = 'e:\\esoexport\\goodimages' + BasePathIndex + '\\combinedmaps\\'
+USE_COMMAND_ARGS = True
+
+if (not USE_COMMAND_ARGS):
+    BasePathIndex = "17"
+    BasePath = "e:/esoexport/"
+elif (len(sys.argv) < 3):
+    print("Missing required command line arguments!")
+    exit
+else:
+    BasePathIndex = sys.argv[1]
+    BasePath = sys.argv[2]
+    print("\tUsing Base Path:" + BasePath)
+    print("\tUsing Version:" + BasePathIndex)
+
+
+InputPath  = BasePath + 'esomnf-' + BasePathIndex + '/art/maps/'
+OutputPath = BasePath + 'goodimages-' + BasePathIndex + '/combinedmaps/'
 
 OutputMapList = OutputPath + 'maplist.txt'
 MapImageRE  = re.compile('.*[0-9]+\.png')
 MapImageBaseRE = re.compile('.*_base_[0-9]+\.png')
-MapGroupRE  = re.compile('([\\a-z]*)_.*_?([0-9]+)\.png')
+MapGroupRE  = re.compile('([/\\a-z]*)_.*_?([0-9]+)\.png')
 MapImageNumberRE  = re.compile('.*_([0-9]+)\.png')
 
 
@@ -112,7 +126,7 @@ for imagegroupname in ImageGroups:
             elif len(ImageGroups[imagegroupname].ImageFiles) == 5:
                     TileX = 2
                     TileY = 2
-            elif len(ImageGroups[imagegroupname].ImageFiles) == 25 and imagegroupname == "stonefalls\\ebonheart_base":
+            elif len(ImageGroups[imagegroupname].ImageFiles) == 25 and imagegroupname == "stonefalls/ebonheart_base":
                     TileX = 2
                     TileY = 2
             elif len(ImageGroups[imagegroupname].ImageFiles) == 1:
@@ -121,7 +135,7 @@ for imagegroupname in ImageGroups:
             elif len(ImageGroups[imagegroupname].ImageFiles) == 36:
                     TileX = 5
                     TileY = 5
-            elif len(ImageGroups[imagegroupname].ImageFiles) == 100 and imagegroupname == "clockwork\\clockwork_base":
+            elif len(ImageGroups[imagegroupname].ImageFiles) == 100 and imagegroupname == "clockwork/clockwork_base":
                     TileX = 4
                     TileY = 4
             else:
@@ -140,7 +154,7 @@ for imagegroupname in ImageGroups:
     elif len(ImageGroups[imagegroupname].ImageFiles) == 16:
             TileX = 4
             TileY = 4
-    elif len(ImageGroups[imagegroupname].ImageFiles) == 25 and imagegroupname == "rivenspire\\shroudedpass_base":
+    elif len(ImageGroups[imagegroupname].ImageFiles) == 25 and imagegroupname == "rivenspire/shroudedpass_base":
             TileX = 3
             TileY = 3
     elif len(ImageGroups[imagegroupname].ImageFiles) == 25:
@@ -173,7 +187,7 @@ for imagegroupname in ImageGroups:
                     CombinedImage.paste(ImageGroups[imagegroupname].Images[ImageIndex], (x*ImageGroups[imagegroupname].ImageWidth, y*ImageGroups[imagegroupname].ImageHeight))
                     ImageIndex += 1
 
-    FilePath = OutputPath + imagegroupname.split("\\", 1)[0]
+    FilePath = OutputPath + imagegroupname.split("/", 1)[0]
     Filename = OutputPath + imagegroupname + ".jpg"
     print "Saving", Filename, "..."
 
@@ -193,7 +207,7 @@ print "Exporting map list..."
 with open(OutputMapList, "w") as text_file:
     text_file.write("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}\n".format("parent", "map", "numimages", "MatchedSizes", "Width", "Height", "CombWidth", "CombHeight", "IsOutput"))
     for imagegroupname in ImageGroups:
-        splitname = imagegroupname.split("\\")
+        splitname = imagegroupname.split("/")
         text_file.write("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}\n".format(splitname[0], splitname[1], len(ImageGroups[imagegroupname].ImageFiles), ImageGroups[imagegroupname].MatchingSizes,
                                                                           ImageGroups[imagegroupname].ImageWidth, ImageGroups[imagegroupname].ImageHeight,
                                                                           ImageGroups[imagegroupname].CombinedWidth, ImageGroups[imagegroupname].CombinedHeight,

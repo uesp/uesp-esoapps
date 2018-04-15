@@ -278,12 +278,15 @@ function uespLog.CreateCharData (note)
 	charData.Research = uespLog.GetCharDataResearchInfo()
 
 	if (uespLog.GetSaveExtendedCharData()) then
+		charData.ExtendedData = 1
 		charData.Recipes = uespLog.CreateCharDataRecipes()
 		charData.Achievements = uespLog.CreateCharDataAchievements()
 		charData.Books = uespLog.CreateCharDataBooks()
 		charData.Collectibles = uespLog.CreateCharDataCollectibles()
 		charData.Journal = uespLog.CreateJournalCharData()
 		charData.CompletedQuests = uespLog.CreateCompletedQuestCharData()
+	else
+		charData.ExtendedData = 0
 	end
 		
 		-- Only save house storage if it has been accessed on this character

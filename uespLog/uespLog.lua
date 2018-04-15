@@ -839,7 +839,7 @@
 --					You looted [Sealed Blacksmithing Writ] (24 writ vouchers) from footlocker.
 --			- The "/uesprawprice" command now works regardless of if MasterMerchant is installed. Either MM or UESP
 --			  sales prices need to be enabled for it to work.
---			- Fixed the known display for a few Worm Cult motifs.
+--			- Fixed the known style display for a few Worm Cult motifs.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.

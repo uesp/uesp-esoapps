@@ -5674,7 +5674,7 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 		local vouchers = math.floor(linkData.potionData/10000)
 		
 		if (vouchers > 0) then
-			lootMsg = lootMsg .. " (" .. vouchers .. " writ vouchers) "
+			lootMsg = lootMsg .. " (" .. vouchers .. " writ vouchers)"
 		end
 	end
 	

@@ -63,4 +63,5 @@ public:
 	afx_msg void OnBnClickedBuilddataenabledCheck();
 	CButton m_AutoDownloadPricesCheck;
 	CComboBox m_PriceServerList;
+	CButton m_UploadScreenshotsCheck;
 };

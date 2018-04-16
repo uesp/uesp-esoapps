@@ -112,6 +112,7 @@ const char ULM_REGISTRY_KEY_BACKUPBUILDDATAFOLDER[] = "BackupBuildDataFolder";
 const char ULM_REGISTRY_KEY_BACKUPCHARDATAFOLDER[] = "BackupCharDataFolder";
 const char ULM_REGISTRY_KEY_PRICESERVER[] = "PriceServer";
 const char ULM_REGISTRY_KEY_AUTODOWNLOADPRICES[] = "AutoDownloadPrices";
+const char ULM_REGISTRY_KEY_UPLOADSCREENSHOTS[] = "UploadScreenshots";
 
 const std::string ULM_LOGSTRING_JOIN("#STR#");
 const int  ULM_LOGSTRING_MAXLENGTH = 1900;
@@ -1668,7 +1669,7 @@ bool CuespLogMonitorDlg::SendQueuedBuildDataThread()
 	FormQuery += "chardata=";
 	FormQuery += TempData;
 	FormQuery += "&";
-	FormQuery += GetScreenshotFormQuery(false);
+	if (m_Options.UploadScreenshots) FormQuery += GetScreenshotFormQuery(false);
 
 	bool Result = SendFormData(m_Options.BuildDataFormURL, FormQuery, true, SentSize);
 
@@ -1723,7 +1724,7 @@ bool CuespLogMonitorDlg::SendQueuedCharDataThread()
 	FormQuery += "chardata=";
 	FormQuery += TempData;
 	FormQuery += "&";
-	FormQuery += GetScreenshotFormQuery(true);
+	if (m_Options.UploadScreenshots) FormQuery += GetScreenshotFormQuery(true);
 
 	if (!SendFormData(m_Options.CharDataFormURL, FormQuery, true, SentSize))
 	{
@@ -2399,6 +2400,8 @@ bool CuespLogMonitorDlg::LoadRegistrySettings (void)
 	Buffer = pApp->GetProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_PRICESERVER, m_Options.PriceServer.c_str());
 	m_Options.PriceServer = Buffer;	
 
+	m_Options.UploadScreenshots = (pApp->GetProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_UPLOADSCREENSHOTS, m_Options.UploadScreenshots) != 0);
+
 	return true;
 }
 
@@ -2433,6 +2436,8 @@ bool CuespLogMonitorDlg::SaveRegistrySettings (void)
 
 	Buffer.Format("%I64d", m_Options.LastBackupTimeStamp);
 	pApp->WriteProfileString(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_LASTBACKUPTIMESTAMP, Buffer);
+
+	pApp->WriteProfileInt(ULM_REGISTRY_SECTION_SETTINGS, ULM_REGISTRY_KEY_UPLOADSCREENSHOTS, m_Options.UploadScreenshots);
 
 	return true;
 }

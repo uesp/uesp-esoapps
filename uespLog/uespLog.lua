@@ -840,6 +840,9 @@
 --			- The "/uesprawprice" command now works regardless of if MasterMerchant is installed. Either MM or UESP
 --			  sales prices need to be enabled for it to work.
 --			- Fixed the known style display for a few Worm Cult motifs.
+--			- Moved the uespSalesPrices.lua file which contains all the data for displaying item sales
+--			  prices from esosales.uesp.net to its own add-on "UespLogSalesPrices". This lets you turn on/off the
+--			  loading of sales data on a per-character basis.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.

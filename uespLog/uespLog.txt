@@ -1,9 +1,9 @@
-## Title: UespLog v1.42
+## Title: UESP Log v1.42
 ## APIVersion: 100022
 ## Version: 1.42
 ## Author: Daveh@uesp
 ## Description: Logs game data for uesp.net and a few other useful crafting related functions.
-## OptionalDependsOn: LibStub LibAddonMenu-2.0
+## OptionalDependsOn: LibStub LibAddonMenu-2.0 uespLogSalesPrices
 ## SavedVariables: uespLogSavedVars
 
 libs/LibStub/LibStub.lua
@@ -33,7 +33,6 @@ uespLogDaily.lua
 uespLogPerformanceMeter.lua
 uespLogPerformanceMeter.xml
 uespCopyItemLinkDialog.xml
-uespSalesPrices.lua
 
 lang/en.lua
 lang/$(language).lua

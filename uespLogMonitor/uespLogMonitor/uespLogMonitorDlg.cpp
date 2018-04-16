@@ -65,6 +65,7 @@
 		- Fix crash bug if the info data section has table data values.
 		- Price list downloads are no longer cached in order to ensure the latest version is received.
 		- Price list downloads are now done asynchronously.
+		- uespSalesPrices.lua is downloaded into its own add-on directory.
 
 	TODO:
 		- Proper UI threading.
@@ -2582,10 +2583,19 @@ bool CuespLogMonitorDlg::DownloadPriceList()
 	DownloadURL += m_Options.PriceServer.c_str();
 	DownloadURL += "/uespSalesPrices.lua";
 
-	TargetFile.Replace("\\SavedVariables", "\\AddOns\\uespLog");
+	TargetFile.Replace("\\SavedVariables", "\\AddOns\\uespLogSalesPrices");
 	TargetFile += "uespSalesPrices.lua";
 	TmpFile = TargetFile + ".new";
 	BackupFile = TargetFile + ".old";
+
+	std::string Path = eso::ExtractPath(std::string(TargetFile));
+
+	if (!eso::DirectoryExists(Path.c_str()))
+	{
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "The upload path '%s' does not exist!", Path.c_str());
+		PrintLogLine("Make sure you are running the latest version of uespLog (v1.50 or higher)!");
+		return false;
+	}
 	
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Attempting to download price list from '%s'...", DownloadURL);
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Attempting to save price list to '%s'...", TmpFile);

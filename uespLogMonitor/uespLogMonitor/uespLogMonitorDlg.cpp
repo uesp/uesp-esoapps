@@ -60,7 +60,8 @@
 		- Added "Check File Size" to the "View" menu to show the file sizes in the log.
 
 	v0.60 - ? April 2018
-		- Now is able to upload screenshot files taken along with character or build data.
+		- Now is able to upload screenshot files taken along with character or build data. There is an
+		  option to disable it in program settings (default is on).
 		- Fix crash bug if the info data section has table data values.
 		- Price list downloads are no longer cached in order to ensure the latest version is received.
 		- Price list downloads are now done asynchronously.

@@ -53,6 +53,8 @@ void COptionsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BACKUPCHARDATAFOLDER_TEXT, m_BackupCharDataFolder);
 	DDX_Control(pDX, IDC_AUTODOWNLOADPRICES_CHECK, m_AutoDownloadPricesCheck);
 	DDX_Control(pDX, IDC_PRICESERVER_LIST, m_PriceServerList);
+	DDX_Control(pDX, IDC_UPLOADSCREENSHOTS_CHECK, m_UploadScreenshotsCheck);
+	
 }
 
 
@@ -198,6 +200,8 @@ void COptionsDlg::GetControlData()
 
 	if (Buffer == "PC-NA") m_pOptions->PriceServer = "NA";
 	if (Buffer == "PC-EU") m_pOptions->PriceServer = "EU";
+
+	m_pOptions->UploadScreenshots = m_UploadScreenshotsCheck.GetCheck() != 0;
 }
 
 
@@ -241,6 +245,8 @@ void COptionsDlg::SetControlData()
 	if (Buffer == "EU") Buffer = "PC-EU";
 
 	m_PriceServerList.SelectString(-1, Buffer);
+
+	m_UploadScreenshotsCheck.SetCheck(m_pOptions->UploadScreenshots);
 
 	UpdateCustomNameState();
 }

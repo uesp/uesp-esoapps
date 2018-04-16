@@ -66,6 +66,7 @@ struct ulm_options_t
 	__int64				LastBackupTimeStamp;
 	bool				AutoDownloadPrices;
 	std::string			PriceServer;
+	bool				UploadScreenshots;
 
 	ulm_options_t() :
 		UpdateTime(DEFAULT_UPDATETIME),
@@ -85,7 +86,8 @@ struct ulm_options_t
 		BackupBuildDataFolder(DEFAULT_BACKUPBUILDDATAFOLDER),
 		BackupCharDataFolder(DEFAULT_BACKUPCHARDATAFOLDER),
 		LastBackupTimeStamp(0),
-		PriceServer(DEFAULT_PRICESERVER)
+		PriceServer(DEFAULT_PRICESERVER),
+		UploadScreenshots(true)
 	{ 
 	}
 

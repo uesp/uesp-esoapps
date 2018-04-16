@@ -1,8 +1,10 @@
 #!/bin/sh
 
 VERSION="17"
+ISPTS="1"
 LASTVERSION="16"
 LASTPTSVERSION="17pts"
+
 MAKEPTSDIFF="1"
 MAKEDIFF=""
 
@@ -10,6 +12,14 @@ MAPSOURCEPATH="/cygdrive/d/src/uesp/EsoApps/EsoMapParse"
 ESOINPUTPATH="./esomnf-$VERSION"
 GAMEINPUTPATH="./gamemnf-$VERSION"
 OUTPUTPATH="./goodimages-$VERSION"
+
+if [ "$ISPTS" ]; then
+	ESODATAFILE="C:/Program Files (x86)/Zenimax Online/The Elder Scrolls Online PTS/depot/eso.mnf"
+	GAMEDATAFILE="C:/Program Files (x86)/Zenimax Online/The Elder Scrolls Online PTS/game/client/game.mnf"
+else
+	ESODATAFILE="C:/Program Files (x86)/Zenimax Online/The Elder Scrolls Online/depot/eso.mnf"
+	GAMEDATAFILE="C:/Program Files (x86)/Zenimax Online/The Elder Scrolls Online/game/client/game.mnf"
+fi
 
 
 pushd () {
@@ -68,6 +78,13 @@ makemapsdiff () {
 if [ ! -d "$OUTPUTPATH" ]; then
 	cp -rp "./NewExportBase" "$OUTPUTPATH"
 fi
+
+
+mkdir "$OUTPUTPATH/esomnf-$VERSION/"
+./EsoExtractData.exe "$ESODATAFILE" "$ESOINPUTPATH/" -z "$ESOINPUTPATH/zosft.txt" -m "$ESOINPUTPATH/mnf.txt"  --extractsubfile combined
+
+mkdir "$OUTPUTPATH/gamemnf-$VERSION/"
+./EsoExtractData.exe "$GAMEDATAFILE" "$GAMEINPUTPATH/" -z "$GAMEINPUTPATH/zosft.txt" -m "$GAMEINPUTPATH/mnf.txt"
 
 
 echo "Converting DDS to PNG..."
@@ -156,6 +173,10 @@ if [ $MAKEPTSDIFF ]; then
 	makediff "./gamemnf-$LASTPTSVERSION/esoui/art/" "./gamemnf-$VERSION/esoui/art/" "./goodimages-$VERSION/gameuiart.ptsdiff.txt" $LASTPTSVERSION $VERSION
 	makemapsdiff "./esomnf-$LASTPTSVERSION/art/maps/" "./esomnf-$VERSION/art/maps/" "./goodimages-$VERSION/maps.ptsdiff.txt" $LASTPTSVERSION $VERSION
 fi
+
+
+echo "Extracting book and quest data..."
+./export/ParseBooks.exe "$VERSION" "./"
 
 
 echo "Compressing Game UI Art..."

@@ -57,6 +57,9 @@
     <ClCompile Include="..\..\common\snappy\snappy-stubs-internal.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\common\EsoCsvFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\common\zlib\zdll.lib">

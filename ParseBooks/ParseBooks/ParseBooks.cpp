@@ -13,18 +13,26 @@
 using namespace std;
 using namespace eso;
 
-#define INPUT_PATH_PREFIX "e:\\esoexport\\esomnf-17\\"
-#define OUTPUT_PATH_PREFIX "e:\\esoexport\\goodimages-17\\"
+	/* Now defined by command line arguments */
+string VERSION = "17";
+string BASEPATH = "e:\\esoexport\\";
 
-//const string INPUT_FILENAME = "e:\\Temp\\testexport\\000\\498404.dat";
-const string INPUT_FILENAME = INPUT_PATH_PREFIX "gamedata\\lang\\en.lang";
-const string BOOK_OUTPUT_PATH = OUTPUT_PATH_PREFIX "BookExport\\";
-const string BOOK_OUTPUT_SQL_FILE = OUTPUT_PATH_PREFIX "books.sql";
-const string BOOK_OUTPUT_PHP_FILE = OUTPUT_PATH_PREFIX "BookTitles.php";
+string INPUT_PATH_PREFIX;
+string OUTPUT_PATH_PREFIX;
 
-const string QUEST_INPUT_FILE = INPUT_PATH_PREFIX "000\\589825_Uncompressed.EsoFileData";
-const string QUEST_OUTPUT_SQL_FILE = OUTPUT_PATH_PREFIX "quests.sql";
-const string QUEST_OUTPUT_PHP_FILE = OUTPUT_PATH_PREFIX "Quests.php";
+string INPUT_FILENAME;
+string BOOK_OUTPUT_PATH;
+string BOOK_OUTPUT_SQL_FILE;
+string BOOK_OUTPUT_PHP_FILE;
+
+//string QUEST_INPUT_FILE = INPUT_PATH_PREFIX "000\\589829_Uncompressed.EsoFileData";		// Update 17pts, last patch
+//string QUEST_INPUT_FILE = INPUT_PATH_PREFIX "000\\589825_Uncompressed.EsoFileData";		// Update 17, original patch
+//string QUEST_INPUT_FILE = INPUT_PATH_PREFIX "000\\590070_Uncompressed.EsoFileData";		// Update 17, 3.3.11.1585543
+string QUEST_OUTPUT_SQL_FILE;
+string QUEST_OUTPUT_PHP_FILE;
+string QUEST_OUTPUT_TXT_FILE;
+string ZONE_OUTPUT_TXT_FILE;
+string MNF_TEXT_FILE;
 
 const dword BOOK_TITLE_ID = 0x030D11F5;
 const dword BOOK_TEXT_ID  = 0x014593B4;
@@ -252,12 +260,16 @@ bool ParseQuests(CEsoLangFile& LangData)
 
 	CFile SqlFile;
 	CFile PhpFile;
-
+	CFile TxtFile;
+	
 	if (!SqlFile.Open(QUEST_OUTPUT_SQL_FILE, "wb")) return false;
 	if (!PhpFile.Open(QUEST_OUTPUT_PHP_FILE, "wb")) return false;
-
+	if (!TxtFile.Open(QUEST_OUTPUT_TXT_FILE, "wb")) return false;
+	
 	PhpFile.Printf("<?php\n");
 	PhpFile.Printf("$ESO_QUEST_DATA = array(\n");
+
+	TxtFile.Printf("\"ID\", \"Name\", \"Type\", \"Journal\", \"InternalName\", \"Zone\", \"ZoneID\"\n");
 
 	for (auto it : QuestData)
 	{
@@ -285,6 +297,9 @@ bool ParseQuests(CEsoLangFile& LangData)
 		PhpFile.Printf("\t\t\t'zone' => \"%s\",\n", escZone.c_str());
 		PhpFile.Printf("\t\t\t'type' => %d,\n", Record.Type);
 		PhpFile.Printf("\t\t),\n");
+
+		TxtFile.Printf("%d, \"%s\", %d, \"%s\", \"%s\", \"%s\", %d\n", Record.Id, escName.c_str(), Record.Type, escJournal.c_str(), escIntName.c_str(), escZone.c_str(), Record.ZoneId);
+		
 	}
 
 	PhpFile.Printf(");\n\n");
@@ -305,14 +320,14 @@ bool ReportError(const char* pMsg, ...)
 }
 
 
-bool ParseQuestData()
+bool ParseQuestData(const std::string QuestDataFilename)
 {
 	CFile QuestFile;
 	dword NumRecords = 0;
 
-	printf("Parsing quest data from raw file '%s'..\n", QUEST_INPUT_FILE.c_str());
+	printf("Parsing quest data from raw file '%s'..\n", QuestDataFilename.c_str());
 
-	if (!QuestFile.Open(QUEST_INPUT_FILE, "rb")) return ReportError("Failed to load quest data file!\n");
+	if (!QuestFile.Open(QuestDataFilename, "rb")) return ReportError("Failed to load quest data file!\n");
 	if (!QuestFile.Seek(8, SEEK_SET)) return ReportError("Failed to find NumRecords field in quest data file!\n");
 	if (!QuestFile.ReadDword(NumRecords, false)) return ReportError("Failed to read NumRecords field in quest data file!\n");
 	if (!QuestFile.Seek(16, SEEK_SET)) return ReportError("Failed to find first record in quest data file!\n");
@@ -358,25 +373,25 @@ bool ParseQuestData()
 		fpos_t DeltaOffset;
 
 		DeltaOffset = 4 * RecordCount1;
-		if (MiddleOffset + DeltaOffset > EndOffset) return ReportError("Data overflow in record1 field!");
+		if (MiddleOffset + DeltaOffset > EndOffset) return ReportError("Data overflow in record1 field!\n");
 		if (!QuestFile.Seek(DeltaOffset, SEEK_CUR)) return ReportError("Failed to find record2 count in quest data file!\n");
 		if (!QuestFile.ReadDword(RecordCount2, false)) return ReportError("Failed to read record2 count in quest data file!\n");
 		MiddleOffset += DeltaOffset + 4;
 
 		DeltaOffset = 4 * RecordCount2;
-		if (MiddleOffset + DeltaOffset > EndOffset) return ReportError("Data overflow in record2 field!");
+		if (MiddleOffset + DeltaOffset > EndOffset) return ReportError("Data overflow in record2 field!\n");
 		if (!QuestFile.Seek(DeltaOffset, SEEK_CUR)) return ReportError("Failed to find record2 count in quest data file!\n");
 		if (!QuestFile.ReadDword(RecordCount3, false)) return ReportError("Failed to read record3 count in quest data file!\n");
 		MiddleOffset += DeltaOffset + 4;
 
 		DeltaOffset = 4 * RecordCount3 + 4;
-		if (MiddleOffset + DeltaOffset > EndOffset) return ReportError("Data overflow in record3 field!");
+		if (MiddleOffset + DeltaOffset > EndOffset) return ReportError("Data overflow in record3 field!\n");
 		if (!QuestFile.Seek(DeltaOffset, SEEK_CUR)) return ReportError("Failed to find record4 count in quest data file!\n");
 		if (!QuestFile.ReadDword(RecordCount4, false)) return ReportError("Failed to read record4 count in quest data file!\n");
 		MiddleOffset += DeltaOffset + 4;
 
 		DeltaOffset = 4 * RecordCount4;
-		if (MiddleOffset + DeltaOffset > EndOffset) return ReportError("Data overflow in record4 field!");
+		if (MiddleOffset + DeltaOffset > EndOffset) return ReportError("Data overflow in record4 field!\n");
 		if (!QuestFile.Seek(DeltaOffset, SEEK_CUR)) return ReportError("Failed to find end of record4 data in quest data file!\n");
 
 		//if (!QuestFile.Seek(StartOffset + RecordSize + 32 - 68, SEEK_SET)) return ReportError("Failed to find quest type field in quest data file!\n");
@@ -393,7 +408,7 @@ bool ParseQuestData()
 		if (!QuestFile.Seek(StartOffset + RecordSize + 32 - 32, SEEK_SET)) return ReportError("Failed to find zone field in quest data file!\n");
 		if (!QuestFile.ReadDword(ZoneId, false)) return ReportError("Failed to read zone field in quest data file!\n");
 
-		if (Type < 0 || Type > 13) return ReportError("Invalid type value of %d found at 0x%08X!", Type, QuestFile.Tell());
+		if (Type < 0 || Type > 13) return ReportError("Invalid type value of %d found at 0x%08X!\n", Type, QuestFile.Tell());
 
 		printf("\t%d) %s (%d) = %d / %d\n", RecordIndex, Name.c_str(), QuestId, Type, ZoneId);
 
@@ -411,6 +426,9 @@ bool ParseQuestData()
 
 bool ParseZoneNames(CEsoLangFile& LangData)
 {
+	CFile ZoneFile;
+
+	if (!ZoneFile.Open(ZONE_OUTPUT_TXT_FILE, "wb")) return false;
 	printf("Parsing zone names...\n");
 
 	for (dword i = 0; i < LangData.GetNumRecords(); ++i)
@@ -420,6 +438,7 @@ bool ParseZoneNames(CEsoLangFile& LangData)
 		if (Record.Id == ZONE_NAME_ID)
 		{
 			ZoneNames[Record.Index] = Record.Text;
+			ZoneFile.Printf("%d, \"%s\"\n", Record.Index, Record.Text.c_str());
 		}
 	}
 
@@ -428,11 +447,71 @@ bool ParseZoneNames(CEsoLangFile& LangData)
 	return true;
 }
 
-int main()
+
+bool FindQuestDataFile(std::string &Filename)
+{
+	CCsvFile MnfFile;
+
+	if (!MnfFile.Load(MNF_TEXT_FILE)) return ReportError("Failed to load and parse the MNF text file '%s'!\n", MNF_TEXT_FILE);
+
+	for (int i = 0; i < MnfFile.GetNumRows(); ++i)
+	{
+		const csvrow_t& Row = MnfFile.GetData()[i];
+		if (Row.size() < 4) continue;
+
+		int Index = strtol(Row[0].c_str(), nullptr, 10);
+		int ID1 = strtol(Row[1].c_str(), nullptr, 16);
+		int FileIndex = strtol(Row[2].c_str(), nullptr, 16);
+		int Unk1 = strtol(Row[3].c_str(), nullptr, 16);
+
+		if (ID1 == 0 && FileIndex == 10 && Unk1 == 0x60000000)
+		{
+			Filename = INPUT_PATH_PREFIX + std::string("000\\") + ReplaceStrings(Row[0], " ", "") + "_Uncompressed.EsoFileData";
+			ReportError("Found the quest data file: %s\n", Filename.c_str());
+			return true;
+		}
+	}
+
+	ReportError("Failed to find the quest data file!\n");
+	return false;
+}
+
+
+void MakeInputOutputFilenames()
+{
+	BASEPATH = TerminatePath(BASEPATH);
+
+	INPUT_PATH_PREFIX = BASEPATH + "esomnf-" + VERSION + "\\";
+	OUTPUT_PATH_PREFIX = BASEPATH + "goodimages-" + VERSION + "\\";;
+
+	INPUT_FILENAME = INPUT_PATH_PREFIX + "gamedata\\lang\\en.lang";
+	BOOK_OUTPUT_PATH = OUTPUT_PATH_PREFIX + "Books\\";
+	BOOK_OUTPUT_SQL_FILE = OUTPUT_PATH_PREFIX + "books.sql";
+	BOOK_OUTPUT_PHP_FILE = OUTPUT_PATH_PREFIX + "BookTitles.php";
+
+	QUEST_OUTPUT_SQL_FILE = OUTPUT_PATH_PREFIX + "Quests\\quests.sql";
+	QUEST_OUTPUT_PHP_FILE = OUTPUT_PATH_PREFIX + "Quests\\Quests.php";
+	QUEST_OUTPUT_TXT_FILE = OUTPUT_PATH_PREFIX + "Quests\\Quests.txt";
+	MNF_TEXT_FILE = INPUT_PATH_PREFIX + "mnf.txt";
+
+	ZONE_OUTPUT_TXT_FILE = OUTPUT_PATH_PREFIX + "Quests\\Zones.txt";
+
+}
+
+
+int main(int argc, char* argv[])
 {
 	CEsoLangFile LangData;
+	std::string QuestDataFilename;
 
 	OpenLog("ParseBooks.log");
+
+	if (argc < 3) return ReportError("Missing required command line arguments: [Version] [BasePath]\n");
+
+	VERSION = argv[1];
+	BASEPATH = argv[2];
+
+	MakeInputOutputFilenames();
 
 	printf("Loading language file %s...\n", INPUT_FILENAME.c_str());
 
@@ -440,11 +519,15 @@ int main()
 	printf("Loaded %u records from language data!\n", LangData.GetNumRecords());
 
 	ParseZoneNames(LangData);
-	ParseQuestData();
 
-	//ParseBooks(LangData);
+	if (FindQuestDataFile(QuestDataFilename))
+	{
+		ParseQuestData(QuestDataFilename);
+	}
+
+	ParseBooks(LangData);
+
+	ParseQuests(LangData);
 	
-	ParseQuests(LangData);	
-
     return 0;
 }

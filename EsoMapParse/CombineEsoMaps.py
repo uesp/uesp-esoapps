@@ -162,7 +162,10 @@ for imagegroupname in ImageGroups:
             TileY = 5
     elif len(ImageGroups[imagegroupname].ImageFiles) == 36:
             TileX = 6
-            TileY = 6        
+            TileY = 6
+    elif len(ImageGroups[imagegroupname].ImageFiles) == 37 or imagegroupname == "summserset/summerset_base":
+            TileX = 4
+            TileY = 4        
     elif len(ImageGroups[imagegroupname].ImageFiles) == 49:
             TileX = 7
             TileY = 7

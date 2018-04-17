@@ -66,6 +66,7 @@
 		- Price list downloads are no longer cached in order to ensure the latest version is received.
 		- Price list downloads are now done asynchronously.
 		- uespSalesPrices.lua is downloaded into its own add-on directory.
+		- The uespSalesPrices.lua file is downloaded compressed to save time.
 
 	TODO:
 		- Proper UI threading.

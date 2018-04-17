@@ -2582,10 +2582,12 @@ bool CuespLogMonitorDlg::DownloadPriceList()
 	DownloadURL += "prices";
 	DownloadURL += m_Options.PriceServer.c_str();
 	DownloadURL += "/uespSalesPrices.lua";
+	if (DOWNLOADPRICES_AS_ZIP) DownloadURL += ".gz";
 
 	TargetFile.Replace("\\SavedVariables", "\\AddOns\\uespLogSalesPrices");
 	TargetFile += "uespSalesPrices.lua";
 	TmpFile = TargetFile + ".new";
+	if (DOWNLOADPRICES_AS_ZIP) TmpFile += ".gz";
 	BackupFile = TargetFile + ".old";
 
 	std::string Path = eso::ExtractPath(std::string(TargetFile));
@@ -2609,7 +2611,50 @@ bool CuespLogMonitorDlg::DownloadPriceList()
 		return false;
 	}
 
+	if (DOWNLOADPRICES_AS_ZIP)
+	{
+		CString TmpFile1 = TargetFile + ".new";
+		eso::CFile OutputFile;
+		gzFile inputFile = gzopen(TmpFile, "rb");
+		const int BUFFER_SIZE = 4096;
+		unsigned char buffer[BUFFER_SIZE + 32];
+		int bytesRead;
+
+		if (!OutputFile.Open(std::string(TmpFile1), "wb"))
+		{
+			PrintLogLine(ULM_LOGLEVEL_ERROR, "Failed to open output price data file %s!", TmpFile1);
+			return false;
+		}
+
+		if (!inputFile)
+		{
+			PrintLogLine(ULM_LOGLEVEL_ERROR, "Failed to open zipped price data file %s!", TmpFile);
+			return false;
+		}
+		
+		do
+		{
+			bytesRead = gzread(inputFile, buffer, BUFFER_SIZE);
+
+			if (bytesRead > 0)
+			{
+				if (!OutputFile.WriteBytes(buffer, bytesRead))
+				{
+					PrintLogLine(ULM_LOGLEVEL_ERROR, "Failed writing %d bytes to file %s!", bytesRead, TmpFile);
+					gzclose(inputFile);
+					return false;
+				}
+			}
+
+		} while (!gzeof(inputFile) && bytesRead == BUFFER_SIZE);
+
+
+		gzclose(inputFile);
+		TmpFile = TmpFile1;
+	}	
+
 	MoveFileEx(TargetFile, BackupFile, MOVEFILE_REPLACE_EXISTING);
+	
 
 	Result = MoveFileEx(TmpFile, TargetFile, MOVEFILE_REPLACE_EXISTING);
 

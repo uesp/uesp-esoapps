@@ -134,6 +134,8 @@ protected:
 
 	const static int MAXIMUM_FORMERROR_RETRYCOUNT = 10;
 
+	const static bool DOWNLOADPRICES_AS_ZIP = true;
+
 	NOTIFYICONDATA	m_TrayIconData;
 	bool			m_IsInTray;
 

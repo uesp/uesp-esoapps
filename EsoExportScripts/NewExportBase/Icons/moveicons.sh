@@ -10,11 +10,13 @@ do
 	#echo "     First =$firstsection"
 	#echo "     Second=$secondsection"
 	
-	newpath="$firstsection"
-	mkdir -p $newpath
-	
-	newfile="$newpath/$secondsection"
-	
-	mv -f $f $newfile
+	if [[ $basefile = *"_"* ]]; then
+		newpath="$firstsection"
+		mkdir -p $newpath
+		
+		newfile="$newpath/$secondsection"
+		
+		mv -f $f $newfile
+	fi
 	#break
 done

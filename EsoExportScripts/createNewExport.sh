@@ -1,12 +1,12 @@
 #!/bin/sh
 
-VERSION="17"
+VERSION="18pts"
 ISPTS="1"
-LASTVERSION="16"
+LASTVERSION="17"
 LASTPTSVERSION="17pts"
 
-MAKEPTSDIFF="1"
-MAKEDIFF=""
+MAKEPTSDIFF=""
+MAKEDIFF="1"
 
 MAPSOURCEPATH="/cygdrive/d/src/uesp/EsoApps/EsoMapParse"
 ESOINPUTPATH="./esomnf-$VERSION"
@@ -14,11 +14,11 @@ GAMEINPUTPATH="./gamemnf-$VERSION"
 OUTPUTPATH="./goodimages-$VERSION"
 
 if [ "$ISPTS" ]; then
-	ESODATAFILE="C:/Program Files (x86)/Zenimax Online/The Elder Scrolls Online PTS/depot/eso.mnf"
-	GAMEDATAFILE="C:/Program Files (x86)/Zenimax Online/The Elder Scrolls Online PTS/game/client/game.mnf"
+	ESODATAFILE="c:/Program Files (x86)/Zenimax Online/The Elder Scrolls Online PTS/depot/eso.mnf"
+	GAMEDATAFILE="c:/Program Files (x86)/Zenimax Online/The Elder Scrolls Online PTS/game/client/game.mnf"
 else
-	ESODATAFILE="C:/Program Files (x86)/Zenimax Online/The Elder Scrolls Online/depot/eso.mnf"
-	GAMEDATAFILE="C:/Program Files (x86)/Zenimax Online/The Elder Scrolls Online/game/client/game.mnf"
+	ESODATAFILE="c:/Program Files (x86)/Zenimax Online/The Elder Scrolls Online/depot/eso.mnf"
+	GAMEDATAFILE="c:/Program Files (x86)/Zenimax Online/The Elder Scrolls Online/game/client/game.mnf"
 fi
 
 
@@ -33,12 +33,19 @@ popd () {
 makediff () {
 	echo "       Making Diff: $3 ..."
 	
+	EXT=".png"
 	VERSION1="$4"
 	VERSION2="$5"
 	SAFE1=$(printf '%s\n' "$1" | sed 's/[[\.*^$/]/\\&/g')
 	SAFE2=$(printf '%s\n' "$2" | sed 's/[[\.*^$/]/\\&/g')
 	
+	if [[ $1 = *"loadingscreens"* ]]; then
+		EXT=".jpg"
+	fi
+	
 	diff -qr "$1" "$2" | grep -v ".png" | sort > "$3"
+	
+	cp -f "$3" "$3.list"
 	
 	sed -i "0,/Files .* and .* differ/s//\n\nChanged:\n&/" "$3"
 	sed -i "0,/Only in $SAFE1/s//\n\nRemoved:\n&/" "$3"
@@ -49,30 +56,72 @@ makediff () {
 	sed -i "s#Only in .*mnf-$VERSION2\(.*\)/: #\t\1/#g" "$3"
 	sed -i "s#Only in .*mnf-$VERSION1\(.*\): #\t\1/#g" "$3"
 	sed -i "s#Only in .*mnf-$VERSION2\(.*\): #\t\1/#g" "$3"
+	
+	sed -i "s#Files .* and $SAFE2\(.*\) differ#\1#g" "$3.list"
+	sed -i "s#Only in $SAFE2\(.*\)/: #\1/#g" "$3.list"
+	sed -i "s#Only in $SAFE2\(.*\): #\1/#g" "$3.list"
+	sed -i "/Only in .*mnf-$VERSION1\(.*\): /d" "$3.list"
+	sed -i "s#\.dds#$EXT#g" "$3.list"
+	sed -i "s#^/##g" "$3.list"
+	
 }
 
 makemapsdiff () {
 	echo "       Making Maps Diff: $3 ..."
+	
+	rsync -a --include '*/' --exclude '*' "$2" "$1"
+	rsync -a --include '*/' --exclude '*' "$1" "$2"
 	
 	VERSION1="$4"
 	VERSION2="$5"
 	SAFE1=$(printf '%s\n' "$1" | sed 's/[[\.*^$/]/\\&/g')
 	SAFE2=$(printf '%s\n' "$2" | sed 's/[[\.*^$/]/\\&/g')
 	
-	diff -qr "$1" "$2" | grep -v ".png" | egrep "_0|Only in $1:|Only in $2:" | sort > "$3"
+	diff -qr "$1" "$2" | grep -v ".png" | egrep "_0.dds|Only in $1:|Only in $2:" | sort > "$3"
+	
+	cp -f "$3" "$3.list"
 	
 	sed -i "0,/Files .* and .* differ/s//\n\nChanged:\n&/" "$3"
 	sed -i "0,/Only in $SAFE1/s//\n\nRemoved:\n&/" "$3"
 	sed -i "0,/Only in $SAFE2/s//\n\nAdded:\n&/" "$3"
 	
-	sed -i "s#_base_0.dds##g" "$3"
+	sed -i "s#_0.dds##g" "$3"
+	
+	grep -e "Only in .*mnf-$VERSION2" "$3" > "$3.newmaps"
 	
 	sed -i "s#Files .* and .*mnf-$VERSION2\(.*\) differ#\t\1#g" "$3"
 	sed -i "s#Only in $SAFE1: #\t/#g" "$3"
 	sed -i "s#Only in $SAFE2: #\t/#g" "$3"
 	sed -i "s#Only in .*mnf-$VERSION1\(.*\): #\t\1/#g" "$3"
 	sed -i "s#Only in .*mnf-$VERSION2\(.*\): #\t\1/#g" "$3"
+	
+	sed -i "s#Files .* and $SAFE2\(.*\) differ#\1#g" "$3.list"
+	sed -i "s#Only in $SAFE2\(.*\)/: #\1/#g" "$3.list"
+	sed -i "s#Only in $SAFE2\(.*\): #\1/#g" "$3.list"
+	sed -i "/Only in .*mnf-$VERSION1\(.*\): /d" "$3.list"
+	sed -i "s#^/##g" "$3.list"
+	sed -i "s#_0.dds#.jpg#g" "$3.list"
+	
+	grep ".jpg" "$3.list" > "$3.updatedmaps"
+	sed -i "s#.*/##g" "$3.updatedmaps"
+	sed -i "s#_base.jpg##g" "$3.updatedmaps"
+	sed -i "s#.jpg##g" "$3.updatedmaps"
+	
 }
+
+makezipdiff () {
+	echo "       Make ZIP Diff: $3 ..."
+	
+	BASEPATH=`realpath $OUTPUTPATH`
+	pushd "$2"
+	zip -r@ "$BASEPATH/$1" < "$BASEPATH/$3"
+	popd
+}
+
+
+makemapsdiff "./esomnf-$LASTVERSION/art/maps/" "./esomnf-$VERSION/art/maps/" "./goodimages-$VERSION/maps.diff.txt" $LASTVERSION $VERSION
+
+exit
 
 
 if [ ! -d "$OUTPUTPATH" ]; then
@@ -81,10 +130,10 @@ fi
 
 
 mkdir "$OUTPUTPATH/esomnf-$VERSION/"
-./EsoExtractData.exe "$ESODATAFILE" "$ESOINPUTPATH/" -z "$ESOINPUTPATH/zosft.txt" -m "$ESOINPUTPATH/mnf.txt"  --extractsubfile combined
+./export/EsoExtractData.exe "$ESODATAFILE" "$ESOINPUTPATH/" -z "$ESOINPUTPATH/zosft.txt" -m "$ESOINPUTPATH/mnf.txt"  --extractsubfile combined
 
 mkdir "$OUTPUTPATH/gamemnf-$VERSION/"
-./EsoExtractData.exe "$GAMEDATAFILE" "$GAMEINPUTPATH/" -z "$GAMEINPUTPATH/zosft.txt" -m "$GAMEINPUTPATH/mnf.txt"
+./export/EsoExtractData.exe "$GAMEDATAFILE" "$GAMEINPUTPATH/" -z "$GAMEINPUTPATH/zosft.txt" -m "$GAMEINPUTPATH/mnf.txt"
 
 
 echo "Converting DDS to PNG..."
@@ -141,23 +190,23 @@ cd ./$OUTPUTPATH/Icons/
 cd ../../
 
 
-python "$MAPSOURCEPATH/CombineEsoMaps.py" 17 "/cygdrive/e/esoexport/" 
-python "$MAPSOURCEPATH/CreateEsoMapTiles.py" 17 "/cygdrive/e/esoexport/" 
-python "$MAPSOURCEPATH/CreateEsoMapTileZoom11.py" 17 "/cygdrive/e/esoexport/" 
+python "$MAPSOURCEPATH/CombineEsoMaps.py" "$VERSION" "/cygdrive/e/esoexport/" 
+python "$MAPSOURCEPATH/CreateEsoMapTiles.py" "$VERSION" "/cygdrive/e/esoexport/" 
+python "$MAPSOURCEPATH/CreateEsoMapTileZoom11.py" "$VERSION" "/cygdrive/e/esoexport/" 
 
 
 if [ $MAKEDIFF ]; then
 	echo "Making Diffs..."
-	makediff "./esomnf-$LASTVERSION/esoui/art/icons/" "./esomnf-$VERSION/esoui/art/icons/" "./goodimages-$VERSION/icons.ptsdiff.txt" $LASTVERSION $VERSION
-	makediff "./esomnf-$LASTVERSION/esoui/art/loadingscreens/" "./esomnf-$VERSION/esoui/art/loadingscreens/" "./goodimages-$VERSION/loadscreens.ptsdiff.txt" $LASTVERSION $VERSION
-	makediff "./esomnf-$LASTVERSION/esoui/art/treasuremaps/" "./esomnf-$VERSION/esoui/art/treasuremaps/" "./goodimages-$VERSION/treasuremaps.ptsdiff.txt" $LASTVERSION $VERSION
-	makediff "./gamemnf-$LASTVERSION/esoui/art/crowncrates/" "./gamemnf-$VERSION/esoui/art/crowncrates/" "./goodimages-$VERSION/crowncrates.ptsdiff.txt" $LASTVERSION $VERSION
-	makediff "./esomnf-$LASTVERSION/esoui/art/collectibles/" "./esomnf-$VERSION/esoui/art/collectibles/" "./goodimages-$VERSION/collectibles.ptsdiff.txt" $LASTVERSION $VERSION
-	makediff "./esomnf-$LASTVERSION/esoui/art/store/" "./esomnf-$VERSION/esoui/art/store/" "./goodimages-$VERSION/store.ptsdiff.txt" $LASTVERSION $VERSION
-	makediff "./esomnf-$LASTVERSION/esoui/art/treeicons/" "./esomnf-$VERSION/esoui/art/treeicons/" "./goodimages-$VERSION/treeicons.ptsdiff.txt" $LASTVERSION $VERSION 
-	makediff "./esomnf-$LASTVERSION/esoui/art/tutorial/" "./esomnf-$VERSION/esoui/art/tutorial/" "./goodimages-$VERSION/tutorial.ptsdiff.txt"  $LASTVERSION $VERSION
-	makediff "./gamemnf-$LASTVERSION/esoui/art/" "./gamemnf-$VERSION/esoui/art/" "./goodimages-$VERSION/gameuiart.ptsdiff.txt" $LASTVERSION $VERSION
-	makemapsdiff "./esomnf-$LASTVERSION/art/maps/" "./esomnf-$VERSION/art/maps/" "./goodimages-$VERSION/maps.ptsdiff.txt" $LASTVERSION $VERSION
+	makediff "./esomnf-$LASTVERSION/esoui/art/icons/" "./esomnf-$VERSION/esoui/art/icons/" "./goodimages-$VERSION/icons.diff.txt" $LASTVERSION $VERSION
+	makediff "./esomnf-$LASTVERSION/esoui/art/loadingscreens/" "./esomnf-$VERSION/esoui/art/loadingscreens/" "./goodimages-$VERSION/loadscreens.diff.txt" $LASTVERSION $VERSION
+	makediff "./esomnf-$LASTVERSION/esoui/art/treasuremaps/" "./esomnf-$VERSION/esoui/art/treasuremaps/" "./goodimages-$VERSION/treasuremaps.diff.txt" $LASTVERSION $VERSION
+	makediff "./gamemnf-$LASTVERSION/esoui/art/crowncrates/" "./gamemnf-$VERSION/esoui/art/crowncrates/" "./goodimages-$VERSION/crowncrates.diff.txt" $LASTVERSION $VERSION
+	makediff "./esomnf-$LASTVERSION/esoui/art/collectibles/" "./esomnf-$VERSION/esoui/art/collectibles/" "./goodimages-$VERSION/collectibles.diff.txt" $LASTVERSION $VERSION
+	makediff "./esomnf-$LASTVERSION/esoui/art/store/" "./esomnf-$VERSION/esoui/art/store/" "./goodimages-$VERSION/store.diff.txt" $LASTVERSION $VERSION
+	makediff "./esomnf-$LASTVERSION/esoui/art/treeicons/" "./esomnf-$VERSION/esoui/art/treeicons/" "./goodimages-$VERSION/treeicons.diff.txt" $LASTVERSION $VERSION 
+	makediff "./esomnf-$LASTVERSION/esoui/art/tutorial/" "./esomnf-$VERSION/esoui/art/tutorial/" "./goodimages-$VERSION/tutorial.diff.txt"  $LASTVERSION $VERSION
+	makediff "./gamemnf-$LASTVERSION/esoui/art/" "./gamemnf-$VERSION/esoui/art/" "./goodimages-$VERSION/gameuiart.diff.txt" $LASTVERSION $VERSION
+	makemapsdiff "./esomnf-$LASTVERSION/art/maps/" "./esomnf-$VERSION/art/maps/" "./goodimages-$VERSION/maps.diff.txt" $LASTVERSION $VERSION
 fi
 
 if [ $MAKEPTSDIFF ]; then
@@ -179,6 +228,16 @@ echo "Extracting book and quest data..."
 ./export/ParseBooks.exe "$VERSION" "./"
 
 
+echo "Compressing Books..."
+pushd "./$OUTPUTPATH/Books/"
+zip -rq "../books.zip" *
+popd
+
+echo "Compressing Quests..."
+pushd "./$OUTPUTPATH/Quests/"
+zip -rq "../quests.zip" Quests.txt Zones.txt
+popd
+
 echo "Compressing Game UI Art..."
 pushd "./$OUTPUTPATH/GameUIArt/"
 zip -rq "../gameuiart.zip" *
@@ -188,9 +247,22 @@ popd
 
 echo "Compressing Icons..."
 pushd "./$OUTPUTPATH/Icons/"
-zip -rq "../icons.zip" *
+zip -rq "../spliticons.zip" *
 cd ..
+zip -urq "spliticons.zip" icons.ptsdiff.txt icons.diff.txt
+popd
+
+BASEPATH=`realpath $OUTPUTPATH`
+pushd "./esomnf-$VERSION/esoui/art/icons/"
+zip -Rq "$BASEPATH/icons.zip" '*.png'
+popd
+pushd "./$OUTPUTPATH"
 zip -urq "icons.zip" icons.ptsdiff.txt icons.diff.txt
+popd
+
+echo "Compressing Language Files..."
+pushd "./$OUTPUTPATH/Lang/"
+zip -rq "../lang.zip" *
 popd
 
 echo "Compressing Loading Screens..."
@@ -250,3 +322,16 @@ zip -urq "../maps.zip" mapinfo.txt
 cd ..
 zip -urq "maps.zip" maps.ptsdiff.txt maps.diff.txt
 popd
+
+echo "Copying Updated Maps..."
+xargs -a ../maps.diff.txt.updatedmaps cp -Rt ../NewMaps/
+
+makezipdiff "icons.diff.zip" "./esomnf-$VERSION/esoui/art/icons/" "icons.diff.txt.list"
+makezipdiff "loadscreens.diff.zip" "./$OUTPUTPATH/LoadingScreens/" "loadscreens.diff.txt.list"
+makezipdiff "treasuremaps.diff.zip" "./$OUTPUTPATH/TreasureMaps/" "treasuremaps.diff.txt.list"
+makezipdiff "crowncrates.diff.zip" "./$OUTPUTPATH/MoreImages/crowncrates/" "crowncrates.diff.txt.list"
+makezipdiff "collectibles.diff.zip" "./$OUTPUTPATH/MoreImages/collectibles/" "collectibles.diff.txt.list"
+makezipdiff "store.diff.zip" "./$OUTPUTPATH/MoreImages/store/" "store.diff.txt.list"
+makezipdiff "tutorial.diff.zip" "./$OUTPUTPATH/MoreImages/tutorial/" "tutorial.diff.txt.list"
+makezipdiff "gameuiart.diff.zip" "./$OUTPUTPATH/GameUIArt/" "gameuiart.diff.txt.list"
+makezipdiff "maps.diff.zip" "./$OUTPUTPATH/CombinedMaps/" "maps.diff.txt.list"

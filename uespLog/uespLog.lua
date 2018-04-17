@@ -939,7 +939,7 @@
 
 
 --	GLOBAL DEFINITIONS
-uespLog = { }
+uespLog = uespLog or {}
 
 uespLog.version = "1.42"
 uespLog.releaseDate = "16 Mar 2018"
@@ -3136,6 +3136,8 @@ function uespLog.ShowAddonMemory()
 
 end
 
+ZO_CenterScreenAnnounce_GetHandlers = function() return {} end
+
 
 --	Function fired at addon loaded to setup variables and default settings
 function uespLog.Initialize( self, addOnName )
@@ -3155,17 +3157,20 @@ function uespLog.Initialize( self, addOnName )
 	uespLog.lastPlayerSpellDamage = GetPlayerStat(STAT_SPELL_POWER, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
 	uespLog.lastPlayerWeaponDamage = GetPlayerStat(STAT_POWER, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
 	 	
-	if (uespLog.origLoreBookLearnedFunction == nil) then
-		uespLog.origLoreBookLearnedFunction = ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED]
-	end
+	--if (ZO_CenterScreenAnnounce_GetHandlers) then
 	
-	if (uespLog.origLoreBookLearnedSkillExpFunction == nil) then
-		uespLog.origLoreBookLearnedSkillExpFunction = ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED_SKILL_EXPERIENCE]
-	end
-	
-	ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED] = uespLog.EventLoreBookLearned
-	ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED_SKILL_EXPERIENCE] = uespLog.EventLoreBookLearnedSkillExperience
-	
+		if (uespLog.origLoreBookLearnedFunction == nil) then
+			uespLog.origLoreBookLearnedFunction = ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED]
+		end
+		
+		if (uespLog.origLoreBookLearnedSkillExpFunction == nil) then
+			uespLog.origLoreBookLearnedSkillExpFunction = ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED_SKILL_EXPERIENCE]
+		end
+		
+		ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED] = uespLog.EventLoreBookLearned
+		ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED_SKILL_EXPERIENCE] = uespLog.EventLoreBookLearnedSkillExperience
+	--end
+
 	uespLog.savedVars = {
 		["all"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "all", uespLog.DEFAULT_DATA),
 		["achievements"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "achievements", uespLog.DEFAULT_DATA),
@@ -7903,7 +7908,7 @@ function uespLog.DumpSkillsBasic()
 		--uespLog.DebugMsg("       "..tostring(abilityIndex)..": "..tostring(name).." "..tostring(passive).." "..tostring(slotType).." "..tostring(showInSpellBook))
 	--end
 	
-	for abilityId = 1, 99000 do
+	for abilityId = 1, 199000 do
 		if (DoesAbilityExist(abilityId)) then
 			lastAbility = abilityId
 			validAbilityCount = validAbilityCount + 1

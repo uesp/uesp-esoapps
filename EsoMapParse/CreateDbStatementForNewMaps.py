@@ -5,14 +5,29 @@ import math
 import errno
 import csv
 
-BASEPATHINDEX = "-17pts"
-MAPINFOFILE = "e:\\esoexport\\goodimages" + BASEPATHINDEX + "\\maps\\mapinfo.txt"
-NEWMAPSFILE = "e:\\esoexport\\goodimages" + BASEPATHINDEX + "\\maps_new.txt"
-OUTPUTPATH = "e:\\esoexport\\goodimages" + BASEPATHINDEX + "\\maps\\"
+USE_COMMAND_ARGS = True
+
+if (not USE_COMMAND_ARGS):
+    FIRSTID = 1447
+    BasePathIndex = "17"
+    BasePath = "e:/esoexport/"
+elif (len(sys.argv) < 4):
+    print("Missing required command line arguments!")
+    exit
+else:
+    BasePathIndex = sys.argv[1]
+    BasePath = sys.argv[2]
+    FIRSTID = int(sys.argv[3])
+    print("\tUsing Base Path:" + BasePath)
+    print("\tUsing Version:" + BasePathIndex)
+    print("\tUsing First ID:" + str(FIRSTID))
+
+MAPINFOFILE = BasePath + "goodimages-" + BasePathIndex + "/maps/mapinfo.txt"
+NEWMAPSFILE = BasePath + "goodimages-" + BasePathIndex + "/maps_new.txt"
+OUTPUTPATH = BasePath + "goodimages-" + BasePathIndex + "/maps/"
 
 MAX_ZOOM_VALUE = 11
 
-FIRSTID = 1447
 MAPNAME = 0
 MAXZOOM = 1
 MINZOOM = 2

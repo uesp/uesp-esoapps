@@ -11415,7 +11415,7 @@ uespLog.EXCLUDE_STYLES_MASTERWRIT = {
 	[30]							 = true, -- Soul Shriven
 	[53]							 = true, -- Frostcaster
 	[58]							 = true, -- Harlequin
-	[38]							 = true, -- Taesci
+	[38]							 = true, -- Tsaesci
 }
 
 	

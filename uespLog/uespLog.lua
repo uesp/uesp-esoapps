@@ -906,7 +906,7 @@
 --			- Fixed missing preview option in crown store.
 --			- Removed notification of rising skill rank in undiscovered racial lines.
 --
---		- v1.42 -- 
+--		- v1.50 -- 21 May 2018
 --			- Added journal quests, completed quests, books, Collectibles, and guilds to saved character data.
 --			- Added the command "/uespchardata extended [on/off]". This is enabled by default and permits the saving
 --			  of book, collectible, recipe, quest, and achievement character data. Turning it off can reduce the size of
@@ -937,6 +937,8 @@
 --				- /uespmasterpotion command (use the Writ Worthy add-on)
 --				- /uesplorebook command (API was redone in update 18)
 --			- Redid the item tooltips for UESP sales prices so that they'll always show up correctly.
+--			- Added the /uespmasterwrit (or /umr) command which displays an estimate for your chance to receive a
+--			  master writ for each crafting skill.
 --
 --
 
@@ -1573,6 +1575,9 @@ uespLog.MINEITEM_POTION_MAGICITEMID = 1	-- 1234567
 uespLog.MINEITEM_POISON_MAGICITEMID = 2
 uespLog.MINEITEM_ENCHANT_ITEMID = 55679
 uespLog.MINEITEM_ENCHANT_ENCHANTID = 26841
+
+uespLog.MASTERWRIT_MAX_CHANCE = 15
+uespLog.MASTERWRIT_MIN_CHANCE = 1
 
 uespLog.DEFAULT_DATA = 
 {
@@ -3652,6 +3657,7 @@ function uespLog.SetupSlashCommands()
 	uespLog.SetSlashCommand("/utl", SLASH_COMMANDS["/uesptrackloot"])
 	uespLog.SetSlashCommand("/ukd", SLASH_COMMANDS["/uespkilldata"])
 	uespLog.SetSlashCommand("/home", uespLog.TeleportToPrimaryHome)
+	uespLog.SetSlashCommand("/umr", uespLog.MasterWritCmd)
 end
 
 
@@ -11408,13 +11414,32 @@ uespLog.EXCLUDE_STYLES_MASTERWRIT = {
 	[38]							 = true, -- Tsaesci
 }
 
+
+function uespLog.GetStyleData()
+	local numStyles = GetNumSmithingStyleItems()
+	local styleData = {}
 	
+	for i = 1, numStyles do
+		local styleItemName, _, _, _, itemStyle = GetSmithingStyleItemInfo(i)
+		local styleName = GetItemStyleName(itemStyle)
+		
+		if (styleItemName ~= "" and styleName ~= "") then 
+			styleData[#styleData + 1] = { ["name"] = styleName, ["style"] = itemStyle }
+		end
+	end
+	
+	table.sort(styleData, function (a, b) return a.name < b.name end)
+	
+	return styleData
+end
+
+
 function uespLog.ShowStyleSummary(showKnown, showUnknown, showMasterWrit)
 	local numStyles = GetNumSmithingStyleItems()
 	local totalKnown = 0
 	local totalUnknown = 0
 	local validStyles = 0
-	local styleData = {}
+	local styleData = uespLog.GetStyleData()
 	local displayCount = 0
 	local writCount = 0
 				
@@ -11427,17 +11452,6 @@ function uespLog.ShowStyleSummary(showKnown, showUnknown, showMasterWrit)
 	else
 		uespLog.MsgColor(uespLog.craftColor, "Showing summary for all styles:")
 	end
-	
-	for i = 1, numStyles do
-		local styleItemName, _, _, _, itemStyle = GetSmithingStyleItemInfo(i)
-		local styleName = GetItemStyleName(itemStyle)
-		
-		if (styleItemName ~= "" and styleName ~= "") then 
-			styleData[#styleData + 1] = { ["name"] = styleName, ["style"] = itemStyle }
-		end
-	end
-	
-	table.sort(styleData, function (a, b) return a.name < b.name end)
 	
 	for i, data in ipairs(styleData) do
 		local styleName = data.name
@@ -16855,4 +16869,122 @@ function uespLog.CountConstantsInObject(object, origConstants)
 	
 	return 0
 end
+
+
+function uespLog.GetMasterWritMotifsKnown()
+	local numStyles = GetNumSmithingStyleItems()
+	local styleData = uespLog.GetStyleData()
+	local totalStyles = 0
+	local knownStyles = 0
+	
+	for i, data in ipairs(styleData) do
+		local styleName = data.name
+		local itemStyle = data.style
+		local known, knownCount = uespLog.GetStyleKnown(styleName)	
+		local displayStyle = true
+		
+		if (uespLog.EXCLUDE_STYLES_MASTERWRIT[itemStyle] == nil) then
+			totalStyles = totalStyles + 1
+			
+			if (knownCount >= 14) then
+				knownStyles = knownStyles + 1
+			end
+		end
+	end
+	
+	if (totalStyles <= 0) then
+		return 0
+	end
+	
+	return knownStyles / totalStyles
+end
+
+
+function uespLog.GetAchievementProgressValue(achId)
+	local achLink = GetAchievementLink(achId)
+	
+	if (achLink == nil or achLink == "") then
+		return 0
+	end
+	
+	local _, progress, timestamp = uespLog.ParseAchievementLinkId(achLink)
+	
+	return uespLog.CountSetBits(progress)
+end
+
+
+function uespLog.GetProvMasterWritRecipesKnown()
+	local recipeLists = { 7, 14, 15, 16}
+	local recipeCount = 0
+	local knownCount = 0
+	
+	for i, recipeListIndex in ipairs(recipeLists) do
+		local listName, numRecipes = GetRecipeListInfo(recipeListIndex)
+		
+		for recipeIndex = 1, numRecipes do
+			local known, name, _, _, quality = GetRecipeInfo(recipeListIndex, recipeIndex)
+	
+			if (name ~= "" and quality >= 3) then
+				recipeCount = recipeCount + 1
+				
+				if (known) then
+					knownCount = knownCount + 1
+				end
+			end
+		end
+	end
+	
+	return knownCount / recipeCount
+end
+
+
+function uespLog.MasterWritCmd(cmd)
+	local ChanceRange = uespLog.MASTERWRIT_MAX_CHANCE - uespLog.MASTERWRIT_MIN_CHANCE
+	
+	local motifChance = uespLog.GetMasterWritMotifsKnown()
+	local blackTraits = uespLog.GetCharDataResearchTraits(CRAFTING_TYPE_BLACKSMITHING)
+	local clothTraits = uespLog.GetCharDataResearchTraits(CRAFTING_TYPE_CLOTHIER)
+	local woodTraits = uespLog.GetCharDataResearchTraits(CRAFTING_TYPE_WOODWORKING)
+	
+	local blackTraitsKnown = blackTraits["Blacksmithing:Trait:Known"] or 0
+	local blackTraitsTotal = blackTraits["Blacksmithing:Trait:Total"] or 1
+	local clothTraitsKnown = clothTraits["Clothier:Trait:Known"] or 0
+	local clothTraitsTotal = clothTraits["Clothier:Trait:Total"] or 1
+	local woodTraitsKnown  = woodTraits["Woodworking:Trait:Known"] or 0
+	local woodTraitsTotal  = woodTraits["Woodworking:Trait:Total"] or 1
+	
+	local blackChance = math.floor(uespLog.MASTERWRIT_MIN_CHANCE + (blackTraitsKnown / blackTraitsTotal + motifChance) * ChanceRange/2 + 0.5)
+	local clothChance = math.floor(uespLog.MASTERWRIT_MIN_CHANCE + (clothTraitsKnown / clothTraitsTotal + motifChance) * ChanceRange/2 + 0.5)
+	local woodChance  = math.floor(uespLog.MASTERWRIT_MIN_CHANCE + (woodTraitsKnown  / woodTraitsTotal  + motifChance) * ChanceRange/2 + 0.5)
+		
+	local runesKnown = 0
+	runesKnown = runesKnown + uespLog.GetAchievementProgressValue(781)
+	runesKnown = runesKnown + uespLog.GetAchievementProgressValue(788)
+	runesKnown = runesKnown + uespLog.GetAchievementProgressValue(779)
+	runesKnown = runesKnown + uespLog.GetAchievementProgressValue(780)
+	runesKnown = runesKnown + uespLog.GetAchievementProgressValue(1317)
+	
+	local reagentsKnown = 0
+	reagentsKnown = reagentsKnown + uespLog.GetAchievementProgressValue(1045)
+	reagentsKnown = reagentsKnown + uespLog.GetAchievementProgressValue(1464)
+		
+	local recipesKnown = uespLog.GetProvMasterWritRecipesKnown()
+	
+	local alchemyChance = math.floor(uespLog.MASTERWRIT_MIN_CHANCE + reagentsKnown / (18 + 8) * ChanceRange + 0.5)
+	local enchantChance = math.floor(uespLog.MASTERWRIT_MIN_CHANCE + runesKnown / (4 + 17 + 14 + 14 + 5) * ChanceRange + 0.5)
+	local provChance    = math.floor(uespLog.MASTERWRIT_MIN_CHANCE + recipesKnown * ChanceRange + 0.5)
+		
+	uespLog.MsgColor(uespLog.craftColor, "Estimated Chance to Receive a Master Writ:")
+	uespLog.MsgColor(uespLog.craftColor, ".   Alchemy: "..tostring(alchemyChance).. "%")
+	uespLog.MsgColor(uespLog.craftColor, ".   Blacksmithing: "..tostring(blackChance).. "%")
+	uespLog.MsgColor(uespLog.craftColor, ".   Clothing: "..tostring(clothChance).. "%")
+	uespLog.MsgColor(uespLog.craftColor, ".   Enchanting: "..tostring(enchantChance).. "%")
+	uespLog.MsgColor(uespLog.craftColor, ".   Provisioning: "..tostring(provChance).. "%")
+	uespLog.MsgColor(uespLog.craftColor, ".   Woodworking: "..tostring(woodChance).. "%")
+end
+
+
+SLASH_COMMANDS["/uespmasterwrit"] = uespLog.MasterWritCmd
+
+
 

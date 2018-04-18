@@ -640,7 +640,94 @@
 --				  will no longer display the open container showing remaining items.
 --				- Fixed known/unknown display of recipes.
 --				- Added the 4 new styles: Silken Ring, Mazzatun, Ra Gada, and Ebony
---		
+--
+--			- Guild sales data tracking and price display. A new feature in testing since v1.00 which logs guild
+--			  sales data from several sources including:
+--					- Logs sales from your guild history
+--					- Logs items you list
+--					- Logs item searches from all guild traders
+--					- Manually scan of listings in the current guild store with "/uespsales scan"
+--			  All uploaded sales data can be viewed at http://esosales.uesp.net/ . Average price data is computed
+--			  using both the listed items and sold items for potentially greater accuracy in the price calculation.
+--
+--			  Note that the addon includes prices for the PC-NA server at the time of the add-ons release. For 
+--			  updated prices and other servers you can download an updated price file (uespSalesPrices.lua) at:
+--
+--					http://esosales.uesp.net/salesPrices.shtml
+--
+--			  Sales data logging and price display can be controlled with the "/uespsales" command:
+--					/uespsales [on|off]            Turn logging of sales data on/off.
+--					/uespsales prices [on|off]     Enables/disables all UESP price diplays.
+--					/uespsales tooltip [on|off]    Turns price item tooltip display on/off.
+--					/uespsales saletype both       Uses both listed and sold data when displaying prices.
+--					/uespsales saletype list       Uses only listed data when displaying prices.
+--					/uespsales saletype sold       Uses only sold data when displaying prices.
+--					/uespsales scan                Scans all guild store listings.
+--					/uespsales scan [page]         Scans the current guild store listing at the given page.
+--					/uespsales stop                Stops the current listing scan.
+--					/uespsales resetall            Reset the sales and listing scan timestamps.
+--					/uespsales resetsold           Reset the sales history scan timestamps for  all your guilds.
+--					/uespsales resetlist all       Reset the listing timestamps for all guilds.
+--					/uespsales resetlist current   Reset the listing timestamps for the current guild trader.
+--					/uespsales resetlist [name]    Reset the listing timestamps for that guild.
+--					/uespsales deal [uesp|mm|none] Sets how item deals are displayed in guild trader searches.
+--
+--			  When doing a manual scan of guild listings you need to be at a guild trader kiosk or bank screen.
+--			  When at a guild store bank it will scan all guilds you are currently in. A full scan can take 
+-- 			  up to 10 minutes depending on how many items are in the guild store. You have to remain on the 
+--			  trader during this time and you cannot perform any searches yourself as this will interfere with
+--			  automatic scan. You can stop a listing scan with "/uespsales stop" or by exiting the guild trader
+--			  interface at anytime.
+--
+--			  Once a guild scan has been completed then subsequent scans will only need to scan any new items
+--			  listed since the last scan. This applies to both guild listings and guild sale histories. You
+--			  can reset these with the "/uespsales resetlist" and "/uespsales resetsold" commands but the
+--			  next scans will then require a longer complete scan. Daily updated versions of this file can
+--			  be downloaded from  http://esosales.uesp.net/ . If you don't use the UESP price data at all you
+--			  can delete everything in this file with any text editor to save a little bit of memory.
+--
+--			  If sales price logging is enabled (/uespsales on) then two buttons in the bottom-left corner of the
+--			  guild trader listing window will be added that perform the equivalent of "/uespsales scan" and 
+--			  "/uespsales resetlist current".
+--
+--			  Collected price data is included in the "uespSalesPrices.lua" file. Average price data can be
+--			  viewed in item tooltips if you turn them on with "/uespsales prices on" and "/uespsales tooltip on",
+--			  much in the same manner as with the MasterMerchant add-on. 
+--
+-- 			  You can control which type of sales data is used for the average price with the commands:
+--					/uespsales saletype both       Uses both listed and sold price data.
+--					/uespsales saletype list       Uses only listed price data.
+--					/uespsales saletype sold       Uses only sold price data.
+--
+--			  Using only sold data would be the same as how the MasterMerchant add-on works. Using only the listed
+--			  data would be the same as how the TamrielTraderCentre add-on works. Using both gets you the best
+--			  of both worlds. 
+--
+--			  If you have MasterMerchant and AwesomeGuildStore installed you can use "/uespsales deal" to change
+--			  how the item deal label is calculated and displayed:
+--
+--					/uespsales deal mm      Use the default MM price data and deal calculation.
+--					/uespsales deal uesp    Use the UESP price data and deal calculation.
+--
+--			  When switching between types you must close and reopen any existing guild trader searches in order
+--			  to update the data. Currently item deals are only displayed if MM and AGS are both installed.
+--			- Fishing notifications (turn on with /uespfish on)
+--			- Daily quest tracking (/uespdaily)
+--			- Added the /uesptrackstat command for tracking changes to Health/Magicka/Stamina/Ultimate. You
+--			  can enable tracking of one or more stats and any change will be displayed in the chat window
+--			  along with a game time reference. Warning that this command results in a lot of messages as you
+--			  might expect.
+--					/uesptrackstat                        Shows command help and current status of tracking.
+--					/uesptrackstat health[on/off]         Turns Health tracking on/off.
+--					/uesptrackstat magicka [on/off]       Turns Magicka tracking on/off.
+--					/uesptrackstat stamina [on/off]       Turns Stamina tracking on/off.
+--					/uesptrackstat ultimate [on/off]      Turns Ultimate tracking on/off.
+--					/uesptrackstat weapondamage [on/off]  Turns Weapon Damage tracking on/off.
+--					/uesptrackstat spelldamage [on/off]	  Turns Spell Damage tracking on/off.
+--					/uesptrackstat all					  Start tracking all stats.
+--					/uesptrackstat none					  Turns off all tracking.
+--					/uesptrackstat resettime			  Resets the game time display to 0.
+--
 --		- v1.01 -- 4 March 2017
 --			- Fixed motif unknown/known display.
 --			- Add recipe known display to tooltips.
@@ -851,105 +938,15 @@
 --				- /uesplorebook command (API was redone in update 18)
 --			- Redid the item tooltips for UESP sales prices so that they'll always show up correctly.
 --
---		Future Versions (Works in Progress)
---		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
 --
---			- Guild sales data tracking and price display. A new feature in testing since v1.00 which logs guild
---			  sales data from several sources including:
---					- Logs sales from your guild history
---					- Logs items you list
---					- Logs item searches from all guild traders
---					- Manually scan of listings in the current guild store with "/uespsales scan"
---			  All uploaded sales data can be viewed at http://esosales.uesp.net/ . Average price data is computed
---			  using both the listed items and sold items for potentially greater accuracy in the price calculation.
---
---			  Note that the addon includes prices for the PC-NA server at the time of the add-ons release. For 
---			  updated prices and other servers you can download an updated price file (uespSalesPrices.lua) at:
---
---					http://esosales.uesp.net/salesPrices.shtml
---
---			  Sales data logging and price display can be controlled with the "/uespsales" command:
---					/uespsales [on|off]            Turn logging of sales data on/off.
---					/uespsales prices [on|off]     Enables/disables all UESP price diplays.
---					/uespsales tooltip [on|off]    Turns price item tooltip display on/off.
---					/uespsales saletype both       Uses both listed and sold data when displaying prices.
---					/uespsales saletype list       Uses only listed data when displaying prices.
---					/uespsales saletype sold       Uses only sold data when displaying prices.
---					/uespsales scan                Scans all guild store listings.
---					/uespsales scan [page]         Scans the current guild store listing at the given page.
---					/uespsales stop                Stops the current listing scan.
---					/uespsales resetall            Reset the sales and listing scan timestamps.
---					/uespsales resetsold           Reset the sales history scan timestamps for  all your guilds.
---					/uespsales resetlist all       Reset the listing timestamps for all guilds.
---					/uespsales resetlist current   Reset the listing timestamps for the current guild trader.
---					/uespsales resetlist [name]    Reset the listing timestamps for that guild.
---					/uespsales deal [uesp|mm|none] Sets how item deals are displayed in guild trader searches.
---
---			  When doing a manual scan of guild listings you need to be at a guild trader kiosk or bank screen.
---			  When at a guild store bank it will scan all guilds you are currently in. A full scan can take 
--- 			  up to 10 minutes depending on how many items are in the guild store. You have to remain on the 
---			  trader during this time and you cannot perform any searches yourself as this will interfere with
---			  automatic scan. You can stop a listing scan with "/uespsales stop" or by exiting the guild trader
---			  interface at anytime.
---
---			  Once a guild scan has been completed then subsequent scans will only need to scan any new items
---			  listed since the last scan. This applies to both guild listings and guild sale histories. You
---			  can reset these with the "/uespsales resetlist" and "/uespsales resetsold" commands but the
---			  next scans will then require a longer complete scan. Daily updated versions of this file can
---			  be downloaded from  http://esosales.uesp.net/ . If you don't use the UESP price data at all you
---			  can delete everything in this file with any text editor to save a little bit of memory.
---
---			  If sales price logging is enabled (/uespsales on) then two buttons in the bottom-left corner of the
---			  guild trader listing window will be added that perform the equivalent of "/uespsales scan" and 
---			  "/uespsales resetlist current".
---
---			  Collected price data is included in the "uespSalesPrices.lua" file. Average price data can be
---			  viewed in item tooltips if you turn them on with "/uespsales prices on" and "/uespsales tooltip on",
---			  much in the same manner as with the MasterMerchant add-on. 
---
--- 			  You can control which type of sales data is used for the average price with the commands:
---					/uespsales saletype both       Uses both listed and sold price data.
---					/uespsales saletype list       Uses only listed price data.
---					/uespsales saletype sold       Uses only sold price data.
---
---			  Using only sold data would be the same as how the MasterMerchant add-on works. Using only the listed
---			  data would be the same as how the TamrielTraderCentre add-on works. Using both gets you the best
---			  of both worlds. 
---
---			  If you have MasterMerchant and AwesomeGuildStore installed you can use "/uespsales deal" to change
---			  how the item deal label is calculated and displayed:
---
---					/uespsales deal mm      Use the default MM price data and deal calculation.
---					/uespsales deal uesp    Use the UESP price data and deal calculation.
---
---			  When switching between types you must close and reopen any existing guild trader searches in order
---			  to update the data. Currently item deals are only displayed if MM and AGS are both installed.
---
---			- Fishing notifications (turn on with /uespfish on)
---			- Daily quest tracking (/uespdaily)
---			- Added the /uesptrackstat command for tracking changes to Health/Magicka/Stamina/Ultimate. You
---			  can enable tracking of one or more stats and any change will be displayed in the chat window
---			  along with a game time reference. Warning that this command results in a lot of messages as you
---			  might expect.
---					/uesptrackstat                        Shows command help and current status of tracking.
---					/uesptrackstat health[on/off]         Turns Health tracking on/off.
---					/uesptrackstat magicka [on/off]       Turns Magicka tracking on/off.
---					/uesptrackstat stamina [on/off]       Turns Stamina tracking on/off.
---					/uesptrackstat ultimate [on/off]      Turns Ultimate tracking on/off.
---					/uesptrackstat weapondamage [on/off]  Turns Weapon Damage tracking on/off.
---					/uesptrackstat spelldamage [on/off]	  Turns Spell Damage tracking on/off.
---					/uesptrackstat all					  Start tracking all stats.
---					/uesptrackstat none					  Turns off all tracking.
---					/uesptrackstat resettime			  Resets the game time display to 0.
---
---
+
 
 
 --	GLOBAL DEFINITIONS
 uespLog = uespLog or {}
 
-uespLog.version = "1.42"
-uespLog.releaseDate = "16 Mar 2018"
+uespLog.version = "1.5"
+uespLog.releaseDate = "21 May 2018"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

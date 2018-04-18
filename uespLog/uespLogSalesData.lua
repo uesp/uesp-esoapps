@@ -43,6 +43,8 @@ uespLog.SalesLastSearchCooldownUpdate = false
 uespLog.SalesLastSearchCooldownCount = 0
 uespLog.SalesLastSearchCooldownMaxCount = 10
 
+uespLog.Orig_WritWorthyMMPrice = nil
+
 uespLog.SalesPrices = nil
 uespLog.SalesPricesVersion = 0
 
@@ -68,9 +70,14 @@ function uespLog.InitSalesFunctions()
 	
 	TRADING_HOUSE.SetupPendingPost = uespLog.SetupPendingPost
 	
-	if (MasterMerchant == nil) then
+	if (WritWorthy ~= nil and WritWorthy.Util ~= nil) then
+	
+		if (uespLog.Orig_WritWorthyMMPrice == nil) then
+			uespLog.Orig_WritWorthyMMPrice = WritWorthy.Util.MMPrice
+		end
 		
-	end
+		WritWorthy.Util.MMPrice = uespLog.WritWorthyMMPrice
+	end	
 
 end
 
@@ -240,6 +247,37 @@ function uespLog.SetSalesPostPriceType(value)
 	uespLog.savedVars.settings.data.salesData.postPriceType = value
 end
 
+
+function uespLog.GetSalesUseWritWorthy()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.salesData == nil) then
+		uespLog.savedVars.settings.data.salesData = uespLog.DEFAULT_SETTINGS.salesData
+	end
+	
+	if (uespLog.savedVars.settings.data.salesData.useWritWorthy == nil) then
+		uespLog.savedVars.settings.data.salesData.useWritWorthy = uespLog.DEFAULT_SETTINGS.salesData.useWritWorthy
+	end
+	
+	return uespLog.savedVars.settings.data.salesData.useWritWorthy
+end
+
+
+function uespLog.SetSalesUseWritWorthy(value)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.salesData == nil) then
+		uespLog.savedVars.settings.data.salesData = uespLog.DEFAULT_SETTINGS.salesData
+	end
+	
+	uespLog.savedVars.settings.data.salesData.useWritWorthy = value
+end
 
 
 function uespLog.GetSalesShowDealType()
@@ -1743,8 +1781,7 @@ function uespLog.SalesCommand (cmd)
 			uespLog.Msg("UESP item deals are not shown in guild listings!")
 		else
 			uespLog.Msg("UESP item deals setting is currently "..uespLog.GetSalesShowDealType():upper()..".")
-		end
-		
+		end				
 		
 	elseif (firstCmd == "resetsold") then
 		uespLog.ResetNewSalesDataTimestamps()
@@ -1755,6 +1792,23 @@ function uespLog.SalesCommand (cmd)
 		uespLog.ShowInventoryValue(BAG_BANK, BAG_SUBSCRIBER_BANK)
 	elseif (firstCmd == "inventory") then
 		uespLog.ShowInventoryValue(BAG_BACKPACK)
+	elseif (firstCmd == "writworthy") then
+		local secondCmd = string.lower(cmds[2])
+		
+		if (secondCmd == "on") then
+			uespLog.SetSalesUseWritWorthy(true)
+			uespLog.Msg("Writ Worthy will now use UESP prices!")
+		elseif (secondCmd == "off") then
+			uespLog.SetSalesUseWritWorthy(false)
+			uespLog.Msg("Writ Worthy will now use MasterMerchant prices!")
+		else
+			if (uespLog.GetSalesUseWritWorthy()) then
+				uespLog.Msg("Writ Worthy currently uses UESP prices!")
+			else
+				uespLog.Msg("Writ Worthy currently uses MasterMerchant prices!")
+			end
+		end		
+		
 	else
 		uespLog.Msg("Logs various guild sales data:")
 		uespLog.Msg(".       /uespsales [on||off]     Turns logging on/off")
@@ -1771,9 +1825,10 @@ function uespLog.SalesCommand (cmd)
 		uespLog.Msg(".       /uespsales resetlist [name]  Reset the listing timestamps for that guild")
 		uespLog.Msg(".       /uespsales dealtype [uesp||mm||none]   Sets the type of item deal to display")
 		uespLog.Msg(".       /uespsales postprice [uesp||mm]   Sets price to use when posting items for sale")
-		uespLog.Msg(".       /uespsales craftbag      Shows total estimated value of your craft bag.")
-		uespLog.Msg(".       /uespsales bank        Shows total estimated value of your bank.")
-		uespLog.Msg(".       /uespsales inventory       Shows total estimated value of your inventory.")
+		uespLog.Msg(".       /uespsales craftbag      Shows total estimated value of your craft bag")
+		uespLog.Msg(".       /uespsales bank        Shows total estimated value of your bank")
+		uespLog.Msg(".       /uespsales inventory       Shows total estimated value of your inventory")
+		uespLog.Msg(".       /uespsales writworthy [on||off]    Use UESP prices for Writ Worthy values")
 		uespLog.Msg("Guild sales data logging is currently "..uespLog.BoolToOnOff(uespLog.GetSalesDataConfig().saveSales)..".")
 		uespLog.Msg("Sale price data usage is currently "..uespLog.BoolToOnOff(uespLog.IsSalesShowPrices()))
 		uespLog.Msg("Sale price item tooltips are currently "..uespLog.BoolToOnOff(uespLog.IsSalesShowTooltip()))
@@ -1848,6 +1903,9 @@ function uespLog.GetTradingHouseSearchResultItemInfo(index)
 				elseif (saleType == "sold") then
 					setPrice = uespPrice.priceSold
 					salesCount = uespPrice.countSold
+				else
+					setPrice = uespPrice.price
+					salesCount = uespPrice.count
 				end
 			end
 		end
@@ -1904,6 +1962,9 @@ function uespLog.GetTradingHouseListingItemInfo(index)
 				elseif (saleType == "sold") then
 					setPrice = uespPrice.priceSold
 					salesCount = uespPrice.countSold
+				else
+					setPrice = uespPrice.price
+					salesCount = uespPrice.count
 				end
 			end
 		end
@@ -2039,6 +2100,8 @@ function uespLog.SetupPendingPost(self)
 					priceToUse = math.floor(saleData.priceListed * stackCount)
 				elseif (saleType == "sold" and saleData.countSold > 0) then
 					priceToUse = math.floor(saleData.priceSold * stackCount)
+				elseif (saleData.count > 0) then
+					priceToUse = math.floor(saleData.price * stackCount)
 				end
 			end
 			
@@ -2217,4 +2280,32 @@ function uespLog.SetGuildTime(timestamp)
 	
 	salesConfig.guildListTimes[guildName] = timestamp
 	uespLog.ShowGuildTime()
+end
+
+
+function uespLog.WritWorthyMMPrice(link)
+	local useUespPrice = uespLog.IsSalesShowPrices()
+	local overrideWritWorthy = uespLog.GetSalesUseWritWorthy()
+
+	if (useUespPrice and overrideWritWorthy and link) then
+		local saleData = uespLog.FindSalesPrice(link)
+			
+		if (saleData) then
+			local saleType = uespLog.GetSalesShowSaleType()
+			
+			if (saleType == "both" and saleData.count > 0) then
+				priceToUse = math.floor(saleData.price)
+			elseif (saleType == "list" and saleData.countListed > 0) then
+				priceToUse = math.floor(saleData.priceListed)
+			elseif (saleType == "sold" and saleData.countSold > 0) then
+				priceToUse = math.floor(saleData.priceSold)
+			else
+				priceToUse = math.floor(saleData.price)
+			end
+			
+			return priceToUse
+		end
+	end
+    
+	return uespLog.Orig_WritWorthyMMPrice(link)
 end

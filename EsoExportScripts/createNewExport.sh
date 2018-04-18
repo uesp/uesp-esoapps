@@ -107,6 +107,13 @@ makemapsdiff () {
 	sed -i "s#_base.jpg##g" "$3.updatedmaps"
 	sed -i "s#.jpg##g" "$3.updatedmaps"
 	
+		# Only in ./esomnf-18pts/art/maps/bangkorai: bangkoraigarrison_alt_base
+		# Only in ./esomnf-18pts/art/maps/housing: colossalaldmerigrotto_base
+		# Only in ./esomnf-18pts/art/maps/stormhaven: ui_map_fanglairext_base
+		# Only in ./esomnf-18pts/art/maps/summerset: alinor_base
+	sed -i "s#_base\$##g" "$3.newmaps"
+	sed "s#Only in ./esomnf-$VERSION2/art/maps/\(.*\): \(.*\)#\2,\2,\1,-1#g" "$3.newmaps" > "$OUTPUTPATH/maps_new.txt"
+		
 }
 
 makezipdiff () {
@@ -117,11 +124,6 @@ makezipdiff () {
 	zip -r@ "$BASEPATH/$1" < "$BASEPATH/$3"
 	popd
 }
-
-
-makemapsdiff "./esomnf-$LASTVERSION/art/maps/" "./esomnf-$VERSION/art/maps/" "./goodimages-$VERSION/maps.diff.txt" $LASTVERSION $VERSION
-
-exit
 
 
 if [ ! -d "$OUTPUTPATH" ]; then
@@ -190,9 +192,10 @@ cd ./$OUTPUTPATH/Icons/
 cd ../../
 
 
-python "$MAPSOURCEPATH/CombineEsoMaps.py" "$VERSION" "/cygdrive/e/esoexport/" 
-python "$MAPSOURCEPATH/CreateEsoMapTiles.py" "$VERSION" "/cygdrive/e/esoexport/" 
-python "$MAPSOURCEPATH/CreateEsoMapTileZoom11.py" "$VERSION" "/cygdrive/e/esoexport/" 
+BASEPATH=`realpath ./`
+python "$MAPSOURCEPATH/CombineEsoMaps.py" "$VERSION" "$BASEPATH/" 
+python "$MAPSOURCEPATH/CreateEsoMapTiles.py" "$VERSION" "$BASEPATH/" 
+python "$MAPSOURCEPATH/CreateEsoMapTileZoom11.py" "$VERSION" "$BASEPATH/" 
 
 
 if [ $MAKEDIFF ]; then

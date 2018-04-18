@@ -1394,11 +1394,12 @@ end
 
 
 function uespLog.AddSalesPricetoTooltip(itemLink, tooltip)
-	local msg = uespLog.GetSalesPriceTip(itemLink, false)
-	
+		
     if (not uespLog.IsSalesShowPrices() or not uespLog.IsSalesShowTooltip()) then
 		return
 	end
+	
+	local msg = uespLog.GetSalesPriceTip(itemLink, false)
 	
 	if (not tooltip.uespTextPool) then
 		tooltip.uespTextPool = ZO_ControlPool:New('UespTooltipSalesLabel', tooltip, 'UespText')
@@ -1419,6 +1420,11 @@ end
 
 
 function uespLog.GetSalesPriceTip(itemLink, isChat)
+
+	if (itemLink == nil) then
+		return ""
+	end
+	
 	local prices = uespLog.FindSalesPrice(itemLink)
 	local newItemLink = itemLink:gsub("|H0:", "|H1:")
 	
@@ -1509,6 +1515,11 @@ end
 
 
 function uespLog.FindSalesPrice(itemLink)
+
+	if (itemLink == nil) then
+		return nil
+	end
+	
 	local linkData = uespLog.ParseItemLinkEx(itemLink)
 	
 	if (not linkData or uespLog.SalesPrices == nil) then
@@ -2308,4 +2319,53 @@ function uespLog.WritWorthyMMPrice(link)
 	end
     
 	return uespLog.Orig_WritWorthyMMPrice(link)
+end
+
+
+--
+-- Based on Writ Worthy and CraftStore's tooltip code.
+--
+function uespLog.InstallItemTooltip()
+    local tt = ItemTooltip.SetBagItem
+	
+    ItemTooltip.SetBagItem = function(control, bagId, slotIndex, ...)
+        tt(control, bagId, slotIndex, ...)
+        uespLog.TooltipInsertText(control, GetItemLink(bagId, slotIndex))
+    end
+	
+    local tt = ItemTooltip.SetLootItem
+	
+    ItemTooltip.SetLootItem = function(control, lootId,...)
+        tt(control, lootId, ...)
+        uespLog.TooltipInsertText(control, GetLootItemLink(lootId))
+    end
+	
+    local tt = PopupTooltip.SetLink
+	
+    PopupTooltip.SetLink = function(control, link, ...)
+        tt(control, link, ...)
+        uespLog.TooltipInsertText(control, link)
+    end
+	
+    local tt = ItemTooltip.SetTradingHouseItem
+	
+    ItemTooltip.SetTradingHouseItem = function(control, tradingHouseIndex,...)
+        tt(control, tradingHouseIndex, ...)
+		uespLog.TooltipInsertText(control, GetTradingHouseSearchResultItemLink(tradingHouseIndex))
+    end
+
+end
+
+
+function uespLog.TooltipInsertText(control, itemLink)
+
+	if (not uespLog.IsSalesShowPrices() or not uespLog.IsSalesShowTooltip()) then
+		return
+	end
+	
+	local msg = uespLog.GetSalesPriceTip(itemLink, false)		
+	   
+	if (msg ~= "") then
+		control:AddLine("\n" .. msg)
+	end
 end

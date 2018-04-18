@@ -97,13 +97,13 @@ function uespLog.InitOptionControlsData()
 		setFunc = function(flag) return uespLog.SetPvpUpdate(flag) end,
 	})
 		
-	uespLog.optionControlsData:insert({
-		type = "checkbox",
-		name = "Show All Lorebooks",
-		tooltip = "Show all non-guild lore book 'learned' messages.\n     /uesplorebook on/off",
-		getFunc = function() return uespLog.GetLoreBookMsgFlag() end,
-		setFunc = function(flag) return uespLog.SetLoreBookMsgFlag(flag) end,
-	})
+	--uespLog.optionControlsData:insert({
+		--type = "checkbox",
+		--name = "Show All Lorebooks",
+		--tooltip = "Show all non-guild lore book 'learned' messages.\n     /uesplorebook on/off",
+		--getFunc = function() return uespLog.GetLoreBookMsgFlag() end,
+		--setFunc = function(flag) return uespLog.SetLoreBookMsgFlag(flag) end,
+	--})
 	
 	uespLog.optionControlsData:insert({
 		type = "checkbox",

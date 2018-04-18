@@ -843,6 +843,9 @@
 --			- Moved the uespSalesPrices.lua file which contains all the data for displaying item sales
 --			  prices from esosales.uesp.net to its own add-on "UespLogSalesPrices". This lets you turn on/off the
 --			  loading of sales data on a per-character basis.
+--			- Added the "/uespsales writworthy [on|off]" which enables Writ Worthy to use UESP price data for writ
+--			  value estimates. Default is off. Note that the Writ Worthy has to be loaded and UESP price data has to
+--			  to be turned on (/uespsales prices on) 
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -1701,6 +1704,7 @@ uespLog.DEFAULT_SETTINGS =
 			["postPriceType"] = "uesp",
 			["lastTimestamp"] = 0,
 			["guildListTimes"] = {},
+			["useWritWorthy"] = false,
 			["savedPrices"] = {},
 			[1] = {
 				["guildName"] = "",
@@ -3480,7 +3484,7 @@ function uespLog.Initialize( self, addOnName )
 	uespLog.Old_DoCommand = DoCommand
 	DoCommand = uespLog.DoCommand
 	CHAT_SYSTEM.commandPrefixes[47] = uespLog.DoCommand
-	
+
 	--uespLog.Old_ZO_Alert = ZO_Alert
 	--ZO_Alert = uespLog.ZO_Alert
 		
@@ -16883,3 +16887,4 @@ function uespLog.CountConstantsInObject(object, origConstants)
 	
 	return 0
 end
+

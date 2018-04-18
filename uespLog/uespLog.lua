@@ -845,7 +845,11 @@
 --			  loading of sales data on a per-character basis.
 --			- Added the "/uespsales writworthy [on|off]" which enables Writ Worthy to use UESP price data for writ
 --			  value estimates. Default is off. Note that the Writ Worthy has to be loaded and UESP price data has to
---			  to be turned on (/uespsales prices on) 
+--			  to be turned on (/uespsales prices on).
+--			- Removed Features (these were in testing and not completely working):
+--				- /uespmasterpotion command (use the Writ Worthy add-on)
+--				- /uesplorebook command (API was redone in update 18)
+--			- Redid the item tooltips for UESP sales prices so that they'll always show up correctly.
 --
 --		Future Versions (Works in Progress)
 --		Note that some of these may already be available but may not work perfectly. Use at your own discretion.
@@ -993,9 +997,6 @@ uespLogcountVariables = {}
 uespLog.baseTrackStatGameTime = GetGameTimeMilliseconds()
 
 uespLog.UsedMerethicResin = false
-
-uespLog.origLoreBookLearnedFunction = nil
-uespLog.origLoreBookLearnedSkillExpFunction = nil
 
 uespLog.NextSectionSizeWarning = { }
 uespLog.NextSectionWarningGameTime = { }
@@ -2986,6 +2987,10 @@ function uespLog.ParseItemLinkEx(link)
 	--|H1:item:Id:SubType:InternalLevel:EnchantId:EnchantSubType:EnchantLevel:Writ1:Writ2:Writ3:Writ4:Writ5:Writ6:0:0:0:Style:Crafted:Bound:Stolen::Charges:PotionEffect/WritReward|hName|h
 	local linkData = {}
 	
+	if (link == nil) then
+		return false
+	end
+	
 	linkData.linkType, linkData.itemText, linkData.itemId, linkData.internalSubType, linkData.internalLevel, linkData.enchantId, linkData.enchantSubtype, linkData.enchantLevel, linkData.writ1, linkData.writ2, linkData.writ3, linkData.writ4, linkData.writ5, linkData.writ6, linkData.zero1, linkData.zero2, linkData.zero3, linkData.style, linkData.crafted, linkData.bound, linkData.stolen, linkData.charges, linkData.potionData, linkData.itemName = link:match("|H(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-):(.-)|h(.-)|h")	
 	
 	if (linkData.linkType == nil) then
@@ -3140,8 +3145,6 @@ function uespLog.ShowAddonMemory()
 
 end
 
-ZO_CenterScreenAnnounce_GetHandlers = function() return {} end
-
 
 --	Function fired at addon loaded to setup variables and default settings
 function uespLog.Initialize( self, addOnName )
@@ -3160,21 +3163,7 @@ function uespLog.Initialize( self, addOnName )
 	
 	uespLog.lastPlayerSpellDamage = GetPlayerStat(STAT_SPELL_POWER, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
 	uespLog.lastPlayerWeaponDamage = GetPlayerStat(STAT_POWER, STAT_BONUS_OPTION_APPLY_BONUS, STAT_SOFT_CAP_OPTION_APPLY_SOFT_CAP)
-	 	
-	--if (ZO_CenterScreenAnnounce_GetHandlers) then
 	
-		if (uespLog.origLoreBookLearnedFunction == nil) then
-			uespLog.origLoreBookLearnedFunction = ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED]
-		end
-		
-		if (uespLog.origLoreBookLearnedSkillExpFunction == nil) then
-			uespLog.origLoreBookLearnedSkillExpFunction = ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED_SKILL_EXPERIENCE]
-		end
-		
-		ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED] = uespLog.EventLoreBookLearned
-		ZO_CenterScreenAnnounce_GetHandlers()[EVENT_LORE_BOOK_LEARNED_SKILL_EXPERIENCE] = uespLog.EventLoreBookLearnedSkillExperience
-	--end
-
 	uespLog.savedVars = {
 		["all"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "all", uespLog.DEFAULT_DATA),
 		["achievements"] = ZO_SavedVars:NewAccountWide("uespLogSavedVars", uespLog.DATA_VERSION, "achievements", uespLog.DEFAULT_DATA),
@@ -3443,10 +3432,11 @@ function uespLog.Initialize( self, addOnName )
 	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CAMPAIGN_STATE_INITIALIZED, uespLog.OnAssignedCampaignChanged)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CURRENT_CAMPAIGN_CHANGED, uespLog.OnAssignedCampaignChanged)	 
 	
-	ZO_PreHookHandler(PopupTooltip, 'OnUpdate', function() uespLog.AddStatsPopupTooltip() end)
-	ZO_PreHookHandler(PopupTooltip, 'OnHide', function() uespLog.RemoveStatsPopupTooltip() end)
-	ZO_PreHookHandler(ItemTooltip, 'OnUpdate', function() uespLog.AddStatsItemTooltip() end)
-	ZO_PreHookHandler(ItemTooltip, 'OnHide', function() uespLog.RemoveStatsItemTooltip() end)
+	uespLog.InstallItemTooltip()
+	--ZO_PreHookHandler(PopupTooltip, 'OnUpdate', function() uespLog.AddStatsPopupTooltip() end)
+	--ZO_PreHookHandler(PopupTooltip, 'OnHide', function() uespLog.RemoveStatsPopupTooltip() end)
+	--ZO_PreHookHandler(ItemTooltip, 'OnUpdate', function() uespLog.AddStatsItemTooltip() end)
+	--ZO_PreHookHandler(ItemTooltip, 'OnHide', function() uespLog.RemoveStatsItemTooltip() end)
 	
 	uespLog.Old_ZO_CharacterWindowStats_ShowComparisonValues = ZO_CharacterWindowStats_ShowComparisonValues
 	uespLog.Old_ZO_CharacterWindowStats_HideComparisonValues = ZO_CharacterWindowStats_HideComparisonValues
@@ -3665,7 +3655,6 @@ function uespLog.SetupSlashCommands()
 	uespLog.SetSlashCommand("/utl", SLASH_COMMANDS["/uesptrackloot"])
 	uespLog.SetSlashCommand("/ukd", SLASH_COMMANDS["/uespkilldata"])
 	uespLog.SetSlashCommand("/home", uespLog.TeleportToPrimaryHome)
-	uespLog.SetSlashCommand("/ump", SLASH_COMMANDS["/uespmasterpotion"])
 end
 
 
@@ -12371,7 +12360,7 @@ function uespLog.ShowPvpFights()
 end
 
 
-SLASH_COMMANDS["/uesplorebook"] = function (cmd)
+function uespLog.LoreBookCmd(cmd)
 	cmd = string.lower(cmd)
 	
 	if (cmd == 'on') then
@@ -12389,6 +12378,9 @@ SLASH_COMMANDS["/uesplorebook"] = function (cmd)
 	end
 		
 end
+
+
+-- SLASH_COMMANDS["/uesplorebook"] = uespLog.LoreBookCmd
 
 
 SLASH_COMMANDS["/uespchardata"] = function (cmd)
@@ -12443,27 +12435,6 @@ SLASH_COMMANDS["/uespchardata"] = function (cmd)
 		--uespLog.Msg(".          Automatic saving when zoning is "..uespLog.BoolToOnOff(uespLog.GetAutoSaveZoneCharData()) )
 	end
 		
-end
-
-
-function uespLog.EventLoreBookLearned(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, isMaxRank)
-	uespLog.DebugExtraMsg("LoreBook Learned: "..tostring(guildReputationIndex)..", MaxRank: "..tostring(isMaxRank))
-	
-	if (uespLog.GetLoreBookMsgFlag() == 'on') then
-		return uespLog.origLoreBookLearnedFunction(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, isMaxRank)
-	else
-	
-		if (guildReputationIndex > 0 and isMaxRank) then
-			return uespLog.origLoreBookLearnedFunction(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, isMaxRank)
-		end
-	end
-	
-end
-
-
-function uespLog.EventLoreBookLearnedSkillExperience(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, skillType, skillIndex, rank, previousXP, currentXP)
-	uespLog.DebugExtraMsg("LoreBookSkillExp Learned: "..tostring(guildReputationIndex))
-	return uespLog.origLoreBookLearnedSkillExpFunction(categoryIndex, collectionIndex, bookIndex, guildReputationIndex, skillType, skillIndex, rank, previousXP, currentXP)
 end
 
 

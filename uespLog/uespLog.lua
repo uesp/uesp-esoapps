@@ -11412,8 +11412,9 @@ uespLog.EXCLUDE_STYLES_MASTERWRIT = {
 	[ITEMSTYLE_RACIAL_BRETON]  		 = true,
 	[ITEMSTYLE_RACIAL_DARK_ELF] 	 = true,
 	[ITEMSTYLE_UNIVERSAL]			 = true,
-	[53]							 = true,
-	[58]							 = true,
+	[30]							 = true, -- Soul Shriven
+	[53]							 = true, -- Frostcaster
+	[58]							 = true, -- Harlequin
 }
 
 	

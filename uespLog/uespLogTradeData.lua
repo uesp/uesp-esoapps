@@ -94,6 +94,14 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[65]							 = "uespLog/images/apostle.dds",			-- Apostle, Tempered Brass, 65, /esoui/art/icons/justice_stolen_prop_sesnits_paperweight.dds
 	[66]							 = "uespLog/images/ebonshadow.dds",			-- Ebonshadow, Tenebrous Cord, 66, /esoui/art/icons/crafting_style_item_ebonshadow_r2.dds
 	[55]							 = "uespLog/images/wormcult.dds",			-- Worm Cult, Desecrated Grave Soil, 55, /esoui/art/icons/quest_monster_ash_001.dds
+	[69] 							 = "uespLog/images/fanglair.dds",			-- Fang Lair, Dragon Bone, 69, /esoui/art/icons/crafting_ore_base_dragonbone_r2.dds
+	[70] 							 = "uespLog/images/scalecaller.dds",		-- Scalecaller, Infected Flesh, 70, /esoui/art/icons/crafting_outfitter_potion_002.dds
+	[71] 							 = "uespLog/images/psijicorder.dds",		-- Psijic Order, Vitrified Malondo, 71, /esoui/art/icons/crafting_leather_nitre.dds
+	[72] 							 = "uespLog/images/sapiarch.dds",			-- Sapiarch, Culanda Lacquer, 72, /esoui/art/icons/crafting_leather_phlegm.dds
+	--[73] 							 = "uespLog/images/welkynar.dds",			-- Welkynar, ?, 73, ?
+	--[74] 							 = "uespLog/images/dremora.dds",			-- Dremora, Warrior's Heart Ashes, 74, ?
+	[75] 							 = "uespLog/images/pyandoean.dds",			-- Pyandonean, Porpoise Hide, 75, /esoui/art/icons/crafting_leather_base_horkerskin_r2.dds
+	
 }
 
 
@@ -156,6 +164,13 @@ uespLog.STYLE_ICON_DATA = {
 	[65]							 = "/esoui/art/icons/justice_stolen_prop_sesnits_paperweight.dds",
 	[66]							 = "/esoui/art/icons/crafting_style_item_ebonshadow_r2.dds",
 	[55]							 = "/esoui/art/icons/quest_monster_ash_001.dds",
+	[69] 							 = "/esoui/art/icons/crafting_ore_base_dragonbone_r2.dds",
+	[70] 							 = "/esoui/art/icons/crafting_outfitter_potion_002.dds",
+	[71] 							 = "/esoui/art/icons/crafting_leather_nitre.dds",
+	[72] 							 = "/esoui/art/icons/crafting_leather_phlegm.dds",
+	--[73] 							 = "",
+	--[74] 							 = "",
+	[75] 							 = "/esoui/art/icons/crafting_leather_base_horkerskin_r2.dds",
 }
 
 
@@ -530,7 +545,7 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 	local itemText = ""
 	local fontName = "ZoFontWinH5"
 	
-	if (itemStyleIcon ~= nil and (itemType == 1 or itemType == 2) and (equipType ~= 12 and equipType ~= 2) and uespLog.IsCraftStyleDisplay("tooltip")) then
+	if (itemStyleIcon ~= nil and (itemType == 1 or itemType == 2) and uespLog.IsCraftStyleDisplay("tooltip")) then
 		color1, color2, color3 = unpack(uespLog.TRADE_STYLE_COLOR)
 		ThisToolTip:AddLine("", "ZoFontWinH5", color1, color2, color3, BOTTOM, MODIFY_TEXT_TYPE_NONE)
 		ThisToolTip:AddLine("Item Style: "..tostring(itemStyleText), "ZoFontWinH4", color1, color2, color3, BOTTOM, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_CENTER)
@@ -807,6 +822,41 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 end
 
 
+uespLog.TRAIT_TO_RESEARCH_TRAITINDEX = {
+
+	[1] = 1,	-- Weapons
+	[2] = 2,
+	[3] = 3,
+	[4] = 4,
+	[5] = 5,
+	[6] = 6,
+	[7] = 7,
+	[8] = 8,
+	
+	[11] = 1,	-- Armor
+	[12] = 2,
+	[13] = 3,
+	[14] = 4,
+	[15] = 5,
+	[16] = 6,
+	[17] = 7,
+	[18] = 8,
+	
+	[25] = 9,	-- Nirnhoned
+	[26] = 9,
+	
+	[22] = 1, -- Jewelry
+	[21] = 2, 
+	[23] = 3, 
+	[30] = 4, 
+	[33] = 5, 
+	[32] = 6, 
+	[28] = 7, 
+	[29] = 8, 
+	[31] = 9,  	
+}
+
+
 function uespLog.CheckIsItemLinkResearchable(itemLink)
 	local itemType = GetItemLinkItemType(itemLink)
 	
@@ -823,29 +873,17 @@ function uespLog.CheckIsItemLinkResearchable(itemLink)
 		return uespLog.INTRICATE_TRAIT_INDEX
 	end
 	
-	if (traitIndex <= 0) then
+	local researchTrait = uespLog.TRAIT_TO_RESEARCH_TRAITINDEX[traitIndex]
+	
+	if (researchTrait == nil) then
 		return -1
 	end
-
-	local _,_,_,_,_,equipType = GetItemLinkInfo(itemLink)
-	
-	if (equipType == EQUIP_TYPE_RING or equipType == EQUIP_TYPE_NECK) then
-		return -5
-	end
-
-	--this used to be "if(itemType == ITEMTYPE_ARMOR)", but shields are not armor even though they are armor
-	if (traitIndex == 25) then -- Nirnhoned
-		traitIndex = 9
-	elseif (traitIndex == 26) then -- Nirnhoned
-		traitIndex = 9
-	elseif (traitIndex > 10) then
-		traitIndex = traitIndex - 10;
-	end
-
-	if (not (traitIndex >= 1 and traitIndex <= 9)) then
-		--uespLog.DebugMsg("        -4:"..tostring(traitIndex))
+		
+	if (not (researchTrait >= 1 and researchTrait <= 9)) then
 		return -4
 	end
+	
+	local _,_,_,_,_,equipType = GetItemLinkInfo(itemLink)
 	
 	local craftType = uespLog.GetItemLinkCraftSkillType(itemLink)
 	
@@ -853,13 +891,13 @@ function uespLog.CheckIsItemLinkResearchable(itemLink)
 		return -11
 	end
 
-	return uespLog.CheckIsItemLinkResearchableInSkill(itemLink, itemType, equipType, craftType, traitIndex)
+	return uespLog.CheckIsItemLinkResearchableInSkill(itemLink, itemType, equipType, craftType, researchTrait)
 end
 
 
 function uespLog.CheckIsItemResearchable(bagId, slotIndex)
 	local itemType = GetItemType(bagId, slotIndex)
-	
+		
 	if (itemType ~= ITEMTYPE_ARMOR and itemType ~= ITEMTYPE_WEAPON) then
 		return -8
 	end
@@ -872,38 +910,30 @@ function uespLog.CheckIsItemResearchable(bagId, slotIndex)
 	elseif (traitIndex == ITEM_TRAIT_TYPE_ARMOR_INTRICATE or traitIndex == ITEM_TRAIT_TYPE_WEAPON_INTRICATE or traitIndex == ITEM_TRAIT_TYPE_JEWELRY_INTRICATE) then
 		return uespLog.INTRICATE_TRAIT_INDEX
 	end
+		
+	local researchTrait = uespLog.TRAIT_TO_RESEARCH_TRAITINDEX[traitIndex]
 	
-	if (traitIndex == 25) then
-		traitIndex = 9
-	elseif (traitIndex == 26) then
-		traitIndex = 9
-	elseif (traitIndex <= 0) then
+	if (researchTrait == nil) then
 		return -1
 	end
-
-	local _,_,_,_,_,equipType = GetItemInfo(bagId, slotIndex)
 	
-	if (equipType == EQUIP_TYPE_RING or equipType == EQUIP_TYPE_NECK) then
-		return -5
-	end
-	
-	--this used to be "if(itemType == ITEMTYPE_ARMOR)", but shields are not armor even though they are armor
-	if (traitIndex > 10) then
-		traitIndex = traitIndex - 10;
-	end
-
-	if (not (traitIndex >= 1 and traitIndex <= 9)) then
+	if (not (researchTrait >= 1 and researchTrait <= 9)) then
 		--uespLog.DebugExtraMsg("        -4b: "..tostring(traitIndex))
 		return -4
 	end
+	
+	local _,_,_,_,_,equipType = GetItemInfo(bagId, slotIndex)
 
-	local check1 = uespLog.CheckIsItemResearchableInSkill(bagId, slotIndex, equipType, CRAFTING_TYPE_BLACKSMITHING, traitIndex)
+	local check1 = uespLog.CheckIsItemResearchableInSkill(bagId, slotIndex, equipType, CRAFTING_TYPE_BLACKSMITHING, researchTrait)
 	if (check1 >= 0) then return check1 end
 	
-	local check2 = uespLog.CheckIsItemResearchableInSkill(bagId, slotIndex, equipType, CRAFTING_TYPE_CLOTHIER, traitIndex)
+	local check2 = uespLog.CheckIsItemResearchableInSkill(bagId, slotIndex, equipType, CRAFTING_TYPE_CLOTHIER, researchTrait)
 	if (check2 >= 0) then return check2 end
 	
-	return uespLog.CheckIsItemResearchableInSkill(bagId, slotIndex, equipType, CRAFTING_TYPE_WOODWORKING, traitIndex)
+	local check3 = uespLog.CheckIsItemResearchableInSkill(bagId, slotIndex, equipType, CRAFTING_TYPE_WOODWORKING, researchTrait)
+	if (check3 >= 0) then return check3 end
+	
+	return uespLog.CheckIsItemResearchableInSkill(bagId, slotIndex, equipType, CRAFTING_TYPE_JEWELRYCRAFTING, researchTrait)
 end
 
 
@@ -912,11 +942,14 @@ function uespLog.GetItemLinkCraftSkillType (itemLink)
 	
 	if (itemType == ITEMTYPE_ARMOR) then
 		local armorType = GetItemLinkArmorType(itemLink)
+		local equipType = GetItemLinkEquipType(itemLink)
 		
 		if (armorType == ARMORTYPE_MEDIUM or armorType == ARMORTYPE_LIGHT) then
 			return CRAFTING_TYPE_CLOTHIER
 		elseif (armorType == ARMORTYPE_HEAVY) then
 			return CRAFTING_TYPE_BLACKSMITHING
+		elseif (equipType == EQUIP_TYPE_NECK or equipType == EQUIP_TYPE_RING) then
+			return CRAFTING_TYPE_JEWELRYCRAFTING
 		end		
 	end
 
@@ -940,9 +973,14 @@ end
 
 
 function uespLog.CheckIsItemResearchableInSkill(bagId, slotIndex, equipType, craftingSkillType, traitIndex)
+	
+	if (craftingSkillType == CRAFTING_TYPE_JEWELRYCRAFTING) then
 
-		--if it can't be extracted or refined here, then it can't be researched!
-	if (not CanItemBeSmithingExtractedOrRefined(bagId, slotIndex, craftingSkillType)) then
+		if (equipType ~= EQUIP_TYPE_NECK and equipType ~= EQUIP_TYPE_RING) then
+			return -3	
+		end
+		
+	elseif (not CanItemBeSmithingExtractedOrRefined(bagId, slotIndex, craftingSkillType)) then
 		return -2
 	end
 	
@@ -951,7 +989,6 @@ function uespLog.CheckIsItemResearchableInSkill(bagId, slotIndex, equipType, cra
 	for i = 1, numLines do
 		if (CanItemBeSmithingTraitResearched(bagId, slotIndex, craftingSkillType, i, traitIndex)
 			and not GetSmithingResearchLineTraitTimes(craftingSkillType, i, traitIndex)) then --if not nil, then researching
-			--return craftingSkillType * 1000000 + equipType * 10000 + i * 100 + traitIndex
 			return traitIndex
 		end
 	end
@@ -1007,7 +1044,16 @@ uespLog.CRAFTING_SKILL_RESEARCHLINE_CONVERT = {
 			},
 		}
 	},
-	
+		--TODO18 Check
+	[CRAFTING_TYPE_JEWELRYCRAFTING] = {
+		[ITEMTYPE_ARMOR] = {
+			[ARMORTYPE_NONE] = {
+					[EQUIP_TYPE_NECK] = 1,
+					[EQUIP_TYPE_RING] = 2,
+			},
+		},
+	},
+		
 	[CRAFTING_TYPE_WOODWORKING] = {
 		[ITEMTYPE_WEAPON] = {
 			[WEAPONTYPE_BOW] = 1,
@@ -1655,7 +1701,7 @@ function uespLog.GetItemStyleIcon(itemLink)
 		return nil, nil
 	end
 	
-	local itemStyleText = uespLog.GetItemStyleStr(itemStyle)
+	local itemStyleText = GetItemStyleName(itemStyle)
 	
 	if (uespLog.STYLE_ICON_DATA[itemStyle] ~= nil) then
 		return uespLog.STYLE_ICON_DATA[itemStyle], itemStyleText
@@ -1933,4 +1979,5 @@ function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
 	end
 	
 end
+
 

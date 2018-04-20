@@ -792,7 +792,7 @@
 --			- Chests, Safeboxes and Thieves Troves now display and log the lock level.
 --		Update 14 Morrowind Changes:
 --			- Expanded bank related functions to include the ESO subscriber bag.
---			- Added the Ashlander, Buoyany Armiger, Morag Tong, and Militant Ordinator styles.
+--			- Added the Ashlander, Buoyant Armiger, Morag Tong, and Militant Ordinator styles.
 --
 --		- v1.11 -- 25 May 2017
 --			- Achievement data is now saved in the normal log data section instead of a the custom "achievement" data section.
@@ -937,11 +937,30 @@
 --				- /uespmasterpotion command (use the Writ Worthy add-on)
 --				- /uesplorebook command (API was redone in update 18)
 --			- Redid the item tooltips for UESP sales prices so that they'll always show up correctly.
---			- Added the /uespmasterwrit (or /umr) command which displays an estimate for your chance to receive a
+--			- Added the /uespmasterwrit (or /umw) command which displays an estimate for your chance to receive a
 --			  master writ for each crafting skill.
+--					/uespmasterwrit        Show chances
+--					/uespmasterwrit help   Help text
+--					/uespmasterwrit prov   Show recipes contributing to master writ chance
+--					/uespmasterwrit motif  Show motifs contributing to master writ chance
+--
+--		Summerset Related Changes (Update 18):
+--			- Added style icons for the Fang Lair, Scalecaller, Psijic Order, Sapiarch and Pyandonean styles.
+--			- Added Jewelry Crafting to all crafting related commands and features:
+--				- Saved character data.
+--				- /uespmaster writ
+--				- /uesptrait
+--				- /uespresearchinfo
+--				- Known/unknown trait tooltips
+--				- Known/unknown inventory row icons
+--				- Jewelry writ crate logging.
 --
 --
 
+	-- Update 18 prefix
+if (CRAFTING_TYPE_JEWELRYCRAFTING == nil) then
+	CRAFTING_TYPE_JEWELRYCRAFTING = 7
+end
 
 
 --	GLOBAL DEFINITIONS
@@ -1578,6 +1597,7 @@ uespLog.MINEITEM_ENCHANT_ENCHANTID = 26841
 
 uespLog.MASTERWRIT_MAX_CHANCE = 15
 uespLog.MASTERWRIT_MIN_CHANCE = 1
+uespLog.PROV_MASTERWRIT_RECIPELISTS = { 7, 14, 15, 16}
 
 uespLog.DEFAULT_DATA = 
 {
@@ -3657,7 +3677,7 @@ function uespLog.SetupSlashCommands()
 	uespLog.SetSlashCommand("/utl", SLASH_COMMANDS["/uesptrackloot"])
 	uespLog.SetSlashCommand("/ukd", SLASH_COMMANDS["/uespkilldata"])
 	uespLog.SetSlashCommand("/home", uespLog.TeleportToPrimaryHome)
-	uespLog.SetSlashCommand("/umr", uespLog.MasterWritCmd)
+	uespLog.SetSlashCommand("/umw", uespLog.MasterWritCmd)
 end
 
 
@@ -3916,10 +3936,6 @@ function uespLog.OnTooltipMouseUp (control, button, upInside)
 				AddMenuItem("UESP Price to Chat", function() ZO_PopupTooltip_Hide() uespLog.SalesPriceToChat(link) end)
 				AddMenuItem("Goto UESP Sales..." , function() ZO_PopupTooltip_Hide() uespLog.GotoUespSalesPage(link) end)
 			end
-			
-			if (uespLog.IsItemLinkAlchemyWrit(link)) then
-				AddMenuItem("Queue Writ Potion" , function() uespLog.QueueMasterWritPotion(link) end)
-			end
 				
 			ShowMenu(PopupTooltip)
 		end
@@ -3943,10 +3959,6 @@ function uespLog.ZO_LinkHandler_OnLinkMouseUp (link, button, control)
 				if (uespLog.IsSalesShowPrices()) then
 					AddMenuItem("UESP Price to Chat", function() ZO_PopupTooltip_Hide() uespLog.SalesPriceToChat(link) end)
 					AddMenuItem("Goto UESP Sales..." , function() ZO_PopupTooltip_Hide() uespLog.GotoUespSalesPage(link) end)
-				end
-				
-				if (uespLog.IsItemLinkAlchemyWrit(link)) then
-					AddMenuItem("Queue Writ Potion" , function() uespLog.QueueMasterWritPotion(link) end)
 				end
 				
                 ShowMenu(control)
@@ -4120,7 +4132,7 @@ end
 function uespLog.ShowItemInfo (itemLink)
 	local icon, sellPrice, meetsUsageRequirement, equipType, itemStyle = GetItemLinkInfo(itemLink)
 	local itemName, itemColor, itemId, itemLevel, itemData, itemNiceName, itemNiceLink = uespLog.ParseLinkID(itemLink)
-	local styleStr = uespLog.GetItemStyleStr(itemStyle)
+	local styleStr = GetItemStyleName(itemStyle)
 	local equipTypeStr = uespLog.GetItemEquipTypeStr(equipType)
 	local weaponType = GetItemLinkWeaponType(itemLink)
 	local armorType = GetItemLinkArmorType(itemLink)
@@ -4991,95 +5003,12 @@ uespLog.EQUIPTYPES = {
 
 
 function uespLog.GetItemEquipTypeStr(equipType)
+
 	if (uespLog.EQUIPTYPES[equipType] ~= nil) then
 		return uespLog.EQUIPTYPES[equipType]
 	end
 	
 	return "Unknown ("..tostring(equipType)..")"
-end
-
-
-
-uespLog.ITEMSTYLES = {
-	[0]  = "None",
-	[1]  = "Breton",
-	[2]  = "Redguard",
-	[3]  = "Orc",
-	[4]  = "Dunmer",
-	[5]  = "Nord",
-	[6]  = "Argonian",
-	[7]  = "Altmer",
-	[8]  = "Bosmer",
-	[9]  = "Khajiit",
-	[10] = "Unique",
-	[11] = "Thieves Guild",
-	[12] = "Dark Brotherhood",
-	[13] = "Malacath",
-	[14] = "Dwemer",
-	[15] = "Ancient Elf",
-	[16] = "Order of the Hour",
-	[17] = "Barbaric",
-	[18] = "Bandit",
-	[19] = "Primal",
-	[20] = "Daedric",
-	[21] = "Trinimac",
-	[22] = "Mage",
-	[23] = "Daggerfall",
-	[24] = "Ebonheart",
-	[25] = "Aldmeri",
-	[26] = "Healer",
-	[27] = "Celestial",
-	[28] = "Nightblade",
-	[29] = "Ranger",
-	[30] = "Soul-Shriven",
-	[31] = "Draugr",
-	[32] = "Maormer",
-	[33] = "Akaviri",
-	[34] = "Imperial (race)",
-	[35] = "Yokudan",
-	[36] = "Universal",
-	[37] = "Reach Winter",
-	[39] = "Minotaur",
-	[40] = "Ebony",
-	[41] = "Abah's Watch",
-	[42] = "Skinchanger",
-	[43] = "Morag Tong",
-	[44] = "Ra Gada",
-	[45] = "Dro-m'Athra",
-	[46] = "Assassins League",
-	[47] = "Outlaw",
-	[48] = "Redoran",
-	[49] = "Hlaalu",
-	[50] = "Militant Ordinator",
-	[51] = "Telvanni",
-	[52] = "Buoyant Armiger",
-	[53] = "Stalhrim Frostcaster",
-	[54] = "Ashlander",
-	[55] = "Worm Cult",
-	[56] = "Silken Ring",
-	[57] = "Mazzatun",
-	[58] = "Grim Harlequin",
-	[59] = "Hollowjack",
-	[61] = "Bloodforge",
-	[62] = "Dreadhorn",
-	[65] = "Apostle",
-	[66] = "Ebonshadow",
-}
-
-
-function uespLog.GetItemStyleStr(itemStyle)
-
-	if (GetItemStyleName) then
-		return GetItemStyleName(itemStyle)
-	end
-	
-	local styleString = uespLog.ITEMSTYLES[itemStyle]
-	
-	if (styleString ~= nil) then
-		return styleString
-	end
-	
-	return "Unknown ("..tostring(itemStyle)..")"
 end
 
 
@@ -5114,7 +5043,7 @@ uespLog.old_XPREASONS = {
 
 uespLog.XPREASONS = {
 	[-1] = "none",
-	[PROGRESS_REASON_ACHIEVEMENT] = "achievement",
+	[PROGRESS_REASON_ACHIEVEMENT] = "achievement", -- 25
 	[PROGRESS_REASON_ACTION] = "action",
 	[PROGRESS_REASON_ALLIANCE_POINTS] = "alliance points",
 	[PROGRESS_REASON_AVA] = "AVA",
@@ -5135,6 +5064,7 @@ uespLog.XPREASONS = {
 	[PROGRESS_REASON_JUSTICE_SKILL_EVENT] = "justice skill event",
 	[PROGRESS_REASON_KEEP_REWARD] = "keep reward",
 	[PROGRESS_REASON_KILL] = "kill",
+	[PROGRESS_REASON_LFG_REWARD] = "LFG reward",
 	[PROGRESS_REASON_LOCK_PICK] = "lockpick",
 	[PROGRESS_REASON_MEDAL] = "medal",
 	--[PROGRESS_REASON_NONE] = "none",
@@ -5156,6 +5086,7 @@ uespLog.XPREASONS = {
 
 
 function uespLog.GetXPReasonStr(reason)
+
 	if (uespLog.XPREASONS[reason] ~= nil) then
 		return uespLog.XPREASONS[reason]
 	end
@@ -5622,7 +5553,7 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 	local icon, sellPrice, meetsUsageRequirement, equipType, itemStyle = GetItemLinkInfo(itemLink)
 	local itemType = GetItemLinkItemType(itemLink)
 	local itemText, itemColor, itemId, itemLevel, itemData, niceName, niceLink = uespLog.ParseLinkID(itemLink)
-	local itemStyleStr = uespLog.GetItemStyleStr(itemStyle)
+	local itemStyleStr = GetItemStyleName(itemStyle)
 	local lootMsg = ""
 	
 	if (IsLooting()) then
@@ -5883,6 +5814,8 @@ function uespLog.OnUseItem(eventCode, bagId, slotIndex, itemLink, itemSoundCateg
 			logData.tradeType = CRAFTING_TYPE_PROVISIONING
 		elseif (uespLog.BeginsWith(itemName, "Woodworker's")) then
 			logData.tradeType = CRAFTING_TYPE_WOODWORKING
+		elseif (uespLog.BeginsWith(itemName, "Jewelry Crafter's")) then
+			logData.tradeType = CRAFTING_TYPE_JEWELRYCRAFTING
 		end
 		
 		logData.hirelingLevel, logData.craftLevel = uespLog.GetHirelingLevel(logData.tradeType)
@@ -8151,6 +8084,7 @@ SLASH_COMMANDS["/uespcount"] = function(cmd)
 	elseif (cmd == "traits") then
 		uespLog.countTraits(CRAFTING_TYPE_BLACKSMITHING)
 		uespLog.countTraits(CRAFTING_TYPE_CLOTHIER)
+		uespLog.countTraits(CRAFTING_TYPE_JEWELRYCRAFTING)
 		uespLog.countTraits(CRAFTING_TYPE_WOODWORKING)
 		return
 	end
@@ -10665,6 +10599,7 @@ function uespLog.GetCraftingName(craftingType)
 	if (craftingType == CRAFTING_TYPE_INVALID) then return "Invalid" end
 	if (craftingType == CRAFTING_TYPE_PROVISIONING) then return "Provisioning" end
 	if (craftingType == CRAFTING_TYPE_WOODWORKING) then return "Woodworking" end
+	if (craftingType == CRAFTING_TYPE_JEWELRYCRAFTING) then return "Jewelry" end
 	
 	return "Unknown"
 end
@@ -10679,6 +10614,7 @@ function uespLog.GetShortCraftingName(craftingType)
 	if (craftingType == CRAFTING_TYPE_INVALID) then return "IN" end
 	if (craftingType == CRAFTING_TYPE_PROVISIONING) then return "PV" end
 	if (craftingType == CRAFTING_TYPE_WOODWORKING) then return "WW" end
+	if (craftingType == CRAFTING_TYPE_JEWELRYCRAFTING) then return "JY" end
 	
 	return "??"
 end
@@ -10839,7 +10775,8 @@ SLASH_COMMANDS["/uespresearch"] = function (cmd)
 	
 	uespLog.ShowResearchInfo(CRAFTING_TYPE_CLOTHIER)
 	uespLog.ShowResearchInfo(CRAFTING_TYPE_BLACKSMITHING)
-	uespLog.ShowResearchInfo(CRAFTING_TYPE_WOODWORKING)
+	uespLog.ShowResearchInfo(CRAFTING_TYPE_JEWELRYCRAFTING)
+	uespLog.ShowResearchInfo(CRAFTING_TYPE_WOODWORKING)	
 end
 
 
@@ -10996,6 +10933,20 @@ uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
 	['worm cult'] = 55,
 	['wormcult'] = 55,
 	['worm'] = 55,
+	
+		-- Summerset
+	['fang lair'] = 69,
+	['fang_lair'] = 69,
+	['fanglair'] = 69,
+	['scalecaller'] = 70,
+	['psijic order'] = 71,
+	['psijic_order'] = 71,
+	['psijicorder'] = 71,
+	['psijic'] = 71,
+	['sapiarch'] = 72,
+	['welkynar'] = 73,
+	['dremora'] = 74,
+	['pyandonean'] = 75,
 		
 }
 
@@ -11154,6 +11105,20 @@ uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
 	['worm cult'] = { 134740, 134741, 134742, 134743, 134744, 134745, 134746, 134747, 134748, 134749, 134750, 134751, 134752, 134753 }, -- 134739, 134754
 	['wormcult'] = { 134740, 134741, 134742, 134743, 134744, 134745, 134746, 134747, 134748, 134749, 134750, 134751, 134752, 134753 }, -- 134739, 134754
 	['worm'] = { 134740, 134741, 134742, 134743, 134744, 134745, 134746, 134747, 134748, 134749, 134750, 134751, 134752, 134753 }, -- 134739, 134754
+	
+		-- Summerset
+	['fang lair'] = { 134756, 134757, 134758, 134759, 134760, 134761, 134762, 134763, 134764, 134765, 134766, 134767, 134768, 134769 }, -- 134755, 134770
+	['fang_lair'] = { 134756, 134757, 134758, 134759, 134760, 134761, 134762, 134763, 134764, 134765, 134766, 134767, 134768, 134769 }, -- 134755, 134770
+	['fanglair'] = { 134756, 134757, 134758, 134759, 134760, 134761, 134762, 134763, 134764, 134765, 134766, 134767, 134768, 134769 }, -- 134755, 134770
+	['scalecaller'] = { 134772, 134773, 134774, 134775, 134776, 134777, 134778, 134779, 134780, 134781, 134782, 134783, 134784, 134785 }, -- 134771, 134786
+	['psijic order'] = { 137852, 137853, 137854, 137855, 137856, 137857, 137858, 137859, 137860, 137861, 137862, 137863, 137864, 137865 }, -- 137851, 137866
+	['psijic_order'] = { 137852, 137853, 137854, 137855, 137856, 137857, 137858, 137859, 137860, 137861, 137862, 137863, 137864, 137865 }, -- 137851, 137866
+	['psijicorder'] = { 137852, 137853, 137854, 137855, 137856, 137857, 137858, 137859, 137860, 137861, 137862, 137863, 137864, 137865 }, -- 137851, 137866
+	['psijic'] = { 137852, 137853, 137854, 137855, 137856, 137857, 137858, 137859, 137860, 137861, 137862, 137863, 137864, 137865 }, -- 137851, 137866
+	['sapiarch'] = { 137921, 137922, 137923, 137924, 137925, 137926, 137927, 137928, 137929, 137930, 137931, 137932, 137933, 137934 }, -- 137920, 137935
+	--['welkynar'] = 73,
+	--['dremora'] = 74,
+	['pyandonean'] = { 140268, 140269, 140270, 140271, 140272, 140273, 140274, 140275, 140276, 140277, 140278, 140279, 140280, 140281 }, -- ?, 139055
 }
 
 
@@ -11363,40 +11328,6 @@ function uespLog.ListValidStyles()
 end
 
 
-function uespLog.ListValidStyles_Old()
-	local orderedNames = {}
-	local j = 1
-	local output = ""
-	
-	uespLog.MsgColor(uespLog.craftColor, "Valid style names for /uespstyle are:")
-
-	for k in pairs(uespLog.CRAFTSTYLENAME_TO_MOTIFID) do
-		table.insert(orderedNames, k)
-	end
-
-	table.sort(orderedNames)
-	
-	for i = 1, #orderedNames do
-		local niceName = uespLog.titleCaseString(orderedNames[i])
-		
-		output = output .. niceName .. string.rep(" ", 20 - #niceName/1.5)
-		j = j + 1
-					
-		if (j >= 4) then
-			j = 1
-			uespLog.MsgColor(uespLog.craftColor, ".     "..output)
-			output = ""
-		end
-
-	end
-	
-	if (output ~= "") then
-		uespLog.MsgColor(uespLog.craftColor, ".     "..output)
-	end
-	
-end
-
-
 uespLog.EXCLUDE_STYLES_MASTERWRIT = {
 	[ITEMSTYLE_RACIAL_NORD] 		 = true,
 	[ITEMSTYLE_RACIAL_REDGUARD]  	 = true,
@@ -11415,7 +11346,7 @@ uespLog.EXCLUDE_STYLES_MASTERWRIT = {
 }
 
 
-function uespLog.GetStyleData()
+function uespLog.GetStyleData(sortById)
 	local numStyles = GetNumSmithingStyleItems()
 	local styleData = {}
 	
@@ -11428,18 +11359,22 @@ function uespLog.GetStyleData()
 		end
 	end
 	
-	table.sort(styleData, function (a, b) return a.name < b.name end)
+	if (sortById) then
+		table.sort(styleData, function (a, b) return a.style < b.style end)
+	else
+		table.sort(styleData, function (a, b) return a.name < b.name end)
+	end
 	
 	return styleData
 end
 
 
-function uespLog.ShowStyleSummary(showKnown, showUnknown, showMasterWrit)
+function uespLog.ShowStyleSummary(showKnown, showUnknown, showMasterWrit, sortById)
 	local numStyles = GetNumSmithingStyleItems()
 	local totalKnown = 0
 	local totalUnknown = 0
 	local validStyles = 0
-	local styleData = uespLog.GetStyleData()
+	local styleData = uespLog.GetStyleData(sortById)
 	local displayCount = 0
 	local writCount = 0
 				
@@ -11458,6 +11393,7 @@ function uespLog.ShowStyleSummary(showKnown, showUnknown, showMasterWrit)
 		local itemStyle = data.style
 		local known, knownCount = uespLog.GetStyleKnown(styleName)	
 		local displayStyle = true
+		local materialLink = GetItemStyleMaterialLink(itemStyle)
 		
 		if (styleItemName ~= "" and styleName ~= "" and styleName ~= "Universal") then 
 			validStyles = validStyles + 1
@@ -11479,7 +11415,11 @@ function uespLog.ShowStyleSummary(showKnown, showUnknown, showMasterWrit)
 					writCount = writCount + 1
 				end
 				
-				uespLog.MsgColor(uespLog.craftColor, ".    "..tostring(styleName).." (" .. itemStyle .. ") = "..knownCount.."/14")			
+				if (sortById) then
+					uespLog.MsgColor(uespLog.craftColor, ".    "..tostring(itemStyle)..") " .. tostring(styleName).. " = "..knownCount.."/14  ("..tostring(materialLink)..")")
+				else
+					uespLog.MsgColor(uespLog.craftColor, ".    "..tostring(styleName).." (" .. tostring(itemStyle) .. ") = "..knownCount.."/14  ("..tostring(materialLink)..")")
+				end
 			end
 		end
 	end
@@ -11496,7 +11436,7 @@ function uespLog.ShowStyleSummary(showKnown, showUnknown, showMasterWrit)
 end
 
 
-SLASH_COMMANDS["/uespstyle"] = function (cmd)
+function uespLog.StyleCommand(cmd)
 	local cmds, firstCmd = uespLog.SplitCommands(cmd)
 	
 	if (cmd == "") then
@@ -11505,7 +11445,7 @@ SLASH_COMMANDS["/uespstyle"] = function (cmd)
 		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle long [style]      Shows chapters in old long format")
 		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle list                     Lists all valid styles")
 		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle summary           Displays a summary of all styles")
-		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle summary           Displays a summary of all styles")
+		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle summaryid       Displays a summary of all styles by ID")
 		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle known               Show all completely known styles")
 		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle unknown           Show any styles not completely known")
 		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle master              Show styles related to master writ chance")
@@ -11518,7 +11458,9 @@ SLASH_COMMANDS["/uespstyle"] = function (cmd)
 	elseif (firstCmd == "liststyles" or firstCmd == "list") then
 		uespLog.ListValidStyles()
 	elseif (firstCmd == "summary" or firstCmd == "all") then
-		uespLog.ShowStyleSummary()
+		uespLog.ShowStyleSummary(false, false, false, false)
+	elseif (firstCmd == "summaryid" or firstCmd == "allid") then
+		uespLog.ShowStyleSummary(false, false, false, true)
 	elseif (firstCmd == "long") then
 		uespLog.ShowStyles(uespLog.implodeOrder(cmds, " ", 2), true)
 	else
@@ -11528,7 +11470,8 @@ SLASH_COMMANDS["/uespstyle"] = function (cmd)
 end
 
 
-SLASH_COMMANDS["/uespstyles"] = SLASH_COMMANDS["/uespstyle"]
+SLASH_COMMANDS["/uespstyle"]  = uespLog.StyleCommand
+SLASH_COMMANDS["/uespstyles"] = uespLog.StyleCommand
 
 
 function uespLog.ShowTargetInfo ()
@@ -11603,6 +11546,8 @@ function uespLog.DumpSmithItems(onlySetItems)
 			startPattern = 15
 		elseif (craftingType == CRAFTING_TYPE_WOODWORKING) then
 			startPattern = 7
+		elseif (craftingType == CRAFTING_TYPE_JEWELRYCRAFTING) then
+			startPattern = 7 --TODO18
 		end
 		
 		if (startPattern > numPatterns) then
@@ -12488,10 +12433,13 @@ SLASH_COMMANDS["/uesptrait"] = function(cmd)
 		uespLog.ShowTraitInfo(CRAFTING_TYPE_CLOTHIER)
 	elseif (cmd1 == "woodwork" or cmd1 == "woodworking" or cmd1 == "wood" or cmd1 == "woodworker") then
 		uespLog.ShowTraitInfo(CRAFTING_TYPE_WOODWORKING)
+	elseif (cmd1 == "jewelry" or cmd1 == "jewelrycrafting" or cmd1 == "jewelry crafting" or cmd1 == "jewel") then
+		uespLog.ShowTraitInfo(CRAFTING_TYPE_JEWELRYCRAFTING)
 	else
 		uespLog.ShowTraitInfo(CRAFTING_TYPE_CLOTHIER)
 		uespLog.ShowTraitInfo(CRAFTING_TYPE_BLACKSMITHING)
-		uespLog.ShowTraitInfo(CRAFTING_TYPE_WOODWORKING)
+		uespLog.ShowTraitInfo(CRAFTING_TYPE_JEWELRYCRAFTING)
+		uespLog.ShowTraitInfo(CRAFTING_TYPE_WOODWORKING)		
 	end
 	
 end
@@ -16896,7 +16844,7 @@ function uespLog.GetMasterWritMotifsKnown()
 		return 0
 	end
 	
-	return knownStyles / totalStyles
+	return knownStyles / totalStyles, knownStyles, totalStyles
 end
 
 
@@ -16904,25 +16852,26 @@ function uespLog.GetAchievementProgressValue(achId)
 	local achLink = GetAchievementLink(achId)
 	
 	if (achLink == nil or achLink == "") then
-		return 0
+		return 0, false
 	end
 	
 	local _, progress, timestamp = uespLog.ParseAchievementLinkId(achLink)
 	
-	return uespLog.CountSetBits(progress)
+	return uespLog.CountSetBits(progress), (timestamp > 0)
 end
 
 
 function uespLog.GetProvMasterWritRecipesKnown()
-	local recipeLists = { 7, 14, 15, 16}
 	local recipeCount = 0
 	local knownCount = 0
 	
-	for i, recipeListIndex in ipairs(recipeLists) do
+	for i, recipeListIndex in ipairs(uespLog.PROV_MASTERWRIT_RECIPELISTS) do
 		local listName, numRecipes = GetRecipeListInfo(recipeListIndex)
 		
 		for recipeIndex = 1, numRecipes do
 			local known, name, _, _, quality = GetRecipeInfo(recipeListIndex, recipeIndex)
+			local itemLink = GetRecipeResultItemLink(recipeListIndex, recipeIndex)
+			local resultQuality = GetItemLinkQuality(itemLink)
 	
 			if (name ~= "" and quality >= 3) then
 				recipeCount = recipeCount + 1
@@ -16934,15 +16883,69 @@ function uespLog.GetProvMasterWritRecipesKnown()
 		end
 	end
 	
-	return knownCount / recipeCount
+	return knownCount / recipeCount, knownCount, recipeCount
+end
+
+
+function uespLog.ShowProvMasterWritRecipes(cmd)
+	local recipeCount = 0
+	local knownCount = 0
+	
+	uespLog.MsgColor(uespLog.craftColor, "Recipes contributing to Provisioning Master Writ chance:")
+	
+	for i, recipeListIndex in ipairs(uespLog.PROV_MASTERWRIT_RECIPELISTS) do
+		local listName, numRecipes = GetRecipeListInfo(recipeListIndex)
+		
+		for recipeIndex = 1, numRecipes do
+			local known, name, _, _, quality = GetRecipeInfo(recipeListIndex, recipeIndex)
+			local itemLink = GetRecipeResultItemLink(recipeListIndex, recipeIndex)
+			local resultQuality = GetItemLinkQuality(itemLink)
+	
+			if (name ~= "" and quality >= 3) then
+				recipeCount = recipeCount + 1
+				
+				if (known) then
+					knownCount = knownCount + 1
+					uespLog.MsgColor(uespLog.craftColor, ".                   "..tostring(itemLink))
+				else
+					uespLog.MsgColor(uespLog.craftColor, ". (unknown) "..tostring(name))
+				end
+			end
+		end
+	end
+	
+	uespLog.MsgColor(uespLog.craftColor, "You known "..tostring(knownCount).." of "..tostring(recipeCount).." recipes contributing to master writ chance.")
+end
+
+
+function uespLog.ShowMasterWritMotifs(cmd)
+	uespLog.StyleCommand("writ")
 end
 
 
 function uespLog.MasterWritCmd(cmd)
+	local cmds, firstCmd = uespLog.SplitCommands(cmd)
+	
+	if (cmd == "prov" or cmd == "provision" or cmd == "provisioning") then
+		uespLog.ShowProvMasterWritRecipes(cmds[2])
+		return
+	elseif (cmd == "motif" or cmd == "motifs" or cmd == "style" or cmd == "styles") then
+		uespLog.ShowMasterWritMotifs(cmds[2])
+		return
+	elseif (cmd == "help") then
+		uespLog.Msg("Shows your estimated chance at receiving a master writ for all tradeskills.")
+		uespLog.Msg(".      /uespmasterwrit     Shows chances")
+		uespLog.Msg(".      /umw                     Short version")
+		uespLog.Msg(".      /umw prov             Shows which recipes contribute to chance")
+		uespLog.Msg(".      /umw motif            Shows which motifs contribute to chance")
+		return
+	end
+	
 	local ChanceRange = uespLog.MASTERWRIT_MAX_CHANCE - uespLog.MASTERWRIT_MIN_CHANCE
 	
 	local motifChance = uespLog.GetMasterWritMotifsKnown()
 	local blackTraits = uespLog.GetCharDataResearchTraits(CRAFTING_TYPE_BLACKSMITHING)
+	local jewelTraits = uespLog.GetCharDataResearchTraits(CRAFTING_TYPE_JEWELRYCRAFTING)
 	local clothTraits = uespLog.GetCharDataResearchTraits(CRAFTING_TYPE_CLOTHIER)
 	local woodTraits = uespLog.GetCharDataResearchTraits(CRAFTING_TYPE_WOODWORKING)
 	
@@ -16952,10 +16955,13 @@ function uespLog.MasterWritCmd(cmd)
 	local clothTraitsTotal = clothTraits["Clothier:Trait:Total"] or 1
 	local woodTraitsKnown  = woodTraits["Woodworking:Trait:Known"] or 0
 	local woodTraitsTotal  = woodTraits["Woodworking:Trait:Total"] or 1
+	local jewelTraitsKnown  = jewelTraits["Jewelry:Trait:Known"] or 0
+	local jewelTraitsTotal  = jewelTraits["Jewelry:Trait:Total"] or 1
 	
 	local blackChance = math.floor(uespLog.MASTERWRIT_MIN_CHANCE + (blackTraitsKnown / blackTraitsTotal + motifChance) * ChanceRange/2 + 0.5)
 	local clothChance = math.floor(uespLog.MASTERWRIT_MIN_CHANCE + (clothTraitsKnown / clothTraitsTotal + motifChance) * ChanceRange/2 + 0.5)
 	local woodChance  = math.floor(uespLog.MASTERWRIT_MIN_CHANCE + (woodTraitsKnown  / woodTraitsTotal  + motifChance) * ChanceRange/2 + 0.5)
+	local jewelChance  = math.floor(uespLog.MASTERWRIT_MIN_CHANCE + (jewelTraitsKnown  / jewelTraitsTotal) * ChanceRange + 0.5)
 		
 	local runesKnown = 0
 	runesKnown = runesKnown + uespLog.GetAchievementProgressValue(781)
@@ -16979,6 +16985,7 @@ function uespLog.MasterWritCmd(cmd)
 	uespLog.MsgColor(uespLog.craftColor, ".   Blacksmithing: "..tostring(blackChance).. "%")
 	uespLog.MsgColor(uespLog.craftColor, ".   Clothing: "..tostring(clothChance).. "%")
 	uespLog.MsgColor(uespLog.craftColor, ".   Enchanting: "..tostring(enchantChance).. "%")
+	uespLog.MsgColor(uespLog.craftColor, ".   Jewelry: "..tostring(jewelChance).. "%")
 	uespLog.MsgColor(uespLog.craftColor, ".   Provisioning: "..tostring(provChance).. "%")
 	uespLog.MsgColor(uespLog.craftColor, ".   Woodworking: "..tostring(woodChance).. "%")
 end

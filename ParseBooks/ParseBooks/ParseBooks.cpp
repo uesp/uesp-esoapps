@@ -9,12 +9,13 @@
 #include "stdafx.h"
 #include "ParseBooks.h"
 #include <stdarg.h>  
+#include <map>
 
 using namespace std;
 using namespace eso;
 
 	/* Now defined by command line arguments */
-string VERSION = "17";
+string VERSION = "18pts";
 string BASEPATH = "e:\\esoexport\\";
 
 string INPUT_PATH_PREFIX;
@@ -34,6 +35,9 @@ string QUEST_OUTPUT_TXT_FILE;
 string ZONE_OUTPUT_TXT_FILE;
 string MNF_TEXT_FILE;
 
+string SET_OUTPUT_PHP_FILE;
+string SET_OUTPUT_TXT_FILE;
+
 const dword BOOK_TITLE_ID = 0x030D11F5;
 const dword BOOK_TEXT_ID  = 0x014593B4;
 
@@ -41,6 +45,8 @@ const dword ZONE_NAME_ID = 162658389;
 
 const dword QUEST_NAME_ID = 52420949;
 const dword QUEST_JOURNAL_ID = 265851556;
+
+const dword SET_NAME_ID = 38727365;
 
 unordered_map<dword, bookdata_t> BookTexts;
 unordered_map<string, dword> BookUniqueTitles;
@@ -50,6 +56,8 @@ unordered_map<dword, bool> BookIdenticalText;
 unordered_map<dword, questdata_t> QuestData;
 unordered_map<string, dword> QuestUniqueNames;
 unordered_map<dword, string> ZoneNames;
+
+map<dword, string> SetNames;
 
 
 std::string EscapeSql(const std::string Input)
@@ -477,6 +485,50 @@ bool FindQuestDataFile(std::string &Filename)
 }
 
 
+
+bool ParseSets(CEsoLangFile& LangData)
+{
+	printf("Parsing set name...\n");
+
+	for (dword i = 0; i < LangData.GetNumRecords(); ++i)
+	{
+		lang_record_t& Record = LangData.GetRecord(i);
+
+		if (Record.Id == SET_NAME_ID)
+		{
+			SetNames[Record.Index] = Record.Text;
+		}
+	}
+
+	printf("Found %u sets...\n", SetNames.size());
+	CFile PhpFile;
+	CFile TxtFile;
+
+	printf("Saving set data to %s...\n", SET_OUTPUT_PHP_FILE.c_str());
+
+	if (!PhpFile.Open(SET_OUTPUT_PHP_FILE, "wb")) return false;
+	if (!TxtFile.Open(SET_OUTPUT_TXT_FILE, "wb")) return false;
+
+	PhpFile.Printf("$ESO_SET_INDEXES = array(\n");
+	TxtFile.Printf("ID, Name\n");
+
+	for (auto it : SetNames)
+	{
+		dword id = it.first;
+		string& name = it.second;
+		string escName = EscapePhp(name);
+
+		TxtFile.Printf("%d, %s\n", id, name.c_str());
+
+		PhpFile.Printf("\t\t%d => \"%s\",\n", id, escName.c_str());
+	}
+
+	PhpFile.Printf(");\n");
+	
+	return true;
+}
+
+
 void MakeInputOutputFilenames()
 {
 	BASEPATH = TerminatePath(BASEPATH);
@@ -496,6 +548,8 @@ void MakeInputOutputFilenames()
 
 	ZONE_OUTPUT_TXT_FILE = OUTPUT_PATH_PREFIX + "Quests\\Zones.txt";
 
+	SET_OUTPUT_PHP_FILE = OUTPUT_PATH_PREFIX + "Sets.php";
+	SET_OUTPUT_TXT_FILE = OUTPUT_PATH_PREFIX + "Sets.txt";
 }
 
 
@@ -517,17 +571,18 @@ int main(int argc, char* argv[])
 
 	LangData.Load(INPUT_FILENAME);
 	printf("Loaded %u records from language data!\n", LangData.GetNumRecords());
-
+	
 	ParseZoneNames(LangData);
 
 	if (FindQuestDataFile(QuestDataFilename))
 	{
 		ParseQuestData(QuestDataFilename);
 	}
-
+	
 	ParseBooks(LangData);
-
 	ParseQuests(LangData);
+
+	ParseSets(LangData);
 	
     return 0;
 }

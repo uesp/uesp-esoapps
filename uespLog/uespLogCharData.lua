@@ -2,11 +2,6 @@
 -- 
 -- 
 
-
-if (GetBagUseableSize == nil) then
-	GetBagUseableSize = GetBagSize
-end
-
 	-- Only save action bars at most every X seconds
 uespLog.SAVEACTIONBAR_MINDELTATIME = 5
 uespLog.LastSavedActionBar_TimeStamp = 0
@@ -212,6 +207,12 @@ uespLog.FREE_SKILLS = {
 	[48188] = 1,		-- Tailoring 8
 	[48189] = 1,		-- Tailoring 9
 	[70044] = 1,		-- Tailoring 10
+	[103632] = 1,		-- Jewelycrafting 1
+	[103633] = 1,		-- Jewelycrafting 2
+	[103634] = 1,		-- Jewelycrafting 3
+	[103635] = 1,		-- Jewelycrafting 4
+	[103636] = 1,		-- Jewelycrafting 5
+	[103793] = 1,		-- Psijic Order 1
 }
 
 
@@ -1881,17 +1882,21 @@ function uespLog.GetCharDataResearchInfo()
 	local researchData1 = uespLog.GetCharDataResearchInfoCraftType(CRAFTING_TYPE_CLOTHIER)
 	local researchData2 = uespLog.GetCharDataResearchInfoCraftType(CRAFTING_TYPE_BLACKSMITHING)
 	local researchData3 = uespLog.GetCharDataResearchInfoCraftType(CRAFTING_TYPE_WOODWORKING)
+	local researchData4 = uespLog.GetCharDataResearchInfoCraftType(CRAFTING_TYPE_JEWELRYCRAFTING)
 	
 	local researchTrait1 = uespLog.GetCharDataResearchTraits(CRAFTING_TYPE_CLOTHIER)
 	local researchTrait2 = uespLog.GetCharDataResearchTraits(CRAFTING_TYPE_BLACKSMITHING)
 	local researchTrait3 = uespLog.GetCharDataResearchTraits(CRAFTING_TYPE_WOODWORKING)
+	local researchTrait4 = uespLog.GetCharDataResearchTraits(CRAFTING_TYPE_JEWELRYCRAFTING)
 	
 	uespLog.MergeTables(researchData, researchData1)
 	uespLog.MergeTables(researchData, researchData2)
 	uespLog.MergeTables(researchData, researchData3)
+	uespLog.MergeTables(researchData, researchData4)
 	uespLog.MergeTables(researchData, researchTrait1)
 	uespLog.MergeTables(researchData, researchTrait2)
 	uespLog.MergeTables(researchData, researchTrait3)
+	uespLog.MergeTables(researchData, researchTrait4)
 	
 	researchData["Timestamp"] = GetTimeStamp()
 	

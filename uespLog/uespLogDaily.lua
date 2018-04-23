@@ -253,6 +253,7 @@ uespLog.DAILY_QUESTS =
 			"Blacksmith Writ",
 			"Clothier Writ",
 			"Enchanter Writ",
+			"Jewelry Crafting Writ",	-- TODO18
 			"Provisioner Writ",
 			"Woodworker Writ",
 		},

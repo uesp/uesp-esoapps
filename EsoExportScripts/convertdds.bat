@@ -12,7 +12,7 @@
 @set OUTPUTTYPE=png
 
 @for /R %STARTPATH% %%G in (*.dds) do (	@echo Converting %%G...
-	@nconvert.exe -quiet -overwrite -out %OUTPUTTYPE% %%G )
+	@nconvert.exe -quiet -overwrite -out %OUTPUTTYPE% "%%G" )
 
 @exit
 

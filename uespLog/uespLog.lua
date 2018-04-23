@@ -954,6 +954,7 @@
 --				- Known/unknown trait tooltips
 --				- Known/unknown inventory row icons
 --				- Jewelry writ crate logging.
+--				- Daily writ tracking.
 --
 --
 
@@ -5603,7 +5604,7 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 	
 	if (itemType == ITEMTYPE_MASTER_WRIT) then
 		local linkData = uespLog.ParseItemLinkEx(itemLink)
-		local vouchers = math.floor(linkData.potionData/10000)
+		local vouchers = math.floor(linkData.potionData/10000 + 0.5)
 		
 		if (vouchers > 0) then
 			lootMsg = lootMsg .. " (" .. vouchers .. " writ vouchers)"
@@ -11432,6 +11433,7 @@ function uespLog.ShowStyleSummary(showKnown, showUnknown, showMasterWrit, sortBy
 		uespLog.MsgColor(uespLog.craftColor, "You completely know "..writCount.."/"..displayCount.." styles.")
 	else
 		uespLog.MsgColor(uespLog.craftColor, "You know "..totalKnown.."/"..tostring(14*validStyles).." style chapters.")
+		uespLog.MsgColor(uespLog.craftColor, "You know "..writCount.."/"..tostring(validStyles).." complete motifs.")
 	end
 end
 
@@ -16914,7 +16916,7 @@ function uespLog.ShowProvMasterWritRecipes(cmd)
 		end
 	end
 	
-	uespLog.MsgColor(uespLog.craftColor, "You known "..tostring(knownCount).." of "..tostring(recipeCount).." recipes contributing to master writ chance.")
+	uespLog.MsgColor(uespLog.craftColor, "You know "..tostring(knownCount).." of "..tostring(recipeCount).." recipes contributing to master writ chance.")
 end
 
 

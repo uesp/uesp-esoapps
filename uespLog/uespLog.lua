@@ -16960,10 +16960,10 @@ function uespLog.MasterWritCmd(cmd)
 	local jewelTraitsKnown  = jewelTraits["Jewelry:Trait:Known"] or 0
 	local jewelTraitsTotal  = jewelTraits["Jewelry:Trait:Total"] or 1
 	
-	local blackChance = math.floor(uespLog.MASTERWRIT_MIN_CHANCE + (blackTraitsKnown / blackTraitsTotal + motifChance) * ChanceRange/2 * 10 + 0.5) / 10
-	local clothChance = math.floor(uespLog.MASTERWRIT_MIN_CHANCE + (clothTraitsKnown / clothTraitsTotal + motifChance) * ChanceRange/2 * 10 + 0.5) / 10
-	local woodChance  = math.floor(uespLog.MASTERWRIT_MIN_CHANCE + (woodTraitsKnown  / woodTraitsTotal  + motifChance) * ChanceRange/2 * 10 + 0.5) / 10
-	local jewelChance  = math.floor(uespLog.MASTERWRIT_MIN_CHANCE + (jewelTraitsKnown  / jewelTraitsTotal) * ChanceRange * 10 + 0.5) / 10
+	local blackChance = math.floor(uespLog.MASTERWRIT_MIN_CHANCE * 10 + (blackTraitsKnown / blackTraitsTotal + motifChance) * ChanceRange/2 * 10 + 0.5) / 10
+	local clothChance = math.floor(uespLog.MASTERWRIT_MIN_CHANCE * 10 + (clothTraitsKnown / clothTraitsTotal + motifChance) * ChanceRange/2 * 10 + 0.5) / 10
+	local woodChance  = math.floor(uespLog.MASTERWRIT_MIN_CHANCE * 10 + (woodTraitsKnown  / woodTraitsTotal  + motifChance) * ChanceRange/2 * 10 + 0.5) / 10
+	local jewelChance  = math.floor(uespLog.MASTERWRIT_MIN_CHANCE * 10 + (jewelTraitsKnown  / jewelTraitsTotal) * ChanceRange * 10 + 0.5) / 10
 		
 	local runesKnown = 0
 	runesKnown = runesKnown + uespLog.GetAchievementProgressValue(781)
@@ -16978,9 +16978,9 @@ function uespLog.MasterWritCmd(cmd)
 		
 	local recipesKnown = uespLog.GetProvMasterWritRecipesKnown()
 	
-	local alchemyChance = math.floor(uespLog.MASTERWRIT_MIN_CHANCE + reagentsKnown / (18 + 8) * ChanceRange * 10 + 0.5) / 10
-	local enchantChance = math.floor(uespLog.MASTERWRIT_MIN_CHANCE + runesKnown / (4 + 17 + 14 + 14 + 5) * ChanceRange * 10 + 0.5) / 10
-	local provChance    = math.floor(uespLog.MASTERWRIT_MIN_CHANCE + recipesKnown * ChanceRange * 10 + 0.5) / 10
+	local alchemyChance = math.floor(uespLog.MASTERWRIT_MIN_CHANCE * 10 + reagentsKnown / (18 + 8) * ChanceRange * 10 + 0.5) / 10
+	local enchantChance = math.floor(uespLog.MASTERWRIT_MIN_CHANCE * 10 + runesKnown / (4 + 17 + 14 + 14 + 5) * ChanceRange * 10 + 0.5) / 10
+	local provChance    = math.floor(uespLog.MASTERWRIT_MIN_CHANCE * 10 + recipesKnown * ChanceRange * 10 + 0.5) / 10
 		
 	uespLog.MsgColor(uespLog.craftColor, "Estimated Chance to Receive a Master Writ:")
 	uespLog.MsgColor(uespLog.craftColor, ".   Alchemy: "..tostring(alchemyChance).. "%")

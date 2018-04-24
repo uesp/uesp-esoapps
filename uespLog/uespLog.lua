@@ -16979,7 +16979,7 @@ function uespLog.MasterWritCmd(cmd)
 	local recipesKnown = uespLog.GetProvMasterWritRecipesKnown()
 	
 	local alchemyChance = math.floor(uespLog.MASTERWRIT_MIN_CHANCE * 10 + reagentsKnown / (18 + 8) * ChanceRange * 10 + 0.5) / 10
-	local enchantChance = math.floor(uespLog.MASTERWRIT_MIN_CHANCE * 10 + runesKnown / (4 + 17 + 14 + 14 + 5) * ChanceRange * 10 + 0.5) / 10
+	local enchantChance = math.floor(uespLog.MASTERWRIT_MIN_CHANCE * 10 + runesKnown / (5 + 17 + 14 + 14 + 5) * ChanceRange * 10 + 0.5) / 10
 	local provChance    = math.floor(uespLog.MASTERWRIT_MIN_CHANCE * 10 + recipesKnown * ChanceRange * 10 + 0.5) / 10
 		
 	uespLog.MsgColor(uespLog.craftColor, "Estimated Chance to Receive a Master Writ:")

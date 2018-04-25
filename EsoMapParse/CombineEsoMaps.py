@@ -9,11 +9,11 @@ import fnmatch
 USE_COMMAND_ARGS = True
 
 if (not USE_COMMAND_ARGS):
-    BasePathIndex = "17"
+    BasePathIndex = "18pts"
     BasePath = "e:/esoexport/"
 elif (len(sys.argv) < 3):
     print("Missing required command line arguments!")
-    exit
+    sys.exit()
 else:
     BasePathIndex = sys.argv[1]
     BasePath = sys.argv[2]
@@ -63,6 +63,7 @@ for root, dirnames, filenames in os.walk(InputPath):
             continue
         NewImageInfo = CImageFileInfo()
         NewImageInfo.Filename = os.path.join(root.lower(), filename.lower())[len(InputPath):]
+        NewImageInfo.Filename = NewImageInfo.Filename.replace("\\", "/")
         NewImageInfo.IsUsed = False
         ImageInfos.append(NewImageInfo)
 
@@ -157,7 +158,7 @@ for imagegroupname in ImageGroups:
     elif len(ImageGroups[imagegroupname].ImageFiles) == 25 and imagegroupname == "rivenspire/shroudedpass_base":
             TileX = 3
             TileY = 3
-    elif len(ImageGroups[imagegroupname].ImageFiles) == 25:
+    elif len(ImageGroups[imagegroupname].ImageFiles) == 25 or imagegroupname == "summerset/sunhold_base":
             TileX = 5
             TileY = 5
     elif len(ImageGroups[imagegroupname].ImageFiles) == 36:
@@ -211,7 +212,11 @@ with open(OutputMapList, "w") as text_file:
     text_file.write("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}\n".format("parent", "map", "numimages", "MatchedSizes", "Width", "Height", "CombWidth", "CombHeight", "IsOutput"))
     for imagegroupname in ImageGroups:
         splitname = imagegroupname.split("/")
-        text_file.write("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}\n".format(splitname[0], splitname[1], len(ImageGroups[imagegroupname].ImageFiles), ImageGroups[imagegroupname].MatchingSizes,
+
+        if len(splitname) < 2:
+            print "Warning: {0} has no path seperator!\n".format(imagegroupname)
+        else:
+            text_file.write("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}\n".format(splitname[0], splitname[1], len(ImageGroups[imagegroupname].ImageFiles), ImageGroups[imagegroupname].MatchingSizes,
                                                                           ImageGroups[imagegroupname].ImageWidth, ImageGroups[imagegroupname].ImageHeight,
                                                                           ImageGroups[imagegroupname].CombinedWidth, ImageGroups[imagegroupname].CombinedHeight,
                                                                           ImageGroups[imagegroupname].OutputImage))

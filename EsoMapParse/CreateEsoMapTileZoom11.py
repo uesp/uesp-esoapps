@@ -11,11 +11,11 @@ import re
 USE_COMMAND_ARGS = True
 
 if (not USE_COMMAND_ARGS):
-    BasePathIndex = "17"
+    BasePathIndex = "18pts"
     BasePath = "e:/esoexport/"
 elif (len(sys.argv) < 3):
     print("Missing required command line arguments!")
-    exit
+    sys.exit()
 else:
     BasePathIndex = sys.argv[1]
     BasePath = sys.argv[2]
@@ -30,6 +30,9 @@ DEFAULTNULLTILE = BasePath + "goodimages-" + BasePathIndex + "/maps/blacknulltil
 MAPEXTENSION = ".jpg"
 CREATEZOOMLEVEL = 11
 OUTPUTIMAGESIZE = 256
+
+ONLYDOMAP = ""
+ONLYDOMAPPATH = ""
 
 g_MapFileCount = 0
 g_DefaultNullImage = Image.open(DEFAULTNULLTILE)
@@ -58,7 +61,21 @@ def SplitMap (RootPath, MapFilename):
     print "\t{0}".format(MapFilename)
     g_MapFileCount += 1
 
-    OrigMapImage = Image.open(os.path.join(RootPath, MapFilename))
+    FullFilename = os.path.join(RootPath, MapFilename)
+    FullFilename = FullFilename.replace("\\", "/")
+
+    OutputMapName = os.path.splitext(MapFilename)[0]
+    if (OutputMapName.endswith("_base")): OutputMapName = OutputMapName[:-5]
+
+    if (ONLYDOMAP != "" and OutputMapName != ONLYDOMAP):
+      print "\t\tSkipping map..."
+      return
+
+    if (ONLYDOMAPPATH != "" and not RootPath.endswith(ONLYDOMAPPATH)):
+      print "\t\tSkipping map..."
+      return
+
+    OrigMapImage = Image.open(FullFilename)
     (width, height) = OrigMapImage.size
 
     MapImage = OrigMapImage.resize((width*2,height*2), Image.BICUBIC)
@@ -70,6 +87,14 @@ def SplitMap (RootPath, MapFilename):
 
     OutputMapName = os.path.splitext(MapFilename)[0]
     if (OutputMapName.endswith("_base")): OutputMapName = OutputMapName[:-5]
+
+    if (ONLYDOMAP != "" and OutputMapName != ONLYDOMAP):
+      print "\t\tSkipping map..."
+      return
+
+    if (ONLYDOMAPPATH != "" and not RootPath.endswith(ONLYDOMAPPATH)):
+      print "\t\tSkipping map..."
+      return
 
     OutputBasePath = os.path.join(OUTPUTPATH, OutputMapName)
     mkdir_p(OutputBasePath)

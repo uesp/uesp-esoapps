@@ -7424,6 +7424,7 @@ function uespLog.DumpSkillTypes(note, classOnly, raceOnly, passiveOnly)
 	local count = 0
 	local startSkill = 1
 	local endSkill = numSkillTypes
+	local skillLineCount = 0
 	
 	classOnly = classOnly or false
 	raceOnly = raceOnly or false
@@ -7479,9 +7480,12 @@ function uespLog.DumpSkillTypes(note, classOnly, raceOnly, passiveOnly)
 		for skillIndex = 1, numSkillLines do
 			local numSkillAbilities = GetNumSkillAbilities(skillType, skillIndex)
 			
+			skillLineCount = skillLineCount + 1
+			
 			logData = { }
 			logData.event = "skillLine"
 			logData.skillType = skillType
+			logData.skillName = skillTypeName
 			
 			if (skillType == 1) then
 				logData.class = GetUnitClass("player")
@@ -7509,8 +7513,11 @@ function uespLog.DumpSkillTypes(note, classOnly, raceOnly, passiveOnly)
 			
 			logData.skillIndex = skillIndex
 			logData.numAbilities = numSkillAbilities
-			logData.name = GetSkillLineInfo(skillType, skillIndex)
+			logData.name, _, _, logData.skillLineId = GetSkillLineInfo(skillType, skillIndex)
 			uespLog.AppendDataToLog("all", logData)
+			
+					-- Not needed since update 18
+			numSkillAbilities = 0
 			
 			for abilityIndex = 1, numSkillAbilities do
 				local progressionIndex
@@ -7574,7 +7581,8 @@ function uespLog.DumpSkillTypes(note, classOnly, raceOnly, passiveOnly)
 		end
 	end
 	
-	uespLog.Msg(".     Found "..tostring(count).." abilities by type!")
+	--uespLog.Msg(".     Found "..tostring(count).." abilities by type!")
+	uespLog.Msg(".     Found "..tostring(skillLineCount).." skill Lines!")
 	
 	logData = { }
 	logData.event = "skillDump::EndType"
@@ -7681,10 +7689,16 @@ function uespLog.DumpSkillsProgression(note, classOnly)
 end
 
 
+uespLog.SkillDump_validAbilityCount = 0
+uespLog.SkillDump_startAbilityId = 0
+uespLog.SkillDump_countAbilityId = 5000
+uespLog.SkillDump_lastAbilityId = 150000
+uespLog.SkillDump_lastValidAbilityId = 0
+uespLog.SkillDump_delay = 2000
+
+
 function uespLog.DumpSkillsStart(note)
 	local abilityId
-	local endId =  110000
-	local validAbilityCount = 0
 	local logData = { }
 	
 	logData.event = "skillDump::Start"
@@ -7693,17 +7707,50 @@ function uespLog.DumpSkillsStart(note)
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
 	uespLog.Msg("Logging all skills with note '"..tostring(note).."'...")
+	
+	uespLog.SkillDump_validAbilityCount = 0
+	uespLog.SkillDump_startAbilityId = 1
+	uespLog.SkillDump_lastValidAbilityId = 0
 
-	for abilityId = 1, endId do
+	uespLog.DumpSkillsStart_DoNext()
+	
+	return true
+end
+
+
+function uespLog.DumpSkillsStart_DoNext()
+	local endId = uespLog.SkillDump_startAbilityId + uespLog.SkillDump_countAbilityId
+	
+	uespLog.Msg("Logging skills between "..tostring(uespLog.SkillDump_startAbilityId).." to "..tostring(endId).."...")
+
+	for abilityId = uespLog.SkillDump_startAbilityId, endId do
+	
 		if (DoesAbilityExist(abilityId)) then
-			validAbilityCount = validAbilityCount + 1
+			uespLog.SkillDump_validAbilityCount = uespLog.SkillDump_validAbilityCount + 1
+			uespLog.SkillDump_lastValidAbilityId = abilityId
 			uespLog.DumpSkill(abilityId)
 		end
+		
 	end
 
-	uespLog.Msg(".    Logged "..tostring(validAbilityCount).." abilities...")
+	uespLog.SkillDump_startAbilityId = endId + 1
 	
-	logData = { }
+	if (uespLog.SkillDump_startAbilityId >= uespLog.SkillDump_lastAbilityId) then
+		return uespLog.DumpSkillsEnd()
+	end
+	
+	zo_callLater(uespLog.DumpSkillsStart_DoNext, uespLog.SkillDump_delay)
+	
+	return true
+end
+
+
+function uespLog.DumpSkillsEnd()
+	local logData = { }
+	
+	uespLog.Msg("Found "..tostring(uespLog.SkillDump_validAbilityCount).." abilities...")
+	uespLog.Msg("Last valid ability ID is "..tostring(uespLog.SkillDump_lastValidAbilityId)..".")
+
 	logData.event = "skillDump::End"
 	logData.abilityCount = validAbilityCount
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
@@ -7712,10 +7759,6 @@ end
 
 
 function uespLog.DumpSkill(abilityId, extraData)
--- GetAbilityInfoByIndex(integer abilityIndex) Returns: string name, string texture, integer rank, integer actionSlotType, boolean passive, boolean showInSpellbook
--- GetAbilityIdByIndex(integer abilityIndex) Returns: integer abilityId
--- GetChampionAbilityDescription(integer abilityId, integer numPendingPoints) Returns: string description
--- GetChampionAbilityId(integer disciplineIndex, integer skillIndex) Returns: integer abilityId
 	local name = GetAbilityName(abilityId)
 	local isPassive = IsAbilityPassive(abilityId)
 	local channeled, castTime, channelTime = GetAbilityCastInfo(abilityId)
@@ -7748,14 +7791,46 @@ function uespLog.DumpSkill(abilityId, extraData)
 	logData.duration = duration
 	logData.cost = cost
 	logData.mechanic = mechanic
+	logData.icon = GetAbilityIcon(abilityId)
+	logData.perm = IsAbilityPermanent(abilityId)
+	
+	logData.skillType, logData.skillIndex, logData.abilityIndex, logData.morph, logData.rank = GetSpecificSkillAbilityKeysByAbilityId(abilityId)
+	
+	if (logData.skillType <= 0) then
+		logData.skillType = nil
+		logData.skillIndex = nil
+		logData.abilityIndex = nil
+		logData.morph = nil
+		logData.rank = nil
+	else
+		_, _, logData.earnedLevel, _, logData.ultimate, _, progressionIndex, _ = GetSkillAbilityInfo(logData.skillType, logData.skillIndex, logData.abilityIndex)
+		
+		logData.skillLineName, _, _, logData.skillLineId = GetSkillLineInfo(logData.skillType, logData.skillIndex)
+		logData.currentLevel, logData.maxLevel = GetSkillAbilityUpgradeInfo(logData.skillType, logData.skillIndex, logData.abilityIndex)
+		
+		if (isPassive and logData.maxLevel) then
+		
+			for i = 1, logData.maxLevel do
+				logData["passive" .. tostring(i)], logData["rank" .. tostring(i)] = GetSpecificSkillAbilityInfo(logData.skillType, logData.skillIndex, logData.abilityIndex, 1, i)
+			end
+			
+		end
+			
+		if (progressionIndex) then
+			logData.id1 = GetAbilityProgressionAbilityId(progressionIndex, 0, 1)
+			logData.id2 = GetAbilityProgressionAbilityId(progressionIndex, 1, 1)
+			logData.id3 = GetAbilityProgressionAbilityId(progressionIndex, 2, 1)
+		end
+	end
+	
+	-- GetAbilityProgressionRankFromAbilityId(number abilityId) Returns: number:nilable rank
+	-- GetAbilityProgressionXPInfoFromAbilityId(number abilityId) Returns: boolean hasProgression, number progressionIndex, number lastRankXp, number nextRankXP, number currentXP, boolean atMorph
 	
 	if (descHeader ~= "") then
 		logData.desc = "|cffffff" .. descHeader .."|r\n".. tostring(description)
 	else
 		logData.desc = tostring(description)
 	end
-	
-	logData.icon = GetAbilityIcon(abilityId)
 	
 	if (upgradeLines and upgradeLines ~= "") then logData.upgradeLines = upgradeLines end
 	if (effectLines and effectLines ~= "") then logData.effectLines = effectLines end
@@ -16803,7 +16878,7 @@ function uespLog.CountConstantsInObject(object, origConstants)
 		if (vType == "string" or vType == "number" or vType == "boolean") then
 			constants[v] = (constants[v] or 0) + 1
 		elseif (vType == "table") then
-			testNone.CountConstants(v, constants)
+			uespLog.CountConstantsInObject(v, constants)
 		end
 	end
 	

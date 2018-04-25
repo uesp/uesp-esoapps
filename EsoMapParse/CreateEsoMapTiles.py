@@ -10,11 +10,11 @@ import csv
 USE_COMMAND_ARGS = True
 
 if (not USE_COMMAND_ARGS):
-    BasePathIndex = "17"
+    BasePathIndex = "18pts"
     BasePath = "e:/esoexport/"
 elif (len(sys.argv) < 3):
     print("Missing required command line arguments!")
-    exit
+    sys.exit()
 else:
     BasePathIndex = sys.argv[1]
     BasePath = sys.argv[2]
@@ -70,7 +70,10 @@ def SplitMap (RootPath, MapFilename):
     print "\t{0}".format(MapFilename)
     g_MapFileCount += 1
 
-    MapImage = Image.open(os.path.join(RootPath, MapFilename))
+    FullFilename = os.path.join(RootPath, MapFilename)
+    FullFilename = FullFilename.replace("\\", "/")
+
+    MapImage = Image.open(FullFilename)
     
     (width, height) = MapImage.size
     NumTilesX = int(math.ceil( float(width)  / OUTPUTIMAGESIZE))

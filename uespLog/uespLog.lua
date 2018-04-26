@@ -7814,12 +7814,17 @@ function uespLog.DumpSkill(abilityId, extraData)
 				logData["passive" .. tostring(i)], logData["rank" .. tostring(i)] = GetSpecificSkillAbilityInfo(logData.skillType, logData.skillIndex, logData.abilityIndex, 1, i)
 			end
 			
+		else
+			logData.id1 = GetSpecificSkillAbilityInfo(logData.skillType, logData.skillIndex, logData.abilityIndex, 0, 1)
+			logData.id2 = GetSpecificSkillAbilityInfo(logData.skillType, logData.skillIndex, logData.abilityIndex, 1, 1)
+			logData.id3 = GetSpecificSkillAbilityInfo(logData.skillType, logData.skillIndex, logData.abilityIndex, 2, 1)
 		end
 			
+				-- Only works for skills the character can learn
 		if (progressionIndex) then
-			logData.id1 = GetAbilityProgressionAbilityId(progressionIndex, 0, 1)
-			logData.id2 = GetAbilityProgressionAbilityId(progressionIndex, 1, 1)
-			logData.id3 = GetAbilityProgressionAbilityId(progressionIndex, 2, 1)
+			--logData.id1 = GetAbilityProgressionAbilityId(progressionIndex, 0, 1)
+			--logData.id2 = GetAbilityProgressionAbilityId(progressionIndex, 1, 1)
+			--logData.id3 = GetAbilityProgressionAbilityId(progressionIndex, 2, 1)
 		end
 	end
 	

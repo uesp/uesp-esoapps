@@ -943,6 +943,7 @@
 --					/uespmasterwrit help   Help text
 --					/uespmasterwrit prov   Show recipes contributing to master writ chance
 --					/uespmasterwrit motif  Show motifs contributing to master writ chance
+--			- Stopped "/uespreset all" from preventing some data from being saved until you reload the UI/game.
 --
 --		Summerset Related Changes (Update 18):
 --			- Added style icons for the Fang Lair, Scalecaller, Psijic Order, Sapiarch and Pyandonean styles.
@@ -1184,6 +1185,9 @@ uespLog.ignoredNPCs = {
 	["Vvardvark"] = 1,		-- Morrowind
 	["Skeevaton"] = 1,		-- Clockwork City
 	["Scorpion Fabricant"] = 1,		-- Clockwork City
+	["Bright Moons Lunar Moth"] = 1, 	-- Summerset
+	["Alinor Ringtail"] = 1, 	-- Summerset
+	["Springbok"] = 1, 	-- Summerset
 }
 
 uespLog.lastTargetData = {
@@ -1574,7 +1578,7 @@ uespLog.mineItemLastReloadTimeMS = GetGameTimeMilliseconds()
 uespLog.MINEITEM_AUTORELOAD_DELTATIMEMS = 260000  -- Default value, use uespLog.minedItemReloadDelay instead
 uespLog.mineItemAutoRestart = false
 uespLog.mineItemAutoRestartOutputEnd = false
-uespLog.MINEITEM_AUTO_MAXITEMID = 150000
+uespLog.MINEITEM_AUTO_MAXITEMID = 160000
 uespLog.mineItemOnlySubType = -1
 uespLog.mineItemOnlyItemType = {}
 uespLog.mineItemOnlyLevel = -1
@@ -7794,7 +7798,7 @@ function uespLog.DumpSkill(abilityId, extraData)
 	logData.icon = GetAbilityIcon(abilityId)
 	logData.perm = IsAbilityPermanent(abilityId)
 	
-	logData.skillType, logData.skillIndex, logData.abilityIndex, logData.morph, logData.rank = GetSpecificSkillAbilityKeysByAbilityId(abilityId)
+	logData.skillType, logData.skillIndex, logData.abilityIndex, logData.morph = GetSpecificSkillAbilityKeysByAbilityId(abilityId)
 	
 	if (logData.skillType <= 0) then
 		logData.skillType = nil
@@ -7814,6 +7818,10 @@ function uespLog.DumpSkill(abilityId, extraData)
 				logData["passive" .. tostring(i)], logData["rank" .. tostring(i)] = GetSpecificSkillAbilityInfo(logData.skillType, logData.skillIndex, logData.abilityIndex, 1, i)
 			end
 			
+		elseif (isPassive) then
+			logData.maxLevel = 1
+			logData.passive1 = abilityId
+			logData.rank1 = logData.earnedLevel
 		else
 			logData.id1 = GetSpecificSkillAbilityInfo(logData.skillType, logData.skillIndex, logData.abilityIndex, 0, 1)
 			logData.id2 = GetSpecificSkillAbilityInfo(logData.skillType, logData.skillIndex, logData.abilityIndex, 1, 1)
@@ -7831,14 +7839,61 @@ function uespLog.DumpSkill(abilityId, extraData)
 	-- GetAbilityProgressionRankFromAbilityId(number abilityId) Returns: number:nilable rank
 	-- GetAbilityProgressionXPInfoFromAbilityId(number abilityId) Returns: boolean hasProgression, number progressionIndex, number lastRankXp, number nextRankXP, number currentXP, boolean atMorph
 	
+	logData.desc1 = tostring(GetAbilityDescription(abilityId, 1))
+	logData.desc2 = tostring(GetAbilityDescription(abilityId, 2))
+	logData.desc3 = tostring(GetAbilityDescription(abilityId, 3))
+	logData.desc4 = tostring(GetAbilityDescription(abilityId, 4))
+	
 	if (descHeader ~= "") then
 		logData.desc = "|cffffff" .. descHeader .."|r\n".. tostring(description)
+		logData.desc1 = "|cffffff" .. descHeader .."|r\n".. tostring(logData.desc1)
+		logData.desc2 = "|cffffff" .. descHeader .."|r\n".. tostring(logData.desc2)
+		logData.desc3 = "|cffffff" .. descHeader .."|r\n".. tostring(logData.desc3)
+		logData.desc4 = "|cffffff" .. descHeader .."|r\n".. tostring(logData.desc4)
 	else
 		logData.desc = tostring(description)
 	end
 	
 	if (upgradeLines and upgradeLines ~= "") then logData.upgradeLines = upgradeLines end
 	if (effectLines and effectLines ~= "") then logData.effectLines = effectLines end
+	
+	if (logData.skillType ~= nil and not isPassive) then
+		logData.cost1 = GetAbilityCost(abilityId, 1)
+		logData.cost2 = GetAbilityCost(abilityId, 2)
+		logData.cost3 = GetAbilityCost(abilityId, 3)
+		logData.cost4 = GetAbilityCost(abilityId, 4)
+		
+		logData.duration1 = GetAbilityDuration(abilityId, 1)
+		logData.duration2 = GetAbilityDuration(abilityId, 2)
+		logData.duration3 = GetAbilityDuration(abilityId, 3)
+		logData.duration4 = GetAbilityDuration(abilityId, 4)
+		
+		logData.channel1, logData.castTime1, logData.channelTime1 = GetAbilityCastInfo(abilityId, 1)
+		logData.channel2, logData.castTime2, logData.channelTime2 = GetAbilityCastInfo(abilityId, 2)
+		logData.channel3, logData.castTime3, logData.channelTime3 = GetAbilityCastInfo(abilityId, 3)
+		logData.channel4, logData.castTime4, logData.channelTime4 = GetAbilityCastInfo(abilityId, 4)
+		
+		logData.minRange1, logData.maxRange1 = GetAbilityRange(abilityId, 1)
+		logData.minRange2, logData.maxRange2 = GetAbilityRange(abilityId, 2)
+		logData.minRange3, logData.maxRange3 = GetAbilityRange(abilityId, 3)
+		logData.minRange4, logData.maxRange4 = GetAbilityRange(abilityId, 4)
+		
+		logData.radius1 = GetAbilityRadius(abilityId, 1)
+		logData.radius2 = GetAbilityRadius(abilityId, 2)
+		logData.radius3 = GetAbilityRadius(abilityId, 3)
+		logData.radius4 = GetAbilityRadius(abilityId, 4)
+		
+		logData.target1 = tostring(GetAbilityTargetDescription(abilityId, 1))
+		logData.target2 = tostring(GetAbilityTargetDescription(abilityId, 2))
+		logData.target3 = tostring(GetAbilityTargetDescription(abilityId, 3))
+		logData.target4 = tostring(GetAbilityTargetDescription(abilityId, 4))
+		
+	else
+		logData.desc1 = nil
+		logData.desc2 = nil
+		logData.desc3 = nil
+		logData.desc4 = nil
+	end
 	
 	uespLog.AppendDataToLog("all", logData, extraData)
 end
@@ -10599,7 +10654,7 @@ function uespLog.ClearRootSavedVar()
 					
 					if (key4 == "settings" or key4 == "info" or key4 == "charInfo") then
 						-- Keep data
-					elseif (key4 == "globals" or key4 == "all" or key == "buildData" or key == "charData" or key == "bankData" or key == "tempData" or key == "skillCoef" or key == "craftBagData") then
+					elseif (key4 == "globals" or key4 == "all" or key4 == "buildData" or key4 == "charData" or key4 == "bankData" or key4 == "tempData" or key4 == "skillCoef" or key4 == "craftBagData") then
 						uespLogSavedVars[key1][key2][key3][key4].data = { }
 						uespLogSavedVars[key1][key2][key3][key4].version = uespLog.DATA_VERSION
 					else

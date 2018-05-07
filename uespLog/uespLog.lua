@@ -944,6 +944,7 @@
 --					/uespmasterwrit prov   Show recipes contributing to master writ chance
 --					/uespmasterwrit motif  Show motifs contributing to master writ chance
 --			- Stopped "/uespreset all" from preventing some data from being saved until you reload the UI/game.
+--			- Added known/unknown display text/icons for Runeboxes. Controlled by the trait display setting.
 --
 --		Summerset Related Changes (Update 18):
 --			- Added style icons for the Fang Lair, Scalecaller, Psijic Order, Sapiarch and Pyandonean styles.
@@ -1974,6 +1975,33 @@ uespLog.ITEMCHANGE_IGNORE_FIELDS = {
 	['reqCP'] = 1, 
 	['quality'] = 1,
 	['itemLink'] = 1,	
+}
+
+
+uespLog.RUNEBOX_COLLECTIBLE_IDS = {
+	[79329]  = 148,		-- Xivkyn Dreadguard
+	[79330]  = 147,		-- Xivkyn Tormentor
+	[79331]  = 146,		-- Xivkyn Augur
+	[83516]  = 439,		-- Pumpkin Spectre Mask
+	[83517]  = 440,		-- Scarecrow Spectre Mask
+	[96391]  = 601,		-- Mud Ball Pouch
+	[96392]  = 597,		-- Sword-Swallower's Blade
+	[96393]  = 598,		-- Juggler's Knives
+	[96394]  = 599,		-- Pint of Belching
+	[96395]  = 600,		-- Fire-Breather's Torches
+	[96951]  = 753,		-- Nordic Bather's Towel
+	[96952]  = 755,		-- Colovian Fur Hood
+	[96953]  = 754,		-- Colovian Filigreed Hood
+	[119692] = 1108,	-- Cherry Blossom Branch
+	[124658] = 1232,	-- Dwemer Theodolite Pet
+	[124659] = 1230,	-- Sixth House Robe Costume
+	[128359] = 1338,	-- Hollowjack Spectre Mask
+	[128360] = 1339,	-- Thicketman Spectre Mask
+	[133550] = 4660,	-- Clockwork Reliquary
+	[134678] = 4797,	-- Jester's Scintillator
+	[138784] = 5019,	-- Arena Gladiator Helm
+	[139464] = 4996,	-- Big-Eared Ginger Kitten Pet
+	[139465] = 5047,	-- Osijic Glowglobe Emote
 }
 
 

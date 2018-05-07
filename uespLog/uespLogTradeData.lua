@@ -612,6 +612,22 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 		
 		iconColor = uespLog.TRADE_NORMALTEXT_COLOR
 		fontName = "ZoFontGame"
+		
+		-- Container
+	elseif (itemType == 18) then
+		local isKnown, isCollectible = uespLog.IsRuneboxCollectibleKnown(itemLink)
+		
+		if (isCollectible and uespLog.IsCraftTraitDisplay("tooltip") and uespLog.IsCraftDisplay()) then
+			if (isKnown) then
+				itemText = "Collectible Known"
+				iconColor = uespLog.TRADE_KNOWN_COLOR
+			else
+				itemText = "Collectible Unknown"
+				iconColor = uespLog.TRADE_UNKNOWN_COLOR
+			end
+			
+		end
+		
 	end
 
 	local isResearchable = uespLog.CheckIsItemLinkResearchable(itemLink)
@@ -649,6 +665,35 @@ function uespLog.AddCraftDetailsToToolTip(ThisToolTip, itemLink, bagId, slotInde
 	end
 
 	return true
+end
+
+
+function uespLog.GetRuneboxCollectibleId(itemLink)
+	local itemData = uespLog.ParseItemLinkEx(itemLink)
+	
+	if (itemData == false) then
+		return -1
+	end
+	
+	local collectibleId = uespLog.RUNEBOX_COLLECTIBLE_IDS[itemData.itemId]
+	
+	if (collectibleId == nil) then
+		return -1
+	end
+	
+	
+	return collectibleId
+end
+
+
+function uespLog.IsRuneboxCollectibleKnown(itemLink)
+	local collectibleId = uespLog.GetRuneboxCollectibleId(itemLink)
+	
+	if (collectibleId <= 0) then
+		return false, false
+	end
+	
+	return IsCollectibleUnlocked(collectibleId), true
 end
 
 
@@ -756,10 +801,27 @@ function uespLog.AddCraftInfoToInventorySlot (rowControl, hookData, list)
 		end
 		
 		return
-	end
-	
+		
+		-- Containers
+	elseif (itemType == 18) then
+		local isKnown, isCollectible = uespLog.IsRuneboxCollectibleKnown(itemLink)
+		
+		if (isCollectible and uespLog.IsCraftTraitDisplay("inventory") and uespLog.IsCraftDisplay()) then
+			if (isKnown) then
+				iconControl:SetHidden(false)		
+				iconControl:SetTexture(uespLog.TRADE_KNOWN_TEXTURE)
+				iconControl:SetColor(unpack(uespLog.TRADE_KNOWN_COLOR))
+			else
+				iconControl:SetHidden(false)		
+				iconControl:SetTexture(uespLog.TRADE_UNKNOWN_TEXTURE)
+				iconControl:SetColor(unpack(uespLog.TRADE_UNKNOWN_COLOR))
+			end
+		
+			return		
+		end
+		
 		-- Motifs
-	if (itemType == 8) then
+	elseif (itemType == 8) then
 		if (uespLog.IsCraftRecipeDisplay("inventory") and uespLog.IsCraftDisplay()) then
 			local isKnown = IsItemLinkBookKnown(itemLink)
 			
@@ -1920,22 +1982,39 @@ function uespLog.AddCraftInfoToTraderSlot (rowControl, result)
 		end
 	
 	elseif (isResearchable >= 0 and uespLog.IsCraftTraitDisplay("inventory") and uespLog.IsCraftDisplay()) then
-	uespLog.GetShowTraitIcon()
 	
-		if (isResearchable > 0) then
-			iconControl:SetHidden(false)
-			iconControl:SetTexture(uespLog.TRADE_UNKNOWN_TEXTURE)
-			iconControl:SetColor(unpack(uespLog.TRADE_UNKNOWN_COLOR))
-		else
-			iconControl:SetHidden(false)
-			iconControl:SetTexture(uespLog.TRADE_KNOWN_TEXTURE)
-			iconControl:SetColor(unpack(uespLog.TRADE_KNOWN_COLOR))
+		if (uespLog.GetShowTraitIcon()) then
+		
+			if (isResearchable > 0) then
+				iconControl:SetHidden(false)
+				iconControl:SetTexture(uespLog.TRADE_UNKNOWN_TEXTURE)
+				iconControl:SetColor(unpack(uespLog.TRADE_UNKNOWN_COLOR))
+			else
+				iconControl:SetHidden(false)
+				iconControl:SetTexture(uespLog.TRADE_KNOWN_TEXTURE)
+				iconControl:SetColor(unpack(uespLog.TRADE_KNOWN_COLOR))
+			end
 		end
 		
-	end
+	elseif (itemType == 18) then
+		local isKnown, isCollectible = uespLog.IsRuneboxCollectibleKnown(itemLink)
+		
+		if (isCollectible and uespLog.IsCraftTraitDisplay("inventory")) then
+			if (isKnown) then
+				iconControl:SetHidden(false)		
+				iconControl:SetTexture(uespLog.TRADE_KNOWN_TEXTURE)
+				iconControl:SetColor(unpack(uespLog.TRADE_KNOWN_COLOR))
+			else
+				iconControl:SetHidden(false)		
+				iconControl:SetTexture(uespLog.TRADE_UNKNOWN_TEXTURE)
+				iconControl:SetColor(unpack(uespLog.TRADE_UNKNOWN_COLOR))
+			end
+		
+			return		
+		end
 	
 		-- Motifs
-	if (itemType == 8) then
+	elseif (itemType == 8) then
 		if (uespLog.IsCraftRecipeDisplay("inventory") and uespLog.IsCraftDisplay()) then
 			local isKnown = IsItemLinkBookKnown(itemLink)
 			

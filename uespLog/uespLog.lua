@@ -945,6 +945,7 @@
 --					/uespmasterwrit motif  Show motifs contributing to master writ chance
 --			- Stopped "/uespreset all" from preventing some data from being saved until you reload the UI/game.
 --			- Added known/unknown display text/icons for Runeboxes. Controlled by the trait display setting.
+--			- Crafting messages in the chat log should now always display the correct result item link.
 --
 --		Summerset Related Changes (Update 18):
 --			- Added style icons for the Fang Lair, Scalecaller, Psijic Order, Sapiarch and Pyandonean styles.
@@ -5797,11 +5798,9 @@ function uespLog.OnCraftCompleted (eventCode, craftSkill)
 		
 		uespLog.AppendDataToLog("all", logData)
 		
-		local itemLink = uespLog.lastItemLinks[itemName]
-		if (itemLink == nil) then itemLink = itemName end
+		local itemLink = GetLastCraftingResultItemLink(i)
+		if (itemLink == nil or itemLink == "") then itemLink = itemName end
 		
-		local itemText, itemColor, itemData, niceName, niceLink = uespLog.ParseLink(itemLink)
-	
 		uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "You crafted item ".. tostring(itemLink) .." (x"..tostring(stack)..").")
 		uespLog.TrackLoot(itemLink, stack)
 	end
@@ -7885,7 +7884,9 @@ function uespLog.DumpSkill(abilityId, extraData)
 	if (upgradeLines and upgradeLines ~= "") then logData.upgradeLines = upgradeLines end
 	if (effectLines and effectLines ~= "") then logData.effectLines = effectLines end
 	
-	if (logData.skillType ~= nil and not isPassive) then
+	local rankData = uespLog.BASESKILL_RANKDATA[abilityId]
+	
+	if ((logData.skillType ~= nil or rankData ~= nil) and not isPassive) then
 		logData.cost1 = GetAbilityCost(abilityId, 1)
 		logData.cost2 = GetAbilityCost(abilityId, 2)
 		logData.cost3 = GetAbilityCost(abilityId, 3)

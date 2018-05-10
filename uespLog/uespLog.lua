@@ -946,6 +946,8 @@
 --			- Stopped "/uespreset all" from preventing some data from being saved until you reload the UI/game.
 --			- Added known/unknown display text/icons for Runeboxes. Controlled by the trait display setting.
 --			- Crafting messages in the chat log should now always display the correct result item link.
+--			- Added the "/uespstyle material" command which shows all styles including material link and current
+--			  count of that material.
 --
 --		Summerset Related Changes (Update 18):
 --			- Added style icons for the Fang Lair, Scalecaller, Psijic Order, Sapiarch and Pyandonean styles.
@@ -11536,7 +11538,7 @@ function uespLog.GetStyleData(sortById)
 end
 
 
-function uespLog.ShowStyleSummary(showKnown, showUnknown, showMasterWrit, sortById)
+function uespLog.ShowStyleSummary(showKnown, showUnknown, showMasterWrit, sortById, showMaterials)
 	local numStyles = GetNumSmithingStyleItems()
 	local totalKnown = 0
 	local totalUnknown = 0
@@ -11561,6 +11563,7 @@ function uespLog.ShowStyleSummary(showKnown, showUnknown, showMasterWrit, sortBy
 		local known, knownCount = uespLog.GetStyleKnown(styleName)	
 		local displayStyle = true
 		local materialLink = GetItemStyleMaterialLink(itemStyle)
+		local msg = ""
 		
 		if (styleItemName ~= "" and styleName ~= "" and styleName ~= "Universal") then 
 			validStyles = validStyles + 1
@@ -11583,10 +11586,18 @@ function uespLog.ShowStyleSummary(showKnown, showUnknown, showMasterWrit, sortBy
 				end
 				
 				if (sortById) then
-					uespLog.MsgColor(uespLog.craftColor, ".    "..tostring(itemStyle)..") " .. tostring(styleName).. " = "..knownCount.."/14  ("..tostring(materialLink)..")")
+					msg = ".    "..tostring(itemStyle)..") " .. tostring(styleName).. " = "..knownCount.."/14"
 				else
-					uespLog.MsgColor(uespLog.craftColor, ".    "..tostring(styleName).." (" .. tostring(itemStyle) .. ") = "..knownCount.."/14  ("..tostring(materialLink)..")")
+					msg = ".    "..tostring(styleName).." (" .. tostring(itemStyle) .. ") = "..knownCount.."/14"
 				end
+				
+				if (showMaterials) then
+					local stack1, stack2, stack3 = GetItemLinkStacks(materialLink)
+					local stack = stack1 + stack2 + stack3
+					msg = msg .. "  ("..tostring(materialLink).." x" .. tostring(stack)..")"
+				end
+				
+				uespLog.MsgColor(uespLog.craftColor, msg)
 			end
 		end
 	end
@@ -11617,6 +11628,7 @@ function uespLog.StyleCommand(cmd)
 		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle known               Show all completely known styles")
 		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle unknown           Show any styles not completely known")
 		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle master              Show styles related to master writ chance")
+		uespLog.MsgColor(uespLog.craftColor, ".       /uespstyle material          Show style material info")
 	elseif (firstCmd == "master" or firstCmd == "writ") then
 		uespLog.ShowStyleSummary(false, false, true)
 	elseif (firstCmd == "unknown") then
@@ -11626,9 +11638,11 @@ function uespLog.StyleCommand(cmd)
 	elseif (firstCmd == "liststyles" or firstCmd == "list") then
 		uespLog.ListValidStyles()
 	elseif (firstCmd == "summary" or firstCmd == "all") then
-		uespLog.ShowStyleSummary(false, false, false, false)
+		uespLog.ShowStyleSummary(false, false, false, false, false)
 	elseif (firstCmd == "summaryid" or firstCmd == "allid") then
-		uespLog.ShowStyleSummary(false, false, false, true)
+		uespLog.ShowStyleSummary(false, false, false, true, false)
+	elseif (firstCmd == "material" or firstCmd == "materials") then
+		uespLog.ShowStyleSummary(false, false, false, false, true)
 	elseif (firstCmd == "long") then
 		uespLog.ShowStyles(uespLog.implodeOrder(cmds, " ", 2), true)
 	else

@@ -945,7 +945,8 @@
 --					/uespmasterwrit motif  Show motifs contributing to master writ chance
 --			- Stopped "/uespreset all" from preventing some data from being saved until you reload the UI/game.
 --			- Added known/unknown display text/icons for Runeboxes. Controlled by the trait display setting.
---			- Crafting messages in the chat log should now always display the correct result item link.
+--			- Crafting messages in the chat log should now always display the correct result item link. This includes
+--			  when using the Dolgubons and WritWorthy addons.
 --			- Added the "/uespstyle material" command which shows all styles including material link and current
 --			  count of that material.
 --
@@ -3411,6 +3412,7 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CRAFT_COMPLETED, uespLog.OnCraftCompleted)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CRAFTING_STATION_INTERACT, uespLog.OnCraftStationInteract)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_STYLE_LEARNED, uespLog.OnStyleLearned)	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_END_CRAFTING_STATION_INTERACT, uespLog.OnEndCraftStationInteract)		
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOTS_FULL_UPDATE, uespLog.OnActionSlotsFullUpdate)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOT_ABILITY_SLOTTED, uespLog.OnActionSlotAbilitySlotted)	
@@ -3636,8 +3638,36 @@ function uespLog.Initialize( self, addOnName )
 	zo_callLater(uespLog.LoadSalePriceData, 500)
 	zo_callLater(uespLog.InitTradeData, 500) 
 	zo_callLater(uespLog.InitCharData, 500)
+	zo_callLater(uespLog.InitCrafting, 500)
 	
 	QueryCampaignSelectionData()
+end
+
+
+function uespLog.InitCrafting()
+	local LLC = LibStub("LibLazyCrafting")
+
+	if (LLC and LLC.SendCraftEvent) then
+		uespLog.Old_LLCSendCraftEvent = LLC.SendCraftEvent
+		LLC.SendCraftEvent = uespLog.LLCSendCraftEvent
+	end
+end
+
+
+function uespLog.LLCSendCraftEvent(event, station, requester, returnTable)
+	--uespLog.DebugMsg("LLCSendCraftEvent")
+	
+	if (event == LLC_CRAFT_SUCCESS or event == LLC_INITIAL_CRAFT_SUCCESS) then
+		uespLog.OnCraftCompleted(event, station, true)
+	end
+	
+	return uespLog.Old_LLCSendCraftEvent(event, station, requester, returnTable)
+end
+
+
+function uespLog.OnLLCCraftComplete(event, station, extraLLCResultInfo)
+
+	uespLog.DebugMsg("OnLLCCraftComplete")
 end
 
 
@@ -5724,6 +5754,7 @@ end
 
 function uespLog.OnCraftStationInteract (eventCode, craftSkill, sameStation)
 	uespLog.DebugExtraMsg("OnCraftStationInteract: "..tostring(craftSkill))
+	uespLog.LastCraftCompletedUsedLLC = false
 end
 
 
@@ -5766,10 +5797,35 @@ uespLog.WEAPONTYPE_TO_CRAFTBOOKCHAPTER = {
 }
 
 
-function uespLog.OnCraftCompleted (eventCode, craftSkill)
+uespLog.LastCraftCompletedUsedLLC = false
+
+
+function uespLog.OnEndCraftStationInteract(event, craftSkill)
+	uespLog.LastCraftCompletedUsedLLC = false
+end
+
+
+function uespLog.OnCraftCompleted (eventCode, craftSkill, usingLLC)
 	local inspiration = GetLastCraftingResultTotalInspiration()
 	local numItemsGained, penalty = GetNumLastCraftingResultItemsAndPenalty()
 	local logData = { }
+	local craftInteractionType = GetCraftingInteractionType()
+	local itemLink = GetLastCraftingResultItemLink(1)
+	
+	--uespLog.DebugMsg("OnCraftCompleted: "..tostring(craftInteractionType)..":"..tostring(itemLink))
+	
+	if (usingLLC) then
+		uespLog.LastCraftCompletedUsedLLC = true
+	else
+	
+		if (uespLog.LastCraftCompletedUsedLLC) then
+			uespLog.LastCraftCompletedUsedLLC = false
+			--uespLog.DebugMsg("Skip duplicate event")
+			return
+		end
+		
+		uespLog.LastCraftCompletedUsedLLC = false
+	end 
 	
 	logData.event = "CraftComplete"
 	logData.craftSkill = craftSkill

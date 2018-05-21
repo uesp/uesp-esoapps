@@ -962,6 +962,8 @@
 --				- Jewelry writ crate logging.
 --				- Daily writ tracking.
 --
+--		- v1.51 -- 21 May 2018
+--			- Prevented startup error message if LibLazyCrafting was not found.
 --
 
 	-- Update 18 prefix
@@ -973,7 +975,7 @@ end
 --	GLOBAL DEFINITIONS
 uespLog = uespLog or {}
 
-uespLog.version = "1.5"
+uespLog.version = "1.51"
 uespLog.releaseDate = "21 May 2018"
 uespLog.DATA_VERSION = 3
 
@@ -3645,7 +3647,7 @@ end
 
 
 function uespLog.InitCrafting()
-	local LLC = LibStub("LibLazyCrafting")
+	local LLC = LibStub("LibLazyCrafting", true)
 
 	if (LLC and LLC.SendCraftEvent) then
 		uespLog.Old_LLCSendCraftEvent = LLC.SendCraftEvent

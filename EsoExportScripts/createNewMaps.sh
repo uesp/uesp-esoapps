@@ -1,7 +1,7 @@
 #!/bin/sh
 
-VERSION="18pts"
-NEXTFREEWORLDID="1456"
+VERSION="18"
+NEXTFREEWORLDID="1577"
 
 MAPSOURCEPATH="/cygdrive/d/src/uesp/EsoApps/EsoMapParse"
 ESOINPUTPATH="./esomnf-$VERSION"

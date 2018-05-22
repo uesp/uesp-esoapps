@@ -1,11 +1,11 @@
 #!/bin/sh
 
-VERSION="18pts"
-ISPTS="1"
+VERSION="18"
+ISPTS=""
 LASTVERSION="17"
-LASTPTSVERSION="17pts"
+LASTPTSVERSION="18pts"
 
-MAKEPTSDIFF=""
+MAKEPTSDIFF="1"
 MAKEDIFF="1"
 
 MAPSOURCEPATH="/cygdrive/d/src/uesp/EsoApps/EsoMapParse"
@@ -327,7 +327,15 @@ zip -urq "maps.zip" maps.ptsdiff.txt maps.diff.txt
 popd
 
 echo "Copying Updated Maps..."
+pushd "./$OUTPUTPATH/maps/"
 xargs -a ../maps.diff.txt.updatedmaps cp -Rt ../NewMaps/
+
+if [ "$MAKEPTSDIFF" ]; then
+	mkdir ../NewMapsPts/
+	xargs -a ../maps.ptsdiff.txt.updatedmaps cp -Rt ../NewMapsPts/
+fi
+
+popd
 
 makezipdiff "icons.diff.zip" "./esomnf-$VERSION/esoui/art/icons/" "icons.diff.txt.list"
 makezipdiff "loadscreens.diff.zip" "./$OUTPUTPATH/LoadingScreens/" "loadscreens.diff.txt.list"

@@ -16262,7 +16262,7 @@ function uespLog.MineRecipeDataEnd()
 			local resultLink = uespLog.MakeItemLink(resultId, 1, 1)
 			local itemLink = uespLog.MakeItemLink(itemId, 1, 1)
 			local resultName = GetItemLinkName(resultLink)
-			local recipeType = "unknown"
+			local recipeType = "Unknown"
 			local furnDataID = GetItemLinkFurnitureDataId(resultLink)
 			local itemType, specialType = GetItemLinkItemType(resultLink)
 			local furnCate, furnSubCate = GetFurnitureDataCategoryInfo(furnDataID)

@@ -964,6 +964,12 @@
 --
 --		- v1.51 -- 21 May 2018
 --			- Prevented startup error message if LibLazyCrafting was not found.
+--			- Updated price data with latest from PC-NA.
+--
+--		- v1.52 -- 
+--			- Fixed a few skill coefficient data issues.
+--			- Added "Mud Hopper" as an ignored NPC.
+--			- Added "Salamander Variant" as an ignored NPC.
 --
 
 	-- Update 18 prefix
@@ -1194,7 +1200,9 @@ uespLog.ignoredNPCs = {
 	["Scorpion Fabricant"] = 1,		-- Clockwork City
 	["Bright Moons Lunar Moth"] = 1, 	-- Summerset
 	["Alinor Ringtail"] = 1, 	-- Summerset
-	["Springbok"] = 1, 	-- Summerset
+	["Springbok"] = 1, 		-- Summerset
+	["Mud Hopper"] = 1,		-- Summerset
+	["Salamander Variant"] = 1,	-- Summerset
 }
 
 uespLog.lastTargetData = {

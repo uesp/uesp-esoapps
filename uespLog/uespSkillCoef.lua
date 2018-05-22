@@ -414,9 +414,9 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	
 	-- Warden: Budding Seeds
 	[85840] = { [3] = POWERTYPE_ULTIMATE, [4] = POWERTYPE_ULTIMATE },
-	[93805] = { [4] = POWERTYPE_ULTIMATE },
-	[93806] = { [4] = POWERTYPE_ULTIMATE },
-	[93807] = { [4] = POWERTYPE_ULTIMATE },
+	[93805] = { [3] = POWERTYPE_ULTIMATE, [4] = POWERTYPE_ULTIMATE },
+	[93806] = { [3] = POWERTYPE_ULTIMATE, [4] = POWERTYPE_ULTIMATE },
+	[93807] = { [3] = POWERTYPE_ULTIMATE, [4] = POWERTYPE_ULTIMATE },
 	
 	-- Warden: Healing Seed
 	[85578] = { [3] = POWERTYPE_ULTIMATE },
@@ -1106,8 +1106,8 @@ uespLog.BASESKILL_RANKDATA = {
 	[38984] = { 38984, 40977, 40995, 41006 },
 	[39011] = { 39011, 41738, 41754, 41769 },
 	[39052] = { 39052, 41673, 41691, 41711 },
-	[42367] = { 42367, 39075, 42365, 42366 },
-	[42379] = { 42379, 39076, 42377, 42378 },
+	[39075] = { 39075, 42365, 42366, 42367 },
+	[39076] = { 39076, 42377, 42378, 42379 },
 	[39089] = { 39089, 41550, 41553, 41556 },
 	[39095] = { 39095, 41559, 41563, 41567 },
 	[42128] = { 42128, 39104, 42126, 42127 },
@@ -2260,8 +2260,8 @@ uespLog.SKILL_RANKDATA = {
 	[38984] = { 38984, 1 },
 	[39011] = { 39011, 1 },
 	[39052] = { 39052, 1 },
-	[39075] = { 42367, 2 },
-	[39076] = { 42379, 2 },
+	[39075] = { 39075, 1 },
+	[39076] = { 39076, 1 },
 	[39089] = { 39089, 1 },
 	[39095] = { 39095, 1 },
 	[39104] = { 42128, 2 },
@@ -2692,12 +2692,12 @@ uespLog.SKILL_RANKDATA = {
 	[42356] = { 32455, 2 },
 	[42357] = { 32455, 3 },
 	[42358] = { 32455, 4 },
-	[42365] = { 42367, 3 },
-	[42366] = { 42367, 4 },
-	[42367] = { 42367, 1 },
-	[42377] = { 42379, 3 },
-	[42378] = { 42379, 4 },
-	[42379] = { 42379, 1 },
+	[42365] = { 39075, 2 },
+	[42366] = { 39075, 3 },
+	[42367] = { 39075, 4 },
+	[42377] = { 39076, 1 },
+	[42378] = { 39076, 2 },
+	[42379] = { 39076, 3 },
 	[42410] = { 30920, 2 },
 	[42414] = { 30920, 3 },
 	[42418] = { 30920, 4 },
@@ -4106,7 +4106,7 @@ function uespLog.SkillCoefAddSkill(abilityId, rank)
 		return true
 	end
 	
-	if (not DoesAbilityExist(abilityId) or GetAbilityName(abilityId) == "") then
+	if (not uespLog.DoesSkillCoefAbilityExist(abilityId) or uespLog.GetSkillCoefAbilityName(abilityId) == "") then
 		uespLog.Msg("Error: Skill "..tostring(abilityId).." is not valid!")
 		return false
 	end
@@ -4427,11 +4427,16 @@ end
 
 
 function uespLog.InitSkillCoefData(abilityId, rank)
+
+	if (rank ~= nil or rank < 0) then
+		rank = uespLog.GetSkillCoefAbilityRank(abilityId)
+	end
+	
 	local name = uespLog.GetSkillCoefAbilityName(abilityId)
 	local description = uespLog.GetSkillCoefAbilityDescription(abilityId, rank)
 	local isNew = false
 		
-	if (abilityId <= 0 or name == "" or description == "" or rank < 0) then
+	if (abilityId <= 0 or name == "" or description == "") then
 		return false, false
 	end
 	
@@ -4441,7 +4446,6 @@ function uespLog.InitSkillCoefData(abilityId, rank)
 	
 	local cost, mechanic = uespLog.GetSkillCoefAbilityCost(abilityId, rank)
 	local passive = IsAbilityPassive(abilityId)
-	rank = rank or -1
 	
 	if (uespLog.SkillCoefAbilityData[abilityId] == nil) then
 		isNew = true
@@ -4486,6 +4490,22 @@ function uespLog.GetSkillCoefAbilityCost(abilityId, rank)
 end
 
 
+function uespLog.DoesSkillCoefAbilityExist(abilityId)
+
+	if (abilityId > 20000000) then
+		return DoesAbilityExist(abilityId % 10000000)
+	end
+	
+	local baseRankData = uespLog.SKILL_RANKDATA[abilityId]
+	
+	if (baseRankData ~= nil) then
+		return DoesAbilityExist(baseRankData[1])
+	end
+	
+	return DoesAbilityExist(abilityId)
+end
+
+
 function uespLog.GetSkillCoefAbilityName(abilityId)
 
 	if (abilityId > 20000000) then
@@ -4499,6 +4519,22 @@ function uespLog.GetSkillCoefAbilityName(abilityId)
 	end
 	
 	return GetAbilityName(abilityId)
+end
+
+
+function uespLog.GetSkillCoefAbilityRank(abilityId)
+
+	if (abilityId > 20000000) then
+		return math.floor(abilityId / 10000000)
+	end
+	
+	local baseRankData = uespLog.SKILL_RANKDATA[abilityId]
+		
+	if (baseRankData ~= nil) then
+		return baseRankData[2]
+	end
+	
+	return -1
 end
 
 

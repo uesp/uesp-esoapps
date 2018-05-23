@@ -970,6 +970,11 @@
 --			- Fixed a few skill coefficient data issues.
 --			- Added "Mud Hopper" as an ignored NPC.
 --			- Added "Salamander Variant" as an ignored NPC.
+--			- Added "Lesser Sea Adder" as an ignored NPC.
+--			- Added the "/uespmarket" command which lets you turn off the new market announcement window that
+--			  is shown when you login.
+--					/uespmarket on      Window is shown
+--					/uespmarket off     Window is not shown
 --
 
 	-- Update 18 prefix
@@ -1203,6 +1208,7 @@ uespLog.ignoredNPCs = {
 	["Springbok"] = 1, 		-- Summerset
 	["Mud Hopper"] = 1,		-- Summerset
 	["Salamander Variant"] = 1,	-- Summerset
+	["Lesser Sea Adder"] = 1,	-- Summerset
 }
 
 uespLog.lastTargetData = {
@@ -1781,6 +1787,7 @@ uespLog.DEFAULT_SETTINGS =
 		["includeSetItemsForTraitResearch"] = true,
 		["autolootHirelingMails"] = false,
 		["keepChatOpen"] = false,
+		["closeMarketAnnouncement"] = false,
 	}
 }
 
@@ -2074,6 +2081,30 @@ function uespLog.SetCustomStatDisplay(flag)
 	end
 	
 	uespLog.savedVars.settings.data.customStatDisplay = flag
+end
+
+
+function uespLog.GetCloseMarketAnnouncement()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.closeMarketAnnouncement == nil) then
+		uespLog.savedVars.settings.data.closeMarketAnnouncement = uespLog.DEFAULT_SETTINGS.closeMarketAnnouncement
+	end
+	
+	return uespLog.savedVars.settings.data.closeMarketAnnouncement
+end
+
+
+function uespLog.SetCloseMarketAnnouncement(flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	uespLog.savedVars.settings.data.closeMarketAnnouncement = flag
 end
 
 
@@ -3225,6 +3256,9 @@ function uespLog.Initialize( self, addOnName )
 		return 
 	end
 	
+	uespLog.Old_SceneManager_Show = SCENE_MANAGER.Show
+	SCENE_MANAGER.Show = uespLog.SceneManager_Show
+			
 	uespLog.lastPlayerHP = GetUnitPower("player", POWERTYPE_HEALTH)
 	uespLog.lastPlayerMG = GetUnitPower("player", POWERTYPE_MAGICKA)
 	uespLog.lastPlayerST = GetUnitPower("player", POWERTYPE_STAMINA)
@@ -3651,6 +3685,16 @@ function uespLog.Initialize( self, addOnName )
 	zo_callLater(uespLog.InitCrafting, 500)
 	
 	QueryCampaignSelectionData()
+end
+
+
+function uespLog.SceneManager_Show(self, name)
+
+	if (name == "marketAnnouncement" and uespLog.GetCloseMarketAnnouncement()) then
+		return 
+	end
+	
+	return uespLog.Old_SceneManager_Show(self, name)
 end
 
 
@@ -17242,4 +17286,28 @@ end
 SLASH_COMMANDS["/uespmasterwrit"] = uespLog.MasterWritCmd
 
 
+function uespLog.MarketCommand(cmd)
+	local cmds, firstCmd = uespLog.SplitCommands(cmd)
+
+	if (firstCmd == "on") then
+		uespLog.SetCloseMarketAnnouncement(false)
+		uespLog.Msg("The market announcement will now be displayed when you login.")
+	elseif (firstCmd == "off") then
+		uespLog.SetCloseMarketAnnouncement(true)
+		uespLog.Msg("The market announcement will *not* be displayed when you login.")
+	else
+		uespLog.Msg("Turns the game's market announcement window on/off:")
+		uespLog.Msg(".     /uespmarket [on||off]")
+	
+		if (uespLog.GetCloseMarketAnnouncement()) then
+			uespLog.Msg("The market announcement will *not* be displayed when you login.")
+		else
+			uespLog.Msg("The market announcement will be displayed when you login.")
+		end
+	end
+	
+end
+
+
+SLASH_COMMANDS["/uespmarket"] = uespLog.MarketCommand
 

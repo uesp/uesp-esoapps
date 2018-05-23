@@ -223,6 +223,14 @@ function uespLog.InitOptionControlsData()
 	})
 	
 	uespLog.optionControlsData:insert({
+		type = "checkbox",
+		name = "Close Market Announcement", 
+		tooltip = "Prevents the market window shown when you login.\n        /uespmarket on/off", 
+		getFunc = uespLog.GetCloseMarketAnnouncement,
+		setFunc = uespLog.SetCloseMarketAnnouncement,
+	})
+	
+	uespLog.optionControlsData:insert({
 		type = "header",
 		name = "Guild Sales Data (Beta)",
 	})

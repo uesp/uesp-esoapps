@@ -3,7 +3,7 @@
 OLDAPI="100022"
 NEWAPI="100023"
 
-APIPATH="/cygdrive/e/esoexport/apidata/output"
+APIPATH="/cygdrive/e/esoexport/apidata"
 
 OLDAPIPATH="$APIPATH/$OLDAPI/data"
 NEWAPIPATH="$APIPATH/$NEWAPI/data"

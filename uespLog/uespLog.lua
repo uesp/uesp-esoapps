@@ -971,10 +971,12 @@
 --			- Added "Mud Hopper" as an ignored NPC.
 --			- Added "Salamander Variant" as an ignored NPC.
 --			- Added "Lesser Sea Adder" as an ignored NPC.
+--			- Added "Fledgeling Gryphon" as an ignored NPC.
 --			- Added the "/uespmarket" command which lets you turn off the new market announcement window that
 --			  is shown when you login.
 --					/uespmarket on      Window is shown
 --					/uespmarket off     Window is not shown
+--			- Disabled the warning when the log gets too large (no more chance of file corruption).
 --
 
 	-- Update 18 prefix
@@ -1036,6 +1038,7 @@ uespLog.baseTrackStatGameTime = GetGameTimeMilliseconds()
 
 uespLog.UsedMerethicResin = false
 
+uespLog.EnableSectionSizeWarning = false
 uespLog.NextSectionSizeWarning = { }
 uespLog.NextSectionWarningGameTime = { }
 uespLog.NEXT_SECTION_SIZE_WARNING = 100
@@ -1209,6 +1212,7 @@ uespLog.ignoredNPCs = {
 	["Mud Hopper"] = 1,		-- Summerset
 	["Salamander Variant"] = 1,	-- Summerset
 	["Lesser Sea Adder"] = 1,	-- Summerset
+	["Fledgeling Gryphon"] = 1,	-- Summerset
 }
 
 uespLog.lastTargetData = {
@@ -2956,17 +2960,21 @@ function uespLog.AppendStringToLog(section, logString)
 		sv = uespLog.savedVars[section].data
 	end
 		
-	if (uespLog.NextSectionSizeWarning[section] == nil) then
-		uespLog.NextSectionSizeWarning[section] = uespLog.FIRST_SECTION_SIZE_WARNING
-		uespLog.NextSectionWarningGameTime[section] = 0
-	end
 		
-	if (#sv >= uespLog.NextSectionSizeWarning[section] and GetGameTimeMilliseconds() >= uespLog.NextSectionWarningGameTime[section]) then
-		uespLog.MsgColor(uespLog.SECTION_SIZE_WARNING_COLOR, "WARNING: Log '"..tostring(section).."' data exceeds "..tostring(#sv).." elements in size.")
-		uespLog.MsgColor(uespLog.SECTION_SIZE_WARNING_COLOR, "Loss of data is possible when loading the saved variable file!")
-		uespLog.MsgColor(uespLog.SECTION_SIZE_WARNING_COLOR, "You should save the data, submit it to the UESP and do \"/uespreset all\".")
-		uespLog.NextSectionSizeWarning[section] = #sv + uespLog.NEXT_SECTION_SIZE_WARNING
-		uespLog.NextSectionWarningGameTime[section] = GetGameTimeMilliseconds() + uespLog.NEXT_SECTION_SIZE_WARNING_TIMEMS
+	if (uespLog.EnableSectionSizeWarning) then
+	
+		if (uespLog.NextSectionSizeWarning[section] == nil) then
+			uespLog.NextSectionSizeWarning[section] = uespLog.FIRST_SECTION_SIZE_WARNING
+			uespLog.NextSectionWarningGameTime[section] = 0
+		end
+			
+		if (#sv >= uespLog.NextSectionSizeWarning[section] and GetGameTimeMilliseconds() >= uespLog.NextSectionWarningGameTime[section]) then
+			uespLog.MsgColor(uespLog.SECTION_SIZE_WARNING_COLOR, "WARNING: Log '"..tostring(section).."' data exceeds "..tostring(#sv).." elements in size.")
+			uespLog.MsgColor(uespLog.SECTION_SIZE_WARNING_COLOR, "Loss of data is possible when loading the saved variable file!")
+			uespLog.MsgColor(uespLog.SECTION_SIZE_WARNING_COLOR, "You should save the data, submit it to the UESP and do \"/uespreset all\".")
+			uespLog.NextSectionSizeWarning[section] = #sv + uespLog.NEXT_SECTION_SIZE_WARNING
+			uespLog.NextSectionWarningGameTime[section] = GetGameTimeMilliseconds() + uespLog.NEXT_SECTION_SIZE_WARNING_TIMEMS
+		end
 	end
 	
 		-- Fix long strings being output as "nil"

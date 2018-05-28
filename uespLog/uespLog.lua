@@ -977,6 +977,7 @@
 --					/uespmarket on      Window is shown
 --					/uespmarket off     Window is not shown
 --			- Disabled the warning when the log gets too large (no more chance of file corruption).
+--			- Fixed the API version in the uespLogSalesPrices add-on.
 --
 
 	-- Update 18 prefix

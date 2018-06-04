@@ -978,6 +978,8 @@
 --					/uespmarket off     Window is not shown
 --			- Disabled the warning when the log gets too large (no more chance of file corruption).
 --			- Fixed the API version in the uespLogSalesPrices add-on.
+--			- Added Werewolf Transformation as a "free" skill when counting skill points.
+--			- Fixed a "Protected Function" error that would occur when using "E" to deposit/withdraw items.
 --
 
 	-- Update 18 prefix
@@ -3544,8 +3546,9 @@ function uespLog.Initialize( self, addOnName )
 	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ASSIGNED_CAMPAIGN_CHANGED, uespLog.OnAssignedCampaignChanged)		 
 	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CAMPAIGN_STATE_INITIALIZED, uespLog.OnAssignedCampaignChanged)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CURRENT_CAMPAIGN_CHANGED, uespLog.OnAssignedCampaignChanged)	 
-	
+		
 	uespLog.InstallItemTooltip()
+	
 	--ZO_PreHookHandler(PopupTooltip, 'OnUpdate', function() uespLog.AddStatsPopupTooltip() end)
 	--ZO_PreHookHandler(PopupTooltip, 'OnHide', function() uespLog.RemoveStatsPopupTooltip() end)
 	--ZO_PreHookHandler(ItemTooltip, 'OnUpdate', function() uespLog.AddStatsItemTooltip() end)
@@ -3555,7 +3558,8 @@ function uespLog.Initialize( self, addOnName )
 	uespLog.Old_ZO_CharacterWindowStats_HideComparisonValues = ZO_CharacterWindowStats_HideComparisonValues
 	uespLog.Old_ZO_StatEntry_Keyboard_ShowComparisonValue = ZO_StatEntry_Keyboard.ShowComparisonValue
 	uespLog.Old_ZO_StatEntry_Keyboard_GetDisplayValue = ZO_StatEntry_Keyboard.GetDisplayValue
-	
+		
+			-- Test alchemy overrides
 	uespLog.Old_ZO_InventorySlot_OnMouseEnter = ZO_InventorySlot_OnMouseEnter
 	ZO_InventorySlot_OnMouseEnter = uespLog.ZO_InventorySlot_OnMouseEnter
 
@@ -3650,7 +3654,7 @@ function uespLog.Initialize( self, addOnName )
 	MAIL_INBOX:RefreshData()
 	
 	uespLog.SetupSlashCommands()
-	
+		
 	if (MasterMerchant ~= nil) then
 		uespLog.Old_MM_DealCalc = MasterMerchant.DealCalc
 		MasterMerchant.DealCalc = uespLog.DealCalc
@@ -3825,7 +3829,11 @@ function uespLog.ModifyInventoryStatsWindow()
 
 	if (uespLog.GetInventoryStatsConfig() ~= "off") then
 		ZO_CharacterWindowStats_ShowComparisonValues = uespLog.ZO_CharacterWindowStats_ShowComparisonValues
-		ZO_CharacterWindowStats_HideComparisonValues = uespLog.ZO_CharacterWindowStats_HideComparisonValues
+		
+				-- Note: Using our function will result in a "Protected Function" error when using "E" to deposit items into the bank (?)
+				-- Just use the default function which seems to have no effect of not hiding the custom stat controls.
+		--ZO_CharacterWindowStats_HideComparisonValues = uespLog.ZO_CharacterWindowStats_HideComparisonValues
+		
 		ZO_StatEntry_Keyboard.ShowComparisonValue = uespLog.ZO_StatEntry_Keyboard_ShowComparisonValue
 		
 		if (GetAPIVersion() > 100021) then
@@ -3834,7 +3842,7 @@ function uespLog.ModifyInventoryStatsWindow()
 		
 	else
 		ZO_CharacterWindowStats_ShowComparisonValues = uespLog.Old_ZO_CharacterWindowStats_ShowComparisonValues
-		ZO_CharacterWindowStats_HideComparisonValues = uespLog.Old_ZO_CharacterWindowStats_HideComparisonValues
+		--ZO_CharacterWindowStats_HideComparisonValues = uespLog.Old_ZO_CharacterWindowStats_HideComparisonValues
 		ZO_StatEntry_Keyboard.ShowComparisonValue = uespLog.Old_ZO_StatEntry_Keyboard_ShowComparisonValue
 		
 		if (GetAPIVersion() > 100021) then
@@ -14408,9 +14416,9 @@ function uespLog.AddCharacterWindowStats()
 		return
 	end
 
-	table.insert(ZO_INVENTORY_STAT_GROUPS, { STAT_SPELL_PENETRATION, STAT_PHYSICAL_PENETRATION })
-	table.insert(ZO_INVENTORY_STAT_GROUPS, { uespLog.STAT_EFFECTIVE_SPELL_POWER, uespLog.STAT_EFFECTIVE_WEAPON_POWER })
-	table.insert(ZO_INVENTORY_STAT_GROUPS, { uespLog.STAT_SPELL_CRITICAL_DAMAGE, uespLog.STAT_WEAPON_CRITICAL_DAMAGE })
+	--table.insert(ZO_INVENTORY_STAT_GROUPS, { STAT_SPELL_PENETRATION, STAT_PHYSICAL_PENETRATION })
+	--table.insert(ZO_INVENTORY_STAT_GROUPS, { uespLog.STAT_EFFECTIVE_SPELL_POWER, uespLog.STAT_EFFECTIVE_WEAPON_POWER })
+	--table.insert(ZO_INVENTORY_STAT_GROUPS, { uespLog.STAT_SPELL_CRITICAL_DAMAGE, uespLog.STAT_WEAPON_CRITICAL_DAMAGE })
 	
 	uespLog.Old_ZO_Stats_CreateAttributesSection = ZO_Stats.CreateAttributesSection
 	ZO_Stats.CreateAttributesSection = uespLog.CreateAttributesSection

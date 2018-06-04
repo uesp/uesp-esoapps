@@ -213,6 +213,32 @@ uespLog.FREE_SKILLS = {
 	[103635] = 1,		-- Jewelycrafting 4
 	[103636] = 1,		-- Jewelycrafting 5
 	[103793] = 1,		-- Psijic Order 1
+	
+	--[32624] = 1,		-- Bat Swarm 1
+	--[41918] = 1,		-- Bat Swarm 2
+	--[41919] = 1,		-- Bat Swarm 3
+	--[41920] = 1,		-- Bat Swarm 4
+	--[38932] = 1,		-- Clouding Swarm 1
+	--[41924] = 1,		-- Clouding Swarm 2
+	--[41925] = 1,		-- Clouding Swarm 3
+	--[41926] = 1,		-- Clouding Swarm 4
+	--[38931] = 1,		-- Devouring Swarm 1
+	--[41933] = 1,		-- Devouring Swarm 2
+	--[41936] = 1,		-- Devouring Swarm 3
+	--[41937] = 1,		-- Devouring Swarm 4
+		
+	[32455] = 1,		-- Werewolf Transformation 1
+	[42356] = 1,		-- Werewolf Transformation 2
+	[42357] = 1,		-- Werewolf Transformation 3
+	[42358] = 1,		-- Werewolf Transformation 4
+	[39075] = 1,		-- Pack Leader 1
+	[42365] = 1,		-- Pack Leader 2
+	[42366] = 1,		-- Pack Leader 3
+	[42367] = 1,		-- Pack Leader 4
+	[39076] = 1,		-- Werewolf Berserker 1
+	[42377] = 1,		-- Werewolf Berserker 2
+	[42378] = 1,		-- Werewolf Berserker 3
+	[42379] = 1,		-- Werewolf Berserker 4
 }
 
 

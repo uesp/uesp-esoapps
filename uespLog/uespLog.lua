@@ -966,7 +966,7 @@
 --			- Prevented startup error message if LibLazyCrafting was not found.
 --			- Updated price data with latest from PC-NA.
 --
---		- v1.52 -- 
+--		- v1.52 -- 5 June 2018
 --			- Fixed a few skill coefficient data issues.
 --			- Added "Mud Hopper" as an ignored NPC.
 --			- Added "Salamander Variant" as an ignored NPC.
@@ -3833,6 +3833,7 @@ function uespLog.ModifyInventoryStatsWindow()
 		
 				-- Note: Using our function will result in a "Protected Function" error when using "E" to deposit items into the bank (?)
 				-- Just use the default function which seems to have no effect of not hiding the custom stat controls.
+				-- This is due to AGS overriding ZO_CharacterWindowStats_HideComparisonValues and then resetting it.
 		--ZO_CharacterWindowStats_HideComparisonValues = uespLog.ZO_CharacterWindowStats_HideComparisonValues
 		
 		ZO_StatEntry_Keyboard.ShowComparisonValue = uespLog.ZO_StatEntry_Keyboard_ShowComparisonValue

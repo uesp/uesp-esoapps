@@ -992,8 +992,8 @@ end
 --	GLOBAL DEFINITIONS
 uespLog = uespLog or {}
 
-uespLog.version = "1.51"
-uespLog.releaseDate = "21 May 2018"
+uespLog.version = "1.52"
+uespLog.releaseDate = "5 June 2018"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

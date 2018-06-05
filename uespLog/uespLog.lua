@@ -980,6 +980,7 @@
 --			- Fixed the API version in the uespLogSalesPrices add-on.
 --			- Added Werewolf Transformation as a "free" skill when counting skill points.
 --			- Fixed a "Protected Function" error that would occur when using "E" to deposit/withdraw items.
+--			- Fixed the missing Ancient Elf style icon.
 --
 
 	-- Update 18 prefix

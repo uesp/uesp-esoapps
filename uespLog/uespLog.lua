@@ -982,6 +982,12 @@
 --			- Fixed a "Protected Function" error that would occur when using "E" to deposit/withdraw items.
 --			- Fixed the missing Ancient Elf style icon.
 --
+--		- v1.53 -- 
+--			- The market announcement window will only be hidden in the first 30 seconds of login time. After that
+--			  time it can be displayed normally through the main menu selection.
+--			- Reduced the number of quest condition messages you see in chat by not displaying hidden conditions or
+--			  condition counters that haven't changed.
+--
 
 	-- Update 18 prefix
 if (CRAFTING_TYPE_JEWELRYCRAFTING == nil) then
@@ -1270,6 +1276,8 @@ uespLog.trackStatStaColor = "35F935"
 uespLog.trackStatUltColor = "FFFFFF"
 
 uespLog.LastKeepChatOpen = false
+
+uespLog.MARKET_HIDE_TIME = 30	-- Seconds
 
 uespLog.LastLoreBookTitle = ""
 uespLog.LastLoreBookTime = 0
@@ -3703,8 +3711,10 @@ end
 
 
 function uespLog.SceneManager_Show(self, name)
+	local timeDiff = GetTimeStamp() - uespLog.startTimeStamp
 
-	if (name == "marketAnnouncement" and uespLog.GetCloseMarketAnnouncement()) then
+	if (name == "marketAnnouncement" and uespLog.GetCloseMarketAnnouncement() and timeDiff < uespLog.MARKET_HIDE_TIME) then
+		uespLog.DebugMsg("Hiding market announcement window...")
 		return 
 	end
 	
@@ -5064,8 +5074,11 @@ function uespLog.OnQuestCounterChanged (eventCode, journalIndex, questName, cond
 	--logData.stepIndex, logData.condIndex = uespLog.FindQuestCurrentStage(journalIndex, conditionText, conditionType, newConditionVal, conditionMax)
 	
 	--uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
- 
-	uespLog.MsgType(uespLog.MSG_QUEST, "Quest "..questName..", "..conditionText.." now "..tostring(newConditionVal).."/"..tostring(conditionMax)..".")
+	
+	if (newConditionVal ~= currConditionVal and not isStepHidden) then
+		uespLog.MsgType(uespLog.MSG_QUEST, "Quest "..questName..", "..conditionText.." now "..tostring(newConditionVal).."/"..tostring(conditionMax)..".")
+	end
+	
 	--uespLog.DebugMsg("Quest Step/Condition Index ("..tostring(journalIndex)..") :"..tostring(logData.stepIndex) .. ":"..tostring(logData.condIndex))
 end
 

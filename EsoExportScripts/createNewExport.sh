@@ -157,7 +157,7 @@ echo "Copying Treasure Maps..."
 rsync -a --exclude "*.dds" "./$ESOINPUTPATH/esoui/art/treasuremaps/" "./$OUTPUTPATH/TreasureMaps/"
 
 echo "Copying Crown Crates Images..."
-rsync -a --exclude "*.dds" "./$GAMEINPUTPATH/esoui/art/crowncrates" "./$OUTPUTPATH/MoreImages/"
+rsync -a --exclude "*.dds" "./$ESOINPUTPATH/esoui/art/crowncrates" "./$OUTPUTPATH/MoreImages/"
 
 echo "Copying Collectible Images..."
 rsync -a --exclude "*.dds" "./$ESOINPUTPATH/esoui/art/collectibles" "./$OUTPUTPATH/MoreImages/"
@@ -203,7 +203,7 @@ if [ $MAKEDIFF ]; then
 	makediff "./esomnf-$LASTVERSION/esoui/art/icons/" "./esomnf-$VERSION/esoui/art/icons/" "./goodimages-$VERSION/icons.diff.txt" $LASTVERSION $VERSION
 	makediff "./esomnf-$LASTVERSION/esoui/art/loadingscreens/" "./esomnf-$VERSION/esoui/art/loadingscreens/" "./goodimages-$VERSION/loadscreens.diff.txt" $LASTVERSION $VERSION
 	makediff "./esomnf-$LASTVERSION/esoui/art/treasuremaps/" "./esomnf-$VERSION/esoui/art/treasuremaps/" "./goodimages-$VERSION/treasuremaps.diff.txt" $LASTVERSION $VERSION
-	makediff "./gamemnf-$LASTVERSION/esoui/art/crowncrates/" "./gamemnf-$VERSION/esoui/art/crowncrates/" "./goodimages-$VERSION/crowncrates.diff.txt" $LASTVERSION $VERSION
+	makediff "./esomnf-$LASTVERSION/esoui/art/crowncrates/" "./esomnf-$VERSION/esoui/art/crowncrates/" "./goodimages-$VERSION/crowncrates.diff.txt" $LASTVERSION $VERSION
 	makediff "./esomnf-$LASTVERSION/esoui/art/collectibles/" "./esomnf-$VERSION/esoui/art/collectibles/" "./goodimages-$VERSION/collectibles.diff.txt" $LASTVERSION $VERSION
 	makediff "./esomnf-$LASTVERSION/esoui/art/store/" "./esomnf-$VERSION/esoui/art/store/" "./goodimages-$VERSION/store.diff.txt" $LASTVERSION $VERSION
 	makediff "./esomnf-$LASTVERSION/esoui/art/treeicons/" "./esomnf-$VERSION/esoui/art/treeicons/" "./goodimages-$VERSION/treeicons.diff.txt" $LASTVERSION $VERSION 
@@ -217,7 +217,7 @@ if [ $MAKEPTSDIFF ]; then
 	makediff "./esomnf-$LASTPTSVERSION/esoui/art/icons/" "./esomnf-$VERSION/esoui/art/icons/" "./goodimages-$VERSION/icons.ptsdiff.txt" $LASTPTSVERSION $VERSION
 	makediff "./esomnf-$LASTPTSVERSION/esoui/art/loadingscreens/" "./esomnf-$VERSION/esoui/art/loadingscreens/" "./goodimages-$VERSION/loadscreens.ptsdiff.txt" $LASTPTSVERSION $VERSION
 	makediff "./esomnf-$LASTPTSVERSION/esoui/art/treasuremaps/" "./esomnf-$VERSION/esoui/art/treasuremaps/" "./goodimages-$VERSION/treasuremaps.ptsdiff.txt" $LASTPTSVERSION $VERSION
-	makediff "./gamemnf-$LASTPTSVERSION/esoui/art/crowncrates/" "./gamemnf-$VERSION/esoui/art/crowncrates/" "./goodimages-$VERSION/crowncrates.ptsdiff.txt" $LASTPTSVERSION $VERSION
+	makediff "./esomnf-$LASTPTSVERSION/esoui/art/crowncrates/" "./esomnf-$VERSION/esoui/art/crowncrates/" "./goodimages-$VERSION/crowncrates.ptsdiff.txt" $LASTPTSVERSION $VERSION
 	makediff "./esomnf-$LASTPTSVERSION/esoui/art/collectibles/" "./esomnf-$VERSION/esoui/art/collectibles/" "./goodimages-$VERSION/collectibles.ptsdiff.txt" $LASTPTSVERSION $VERSION
 	makediff "./esomnf-$LASTPTSVERSION/esoui/art/store/" "./esomnf-$VERSION/esoui/art/store/" "./goodimages-$VERSION/store.ptsdiff.txt" $LASTPTSVERSION $VERSION
 	makediff "./esomnf-$LASTPTSVERSION/esoui/art/treeicons/" "./esomnf-$VERSION/esoui/art/treeicons/" "./goodimages-$VERSION/treeicons.ptsdiff.txt" $LASTPTSVERSION $VERSION 

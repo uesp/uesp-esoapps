@@ -5309,3 +5309,61 @@ function uespLog.UpdateSkillCoefCounts()
 	
 end
 
+
+uespLog.SkillDiff = {}
+
+
+function uespLog.FindSkillDiffSaveAll()
+	local abilityId
+	local endId = 150000
+	local validAbilityCount = 0
+	local newSkills = 0
+	
+	uespLog.Msg("Saving all skills for diff...")
+	
+	uespLog.SkillDiff = {}
+	
+	for abilityId = 1, endId do
+		if (DoesAbilityExist(abilityId)) then
+			validAbilityCount = validAbilityCount + 1
+			local desc = GetAbilityDescription(abilityId)
+			
+			if (desc ~= "") then
+				local matchResult = desc:match("%d")
+
+				if (matchResult ~= nil) then
+					uespLog.SkillDiff[abilityId] = desc
+					newSkills = newSkills + 1
+				end
+			end
+
+		end
+	end
+
+	uespLog.Msg("Added "..newSkills.." skills out of "..tostring(validAbilityCount).." possible skills to diff data!")
+	return true
+end
+
+
+function uespLog.FindSkillDiff()
+	local abilityId, origDesc
+	local diffSkills = 0
+	local data = uespLog.savedVars.tempData.data
+	
+	uespLog.Msg("Comparing skill diff...")	
+		
+	for abilityId, origDesc in pairs(uespLog.SkillDiff) do
+		local desc = GetAbilityDescription(abilityId)
+			
+		if (desc ~= origDesc) then
+			local name = GetAbilityName(abilityId)
+			local buffer = tostring(name).." ("..tostring(abilityId)..")"
+			diffSkills = diffSkills + 1
+			data[#data+1] = buffer
+			uespLog.Msg(".    "..buffer)
+		end
+	end
+
+	uespLog.Msg("Found "..diffSkills.." changed skills!")
+	return true
+end

@@ -987,6 +987,7 @@
 --			  time it can be displayed normally through the main menu selection.
 --			- Reduced the number of quest condition messages you see in chat by not displaying hidden conditions or
 --			  condition counters that haven't changed.
+--			- Effective spell/weapon damage and spell/weapon critical damage are saved as character stats.
 --
 
 	-- Update 18 prefix
@@ -17342,4 +17343,28 @@ end
 
 
 SLASH_COMMANDS["/uespmarket"] = uespLog.MarketCommand
+
+
+function uespLog.StartMineTest()
+	uespLog.NextMineTestIndex = 1
+	zo_callLater(uespLog.DoNextMineTest, 1000)
+	
+end
+
+
+function uespLog.DoNextMineTest()
+	local funcName = "uespminetest" .. uespLog.NextMineTestIndex
+	
+	if (_G[funcName] == nil) then
+		uespLog.Msg("Stopped at MineTest index " .. uespLog.NextMineTestIndex .. "!")
+		return 
+	end
+	
+	uespLog.Msg("Running MineTest index " .. uespLog.NextMineTestIndex .. "...")
+	
+	_G[funcName]()
+	
+	uespLog.NextMineTestIndex = uespLog.NextMineTestIndex + 1
+	zo_callLater(uespLog.DoNextMineTest, 5000)
+end
 

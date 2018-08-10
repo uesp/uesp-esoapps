@@ -584,7 +584,7 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	charData.BuildType = uespLog.GetCharDataBuildType()
 	charData.SecondsPlayed = GetSecondsPlayed()
 	charData.Latency = GetLatency()
-	
+		
 	charData.ActiveWeaponBar = uespLog.GetBuildDataActiveBarIndex()
 	charData.ActiveAbilityBar = charData.ActiveWeaponBar
 	charData.OverloadState = 0
@@ -1127,7 +1127,7 @@ end
 function uespLog.SaveStatsForCharData()
 	local barIndex = uespLog.GetBuildDataActiveBarIndex()
 	local statsData = uespLog.CreateCharDataStats(true)
-	local powerData = uespLog.CreateCharDataPower(true)
+	--local powerData = uespLog.CreateCharDataPower(true)
 	
 	statsData["Bar" .. tostring(barIndex) .. ":ActiveWeaponBar"] = GetActiveWeaponPairInfo()
 	
@@ -1157,6 +1157,23 @@ function uespLog.CreateCharDataStats(onlyBar)
 			end
 		end
 	end
+	
+	local effSpellPower = uespLog.GetEffectiveSpellPower()
+	local effWeaponPower = uespLog.GetEffectiveWeaponPower()
+	local spellCritDmg = uespLog.GetPlayerSpellCriticalDamage()
+	local weaponCritDmg = uespLog.GetPlayerWeaponCriticalDamage()
+	
+	if (not onlyBar) then
+		stats["Computed:EffectiveSpellPower"] = effSpellPower
+		stats["Computed:EffectiveWeaponPower"] = effWeaponPower
+		stats["Computed:SpellCritDamage"] = spellCritDmg
+		stats["Computed:WeaponCritDamage"] = weaponCritDmg		
+	end
+	
+	stats["Computed:Bar" .. tostring(barIndex) .. ":EffectiveSpellPower"] = effSpellPower
+	stats["Computed:Bar" .. tostring(barIndex) .. ":EffectiveWeaponPower"] = effWeaponPower
+	stats["Computed:Bar" .. tostring(barIndex) .. ":SpellCritDamage"] = spellCritDmg
+	stats["Computed:Bar" .. tostring(barIndex) .. ":WeaponCritDamage"] = weaponCritDmg
 	
 	return stats
 end

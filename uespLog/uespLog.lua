@@ -982,12 +982,13 @@
 --			- Fixed a "Protected Function" error that would occur when using "E" to deposit/withdraw items.
 --			- Fixed the missing Ancient Elf style icon.
 --
---		- v1.53 -- 
+--		- v1.60 -- 13 Aug 2018
 --			- The market announcement window will only be hidden in the first 30 seconds of login time. After that
 --			  time it can be displayed normally through the main menu selection.
 --			- Reduced the number of quest condition messages you see in chat by not displaying hidden conditions or
 --			  condition counters that haven't changed.
 --			- Effective spell/weapon damage and spell/weapon critical damage are saved as character stats.
+--			- Updated API version for Wolfhunter DLC.
 --
 
 	-- Update 18 prefix
@@ -999,8 +1000,8 @@ end
 --	GLOBAL DEFINITIONS
 uespLog = uespLog or {}
 
-uespLog.version = "1.52"
-uespLog.releaseDate = "5 June 2018"
+uespLog.version = "1.60"
+uespLog.releaseDate = "13 August 2018"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

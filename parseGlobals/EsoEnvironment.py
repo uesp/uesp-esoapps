@@ -3,6 +3,7 @@ import operator
 import sys
 import datetime
 import shutil
+from shutil import copyfile
 import re
 import string
 from operator import attrgetter
@@ -24,6 +25,7 @@ class CEsoEnvironment:
 
     def __init__(self, searchEngineID = ""):
         self.globalData = CEsoGlobals()
+        self.inputPath = ""
         self.luaFiles = []
         self.otherFiles = {}
         self.functionInfos = CEsoFunctionInfo()
@@ -337,6 +339,7 @@ class CEsoEnvironment:
 
 
     def LoadLuaFiles(self, path):
+        self.inputPath = path
         self.luaFiles = EsoLuaFile.LoadAllFiles(path, path)
 
         self.otherFiles = self.FindOtherFiles(path)
@@ -522,6 +525,7 @@ class CEsoEnvironment:
 
     def FindOtherFiles(self, path):
         otherFiles = {}
+        count = 0
 
         print "Finding other files from", path, "..."
     
@@ -546,8 +550,10 @@ class CEsoEnvironment:
             for filename in files:
                 if (filename.endswith(".xml") or filename.endswith(".txt")):
                     rootFiles["__files"].append(filename)
+                    count = count + 1
+            
 
-        # print "\tFound {0} other files!".format(len(otherFiles))
+        print "\tFound {0} other files!".format(count)
         return otherFiles
         
 
@@ -564,8 +570,11 @@ class CEsoEnvironment:
                 link = "<a href='{0}/luadir.html'>[dir] {0}</a>".format(key)
                 outputDirs += "<li class='esold_dir'>{0}</li>\n".format(link)
                 self.OutputLuaFilesDirTree(entry, outputBasePath, parentPath + key + "/")
+            elif not (type(entry) is str):
+                link = "<a href='{0}.html'>{0}</a> <a href='{0}'><small>(raw)</small></a>".format(key)
+                outputFiles += "<li class='esold_file'>{0}</li>\n".format(link)
             else:
-                link = "<a href='{0}.html'>{0}</a>".format(key)
+                link = "<a href='{0}'>{0}</a>".format(key)
                 outputFiles += "<li class='esold_file'>{0}</li>\n".format(link)
 
         filename = os.path.join(outputBasePath, parentPath, '') + "luadir.html"
@@ -609,8 +618,25 @@ class CEsoEnvironment:
 
             root[filename] = luaFile
 
+        self.CreateLuaOtherFilesDirTree(rootFiles, self.otherFiles)
+
         #print rootFiles
         self.OutputLuaFilesDirTree(rootFiles, outputBasePath, "")
+
+
+    def CreateLuaOtherFilesDirTree(self, rootFiles, otherFiles):
+
+        if "__files" in otherFiles:
+            for filename in otherFiles["__files"]:
+                rootFiles[filename] = filename
+
+        for pathname in otherFiles:
+            if (pathname != "__files"):
+                
+                if not pathname in rootFiles:
+                    rootFiles[pathname] = { }
+                    
+                self.CreateLuaOtherFilesDirTree(rootFiles[pathname], otherFiles[pathname])
 
 
     def CountFunctionLetters(self):
@@ -740,7 +766,9 @@ class CEsoEnvironment:
         self.functionDb.DumpLocalFunctions(outputPath + "localfuncs.txt")
         self.functionDb.DumpMissingFunctions(outputPath + "missingfuncs.txt", self.globalData)
         self.functionDb.DumpUnusedFunctions(outputPath + "unusedfunc.txt", self.globalData)
-        
+
+        self.CopyRawFiles(outputPath + "src\\")
+            
         self.CreateLuaFilesHtml(outputPath + "src\\")
         self.CreateLuaFilesDirTree(outputPath + "src\\")
         self.CreateAllFunctionPages(outputPath)
@@ -748,6 +776,50 @@ class CEsoEnvironment:
 
         self.CreateApiVersionHtml(outputPath + "api.html")
         self.CreateMainPage(outputPath)
+
+
+    def CopyRawFiles(self, outputPath):
+    
+        if not os.path.exists(outputPath):
+            os.makedirs(outputPath)
+    
+        self.CopyRawFiles_OtherFiles(self.inputPath, outputPath, self.otherFiles)
+        self.CopyRawFiles_LuaFiles(self.inputPath, outputPath, self.luaFiles)
+
+
+    def CopyRawFiles_LuaFiles(self, inputPath, outputPath, luaFiles):
+    
+        for luaFile in self.luaFiles:
+            filename = os.path.basename(luaFile.relFilename)
+            path = os.path.dirname(luaFile.relFilename)
+
+            destPath = outputPath + path + "\\"
+            destFilename = destPath + filename
+            srcFilename = inputPath + path + "\\" + filename
+
+            if not os.path.exists(destPath):
+                os.makedirs(destPath)
+
+            print "Copying {0} to {1}...".format(srcFilename, destFilename)
+            copyfile(srcFilename, destFilename)
+
+    
+    def CopyRawFiles_OtherFiles(self, inputPath, outputPath, otherFiles):
+    
+        if not os.path.exists(outputPath):
+            os.makedirs(outputPath)
+
+        if ("__files" in otherFiles):
+            for filename in otherFiles["__files"]:
+                destFilename = outputPath + filename
+                srcFilename = inputPath + filename
+                print "Copying {0} to {1}...".format(srcFilename, destFilename)
+                copyfile(srcFilename, destFilename)
+
+        for pathname in otherFiles:
+            if (pathname != "__files"):
+                print "Copying files from {0}...".format(pathname)
+                self.CopyRawFiles_OtherFiles(inputPath + pathname + "\\", outputPath + pathname + "\\", otherFiles[pathname])
         
 
     def CreateGlobalHtmlRecord(self, outFile, root, lineHeader, level, parentName, types = None):

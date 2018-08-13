@@ -993,7 +993,9 @@
 --		- v1.61 -- 
 --			- Added the Welkynar style.
 --			- Added missing Runebox IDs from new content (for known/unknown display).
+--			- Fixed error on call to GetJournalQuestConditionType() with incorrect parameter type.
 --
+
 
 	-- Update 18 prefix
 if (CRAFTING_TYPE_JEWELRYCRAFTING == nil) then
@@ -4986,8 +4988,9 @@ function uespLog.LogQuestStepData (journalIndex)
 			logData.stageIndex = questStageIndex
 			logData.uniqueId = questUniqueId
 			logData.condition = conditionIndex
-			logData.condType = GetJournalQuestConditionType(journalIndex, stepIndex, conditionIndex, false)
-			logData.condType2 = GetJournalQuestConditionType(journalIndex, stepIndex, conditionIndex, true)
+			logData.condType = GetJournalQuestConditionType(journalIndex, stepIndex, conditionIndex, TRACKING_LEVEL_ASSISTED)
+			logData.condType2 = GetJournalQuestConditionType(journalIndex, stepIndex, conditionIndex, TRACKING_LEVEL_TRACKED)
+			logData.condType3 = GetJournalQuestConditionType(journalIndex, stepIndex, conditionIndex, TRACKING_LEVEL_UNTRACKED)
 			logData.text, _, logData.maxValue, logData.isFail, logData.isComplete, logData.isShared, logData.isVisible = GetJournalQuestConditionInfo(journalIndex, stepIndex, conditionIndex)
 			
 			uespLog.AppendDataToLog("all", logData)

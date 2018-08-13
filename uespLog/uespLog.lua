@@ -992,6 +992,7 @@
 --
 --		- v1.61 -- 
 --			- Added the Welkynar style.
+--			- Added missing Runebox IDs from new content (for known/unknown display).
 --
 
 	-- Update 18 prefix
@@ -2044,6 +2045,9 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
 	[138784] = 5019,	-- Arena Gladiator Helm
 	[139464] = 4996,	-- Big-Eared Ginger Kitten Pet
 	[139465] = 5047,	-- Osijic Glowglobe Emote
+	[141749] = 5563,	-- Swamp Jelly
+	[141750] = 5589,	-- Arena Gladiator Costume
+	[141915] = 5590,	-- Apple-Bobbing Cauldron
 }
 
 

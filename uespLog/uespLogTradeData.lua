@@ -98,9 +98,9 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[70] 							 = "uespLog/images/scalecaller.dds",		-- Scalecaller, Infected Flesh, 70, /esoui/art/icons/crafting_outfitter_potion_002.dds
 	[71] 							 = "uespLog/images/psijicorder.dds",		-- Psijic Order, Vitrified Malondo, 71, /esoui/art/icons/crafting_leather_nitre.dds
 	[72] 							 = "uespLog/images/sapiarch.dds",			-- Sapiarch, Culanda Lacquer, 72, /esoui/art/icons/crafting_leather_phlegm.dds
-	--[73] 							 = "uespLog/images/welkynar.dds",			-- Welkynar, ?, 73, ?
 	--[74] 							 = "uespLog/images/dremora.dds",			-- Dremora, Warrior's Heart Ashes, 74, ?
 	[75] 							 = "uespLog/images/pyandoean.dds",			-- Pyandonean, Porpoise Hide, 75, /esoui/art/icons/crafting_leather_base_horkerskin_r2.dds
+	[73] 							 = "uespLog/images/welkynar.dds",			-- Welkynar, Gryphon Plume, 73, /esoui/art/icons/crafting_style_item_welkynar_r2.dds
 	
 }
 
@@ -168,9 +168,9 @@ uespLog.STYLE_ICON_DATA = {
 	[70] 							 = "/esoui/art/icons/crafting_outfitter_potion_002.dds",
 	[71] 							 = "/esoui/art/icons/crafting_leather_nitre.dds",
 	[72] 							 = "/esoui/art/icons/crafting_leather_phlegm.dds",
-	--[73] 							 = "",
 	--[74] 							 = "",
 	[75] 							 = "/esoui/art/icons/crafting_leather_base_horkerskin_r2.dds",
+	[73] 							 = "/esoui/art/icons/crafting_style_item_welkynar_r2.dds",
 }
 
 

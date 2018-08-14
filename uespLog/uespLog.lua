@@ -996,6 +996,9 @@
 --			- Fixed error on call to GetJournalQuestConditionType() with incorrect parameter type.
 --			- Removed the /uespmarket command which was causing crashes when purchasing skills (use the "No, Thank You!" addon instead).
 --
+--		- v1.62 -- 
+--			- Fixed skill coefficient calculation for Werewolf ultimates.
+--
 
 
 	-- Update 18 prefix

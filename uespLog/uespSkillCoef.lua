@@ -361,22 +361,22 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[41937] = { [4] = uespLog.UESP_POWERTYPE_SOULTETHER },
 	
 	-- Werewolf Werewolf Transformation
-	[32455] = { [3] = POWERTYPE_STAMINA },
-	[42356] = { [3] = POWERTYPE_STAMINA },
-	[42357] = { [3] = POWERTYPE_STAMINA },
-	[42358] = { [3] = POWERTYPE_STAMINA },
+	[32455] = POWERTYPE_STAMINA,
+	[42356] = POWERTYPE_STAMINA,
+	[42357] = POWERTYPE_STAMINA,
+	[42358] = POWERTYPE_STAMINA,
 	
 	-- Werewolf Werewolf Berserker
-	[39076] = { [3] = POWERTYPE_STAMINA },
-	[42377] = { [3] = POWERTYPE_STAMINA },
-	[42378] = { [3] = POWERTYPE_STAMINA },
-	[42379] = { [3] = POWERTYPE_STAMINA },
+	[39076] = POWERTYPE_STAMINA,
+	[42377] = POWERTYPE_STAMINA,
+	[42378] = POWERTYPE_STAMINA,
+	[42379] = POWERTYPE_STAMINA,
 
 	-- Werewolf Pack Leader
-	[39075] = { [3] = POWERTYPE_STAMINA },
-	[42365] = { [3] = POWERTYPE_STAMINA },
-	[42366] = { [3] = POWERTYPE_STAMINA },
-	[42367] = { [3] = POWERTYPE_STAMINA },
+	[39075] = POWERTYPE_STAMINA,
+	[42365] = POWERTYPE_STAMINA,
+	[42366] = POWERTYPE_STAMINA,
+	[42367] = POWERTYPE_STAMINA,
 	
 	-- Alliance Support Replenishing Barrier	
 	-- Although it's an ultimate the 3rd number seems to be only based off of magic

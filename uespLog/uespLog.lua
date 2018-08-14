@@ -990,10 +990,11 @@
 --			- Effective spell/weapon damage and spell/weapon critical damage are saved as character stats.
 --			- Updated API version for Wolfhunter DLC.
 --
---		- v1.61 -- 
+--		- v1.61 -- 14 August 2018
 --			- Added the Welkynar style.
 --			- Added missing Runebox IDs from new content (for known/unknown display).
 --			- Fixed error on call to GetJournalQuestConditionType() with incorrect parameter type.
+--			- Removed the /uespmarket command which was causing crashes when purchasing skills (use the "No, Thank You!" addon instead).
 --
 
 
@@ -1006,8 +1007,8 @@ end
 --	GLOBAL DEFINITIONS
 uespLog = uespLog or {}
 
-uespLog.version = "1.60"
-uespLog.releaseDate = "13 August 2018"
+uespLog.version = "1.61"
+uespLog.releaseDate = "14 August 2018"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -3287,8 +3288,9 @@ function uespLog.Initialize( self, addOnName )
 		return 
 	end
 	
-	uespLog.Old_SceneManager_Show = SCENE_MANAGER.Show
-	SCENE_MANAGER.Show = uespLog.SceneManager_Show
+		-- Causes crash when purchasing skills
+	--uespLog.Old_SceneManager_Show = SCENE_MANAGER.Show
+	--SCENE_MANAGER.Show = uespLog.SceneManager_Show
 			
 	uespLog.lastPlayerHP = GetUnitPower("player", POWERTYPE_HEALTH)
 	uespLog.lastPlayerMG = GetUnitPower("player", POWERTYPE_MAGICKA)
@@ -5334,7 +5336,7 @@ function uespLog.OnAlliancePointsUpdate (eventCode, alliancePoints, playSound, d
 end
 
  
-function uespLog.OnSkillPointsChanged (eventCode, pointsBefore, pointsNow, partialPointsBefore, partialPointsNow)
+function uespLog.OnSkillPointsChanged (eventCode, pointsBefore, pointsNow, partialPointsBefore, partialPointsNow, reason)
 	local isSkyshard = false
 	local logData = { }
 	
@@ -5350,6 +5352,7 @@ function uespLog.OnSkillPointsChanged (eventCode, pointsBefore, pointsNow, parti
 	logData.pointsNow = pointsNow
 	logData.partialPointsBefore = partialPointsBefore
 	logData.partialPointsNow = partialPointsNow
+	logData.reason = reason
 		
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	 
@@ -17358,7 +17361,7 @@ function uespLog.MarketCommand(cmd)
 end
 
 
-SLASH_COMMANDS["/uespmarket"] = uespLog.MarketCommand
+--SLASH_COMMANDS["/uespmarket"] = uespLog.MarketCommand
 
 
 function uespLog.StartMineTest()

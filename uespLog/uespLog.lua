@@ -1,9 +1,7 @@
 -- uespLog.lua -- by Dave Humphrey, dave@uesp.net
--- uespLog.lua -- by Dave Humphrey, dave@uesp.net
 -- AddOn for ESO that logs various game data for use on www.uesp.net
 --
 -- TODO:
---		- Log game version?
 --		- Display charges of weapon
 --		- Better loot target/source logging
 --			- GetLootTargetInfo() Returns: string name, InteractTargetType targetType, string actionName
@@ -11,12 +9,10 @@
 --		- Display message when weapon charges run out
 --		- "Item Info" menu for all crafting stations tooltips
 --		- MAC Install Issue
---				- Make root folder "uespLog"
 --				- Remove utility folder?
 --		- Yokudan style icon (35)?
 --		- Akaviri style icon?
---		- Ancient Elf style icon (15)?
---		- Warning when log gets near full for upload.
+--		- Track NPC dialogue (link to quest?).
 --
 --
 -- CHANGELOG:

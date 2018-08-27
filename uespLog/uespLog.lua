@@ -1615,7 +1615,9 @@ uespLog.isAutoMiningItems = false
 uespLog.MINEITEMS_AUTODELAY = 1000 -- Delay in ms
 uespLog.MINEITEMS_AUTOLOOPCOUNT = 400
 uespLog.MINEITEMS_AUTOMAXLOOPCOUNT = 400
+uespLog.MINEITEM_AUTO_MAXITEMID = 160000
 uespLog.mineItemsAutoNextItemId = 1
+uespLog.mineItemsAutoLastItemId = uespLog.MINEITEM_AUTO_MAXITEMID
 uespLog.mineItemsEnabled = false
 uespLog.MINEITEMS_AUTOSTOP_LOGCOUNT = 50000
 uespLog.mineItemAutoReload = false
@@ -1623,7 +1625,6 @@ uespLog.mineItemLastReloadTimeMS = GetGameTimeMilliseconds()
 uespLog.MINEITEM_AUTORELOAD_DELTATIMEMS = 260000  -- Default value, use uespLog.minedItemReloadDelay instead
 uespLog.mineItemAutoRestart = false
 uespLog.mineItemAutoRestartOutputEnd = false
-uespLog.MINEITEM_AUTO_MAXITEMID = 160000
 uespLog.mineItemOnlySubType = -1
 uespLog.mineItemOnlyItemType = {}
 uespLog.mineItemOnlyLevel = -1
@@ -1719,6 +1720,7 @@ uespLog.DEFAULT_SETTINGS =
 		["craftAutoLootMinProvLevel"] = 1,
 		["mailDeleteNotify"] = false,
 		["mineItemsAutoNextItemId"] = 1,
+		["mineItemsAutoLastItemId"] = uespLog.MINEITEM_AUTO_MAXITEMID,
 		["mineItemAutoReload"] = false,
 		["mineItemAutoRestart"] = false,
 		["mineItemsEnabled"] = false,
@@ -3404,6 +3406,7 @@ function uespLog.Initialize( self, addOnName )
 	uespLog.savedVars.settings.data.charDataOldPassword = uespLog.savedVars.settings.data.charDataPassword
 	
 	uespLog.mineItemsAutoNextItemId = uespLog.savedVars.settings.data.mineItemsAutoNextItemId or uespLog.mineItemsAutoNextItemId
+	uespLog.mineItemsAutoLastItemId = uespLog.savedVars.settings.data.mineItemsAutoLastItemId or uespLog.mineItemsAutoLastItemId
 	uespLog.mineItemAutoReload = uespLog.savedVars.settings.data.mineItemAutoReload or uespLog.mineItemAutoReload
 	uespLog.mineItemAutoRestart = uespLog.savedVars.settings.data.mineItemAutoRestart or uespLog.mineItemAutoRestart
 	uespLog.mineItemsEnabled = uespLog.savedVars.settings.data.mineItemsEnabled or uespLog.mineItemsEnabled
@@ -3884,7 +3887,7 @@ function uespLog.InitAutoMining ()
 		uespLog.MsgColor(uespLog.mineColor, "UESP: Auto-resetting current log data...")
 		uespLog.ClearSavedVarSection("all")
 		
-		if (uespLog.mineItemsAutoNextItemId > uespLog.MINEITEM_AUTO_MAXITEMID) then
+		if (uespLog.mineItemsAutoNextItemId > uespLog.mineItemsAutoLastItemId) then
 			uespLog.isAutoMiningItems = false
 			uespLog.savedVars.settings.data.isAutoMiningItems = false
 			uespLog.mineItemAutoReload = false
@@ -10187,6 +10190,7 @@ function uespLog.MineItemsAutoLoop ()
 	local initBadCount = uespLog.mineItemBadCount
 	local initItemId = uespLog.mineItemsAutoNextItemId
 	local itemId
+	local reloadUI = true
 	local i	
 	
 	if (not uespLog.isAutoMiningItems) then
@@ -10195,10 +10199,15 @@ function uespLog.MineItemsAutoLoop ()
 	
 	for i = 1, uespLog.MINEITEMS_AUTOLOOPCOUNT do
 	
-		if (#uespLog.savedVars.all.data >= uespLog.MINEITEMS_AUTOSTOP_LOGCOUNT or uespLog.mineItemsAutoNextItemId > uespLog.MINEITEM_AUTO_MAXITEMID) then
+		if (#uespLog.savedVars.all.data >= uespLog.MINEITEMS_AUTOSTOP_LOGCOUNT or uespLog.mineItemsAutoNextItemId > uespLog.mineItemsAutoLastItemId) then
 		
-			if (uespLog.mineItemsAutoNextItemId > uespLog.MINEITEM_AUTO_MAXITEMID) then	
-				uespLog.MsgColor(uespLog.mineColor, "Stopped auto-mining at item "..tostring(uespLog.mineItemsAutoNextItemId).." due to reaching max ID.")
+			if (uespLog.mineItemsAutoNextItemId > uespLog.mineItemsAutoLastItemId) then	
+				if (uespLog.mineItemsAutoLastItemId >= uespLog.MINEITEM_AUTO_MAXITEMID) then
+					uespLog.MsgColor(uespLog.mineColor, "Stopped auto-mining at item "..tostring(uespLog.mineItemsAutoNextItemId).." due to reaching max ID.")
+				else
+					reloadUI = false
+					uespLog.MsgColor(uespLog.mineColor, "Stopped auto-mining at item "..tostring(uespLog.mineItemsAutoNextItemId).." due to reaching last ID.")
+				end
 			elseif (initItemId < uespLog.mineItemsAutoNextItemId) then
 				uespLog.MsgColor(uespLog.mineColor, "Paused auto-mining at item "..tostring(uespLog.mineItemsAutoNextItemId).." due to full log.")
 			end
@@ -10211,8 +10220,19 @@ function uespLog.MineItemsAutoLoop ()
 			local reloadTime = uespLog.mineItemLastReloadTimeMS + uespLog.mineItemReloadDelay - GetGameTimeMilliseconds()
 
 			if (uespLog.mineItemAutoReload and reloadTime <= 0) then
-				uespLog.MsgColor(uespLog.mineColor, "Item mining auto reloading UI....")
-				SLASH_COMMANDS["/reloadui"]()
+			
+				if (reloadUI) then
+					uespLog.MsgColor(uespLog.mineColor, "Item mining auto reloading UI....")
+					SLASH_COMMANDS["/reloadui"]()
+				else
+					uespLog.mineItemAutoReload = false
+					uespLog.mineItemAutoRestart = false
+					uespLog.savedVars.settings.data.mineItemAutoReload = false
+					uespLog.savedVars.settings.data.mineItemAutoRestart = false
+					uespLog.isAutoMiningItems = false
+					uespLog.savedVars.settings.data.isAutoMiningItems = false
+					return
+				end
 			elseif (uespLog.mineItemAutoReload) then
 				uespLog.MsgColor(uespLog.mineColor, "Item mining auto UI reload in "..tostring(math.ceil(reloadTime/5000)*5).." secs...")
 			end
@@ -10292,7 +10312,7 @@ function uespLog.MineItemsAutoStart ()
 	
 	uespLog.isAutoMiningItems = true
 	uespLog.savedVars.settings.data.isAutoMiningItems = uespLog.isAutoMiningItems
-	uespLog.MsgColor(uespLog.mineColor, "Started auto-mining items at ID "..tostring(uespLog.mineItemsAutoNextItemId))
+	uespLog.MsgColor(uespLog.mineColor, "Started auto-mining items at ID "..tostring(uespLog.mineItemsAutoNextItemId).." to "..tostring(uespLog.mineItemsAutoLastItemId))
 	
 	if (uespLog.mineItemOnlyLevel >= 0) then
 		uespLog.MsgColor(uespLog.mineColor, ".     Only mining items with internal level of "..tostring(uespLog.mineItemOnlyLevel))
@@ -10764,6 +10784,14 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 				uespLog.mineItemsAutoNextItemId = tonumber(cmds[2])
 				uespLog.savedVars.settings.data.mineItemsAutoNextItemId = uespLog.mineItemsAutoNextItemId
 			end
+		end
+		
+		if (cmds[3] ~= nil) then
+			uespLog.mineItemsAutoLastItemId = tonumber(cmds[3])
+			uespLog.savedVars.settings.data.mineItemsAutoLastItemId = uespLog.mineItemsAutoLastItemId
+		else
+			uespLog.mineItemsAutoLastItemId = uespLog.MINEITEM_AUTO_MAXITEMID
+			uespLog.savedVars.settings.data.mineItemsAutoLastItemId = uespLog.mineItemsAutoLastItemId
 		end
 		
 		uespLog.MsgColor(uespLog.mineColor, "Turned on item mining auto reload and restart!")
@@ -17363,8 +17391,8 @@ end
 --SLASH_COMMANDS["/uespmarket"] = uespLog.MarketCommand
 
 
-function uespLog.StartMineTest()
-	uespLog.NextMineTestIndex = 1
+function uespLog.StartMineTest(startIndex)
+	uespLog.NextMineTestIndex = startIndex or 1
 	zo_callLater(uespLog.DoNextMineTest, 1000)
 	
 end
@@ -17385,4 +17413,5 @@ function uespLog.DoNextMineTest()
 	uespLog.NextMineTestIndex = uespLog.NextMineTestIndex + 1
 	zo_callLater(uespLog.DoNextMineTest, 5000)
 end
+
 

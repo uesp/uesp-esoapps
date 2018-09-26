@@ -992,10 +992,13 @@
 --			- Fixed error on call to GetJournalQuestConditionType() with incorrect parameter type.
 --			- Removed the /uespmarket command which was causing crashes when purchasing skills (use the "No, Thank You!" addon instead).
 --
---		- v1.62 -- 
+--		- v1.70 -- 
 --			- Fixed skill coefficient calculation for Werewolf ultimates.
 --			- Added Stonefire Scamp and Soul-Shriven skin for runebox known/unknown tooltips.
 --			- Added all current style pages to known/unknown tooltips.
+--			- Fixed issue with LoreBooks causing GetLoreCollectionInfo() to return nil values causing crash.
+--		Murkmire Related:
+--			- Added the 4 new styles: Huntsman, Elder Argonian, Silver Dawn, Dead-Water
 --
 
 
@@ -1233,6 +1236,7 @@ uespLog.ignoredNPCs = {
 	["Salamander Variant"] = 1,	-- Summerset
 	["Lesser Sea Adder"] = 1,	-- Summerset
 	["Fledgeling Gryphon"] = 1,	-- Summerset
+	["Swamp Jelly"] = 1, 	-- Murkmire
 }
 
 uespLog.lastTargetData = {
@@ -8069,6 +8073,10 @@ function uespLog.DumpSkill(abilityId, extraData)
 	
 	extraData = extraData or {}
 	
+	if (GetAbilityBuffType ~= nil) then
+		logData.buffType = GetAbilityBuffType(abilityId)
+	end
+	
 	logData.event = "skill"
 	logData.id = abilityId
 	logData.name = name
@@ -11403,6 +11411,17 @@ uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
 	
 		-- Wolfhunter
 	['welkynar'] = 73,
+	
+		-- Murkmire
+	['huntsman'] = 77,
+	['silver dawn'] = 78,
+	['silver_dawn'] = 78,
+	['silverdawn'] = 78,
+	['dead-water'] = 79,
+	['deadwater'] = 79,
+	['elder argonian'] = 81,
+	['elder_argonian'] = 81,
+	['elderargonian'] = 81,
 		
 }
 
@@ -11578,6 +11597,17 @@ uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
 	
 			-- Wolfhunter
 	['welkynar'] = { 140497, 140498, 140499, 140500, 140501, 140502, 140503, 140504, 140505, 140506, 140507, 140508, 140509, 140510 }, -- 140496, 140511
+	
+			-- Murkmire
+	['huntsman']    = { 140463, 140464, 140465, 140466, 140467, 140468, 140469, 140470, 140471, 140472, 140473, 140474, 140475, 140476 }, -- 140462, 140477
+	['silver dawn'] = { 140479, 140480, 140481, 140482, 140483, 140484, 140485, 140486, 140487, 140488, 140489, 140490, 140491, 140492 }, -- 140478, 140493
+	['silver_dawn'] = { 140479, 140480, 140481, 140482, 140483, 140484, 140485, 140486, 140487, 140488, 140489, 140490, 140491, 140492 }, -- 140478, 140493
+	['silverdawn']  = { 140479, 140480, 140481, 140482, 140483, 140484, 140485, 140486, 140487, 140488, 140489, 140490, 140491, 140492 }, -- 140478, 140493
+	['dead-water']  = { 142203, 142204, 142205, 142206, 142207, 142208, 142209, 142210, 142211, 142212, 142213, 142214, 142215, 142216 }, -- 142202, 142217
+	['deadwater']   = { 142203, 142204, 142205, 142206, 142207, 142208, 142209, 142210, 142211, 142212, 142213, 142214, 142215, 142216 }, -- 142202, 142217
+	['elder argonian'] = { 142219, 142220, 142221, 142222, 142223, 142224, 142225, 142226, 142227, 142228, 142229, 142230, 142231, 142231 }, -- 142218, 142223
+	['elder_argonian'] = { 142219, 142220, 142221, 142222, 142223, 142224, 142225, 142226, 142227, 142228, 142229, 142230, 142231, 142231 }, -- 142218, 142223
+	['elderargonian']  = { 142219, 142220, 142221, 142222, 142223, 142224, 142225, 142226, 142227, 142228, 142229, 142230, 142231, 142231 }, -- 142218, 142223
 }
 
 

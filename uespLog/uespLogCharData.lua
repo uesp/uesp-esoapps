@@ -968,6 +968,10 @@ function uespLog.CreateCharDataBooks()
 		for collectionIndex = 1, numCollections do
 			local colName, colDesc, numKnownBooks, numBooks, hidden = GetLoreCollectionInfo(categoryIndex, collectionIndex)
 			
+			if (numBooks == nil) then
+				numBooks = 0
+			end
+			
 			totalBooks = totalBooks + numBooks
 			
 			for bookIndex = 1, numBooks do

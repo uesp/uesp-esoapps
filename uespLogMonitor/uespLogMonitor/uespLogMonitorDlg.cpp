@@ -1541,6 +1541,7 @@ bool CuespLogMonitorDlg::SendFormData (const std::string FormURL, std::string Fo
 {
 	HINTERNET hinet, higeo, hreq;
 	BOOL Result;
+	DWORD LastError = 0;
 
 	SentSize = 0;
 
@@ -1581,6 +1582,7 @@ bool CuespLogMonitorDlg::SendFormData (const std::string FormURL, std::string Fo
 			//PrintLogLine("Sending Compressed Data: %d -> %d", EscQuery.size(), CompressedSize);
 			HttpAddRequestHeaders(hreq, "Content-Encoding: gzip", -1, HTTP_ADDREQ_FLAG_ADD | HTTP_ADDREQ_FLAG_REPLACE);
 			Result = HttpSendRequest(hreq, 0, 0, (void *)pCompressedData, CompressedSize);
+			LastError = GetLastError();
 			SentSize = CompressedSize;
 		}
 		else
@@ -1596,6 +1598,7 @@ bool CuespLogMonitorDlg::SendFormData (const std::string FormURL, std::string Fo
 	{
 		HttpAddRequestHeaders(hreq, "Content-Encoding", -1, HTTP_ADDREQ_FLAG_REPLACE);
 		Result = HttpSendRequest(hreq, 0, 0, (void *)EscQuery.c_str(), EscQuery.size());
+		LastError = GetLastError();
 		SentSize = EscQuery.size();
 	}
 
@@ -1605,7 +1608,8 @@ bool CuespLogMonitorDlg::SendFormData (const std::string FormURL, std::string Fo
 		InternetCloseHandle(hreq);
 		InternetCloseHandle(higeo);
 		InternetCloseHandle(hinet);
-		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to send the HTTP form request!");
+		
+		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to send the HTTP form request (Error 0x%08X)!", LastError);
 		return false;
 	}
 	

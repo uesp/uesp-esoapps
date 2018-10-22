@@ -992,7 +992,7 @@
 --			- Fixed error on call to GetJournalQuestConditionType() with incorrect parameter type.
 --			- Removed the /uespmarket command which was causing crashes when purchasing skills (use the "No, Thank You!" addon instead).
 --
---		- v1.70 -- 
+--		- v1.70 -- 22 Oct 2018
 --			- Fixed skill coefficient calculation for Werewolf ultimates.
 --			- Added Stonefire Scamp and Soul-Shriven skin for runebox known/unknown tooltips.
 --			- Added all current style pages to known/unknown tooltips.
@@ -1011,8 +1011,8 @@ end
 --	GLOBAL DEFINITIONS
 uespLog = uespLog or {}
 
-uespLog.version = "1.61"
-uespLog.releaseDate = "14 August 2018"
+uespLog.version = "1.70"
+uespLog.releaseDate = "22 October 2018"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

@@ -600,7 +600,7 @@ namespace eso {
 			return PrintError("\tError: Failed to get Granny file info (file %03u\\%06u.gr2)!", (dword)FileEntry.ArchiveIndex, FileEntry.Index);
 		}
 
-		std::string OrigFile = pGrannyInfo->FromFileName;
+		std::string OrigFile = pGrannyInfo->FromFileName ? pGrannyInfo->FromFileName : "";
 
 		_GrannyFreeFile(pGrannyFile);
 

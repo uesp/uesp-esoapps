@@ -201,7 +201,7 @@ namespace eso {
 	
 	bool CMnfBlock3::UncompressRawData (mnf_block_data_t& Data)
 	{
-		size_t OutputSize;
+		dword OutputSize;
 
 		if (Data.UncompressedSize >= UINT_MAX - ZOSFT_DATA_OVERSIZE) return PrintError("Error: Uncompressed data block in MNF file is too large (0x%08X bytes)!", Data.UncompressedSize);
 		Data.pUncompressedData = new byte[Data.UncompressedSize + ZOSFT_DATA_OVERSIZE];

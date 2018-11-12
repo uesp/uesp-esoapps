@@ -3,7 +3,13 @@
 
 
 #include <assert.h>
-#include "zlib/zlib.h"
+
+#ifdef _M_X64
+	#include "zlib/include64/zlib.h"
+#else
+	#include "zlib/zlib.h"
+#endif
+
 #include "snappy/snappy.h"
 #include "devil/include/il/il.h"
 #include "devil/include/il/ilu.h"
@@ -65,9 +71,9 @@ bool ReadWord(FILE* pFile, word& Output, const bool IsBigEndian = false);
 dword ParseBufferDword(const byte* pBuffer, const bool IsBigEndian = false);
 std::string ParseBufferString(const byte* pBuffer, const size_t Offset, const size_t Size);
 
-bool InflateSnappyBlock (byte* pOutputData, size_t& OutputSize, const size_t MaxOutputSize, const byte* pInputData, const size_t InputSize, const bool Quiet = false);
-bool InflateZlibBlock   (byte* pOutputData, size_t& OutputSize, const size_t MaxOutputSize, const byte* pInputData, const size_t InputSize, const bool Quiet = false);
-bool DeflateZlibBlock(byte* pOutputData, size_t &OutputSize, const size_t MaxOutputSize, const byte* pInputData, const size_t InputSize, const bool Quiet = false);
+bool InflateSnappyBlock (byte* pOutputData, dword& OutputSize, const size_t MaxOutputSize, const byte* pInputData, const size_t InputSize, const bool Quiet = false);
+bool InflateZlibBlock   (byte* pOutputData, dword& OutputSize, const size_t MaxOutputSize, const byte* pInputData, const size_t InputSize, const bool Quiet = false);
+bool DeflateZlibBlock(byte* pOutputData, dword &OutputSize, const size_t MaxOutputSize, const byte* pInputData, const size_t InputSize, const bool Quiet = false);
 
 bool StringEndsWith (std::string const &fullString, std::string const &ending);
 

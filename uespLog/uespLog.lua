@@ -1000,6 +1000,9 @@
 --		Murkmire Related:
 --			- Added the 4 new styles: Huntsman, Elder Argonian, Silver Dawn, Dead-Water
 --
+--		- v1.71 --
+--			- Fixed several skill coefficient calculations.
+--
 
 
 	-- Update 18 prefix

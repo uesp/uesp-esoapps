@@ -87,7 +87,7 @@ namespace eso
 
 			//PrintError("\tFound compressed data with %u bytes.", m_CompressedSize);
 
-			size_t MaxOutputSize = m_UncompressedSize1 + 16;
+			dword MaxOutputSize = m_UncompressedSize1 + 16;
 			m_UncompressedSize = MaxOutputSize;
 			m_pUncompressedData = new byte[MaxOutputSize + 1];
 
@@ -125,7 +125,7 @@ namespace eso
 		bool SaveCombined(FILE* pFile, const int Index)
 		{
 			if (m_pUncompressedData == nullptr || m_UncompressedSize == 0) return false;
-			size_t BytesWritten;
+			dword BytesWritten;
 
 			BytesWritten = fwrite("####", 1, 4, pFile);
 			if (BytesWritten != 4) return false;

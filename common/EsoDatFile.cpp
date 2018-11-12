@@ -85,7 +85,7 @@ namespace eso {
 
 	bool ReadSubFileData (dat_subfileinfo_t& FileInfo, const mnf_header_t& Header, CFile* pInputFile)
 	{
-		size_t OutputSize;
+		dword OutputSize;
 	
 		if (!ReadSubFileRawData(FileInfo, Header, pInputFile)) return PrintError("Error: Failed to read raw data for DAT subfile!");
 

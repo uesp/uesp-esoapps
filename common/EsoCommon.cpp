@@ -135,7 +135,7 @@ bool ReadWord(FILE* pFile, word& Output, const bool IsBigEndian)
 }
 
 
-bool InflateZlibBlock (byte* pOutputData, size_t &OutputSize, const size_t MaxOutputSize, const byte* pInputData, const size_t InputSize, const bool Quiet)
+bool InflateZlibBlock (byte* pOutputData, dword &OutputSize, const size_t MaxOutputSize, const byte* pInputData, const size_t InputSize, const bool Quiet)
 {
 	z_stream Stream;
 	int Result;
@@ -181,7 +181,7 @@ bool InflateZlibBlock (byte* pOutputData, size_t &OutputSize, const size_t MaxOu
 }
 
 
-bool InflateSnappyBlock (byte* pOutputData, size_t &OutputSize, const size_t MaxOutputSize, const byte* pInputData, const size_t InputSize, const bool Quiet)
+bool InflateSnappyBlock (byte* pOutputData, dword &OutputSize, const size_t MaxOutputSize, const byte* pInputData, const size_t InputSize, const bool Quiet)
 {
 	bool Result;
 	size_t RealOutputSize;
@@ -205,7 +205,7 @@ bool InflateSnappyBlock (byte* pOutputData, size_t &OutputSize, const size_t Max
 
 
 
-bool DeflateZlibBlock(byte* pOutputData, size_t &OutputSize, const size_t MaxOutputSize, const byte* pInputData, const size_t InputSize, const bool Quiet)
+bool DeflateZlibBlock(byte* pOutputData, dword &OutputSize, const size_t MaxOutputSize, const byte* pInputData, const size_t InputSize, const bool Quiet)
 {
 	z_stream Stream;
 	int Result;

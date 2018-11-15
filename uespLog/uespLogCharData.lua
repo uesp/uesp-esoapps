@@ -239,6 +239,8 @@ uespLog.FREE_SKILLS = {
 	[42377] = 1,		-- Werewolf Berserker 2
 	[42378] = 1,		-- Werewolf Berserker 3
 	[42379] = 1,		-- Werewolf Berserker 4
+	
+	[32634] = 1,		-- Werewolf Devour (Update 20)
 }
 
 

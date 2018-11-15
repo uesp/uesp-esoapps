@@ -1002,6 +1002,7 @@
 --
 --		- v1.71 --
 --			- Fixed several skill coefficient calculations.
+--			- Added the Werewolf Devour passive to the list of free skills.
 --
 
 

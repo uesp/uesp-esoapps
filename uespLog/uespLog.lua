@@ -1003,6 +1003,7 @@
 --		- v1.71 --
 --			- Fixed several skill coefficient calculations.
 --			- Added the Werewolf Devour passive to the list of free skills.
+--			- The Dremora style now works with /uespstyle.
 --
 
 
@@ -1015,7 +1016,7 @@ end
 --	GLOBAL DEFINITIONS
 uespLog = uespLog or {}
 
-uespLog.version = "1.70"
+uespLog.version = "1.71"
 uespLog.releaseDate = "22 October 2018"
 uespLog.DATA_VERSION = 3
 
@@ -2036,19 +2037,19 @@ uespLog.ITEMCHANGE_IGNORE_FIELDS = {
 
 
 uespLog.RUNEBOX_COLLECTIBLE_IDS = {
-		[79329] = 148,  -- Xivkyn Dreadguard
-        [79330] = 147,  -- Xivkyn Tormentor
-        [79331] = 146,  -- Xivkyn Augur
-        [83516] = 439,  -- Pumpkin Spectre Mask
-        [83517] = 440,  -- Scarecrow Spectre Mask
-        [96391] = 601,  -- Mud Ball Pouch
-        [96392] = 597,  -- Sword-Swallower's Blade
-        [96393] = 598,  -- Juggler's Knives
-        [96394] = 599,  -- Pint of Belching
-        [96395] = 600,  -- Fire-Breather's Torches
-        [96951] = 753,  -- Nordic Bather's Towel
-        [96952] = 755,  -- Colovian Fur Hood
-        [96953] = 754,  -- Colovian Filigreed Hood
+		[79329] = 148,  		-- Xivkyn Dreadguard
+        [79330] = 147,  		-- Xivkyn Tormentor
+        [79331] = 146,  		-- Xivkyn Augur
+        [83516] = 439,  		-- Pumpkin Spectre Mask
+        [83517] = 440,  		-- Scarecrow Spectre Mask
+        [96391] = 601,  		-- Mud Ball Pouch
+        [96392] = 597,  		-- Sword-Swallower's Blade
+        [96393] = 598,  		-- Juggler's Knives
+        [96394] = 599,  		-- Pint of Belching
+        [96395] = 600,  		-- Fire-Breather's Torches
+        [96951] = 753, 		 	-- Nordic Bather's Towel
+        [96952] = 755,  		-- Colovian Fur Hood
+        [96953] = 754,  		-- Colovian Filigreed Hood
         [119692] = 1108,        -- Cherry Blossom Branch
         [124658] = 1232,        -- Dwarven Theodolite
         [124659] = 1230,        -- Sixth House Robe
@@ -11595,7 +11596,7 @@ uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
 	['psijicorder'] = { 137852, 137853, 137854, 137855, 137856, 137857, 137858, 137859, 137860, 137861, 137862, 137863, 137864, 137865 }, -- 137851, 137866
 	['psijic'] = { 137852, 137853, 137854, 137855, 137856, 137857, 137858, 137859, 137860, 137861, 137862, 137863, 137864, 137865 }, -- 137851, 137866
 	['sapiarch'] = { 137921, 137922, 137923, 137924, 137925, 137926, 137927, 137928, 137929, 137930, 137931, 137932, 137933, 137934 }, -- 137920, 137935
-	--['dremora'] = 74,
+	['dremora'] = { 140445, 140446, 140447, 140448, 140449, 140450, 140451, 140452, 140453, 140454, 140455, 140456, 140457, 140458 }, -- 140444, 140459
 	['pyandonean'] = { 140268, 140269, 140270, 140271, 140272, 140273, 140274, 140275, 140276, 140277, 140278, 140279, 140280, 140281 }, -- ?, 139055
 	['maormer'] = { 140268, 140269, 140270, 140271, 140272, 140273, 140274, 140275, 140276, 140277, 140278, 140279, 140280, 140281 }, -- ?, 139055
 	

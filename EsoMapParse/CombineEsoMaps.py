@@ -9,7 +9,7 @@ import fnmatch
 USE_COMMAND_ARGS = True
 
 if (not USE_COMMAND_ARGS):
-    BasePathIndex = "18pts"
+    BasePathIndex = "20"
     BasePath = "e:/esoexport/"
 elif (len(sys.argv) < 3):
     print("Missing required command line arguments!")
@@ -156,6 +156,9 @@ for imagegroupname in ImageGroups:
             TileX = 4
             TileY = 4
     elif len(ImageGroups[imagegroupname].ImageFiles) == 25 and imagegroupname == "rivenspire/shroudedpass_base":
+            TileX = 3
+            TileY = 3
+    elif len(ImageGroups[imagegroupname].ImageFiles) == 25 and imagegroupname == "battlegrounds/arcane_base":
             TileX = 3
             TileY = 3
     elif len(ImageGroups[imagegroupname].ImageFiles) == 25 or imagegroupname == "summerset/sunhold_base":

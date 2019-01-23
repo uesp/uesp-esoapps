@@ -1000,12 +1000,15 @@
 --		Murkmire Related:
 --			- Added the 4 new styles: Huntsman, Elder Argonian, Silver Dawn, Dead-Water
 --
---		- v1.80 --
+--		- v1.80 -- ? Feb 2019
 --			- Fixed several skill coefficient calculations.
 --			- Added the Werewolf Devour passive to the list of free skills.
 --			- The Dremora style now works with /uespstyle.
 --			- Added the Honor Guard style.
 --			- Added missing custom icons for some Murkmire styles.
+--			- Fixed skill coefficient calculation for damage shield tooltips that cap with health. Note that in order for the skill
+--		      coefficient of these tooltips to be calculated you need to save at least 2 values below the cap. Tooltip values at the 
+--			  cap are ignored in order to get a valid linear best fit.
 --
 
 
@@ -1019,7 +1022,7 @@ end
 uespLog = uespLog or {}
 
 uespLog.version = "1.80"
-uespLog.releaseDate = "February 2019"
+uespLog.releaseDate = "? February 2019"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

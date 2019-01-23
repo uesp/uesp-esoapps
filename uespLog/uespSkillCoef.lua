@@ -289,22 +289,22 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[30302] = { [3] = POWERTYPE_ULTIMATE, [4] = POWERTYPE_ULTIMATE },
 	
 	-- Sorcerer Conjured Ward
-	[28418] = { [1] = UESP_POWERTYPE_MAGICHEALTHCAP },
-	[30457] = { [1] = UESP_POWERTYPE_MAGICHEALTHCAP },
-	[30460] = { [1] = UESP_POWERTYPE_MAGICHEALTHCAP },
-	[30463] = { [1] = UESP_POWERTYPE_MAGICHEALTHCAP },
+	[28418] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP },
+	[30457] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP },
+	[30460] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP },
+	[30463] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP },
 	
 	-- Sorcerer Hardened Ward
-	[29489] = { [1] = UESP_POWERTYPE_MAGICHEALTHCAP },
-	[30466] = { [1] = UESP_POWERTYPE_MAGICHEALTHCAP },
-	[30470] = { [1] = UESP_POWERTYPE_MAGICHEALTHCAP },
-	[30474] = { [1] = UESP_POWERTYPE_MAGICHEALTHCAP },
+	[29489] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP },
+	[30466] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP },
+	[30470] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP },
+	[30474] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP },
 	
 	-- Sorcerer Empowered Ward
-	[29482] = { [1] = UESP_POWERTYPE_MAGICHEALTHCAP },
-	[30478] = { [1] = UESP_POWERTYPE_MAGICHEALTHCAP },
-	[30482] = { [1] = UESP_POWERTYPE_MAGICHEALTHCAP },
-	[30486] = { [1] = UESP_POWERTYPE_MAGICHEALTHCAP },
+	[29482] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP },
+	[30478] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP },
+	[30482] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP },
+	[30486] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP },
 	
 	-- Dragonknight Obsidian Shield	
 	[29071] = { [1] = POWERTYPE_HEALTH },
@@ -4937,6 +4937,12 @@ function uespLog.ComputeSkillCoefSkill(abilityId, skillsData)
 				else
 					allInvalid = false
 					uespLog.SkillCoefNumValidCoefCount = uespLog.SkillCoefNumValidCoefCount + 1
+					
+					local mechanic = uespLog.GetSkillCoefNumberMechanic(abilityData, i)
+					
+					if (mechanic == uespLog.UESP_POWERTYPE_MAGICHEALTHCAP) then
+						result.b = uespLog.GetSkillCoefMagicHealthCapValue(abilityData)						
+					end
 				end
 			else
 				table.insert(coefData.result, { } )
@@ -4980,7 +4986,8 @@ end
 function uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 	local x = skill.mag
 	local y = skill.sd
-	local z = 0
+	local z = skill.numbers[numberIndex]
+	local valid = true
 	local mechanic = uespLog.GetSkillCoefNumberMechanic(abilityData, numberIndex)
 			
 	if (mechanic == uespLog.UESP_POWERTYPE_SOULTETHER) then
@@ -5025,10 +5032,32 @@ function uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 	elseif (mechanic == uespLog.UESP_POWERTYPE_MAGICHEALTHCAP) then
 		x = skill.mag
 		y = 0
-		z = skill.hea
+		
+		local capValue = uespLog.GetSkillCoefMagicHealthCapValue(abilityData)
+		
+		if (capValue > 0 and z >= math.floor(skill.hea * capValue)) then
+			valid = false
+		end
+				
 	end
 	
-	return x, y, z
+	return x, y, valid
+end
+
+
+function uespLog.GetSkillCoefMagicHealthCapValue(abilityData)
+	local capMatch, capEnd = string.find(abilityData.desc, "capped at .* of your Max Health")
+	local capValue = -1
+	
+	if (capMatch) then
+		local text = string.sub(abilityData.desc, capMatch, capEnd)
+		
+		for number in string.gmatch(text, "%d+[.]?%d*") do
+			capValue = tonumber(number) / 100
+		end
+	end
+	
+	return capValue
 end
 
 
@@ -5040,6 +5069,7 @@ function uespLog.SkillCoefComputeR2(coef, skillsData, abilityData, numberIndex)
 	local SStot = 0
 	local x = 0
 	local y = 0
+	local valid
 	
 	if (count == 0 or coef.a == nil ) then
 		return R2
@@ -5053,15 +5083,17 @@ function uespLog.SkillCoefComputeR2(coef, skillsData, abilityData, numberIndex)
 	averageZ = averageZ / count
 	
 	for i, skill in ipairs(skillsData) do
-		x, y = uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
-				
-		local z = skill.numbers[numberIndex]
-		local f = x * coef.a + y * coef.b + coef.c
-		local e = z - f
-		local d = z - averageZ
+		x, y, valid = uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 		
-		SStot = SStot + d * d
-		SSres = SSres + e * e
+		if (valid) then
+			local z = skill.numbers[numberIndex]
+			local f = x * coef.a + y * coef.b + coef.c
+			local e = z - f
+			local d = z - averageZ
+		
+			SStot = SStot + d * d
+			SSres = SSres + e * e
+		end
 	end
 	
 	if (SStot == 0) then
@@ -5098,6 +5130,7 @@ function uespLog.SkillCoefComputeAMatrix(skillsData, abilityData, numberIndex)
 	local A = {}
 	local x = 0
 	local y = 0
+	local valid
 	
 	A[11] = 0
 	A[12] = 0
@@ -5111,17 +5144,21 @@ function uespLog.SkillCoefComputeAMatrix(skillsData, abilityData, numberIndex)
 	A['size'] = 3
 	
 	for i,skill in ipairs(skillsData) do
-		x, y = uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
+		local z = skill.numbers[numberIndex]
 		
-		A[11] = A[11] + x*x
-		A[12] = A[12] + x*y
-		A[13] = A[13] + x
-		A[21] = A[21] + x*y
-		A[22] = A[22] + y*y
-		A[23] = A[23] + y
-		A[31] = A[31] + x
-		A[32] = A[32] + y
-		A[33] = A[33] + 1
+		x, y, valid = uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
+		
+		if (valid) then
+			A[11] = A[11] + x*x
+			A[12] = A[12] + x*y
+			A[13] = A[13] + x
+			A[21] = A[21] + x*y
+			A[22] = A[22] + y*y
+			A[23] = A[23] + y
+			A[31] = A[31] + x
+			A[32] = A[32] + y
+			A[33] = A[33] + 1
+		end
 	end
 	
 	if (A[12] == 0 and A[21] == 0 and A[22] == 0 and A[23] == 0 and A[32] == 0) then
@@ -5169,6 +5206,8 @@ function uespLog.SkillCoefComputeBMatrix(skillsData, abilityData, numberIndex)
 	local B = {}
 	local x = 0
 	local y = 0
+	local z = 0
+	local valid
 	
 	B[1] = 0
 	B[2] = 0
@@ -5176,11 +5215,13 @@ function uespLog.SkillCoefComputeBMatrix(skillsData, abilityData, numberIndex)
 	
 	for i, skill in ipairs(skillsData) do
 		z = skill.numbers[numberIndex]
-		x, y = uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
+		x, y, valid = uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 		
-		B[1] = B[1] + x*z
-		B[2] = B[2] + y*z
-		B[3] = B[3] + z		
+		if (valid) then
+			B[1] = B[1] + x*z
+			B[2] = B[2] + y*z
+			B[3] = B[3] + z		
+		end
 	end
 	
 	return B

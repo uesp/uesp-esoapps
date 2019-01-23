@@ -764,9 +764,7 @@ function uespLog.OnTradingHouseResponseReceived(event, responseType, result)
 		uespLog.OnTradingHouseListingNew()
 	end
 	
-    if (MasterMerchant == nil) then 
-		uespLog.InitBuyingAdvice()
-	end
+    uespLog.SetupTradingHouseRowCallbacks()
 end
 
 
@@ -1892,7 +1890,7 @@ function uespLog.GetTradingHouseSearchResultItemInfo(index)
 		return uespLog.Old_MM_GetTradingHouseSearchResultItemInfo(index)
 	end
 
-	local icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType = uespLog.Old_GetTradingHouseSearchResultItemInfo(index)
+	local icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, sumGold, unitPrice = uespLog.Old_GetTradingHouseSearchResultItemInfo(index)
 	local setPrice = nil
 	local salesCount = 0
 	local tipLine = nil
@@ -1938,10 +1936,10 @@ function uespLog.GetTradingHouseSearchResultItemInfo(index)
 			marginString = string.format('%.0f', margin) 
 		end 
 
-		return icon, name, quality, stackCount, sellerName .. '|c000000;' .. dealString .. ';' .. marginString .. '|r', timeRemaining, purchasePrice, currencyType
+		return icon, name, quality, stackCount, sellerName .. '|c000000;' .. dealString .. ';' .. marginString .. '|r', timeRemaining, purchasePrice, currencyType, sumGold, unitPrice
 	end
 	
-	return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType
+	return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, sumGold, unitPrice
 end
 	
 	
@@ -1951,7 +1949,7 @@ function uespLog.GetTradingHouseListingItemInfo(index)
 		return uespLog.Old_MM_GetTradingHouseListingItemInfo(index)
 	end
 	
-	local icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice = uespLog.Old_GetTradingHouseListingItemInfo(index)
+	local icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, unknown1, unknown2, unknown3 = uespLog.Old_GetTradingHouseListingItemInfo(index)
 	local setPrice = nil
 	local salesCount = 0
 	local tipLine = nil
@@ -1997,10 +1995,10 @@ function uespLog.GetTradingHouseListingItemInfo(index)
 			marginString = string.format('%.0f', margin) 
 		end 
 
-		return icon, name, quality, stackCount, sellerName .. '|c000000;' .. dealString .. ';' .. marginString .. '|r', timeRemaining, purchasePrice
+		return icon, name, quality, stackCount, sellerName .. '|c000000;' .. dealString .. ';' .. marginString .. '|r', timeRemaining, purchasePrice, unknown1, unknown2, unknown3
 	end
 	
-	return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice
+	return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, unknown1, unknown2, unknown3
 end
 
 
@@ -2217,34 +2215,50 @@ function uespLog.UpdateUespScanSalesButton()
 end
 
 
-function uespLog.InitBuyingAdvice() 
+function uespLog.OnTradingHouseOpen()
+	uespLog.SetupTradingHouseRowCallbacks() 
+end
 
+
+function uespLog.SetupTradingHouseRowCallbacks() 
+	
 	if (MasterMerchant ~= nil) then return end
 	if (uespLog.originalSetupCallback) then return end
+	if (TRADING_HOUSE.searchResultsList == nil) then return end
+	if (TRADING_HOUSE.searchResultsList.dataTypes == nil) then return end
 
-	local dataType = TRADING_HOUSE.m_searchResultsList.dataTypes[1]
+	local dataType = TRADING_HOUSE.searchResultsList.dataTypes[1]
 	uespLog.originalSetupCallback = dataType.setupCallback
 	
 	if uespLog.originalSetupCallback then
 		dataType.setupCallback = function(...)
 			local row, data = ...
+			
+			uespLog.AddCraftInfoToTraderSlot(row, data) 
+				
+			if (MasterMerchant == nil) then 
+				uespLog.AddBuyingAdvice(row, data) 
+			end
+			
 			uespLog.originalSetupCallback(...)
-			zo_callLater(function() uespLog.AddBuyingAdvice(row, data) end, 25)
 		end
 	else
-		d(GetString(MM_ADVICE_ERROR))
-	end    
+		uespLog.DebugMsg("Error setting up the Buying Advice callback!")
+	end
+	
 end
 
 
 function uespLog.AddBuyingAdvice(rowControl, result)
     local buyingAdvice = rowControl:GetNamedChild('BuyingAdvice')
-	
+		
 	if (not buyingAdvice) then
 		local controlName = rowControl:GetName() .. 'BuyingAdvice'
-		buyingAdvice = rowControl:CreateControl(controlName, CT_LABEL)
 		local anchorControl = rowControl:GetNamedChild('TimeRemaining')
-		buyingAdvice:SetAnchor(RIGHT, anchorControl, LEFT, -20, 6)
+		
+		buyingAdvice = rowControl:CreateControl(controlName, CT_LABEL)		
+		--buyingAdvice:SetAnchor(RIGHT, anchorControl, LEFT, -20, 6)
+		buyingAdvice:SetAnchor(RIGHT, anchorControl, LEFT, 65, 5)
 		buyingAdvice:SetFont('/esoui/common/fonts/univers67.otf|14|soft-shadow-thin')
 	end
     
@@ -2253,18 +2267,21 @@ function uespLog.AddBuyingAdvice(rowControl, result)
     local dealValue = tonumber(dealString)
 	
     if dealValue then 
-		if dealValue > -1 then
+		if dealValue > 0 then
 			buyingAdvice:SetText(margin .. '%')  
 			local r, g, b = GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, dealValue)
 			if dealValue == 0 then r = 0.98; g = 0.01; b = 0.01; end
 			buyingAdvice:SetColor(r, g, b, 1)
-			buyingAdvice:SetHidden(false)    
+			buyingAdvice:SetHidden(false)
 		else
 			buyingAdvice:SetHidden(true)
 		end
 		
 		local sellerControl = rowControl:GetNamedChild('SellerName')
-		sellerControl:SetText(zo_strsplit(';', sellerControl:GetText()))
+		
+		if (sellerControl) then
+			sellerControl:SetText(zo_strsplit(';', sellerControl:GetText()))
+		end
 		
 	else
 		buyingAdvice:SetHidden(true)

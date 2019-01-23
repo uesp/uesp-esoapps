@@ -22,9 +22,9 @@ else:
     print("\tUsing Version:" + BasePathIndex)
     print("\tUsing First ID:" + str(FIRSTID))
 
-MAPINFOFILE = BasePath + "goodimages-" + BasePathIndex + "/maps/mapinfo.txt"
+MAPINFOFILE = BasePath + "goodimages-" + BasePathIndex + "/Maps/mapinfo.txt"
 NEWMAPSFILE = BasePath + "goodimages-" + BasePathIndex + "/maps_new.txt"
-OUTPUTPATH = BasePath + "goodimages-" + BasePathIndex + "/maps/"
+OUTPUTPATH = BasePath + "goodimages-" + BasePathIndex + "/Maps/"
 
 MAX_ZOOM_VALUE = 11
 

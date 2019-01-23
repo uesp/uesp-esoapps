@@ -22,9 +22,9 @@ else:
     print("\tUsing Version:" + BasePathIndex)
 
 
-INPUTPATH = BasePath + "goodimages-" + BasePathIndex + "/combinedmaps/"
-OUTPUTPATH = BasePath + "goodimages-" + BasePathIndex + "/maps/"
-DEFAULTNULLTILE = BasePath + "goodimages-" + BasePathIndex + "/maps/blacknulltile.jpg"
+INPUTPATH = BasePath + "goodimages-" + BasePathIndex + "/CombinedMaps/"
+OUTPUTPATH = BasePath + "goodimages-" + BasePathIndex + "/Maps/"
+DEFAULTNULLTILE = BasePath + "goodimages-" + BasePathIndex + "/Maps/blacknulltile.jpg"
 
 MAPEXTENSION = ".jpg"
 MAXZOOMLEVEL = 10

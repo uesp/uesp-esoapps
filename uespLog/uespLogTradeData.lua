@@ -101,10 +101,11 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[74] 							 = "uespLog/images/dremora.dds",			-- Dremora, Warrior's Heart Ashes, 74, /esoui/art/icons/item_warriorsheartashes.dds
 	[75] 							 = "uespLog/images/pyandoean.dds",			-- Pyandonean, Porpoise Hide, 75, /esoui/art/icons/crafting_leather_base_horkerskin_r2.dds
 	[73] 							 = "uespLog/images/welkynar.dds",			-- Welkynar, Gryphon Plume, 73, /esoui/art/icons/crafting_style_item_welkynar_r2.dds
-	--[77] 							 = "uespLog/images/huntsman.dds",			-- Huntsman, Bloodscent Dew, 77, ?
-	--[78] 							 = "uespLog/images/silverdawn.dds",			-- Silver Dawn, Argent Pelt, 78, ?
-	--[79] 							 = "uespLog/images/deadwater.dds",			-- Dead-Water, Crocodile Leather, 79, ?
-	--[81] 							 = "uespLog/images/elderargonian.dds",		-- Elder Argonian, Hackwing Plumage, 81, ?
+	[77] 							 = "uespLog/images/moonhunter.dds",			-- Huntsman, Bloodscent Dew, 77, /esoui/art/icons/crafting_style_item_moonhunter_r2.dds
+	[78] 							 = "uespLog/images/silverdawn.dds",			-- Silver Dawn, Argent Pelt, 78, /esoui/art/icons/crafting_style_item_silverdawn_r2.dds
+	[79] 							 = "uespLog/images/deadwater.dds",			-- Dead-Water, Crocodile Leather, 79, /esoui/art/icons/crafting_style_item_deadwater_r1.dds
+	[81] 							 = "uespLog/images/elderargonian.dds",		-- Elder Argonian, Hackwing Plumage, 81, /esoui/art/icons/crafting_style_item_elderargonian_r2.dds
+	[80] 							 = "uespLog/images/honorguard.dds",			-- Honor Guard, Red Diamond Seals, 80, /esoui/art/icons/crafting_style_item_honorguard.dds
 	
 }
 
@@ -175,10 +176,11 @@ uespLog.STYLE_ICON_DATA = {
 	[74] 							 = "/esoui/art/icons/item_warriorsheartashes.dds",
 	[75] 							 = "/esoui/art/icons/crafting_leather_base_horkerskin_r2.dds",
 	[73] 							 = "/esoui/art/icons/crafting_style_item_welkynar_r2.dds",
-	--[77]							 = "",
-	--[78]							 = "",
-	--[79]							 = "",
-	--[81]							 = "",
+	[77] 							 = "/esoui/art/icons/crafting_style_item_moonhunter_r2.dds",
+	[78] 							 = "/esoui/art/icons/crafting_style_item_silverdawn_r2.dds",
+	[79] 							 = "/esoui/art/icons/crafting_style_item_deadwater_r1.dds",
+	[81] 							 = "/esoui/art/icons/crafting_style_item_elderargonian_r2.dds",
+	[80] 							 = "/esoui/art/icons/crafting_style_item_honorguard.dds",
 }
 
 
@@ -1864,7 +1866,7 @@ function uespLog.CreateNiceLink(link)
 	return link
 end
 
-
+--[[
 -- The following is copy/pasted from ingame/tradinghouse/tradinghouse.lua due to use of local
 -- functions needed to hook into the trader listing for updates.
 local SEARCH_RESULTS_DATA_TYPE = 1
@@ -1927,6 +1929,7 @@ TRADING_HOUSE.InitializeSearchResults = function(self, control)
     ZO_ScrollList_AddResizeOnScreenResize(searchResultsList)
 end
 -- End of copy/paste from ingame/tradinghouse/tradinghouse.lua
+--]]
 
 
 function uespLog.AddCraftInfoToTraderSlot (rowControl, result)

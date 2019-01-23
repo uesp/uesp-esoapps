@@ -77,7 +77,7 @@ function uespLog.InitSalesFunctions()
 		end
 		
 		WritWorthy.Util.MMPrice = uespLog.WritWorthyMMPrice
-	end	
+	end
 
 end
 
@@ -2137,6 +2137,12 @@ function uespLog.SetupTraderControls()
 	local isAGSInstalled = AwesomeGuildStore ~= nil
 
 	local salesScanButton = CreateControlFromVirtual('UespSalesScanButton', ZO_TradingHouseLeftPane, 'ZO_DefaultButton')
+	local salesResetButton = CreateControlFromVirtual('UespSalesResetButton', ZO_TradingHouseLeftPane, 'ZO_DefaultButton')
+	
+	if (salesScanButton == nil or salesResetButton == nil) then
+		uespLog.DebugMsg("UESP: Failed to setup sales buttons!")
+		return
+	end
 	
 	if (isAGSInstalled) then
 		salesScanButton:SetAnchor(CENTER, ZO_TradingHouseLeftPane, BOTTOM, 0, -25)
@@ -2152,8 +2158,6 @@ function uespLog.SetupTraderControls()
 	salesScanButton:SetHandler('OnClicked', uespLog.OnUespScanSalesButton)
 	salesScanButton:SetHidden(true)
 	salesScanButton:SetFont("EsoUi/Common/Fonts/Univers57.otf|15|")
-	
-	local salesResetButton = CreateControlFromVirtual('UespSalesResetButton', ZO_TradingHouseLeftPane, 'ZO_DefaultButton')
 	
 	if (isAGSInstalled) then
 		salesResetButton:SetAnchor(CENTER, ZO_TradingHouseLeftPane, BOTTOM, 100, -50)

@@ -22,7 +22,7 @@ else:
 
 
 InputPath  = BasePath + 'esomnf-' + BasePathIndex + '/art/maps/'
-OutputPath = BasePath + 'goodimages-' + BasePathIndex + '/combinedmaps/'
+OutputPath = BasePath + 'goodimages-' + BasePathIndex + '/CombinedMaps/'
 
 OutputMapList = OutputPath + 'maplist.txt'
 MapImageRE  = re.compile('.*[0-9]+\.png')

@@ -4980,6 +4980,7 @@ end
 function uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 	local x = skill.mag
 	local y = skill.sd
+	local z = 0
 	local mechanic = uespLog.GetSkillCoefNumberMechanic(abilityData, numberIndex)
 			
 	if (mechanic == uespLog.UESP_POWERTYPE_SOULTETHER) then
@@ -5020,10 +5021,14 @@ function uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 		y = 0		
 	elseif (mechanic == uespLog.UESP_POWERTYPE_SHADOW) then
 		x = 0	-- TODO - Actually count skills
-		y = 0		
+		y = 0
+	elseif (mechanic == uespLog.UESP_POWERTYPE_MAGICHEALTHCAP) then
+		x = skill.mag
+		y = 0
+		z = skill.hea
 	end
 	
-	return x, y
+	return x, y, z
 end
 
 

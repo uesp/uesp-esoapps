@@ -1,12 +1,17 @@
 #!/bin/sh
 
-VERSION="20"
-ISPTS=""
-LASTVERSION="19"
+VERSION="21pts"
+ISPTS="1"
+LASTVERSION="20"
 LASTPTSVERSION="20pts"
 
-MAKEPTSDIFF="1"
+MAKEPTSDIFF=""
 MAKEDIFF="1"
+
+#
+# Set to 1 for game updates 20 and prior.
+#
+CROPLOADINGSCREENS=""
 
 MAPSOURCEPATH="/cygdrive/d/src/uesp/EsoApps/EsoMapParse"
 ESOINPUTPATH="./esomnf-$VERSION"
@@ -39,8 +44,10 @@ makediff () {
 	SAFE1=$(printf '%s\n' "$1" | sed 's/[[\.*^$/]/\\&/g')
 	SAFE2=$(printf '%s\n' "$2" | sed 's/[[\.*^$/]/\\&/g')
 	
-	if [[ $1 = *"loadingscreens"* ]]; then
-		EXT=".jpg"
+	if [ "$CROPLOADINGSCREENS" ]; then
+		if [[ $1 = *"loadingscreens"* ]]; then
+			EXT=".jpg"
+		fi
 	fi
 	
 	diff -qr "$1" "$2" | grep -v ".png" | sort > "$3"
@@ -151,7 +158,12 @@ echo "Copying Icons..."
 rsync -a --exclude "*.dds" "./$ESOINPUTPATH/esoui/art/icons/" "./$OUTPUTPATH/Icons/"
 
 echo "Copying Loading Screens..."
-rsync -a --exclude "*.dds" "./$ESOINPUTPATH/esoui/art/loadingscreens/" "./$OUTPUTPATH/LoadingScreens/raw/"
+
+if [ "$CROPLOADINGSCREENS" ]; then
+	rsync -a --exclude "*.dds" "./$ESOINPUTPATH/esoui/art/loadingscreens/" "./$OUTPUTPATH/LoadingScreens/raw/"
+else
+	rsync -a --exclude "*.dds" "./$ESOINPUTPATH/esoui/art/loadingscreens/" "./$OUTPUTPATH/LoadingScreens/"
+fi
 
 echo "Copying Treasure Maps..."
 rsync -a --exclude "*.dds" "./$ESOINPUTPATH/esoui/art/treasuremaps/" "./$OUTPUTPATH/TreasureMaps/"
@@ -179,9 +191,12 @@ rsync -a --exclude "*.dds" "./$GAMEINPUTPATH/esoui/internalingamelocalization" "
 rsync -a --exclude "*.dds" "./$GAMEINPUTPATH/esoui/pregamelocalization" "./$OUTPUTPATH/Lang/"
 
 
-echo "Cropping Loading Screens..."
-cd ./$OUTPUTPATH/LoadingScreens/
-./croploadscreens.sh
+if [ "$CROPLOADINGSCREENS" ]; then
+	echo "Cropping Loading Screens..."
+	cd ./$OUTPUTPATH/LoadingScreens/
+	./croploadscreens.sh
+fi
+
 cd ../../
 
 
@@ -270,7 +285,13 @@ popd
 
 echo "Compressing Loading Screens..."
 pushd "./$OUTPUTPATH/LoadingScreens/"
-zip -q "../loadscreens.zip" *.jpg
+
+if [ "$CROPLOADINGSCREENS" ]; then
+	zip -q "../loadscreens.zip" *.jpg
+else
+	zip -q "../loadscreens.zip" *.png
+fi
+
 cd ..
 zip -urq "loadscreens.zip" loadscreens.ptsdiff.txt loadscreens.diff.txt
 popd
@@ -327,7 +348,7 @@ zip -urq "maps.zip" maps.ptsdiff.txt maps.diff.txt
 popd
 
 echo "Copying Updated Maps..."
-pushd "./$OUTPUTPATH/maps/"
+pushd "./$OUTPUTPATH/Maps/"
 xargs -a ../maps.diff.txt.updatedmaps cp -Rt ../NewMaps/
 
 if [ "$MAKEPTSDIFF" ]; then

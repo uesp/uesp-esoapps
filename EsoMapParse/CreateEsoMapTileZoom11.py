@@ -24,8 +24,8 @@ else:
 
 
 INPUTPATH = BasePath + "goodimages-" + BasePathIndex + "/CombinedMaps/"
-OUTPUTPATH = BasePath + "goodimages-" + BasePathIndex + "/maps/"
-DEFAULTNULLTILE = BasePath + "goodimages-" + BasePathIndex + "/maps/blacknulltile.jpg"
+OUTPUTPATH = BasePath + "goodimages-" + BasePathIndex + "/Maps/"
+DEFAULTNULLTILE = BasePath + "goodimages-" + BasePathIndex + "/Maps/blacknulltile.jpg"
 
 MAPEXTENSION = ".jpg"
 CREATEZOOMLEVEL = 11

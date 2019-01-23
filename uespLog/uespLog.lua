@@ -1000,10 +1000,12 @@
 --		Murkmire Related:
 --			- Added the 4 new styles: Huntsman, Elder Argonian, Silver Dawn, Dead-Water
 --
---		- v1.71 --
+--		- v1.80 --
 --			- Fixed several skill coefficient calculations.
 --			- Added the Werewolf Devour passive to the list of free skills.
 --			- The Dremora style now works with /uespstyle.
+--			- Added the Honor Guard style.
+--			- Added missing custom icons for some Murkmire styles.
 --
 
 
@@ -1016,8 +1018,8 @@ end
 --	GLOBAL DEFINITIONS
 uespLog = uespLog or {}
 
-uespLog.version = "1.71"
-uespLog.releaseDate = "22 October 2018"
+uespLog.version = "1.80"
+uespLog.releaseDate = "February 2019"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -11427,6 +11429,12 @@ uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
 	['elder argonian'] = 81,
 	['elder_argonian'] = 81,
 	['elderargonian'] = 81,
+	
+		-- Wrathstone
+	['honor guard'] = 80,
+	['honor_guard'] = 80,
+	['honorguard'] = 80,
+	['honor'] = 80,
 		
 }
 
@@ -11613,6 +11621,12 @@ uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
 	['elder argonian'] = { 142219, 142220, 142221, 142222, 142223, 142224, 142225, 142226, 142227, 142228, 142229, 142230, 142231, 142231 }, -- 142218, 142223
 	['elder_argonian'] = { 142219, 142220, 142221, 142222, 142223, 142224, 142225, 142226, 142227, 142228, 142229, 142230, 142231, 142231 }, -- 142218, 142223
 	['elderargonian']  = { 142219, 142220, 142221, 142222, 142223, 142224, 142225, 142226, 142227, 142228, 142229, 142230, 142231, 142231 }, -- 142218, 142223
+	
+		-- Wrathstone
+	['honor guard'] = { 142187, 142188, 142189, 142190, 142191, 142192, 142193, 142194, 142195, 142196, 142197, 142198, 142199, 142200 }, -- 142186, 142201,
+	['honor_guard'] = { 142187, 142188, 142189, 142190, 142191, 142192, 142193, 142194, 142195, 142196, 142197, 142198, 142199, 142200 }, -- 142186, 142201,
+	['honorguard'] = { 142187, 142188, 142189, 142190, 142191, 142192, 142193, 142194, 142195, 142196, 142197, 142198, 142199, 142200 }, -- 142186, 142201,
+	['honor'] = { 142187, 142188, 142189, 142190, 142191, 142192, 142193, 142194, 142195, 142196, 142197, 142198, 142199, 142200 }, -- 142186, 142201,
 }
 
 

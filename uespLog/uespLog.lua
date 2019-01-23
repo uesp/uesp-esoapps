@@ -1009,6 +1009,7 @@
 --			- Fixed skill coefficient calculation for damage shield tooltips that cap with health. Note that in order for the skill
 --		      coefficient of these tooltips to be calculated you need to save at least 2 values below the cap. Tooltip values at the 
 --			  cap are ignored in order to get a valid linear best fit.
+--			- Fixed the sales price column display in the new guild store UI.
 --
 
 
@@ -3618,6 +3619,7 @@ function uespLog.Initialize( self, addOnName )
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_GUILD_SELF_JOINED_GUILD, uespLog.OnJoinedGuild)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_GUILD_SELF_LEFT_GUILD, uespLog.OnLeftGuild)	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_OPEN_TRADING_HOUSE, uespLog.OnTradingHouseOpen)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_SEARCH_RESULTS_RECEIVED, uespLog.OnTradingHouseSearchResultsReceived)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_RESPONSE_RECEIVED, uespLog.OnTradingHouseResponseReceived)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_GUILD_HISTORY_RESPONSE_RECEIVED, uespLog.OnGuildHistoryResponseReceived)

@@ -1010,6 +1010,7 @@
 --		      coefficient of these tooltips to be calculated you need to save at least 2 values below the cap. Tooltip values at the 
 --			  cap are ignored in order to get a valid linear best fit.
 --			- Fixed the sales price column display in the new guild store UI.
+--			- Fixed the copy item link dialog to automatically select all text initially.
 --
 
 
@@ -4184,11 +4185,13 @@ end
 
 function uespLog.CopyItemLink(itemLink)
 	uespCopyItemLinkDialogTitle:SetText("UESP -- Copy Item Link")
-	uespCopyItemLinkDialogLabel:SetText("Press CTRL+C to copy the item link and ESC or Click to exit:")
+	uespCopyItemLinkDialogLabel:SetText("Press CTRL+C to copy the item link and ESC/Click to exit:")
 	uespCopyItemLinkDialogNoteEdit:SetText(itemLink)
 	uespCopyItemLinkDialog:SetHidden(false)
 	uespCopyItemLinkDialogNoteEdit:SetEditEnabled(false)
-	uespCopyItemLinkDialogNoteEdit:SelectAll()
+	
+	zo_callLater(function() uespCopyItemLinkDialogNoteEdit:SelectAll() end, 250)
+	 uespCopyItemLinkDialogNoteEdit:SelectAll()
 end
 
 

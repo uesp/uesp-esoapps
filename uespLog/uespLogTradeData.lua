@@ -36,43 +36,43 @@ uespLog.STYLE_ICON_UNKNOWN = "uespLog\\images\\unknown.dds"
 
 
 uespLog.ALT_STYLE_ICON_DATA = {
-	[ITEMSTYLE_RACIAL_NORD]  		 = "uespLog\\images\\stylenord.dds",  		-- Corundum, Nord, 33256, ITEMSTYLE_RACIAL_NORD=5, /esoui/art/icons/crafting_metals_corundum.dds
-	[ITEMSTYLE_RACIAL_REDGUARD]  	 = "uespLog\\images\\styleredguard.dds",	-- Starmetal, Redguard, 33258, ITEMSTYLE_RACIAL_REDGUARD=2, /esoui/art/icons/crafting_medium_armor_sp_names_002.dds
-	[ITEMSTYLE_RACIAL_ORC]  		 = "uespLog\\images\\styleorc.dds",			-- Manganese, Orc, 33257, ITEMSTYLE_RACIAL_ORC=3, /esoui/art/icons/crafting_metals_manganese.dds
-	[ITEMSTYLE_RACIAL_KHAJIIT]  	 = "uespLog\\images\\stylekhajiit.dds",		-- Moonstone, Khajiit, 33255, ITEMSTYLE_RACIAL_KHAJIIT=9, /esoui/art/icons/crafting_smith_plug_sp_names_001.dds
-	[ITEMSTYLE_RACIAL_HIGH_ELF]  	 = "uespLog\\images\\stylealtmer.dds",		-- Adamantite, Altmer, 33252, ITEMSTYLE_RACIAL_HIGH_ELF=7, /esoui/art/icons/grafting_gems_adamantine.dds
-	[ITEMSTYLE_RACIAL_WOOD_ELF]  	 = "uespLog\\images\\stylebosmer.dds",		-- Bone, Bosmer, 33194, ITEMSTYLE_RACIAL_WOOD_ELF=8, /esoui/art/icons/crafting_gems_daedra_skull.dds
-	[ITEMSTYLE_RACIAL_ARGONIAN]  	 = "uespLog\\images\\styleargonian.dds",	-- Flint, Argonian, 33150, ITEMSTYLE_RACIAL_ARGONIAN=6, /esoui/art/icons/crafting_smith_potion_standard_f_002.dds
-	[ITEMSTYLE_RACIAL_BRETON]  		 = "uespLog\\images\\stylebreton.dds",		-- Molybdenum, Breton, 33251, ITEMSTYLE_RACIAL_BRETON=1, /esoui/art/icons/crafting_metals_molybdenum.dds
-	[ITEMSTYLE_RACIAL_DARK_ELF] 	 = "uespLog\\images\\styledunmer.dds",		-- Obsidian, Dunmer, 33253, ITEMSTYLE_RACIAL_DARK_ELF=4, /esoui/art/icons/crafting_metals_graphite.dds
-	[ITEMSTYLE_ENEMY_PRIMITIVE] 	 = "uespLog\\images\\styleprimal.dds",		-- Argentum, Primal, 46150, ITEMSTYLE_ENEMY_PRIMITIVE=19, /esoui/art/icons/crafting_metals_argentum.dds
-	[ITEMSTYLE_RACIAL_IMPERIAL]  	 = "uespLog\\images\\styleimperial.dds",	-- Nickel, Imperial, 33254, ITEMSTYLE_RACIAL_IMPERIAL=34, /esoui/art/icons/crafting_heavy_armor_sp_names_001.dds
-	[ITEMSTYLE_AREA_REACH]  		 = "uespLog\\images\\stylebarbaric.dds",	-- Copper, Barbaric, 46149, ITEMSTYLE_AREA_REACH=17, /esoui/art/icons/crafting_smith_potion_standard_f_001.dds
-	[ITEMSTYLE_ENEMY_DAEDRIC] 		 = "uespLog\\images\\styledaedric.dds",		-- Daedra Heart, Daedric, 46151, ITEMSTYLE_ENEMY_DAEDRIC=20, /esoui/art/icons/crafting_walking_dead_mort_heart.dds
-	[ITEMSTYLE_AREA_ANCIENT_ELF] 	 = "uespLog\\images\\styleancientelf.dds",	-- Palladium, Ancient Elf, 46152, ITEMSTYLE_AREA_ANCIENT_ELF=15, /esoui/art/icons/crafting_ore_palladuim.dds
-	[ITEMSTYLE_AREA_DWEMER] 	     = "uespLog\\images\\styledwemer.dds",		-- Dwemer Frame, Dwemer, 57587, ITEMSTYLE_AREA_DWEMER=14, /esoui/art/icons/crafting_dwemer_shiny_tube.dds
-	[ITEMSTYLE_AREA_AKAVIRI] 		 = "uespLog/images/aicon.dds", 				-- Akaviri, 33
-	[ITEMSTYLE_GLASS]		 		 = "uespLog/images/malachite.dds", 			-- Glass, 28
-	[ITEMSTYLE_AREA_XIVKYN] 		 = "uespLog/images/charcoal.dds", 			-- Xivkyn, 29
-	[ITEMSTYLE_UNDAUNTED] 			 = "uespLog/images/laurel.dds",				-- Mercenary, 26, /esoui/art/icons/crafting_laurel.dds
-	[ITEMSTYLE_AREA_ANCIENT_ORC] 	 = "uespLog/images/cassiterite.dds",		-- Ancient Orc, 22 /esoui/art/icons/crafting_smith_plug_standard_f_001.dds
-	[47]							 = "uespLog/images/roguessoot.dds",			-- Outlaw, 47 ITEMSTYLE_UNUSED9 /esoui/art/icons/crafting_outlaw_styleitem.dds, 
-	[ITEMSTYLE_DEITY_MALACATH]		 = "uespLog/images/potash.dds", 			-- Malacath, 13 /esoui/art/icons/crafting_style_item_malacath.dds
-	[ITEMSTYLE_DEITY_TRINIMAC]		 = "uespLog/images/aurictusk.dds",			-- Trinimac, 21 /esoui/art/icons/crafting_style_item_trinimac.dds
-	[ITEMSTYLE_AREA_SOUL_SHRIVEN]	 = "uespLog/images/azureplasm.dds",			-- Soul Shriven, 30 /esoui/art/icons/crafting_runecrafter_plug_component_005.dds
-	[ITEMSTYLE_ALLIANCE_DAGGERFALL]  = "uespLog/images/lionfang.dds",			-- Daggerfall, 23 /esoui/art/icons/crafting_style_item_daggerfall_covenant.dds
-	[ITEMSTYLE_ALLIANCE_EBONHEART] 	 = "uespLog/images/dragonscute.dds",		-- Ebonheart, 24 /esoui/art/icons/crafting_style_item_ebonheart_pact.dds
-	[ITEMSTYLE_ALLIANCE_ALDMERI] 	 = "uespLog/images/eaglefeather.dds",		-- Aldmeri, 25 /esoui/art/icons/crafting_style_item_aldmeri_dominion.dds
-	[ITEMSTYLE_UNIVERSAL] 			 = "uespLog/images/mimicstone.dds",			-- Universal, 36 /esoui/art/icons/crafing_universal_item.dds  (incorrect spelling "crafing" in 1.9 PTS)
-	[ITEMSTYLE_ORG_THIEVES_GUILD] 	 = "uespLog/images/thievesguild_style.dds",	-- Thieves Guild, 11 /esoui/art/icons/crafting_style_item_thieves_guild_r2.dds
-	[ITEMSTYLE_ORG_ABAHS_WATCH] 	 = "uespLog/images/abahswatch.dds",			-- Abah's Watch, 41, /esoui/art/icons/crafting_style_item_abahs_watch_r2.dds
-	[ITEMSTYLE_ORG_ASSASSINS]	 	 = "uespLog/images/assassinsleague.dds",	-- Assassin's League, 46, /esoui/art/icons/crafting_style_item_assassins_league_r2.dds
-	[ITEMSTYLE_ORG_DARK_BROTHERHOOD] = "uespLog/images/darkbrotherhood.dds",	-- Black Beeswax, Dark Brotherhood, 12, /esoui/art/icons/crafting_style_item_dark_brotherhood_r2.dds
-	[39] 							 = "uespLog/images/minotaur.dds",			-- Oxblood Fungus, Minotaur, 39, /esoui/art/icons/crafting_style_item_minotaur_r2.dds
-	[16] 							 = "uespLog/images/akatosh.dds",			-- Pearl Sand, Akatosh, 16, /esoui/art/icons/crafting_style_item_orderoth_r2.dds
-	[45] 							 = "uespLog/images/dromothra.dds",			-- Defiled Whiskers, Dro-m'Athra, 45, /esoui/art/icons/crafting_style_item_dromothra_r2.dds
-	[58]							 = "uespLog/images/grimarlequin.dds",		-- Grinstone, Grim Arlequin, 58, /esoui/art/icons/crafting_style_item_harlequin_r2.dds
-	[59]							 = "uespLog/images/hollowjack.dds",			-- Amber Marble, Hollowjack, 59, /esoui/art/icons/crafting_style_item_hollowjack_r2.dds
+	[ITEMSTYLE_RACIAL_NORD]  		 = "uespLog/images/stylenord.dds",  		-- Nord, Corundum, 5, /esoui/art/icons/crafting_metals_corundum.dds
+	[ITEMSTYLE_RACIAL_REDGUARD]  	 = "uespLog/images/styleredguard.dds",		-- Redguard, Starmetal, 2, /esoui/art/icons/crafting_medium_armor_sp_names_002.dds
+	[ITEMSTYLE_RACIAL_ORC]  		 = "uespLog/images/styleorc.dds",			-- Orc, Manganese, 3, /esoui/art/icons/crafting_metals_manganese.dds
+	[ITEMSTYLE_RACIAL_KHAJIIT]  	 = "uespLog/images/stylekhajiit.dds",		-- Khajiit, Moonstone, 9, /esoui/art/icons/crafting_smith_plug_sp_names_001.dds
+	[ITEMSTYLE_RACIAL_HIGH_ELF]  	 = "uespLog/images/stylealtmer.dds",		-- Altmer, Adamantite, 7, /esoui/art/icons/grafting_gems_adamantine.dds
+	[ITEMSTYLE_RACIAL_WOOD_ELF]  	 = "uespLog/images/stylebosmer.dds",		-- Bosmer, Bone, 8, /esoui/art/icons/crafting_gems_daedra_skull.dds
+	[ITEMSTYLE_RACIAL_ARGONIAN]  	 = "uespLog/images/styleargonian.dds",		-- Argonian, Flint, 6, /esoui/art/icons/crafting_smith_potion_standard_f_002.dds
+	[ITEMSTYLE_RACIAL_BRETON]  		 = "uespLog/images/stylebreton.dds",		-- Breton, Molybdenum, 1, /esoui/art/icons/crafting_metals_molybdenum.dds
+	[ITEMSTYLE_RACIAL_DARK_ELF] 	 = "uespLog/images/styledunmer.dds",		-- Dunmer, Obsidian, 4, /esoui/art/icons/crafting_metals_graphite.dds
+	[ITEMSTYLE_ENEMY_PRIMITIVE] 	 = "uespLog/images/styleprimal.dds",		-- Primal, Argentum, 19, /esoui/art/icons/crafting_metals_argentum.dds
+	[ITEMSTYLE_RACIAL_IMPERIAL]  	 = "uespLog/images/styleimperial.dds",		-- Imperial, Nickel, 34, /esoui/art/icons/crafting_heavy_armor_sp_names_001.dds
+	[ITEMSTYLE_AREA_REACH]  		 = "uespLog/images/stylebarbaric.dds",		-- Barbaric, Copper, 17, /esoui/art/icons/crafting_smith_potion_standard_f_001.dds
+	[ITEMSTYLE_ENEMY_DAEDRIC] 		 = "uespLog/images/styledaedric.dds",		-- Daedric, Daedra Heart, 20, /esoui/art/icons/crafting_walking_dead_mort_heart.dds
+	[ITEMSTYLE_AREA_ANCIENT_ELF] 	 = "uespLog/images/styleancientelf.dds",	-- Ancient Elf, Palladium, 15, /esoui/art/icons/crafting_ore_palladuim.dds
+	[ITEMSTYLE_AREA_DWEMER] 	     = "uespLog/images/styledwemer.dds",		-- Dwemer, Dwemer Frame, 14, /esoui/art/icons/crafting_dwemer_shiny_tube.dds
+	[ITEMSTYLE_AREA_AKAVIRI] 		 = "uespLog/images/aicon.dds", 				-- Akaviri, Goldscale, 33, /esoui/art/icons/crafting_medium_armor_vendor_003.dds
+	[ITEMSTYLE_GLASS]		 		 = "uespLog/images/malachite.dds", 			-- Glass, Malachite, 28, /esoui/art/icons/crafting_ore_base_malachite_r2.dds
+	[ITEMSTYLE_AREA_XIVKYN] 		 = "uespLog/images/charcoal.dds", 			-- Xivkyn, Charcoal of Remorse, 29, /esoui/art/icons/crafting_smith_potion_008.dds
+	[ITEMSTYLE_UNDAUNTED] 			 = "uespLog/images/laurel.dds",				-- Mercenary, Laurel, 26, /esoui/art/icons/crafting_laurel.dds
+	[ITEMSTYLE_AREA_ANCIENT_ORC] 	 = "uespLog/images/cassiterite.dds",		-- Ancient Orc, Cassierite, 22 /esoui/art/icons/crafting_smith_plug_standard_f_001.dds
+	[47]							 = "uespLog/images/roguessoot.dds",			-- Outlaw, Rogue's Soot, 47, /esoui/art/icons/crafting_outlaw_styleitem.dds, 
+	[ITEMSTYLE_DEITY_MALACATH]		 = "uespLog/images/potash.dds", 			-- Malacath, Potash, 13 /esoui/art/icons/crafting_style_item_malacath.dds
+	[ITEMSTYLE_DEITY_TRINIMAC]		 = "uespLog/images/aurictusk.dds",			-- Trinimac, Auric Tusk, 21 /esoui/art/icons/crafting_style_item_trinimac.dds
+	[ITEMSTYLE_AREA_SOUL_SHRIVEN]	 = "uespLog/images/azureplasm.dds",			-- Soul Shriven, Azure Plasm, 30 /esoui/art/icons/crafting_runecrafter_plug_component_005.dds
+	[ITEMSTYLE_ALLIANCE_DAGGERFALL]  = "uespLog/images/lionfang.dds",			-- Daggerfall, Lion Fang, 23 /esoui/art/icons/crafting_style_item_daggerfall_covenant.dds
+	[ITEMSTYLE_ALLIANCE_EBONHEART] 	 = "uespLog/images/dragonscute.dds",		-- Ebonheart, Dragon Scute, 24 /esoui/art/icons/crafting_style_item_ebonheart_pact.dds
+	[ITEMSTYLE_ALLIANCE_ALDMERI] 	 = "uespLog/images/eaglefeather.dds",		-- Aldmeri, Eagle Feather, 25 /esoui/art/icons/crafting_style_item_aldmeri_dominion.dds
+	[ITEMSTYLE_UNIVERSAL] 			 = "uespLog/images/mimicstone.dds",			-- Universal, Crown Mimic Stone, 36 /esoui/art/icons/crafing_universal_item.dds  (incorrect spelling "crafing" in 1.9 PTS)
+	[ITEMSTYLE_ORG_THIEVES_GUILD] 	 = "uespLog/images/thievesguild_style.dds",	-- Thieves Guild, Fine Chalk, 11 /esoui/art/icons/crafting_style_item_thieves_guild_r2.dds
+	[ITEMSTYLE_ORG_ABAHS_WATCH] 	 = "uespLog/images/abahswatch.dds",			-- Abah's Watch, Polished Shilling, 41, /esoui/art/icons/crafting_style_item_abahs_watch_r2.dds
+	[ITEMSTYLE_ORG_ASSASSINS]	 	 = "uespLog/images/assassinsleague.dds",	-- Assassin's League, Tained Blood, 46, /esoui/art/icons/crafting_style_item_assassins_league_r2.dds
+	[ITEMSTYLE_ORG_DARK_BROTHERHOOD] = "uespLog/images/darkbrotherhood.dds",	-- Dark Brotherhood, Black Beeswax, 12, /esoui/art/icons/crafting_style_item_dark_brotherhood_r2.dds
+	[39] 							 = "uespLog/images/minotaur.dds",			-- Minotaur, Oxblood Fungus, 39, /esoui/art/icons/crafting_style_item_minotaur_r2.dds
+	[16] 							 = "uespLog/images/akatosh.dds",			-- Akatosh, Pearl Sand, 16, /esoui/art/icons/crafting_style_item_orderoth_r2.dds
+	[45] 							 = "uespLog/images/dromothra.dds",			-- Dro-m'Athra, Defiled Whiskers, 45, /esoui/art/icons/crafting_style_item_dromothra_r2.dds
+	[58]							 = "uespLog/images/grimarlequin.dds",		-- Grim Arlequin, Grinstone, 58, /esoui/art/icons/crafting_style_item_harlequin_r2.dds
+	[59]							 = "uespLog/images/hollowjack.dds",			-- Hollowjack, Amber Marble, 59, /esoui/art/icons/crafting_style_item_hollowjack_r2.dds
 	[ITEMSTYLE_AREA_YOKUDAN] 		 = "uespLog/images/yokudan.dds",			-- Yokudan, Ferrous Salts, 35, /esoui/art/icons/crafting_humanoid_daedra_void_salts.dds
 	[27]							 = "uespLog/images/celestial.dds",			-- Celestial, Star Sapphires, 27, /esoui/art/icons/crafting_style_item_celestial_r2.dds
 	[31]							 = "uespLog/images/draugr.dds",				-- Draugr, Pristine Shrouds, 31, /esoui/art/icons/crafting_style_item_draugr_r2.dds	
@@ -126,6 +126,9 @@ uespLog.STYLE_ICON_DATA = {
 	[ITEMSTYLE_ENEMY_DAEDRIC] 		 = "/esoui/art/icons/crafting_walking_dead_mort_heart.dds",
 	[ITEMSTYLE_AREA_ANCIENT_ELF] 	 = "/esoui/art/icons/crafting_ore_palladium.dds",
 	[ITEMSTYLE_AREA_DWEMER] 	     = "/esoui/art/icons/crafting_dwemer_shiny_tube.dds",
+	[ITEMSTYLE_AREA_AKAVIRI] 		 = "/esoui/art/icons/crafting_medium_armor_vendor_003.dds", 
+	[ITEMSTYLE_GLASS]		 		 = "/esoui/art/icons/crafting_ore_base_malachite_r2.dds",
+	[ITEMSTYLE_AREA_XIVKYN] 		 = "/esoui/art/icons/crafting_smith_potion_008.dds",	
 	[ITEMSTYLE_AREA_AKAVIRI]		 = "uespLog/images/aicon.dds",
 	[ITEMSTYLE_GLASS]		 		 = "uespLog/images/malachite.dds",
 	[ITEMSTYLE_AREA_XIVKYN] 		 = "uespLog/images/charcoal.dds",

@@ -5416,6 +5416,7 @@ function uespLog.FindSkillDiffSavePlayer()
 					newDiff.desc = desc;
 					newDiff.cost = GetAbilityCost(abilityId)
 					newDiff.duration = GetAbilityDuration(abilityId)
+					newDiff.minRange, newDiff.maxRange = GetAbilityRange(abilityId)
 					uespLog.SkillDiff[abilityId] = newDiff;
 					newSkills = newSkills + 1
 				end
@@ -5425,7 +5426,6 @@ function uespLog.FindSkillDiffSavePlayer()
 	end
 
 	uespLog.Msg("Added "..newSkills.." skills out of "..tostring(validAbilityCount).." possible skills to diff data!")
-	return true
 end
 
 
@@ -5446,12 +5446,14 @@ function uespLog.FindSkillDiffSaveAll()
 			
 			if (desc ~= "") then
 				local matchResult = desc:match("%d")
+				local newDiff = {}
+				
+				newDiff.desc = desc;
+				newDiff.cost = GetAbilityCost(abilityId)
+				newDiff.duration = GetAbilityDuration(abilityId)
+				newDiff.minRange, newDiff.maxRange = GetAbilityRange(abilityId)
 
-				if (matchResult ~= nil) then
-					local newDiff = {}
-					newDiff.desc = desc;
-					newDiff.cost = GetAbilityCost(abilityId)
-					newDiff.duration = GetAbilityDuration(abilityId)
+				if (matchResult ~= nil or newDiff.cost > 0 or newDiff.duration > 0 or newDiff.minRange > 0 or newDiff.maxRange > 0) then
 					uespLog.SkillDiff[abilityId] = newDiff;
 					newSkills = newSkills + 1
 				end
@@ -5461,22 +5463,26 @@ function uespLog.FindSkillDiffSaveAll()
 	end
 
 	uespLog.Msg("Added "..newSkills.." skills out of "..tostring(validAbilityCount).." possible skills to diff data!")
-	return true
 end
 
 
-function uespLog.FindSkillDiff()
+function uespLog.FindSkillDiff(note)
 	local abilityId, origDesc
 	local diffSkills = 0
 	local data = uespLog.savedVars.tempData.data
 	local diffData
 	
-	uespLog.Msg("Comparing skill diff...")	
+	uespLog.Msg("Comparing skill diff...")
+	
+	if (note ~= nil) then
+		data[#data+1] = note
+	end
 		
 	for abilityId, diffData in pairs(uespLog.SkillDiff) do
 		local desc = GetAbilityDescription(abilityId)
 		local cost = GetAbilityCost(abilityId)
 		local duration = GetAbilityDuration(abilityId)
+		local minRange, maxRange = GetAbilityRange(abilityId)
 		
 		origDesc = diffData.desc;
 					
@@ -5486,15 +5492,27 @@ function uespLog.FindSkillDiff()
 			diffSkills = diffSkills + 1
 			data[#data+1] = buffer
 			uespLog.Msg(".    "..buffer)
-		elseif (diffData.cost ~= cost) then
+		end
+		
+		if (diffData.cost ~= cost) then
 			local name = GetAbilityName(abilityId)
 			local buffer = tostring(name).." ("..tostring(abilityId)..") - Cost"
 			diffSkills = diffSkills + 1
 			data[#data+1] = buffer
 			uespLog.Msg(".    "..buffer)
-		elseif (diffData.duration ~= duration) then
+		end
+		
+		if (diffData.duration ~= duration) then
 			local name = GetAbilityName(abilityId)
 			local buffer = tostring(name).." ("..tostring(abilityId)..") - Duration"
+			diffSkills = diffSkills + 1
+			data[#data+1] = buffer
+			uespLog.Msg(".    "..buffer)
+		end
+		
+		if (diffData.minRange ~= minRange or diffData.maxRange ~= maxRange) then
+			local name = GetAbilityName(abilityId)
+			local buffer = tostring(name).." ("..tostring(abilityId)..") - Range"
 			diffSkills = diffSkills + 1
 			data[#data+1] = buffer
 			uespLog.Msg(".    "..buffer)
@@ -5503,5 +5521,4 @@ function uespLog.FindSkillDiff()
 	end
 
 	uespLog.Msg("Found "..diffSkills.." changed skills!")
-	return true
 end

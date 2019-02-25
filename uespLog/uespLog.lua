@@ -1000,7 +1000,7 @@
 --		Murkmire Related:
 --			- Added the 4 new styles: Huntsman, Elder Argonian, Silver Dawn, Dead-Water
 --
---		- v1.80 -- ? Feb 2019
+--		- v1.80 -- 25 Feb 2019
 --			- Fixed several skill coefficient calculations.
 --			- Added the Werewolf Devour passive to the list of free skills.
 --			- The Dremora style now works with /uespstyle.
@@ -1011,6 +1011,7 @@
 --			  cap are ignored in order to get a valid linear best fit.
 --			- Fixed the sales price column display in the new guild store UI.
 --			- Fixed the copy item link dialog to automatically select all text initially.
+--			- Updated sales price to most recent PC-NA version.
 --
 
 
@@ -1024,7 +1025,7 @@ end
 uespLog = uespLog or {}
 
 uespLog.version = "1.80"
-uespLog.releaseDate = "? February 2019"
+uespLog.releaseDate = "25 February 2019"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

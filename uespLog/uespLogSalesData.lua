@@ -2267,15 +2267,15 @@ function uespLog.AddBuyingAdvice(rowControl, result)
     local dealValue = tonumber(dealString)
 	
     if dealValue then 
-		if dealValue > 0 then
+		--if (dealValue ~= 0) then
 			buyingAdvice:SetText(margin .. '%')  
 			local r, g, b = GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, dealValue)
 			if dealValue == 0 then r = 0.98; g = 0.01; b = 0.01; end
 			buyingAdvice:SetColor(r, g, b, 1)
 			buyingAdvice:SetHidden(false)
-		else
-			buyingAdvice:SetHidden(true)
-		end
+		--else
+			--buyingAdvice:SetHidden(true)
+		--end
 		
 		local sellerControl = rowControl:GetNamedChild('SellerName')
 		

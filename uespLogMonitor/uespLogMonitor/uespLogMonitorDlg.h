@@ -171,7 +171,7 @@ protected:
 	LONG				m_StopSendQueueThread;
 	int					m_FormErrorRetryCount;
 
-	std::string					m_BuildData;
+	CUlmBuildDataQueue			m_BuildData;
 	int							m_BuildDataValidScreenshotCount;
 	int							m_BuildDataIndex;
 	std::vector<ulm_screenshot_t> m_Screenshots;
@@ -248,7 +248,7 @@ protected:
 	bool ParseSavedVarCharacterAccount(const std::string VarName, void* pUserData);
   
 	bool ParseBuildDataScreenshots(const int NumBuilds);
-	bool ParseCharDataScreenshots(const bool isCharData);
+	bool ParseCharDataScreenshots(const bool isCharData, const int BuildIndex);
 	std::string GetScreenshotFormQuery(const bool isCharData, const int BuildIndex);
 	bool LoadScreenshots();
 	bool LoadScreenshot(ulm_screenshot_t& Screenshot);

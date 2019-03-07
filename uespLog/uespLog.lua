@@ -1013,6 +1013,10 @@
 --			- Fixed the copy item link dialog to automatically select all text initially.
 --			- Updated sales price to most recent PC-NA version.
 --
+--		- v1.81 -- 
+--			- Fixed use of removed API function in /uespminecollect.
+--			- Updated list of rune box IDs.
+--
 
 
 	-- Update 18 prefix
@@ -1483,9 +1487,10 @@ uespLog.MINEITEM_LEVELS_SAFE = {
 	{ 50, 50, 254, 258, "crafted" },
 	{ 50, 50, 264, 267, "dropped" },
 	{ 50, 50, 268, 271, "unknown" },
-	{ 50, 50, 272, 276, "crafted" },
+	{ 50, 50, 272, 273, "crafted" },	-- 274 bad
+	{ 50, 50, 275, 276, "crafted" },
 	{ 50, 50, 283, 285, "dropped" },
-	{ 50, 50, 286, 289, "unknown" },
+	{ 50, 50, 286, 289, "unknown" },	-- All bad?
 	{ 50, 50, 290, 294, "crafted" },
 	{ 50, 50, 300, 300, "unknown" },
 	{ 50, 50, 301, 301, "dropped" },
@@ -2045,19 +2050,19 @@ uespLog.ITEMCHANGE_IGNORE_FIELDS = {
 
 
 uespLog.RUNEBOX_COLLECTIBLE_IDS = {
-		[79329] = 148,  		-- Xivkyn Dreadguard
-        [79330] = 147,  		-- Xivkyn Tormentor
-        [79331] = 146,  		-- Xivkyn Augur
-        [83516] = 439,  		-- Pumpkin Spectre Mask
-        [83517] = 440,  		-- Scarecrow Spectre Mask
-        [96391] = 601,  		-- Mud Ball Pouch
-        [96392] = 597,  		-- Sword-Swallower's Blade
-        [96393] = 598,  		-- Juggler's Knives
-        [96394] = 599,  		-- Pint of Belching
-        [96395] = 600,  		-- Fire-Breather's Torches
-        [96951] = 753, 		 	-- Nordic Bather's Towel
-        [96952] = 755,  		-- Colovian Fur Hood
-        [96953] = 754,  		-- Colovian Filigreed Hood
+		[79329] = 148, 			-- Xivkyn Dreadguard
+        [79330] = 147, 			-- Xivkyn Tormentor
+        [79331] = 146, 			-- Xivkyn Augur
+        [83516] = 439, 			-- Pumpkin Spectre Mask
+        [83517] = 440, 			-- Scarecrow Spectre Mask
+        [96391] = 601, 			-- Mud Ball Pouch
+        [96392] = 597, 			-- Sword-Swallower's Blade
+        [96393] = 598, 			-- Juggler's Knives
+        [96394] = 599, 			-- Pint of Belching
+        [96395] = 600, 			-- Fire-Breather's Torches
+        [96951] = 753, 			-- Nordic Bather's Towel
+        [96952] = 755, 			-- Colovian Fur Hood
+        [96953] = 754, 			-- Colovian Filigreed Hood
         [119692] = 1108,        -- Cherry Blossom Branch
         [124658] = 1232,        -- Dwarven Theodolite
         [124659] = 1230,        -- Sixth House Robe
@@ -2170,8 +2175,166 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [142013] = 5545,        -- Grothdarr's Mask
         [142014] = 5608,        -- Troll King's Shoulder
         [142015] = 5607,        -- Troll King's Mask
+        [146038] = 5924,        -- Bloodspawn's Mask
+        [146040] = 5925,        -- Bloodspawn's Shoulder
+        [146041] = 5746,        -- Gladiator Emote
+        [146043] = 5763,        -- Sellistrix's Mask
+        [146044] = 5764,        -- Sellistrix's Shoulder
+        [146045] = 5926,        -- Swarm Mother's Mask
+        [146046] = 5927,        -- Swarm Mother's Shoulder
+        [146074] = 6045,        -- Engine Guardian's Shoulder
+        [146075] = 6044,        -- Engine Guardian's Mask
+        [147286] = 6064,        -- Elinhir Arena Lion
+        [147301] = 6141,        -- Prophet's Hood
+        [147302] = 6143,        -- Prophet's Sandals
+        [147303] = 6144,        -- Prophet's Wraps
+        [147304] = 6145,        -- Prophet's Robe
+        [147305] = 6142,        -- Prophet's Shawl
+        [147306] = 6146,        -- Prophet's Staff
+        [147307] = 6155,        -- Lyris Titanborn's Cuirass
+        [147309] = 6153,        -- Lyris Titanborn's Greaves
+        [147310] = 6152,        -- Lyris Titanborn's Pauldrons
+        [147311] = 6151,        -- Lyris Titanborn's Sabatons
+        [147312] = 6150,        -- Lyris Titanborn's Gauntlets
+        [147313] = 6149,        -- Lyris Titanborn's Girdle
+        [147314] = 6148,        -- Lyris Titanborn's Battle Axe
+        [147315] = 6147,        -- Lyris Titanborn's Shield
+        [147316] = 6157,        -- Sai Sahan's Jack
+        [147317] = 6158,        -- Sai Sahan's Guards
+        [147318] = 6159,        -- Sai Sahan's Arm Cops
+        [147319] = 6160,        -- Sai Sahan's Boots
+        [147320] = 6161,        -- Sai Sahan's Bracers
+        [147321] = 6162,        -- Sai Sahan's Belt
+        [147322] = 6163,        -- Sai Sahan's Greatsword
+        [147323] = 6164,        -- Sai Sahan's Sword
+        [147324] = 6165,        -- Abnur Tharn's Jerkin
+        [147326] = 6167,        -- Abnur Tharn's Breeches
+        [147327] = 6168,        -- Abnur Tharn's Epaulets
+        [147328] = 6169,        -- Abnur Tharn's Shoes
+        [147329] = 6170,        -- Abnur Tharn's Gloves
+        [147330] = 6171,        -- Abnur Tharn's Sash
+        [147331] = 6172,        -- Abnur Tharn's Dagger
+        [147332] = 6173,        -- Abnur Tharn's Staff
+        [147333] = 6141,        -- Prophet's Hood
+        [147334] = 6143,        -- Prophet's Sandals
+        [147335] = 6144,        -- Prophet's Wraps
+        [147336] = 6145,        -- Prophet's Robe
+        [147337] = 6142,        -- Prophet's Shawl
+        [147338] = 6146,        -- Prophet's Staff
+        [147339] = 6155,        -- Lyris Titanborn's Cuirass
+        [147341] = 6153,        -- Lyris Titanborn's Greaves
+        [147342] = 6152,        -- Lyris Titanborn's Pauldrons
+        [147343] = 6151,        -- Lyris Titanborn's Sabatons
+        [147344] = 6150,        -- Lyris Titanborn's Gauntlets
+        [147345] = 6149,        -- Lyris Titanborn's Girdle
+        [147346] = 6148,        -- Lyris Titanborn's Battle Axe
+        [147347] = 6147,        -- Lyris Titanborn's Shield
+        [147348] = 6157,        -- Sai Sahan's Jack
+        [147349] = 6158,        -- Sai Sahan's Guards
+        [147350] = 6159,        -- Sai Sahan's Arm Cops
+        [147351] = 6160,        -- Sai Sahan's Boots
+        [147352] = 6161,        -- Sai Sahan's Bracers
+        [147353] = 6162,        -- Sai Sahan's Belt
+        [147354] = 6163,        -- Sai Sahan's Greatsword
+        [147355] = 6164,        -- Sai Sahan's Sword
+        [147356] = 6165,        -- Abnur Tharn's Jerkin
+        [147358] = 6167,        -- Abnur Tharn's Breeches
+        [147359] = 6168,        -- Abnur Tharn's Epaulets
+        [147360] = 6169,        -- Abnur Tharn's Shoes
+        [147361] = 6170,        -- Abnur Tharn's Gloves
+        [147362] = 6171,        -- Abnur Tharn's Sash
+        [147363] = 6172,        -- Abnur Tharn's Dagger
+        [147364] = 6173,        -- Abnur Tharn's Staff
+        [147428] = 6174,        -- Valkyn Skoria's Mask
+        [147429] = 6175,        -- Valkyn Skoria's Shoulder
+        [147435] = 6141,        -- Prophet's Hood
+        [147436] = 6143,        -- Prophet's Sandals
+        [147437] = 6144,        -- Prophet's Wraps
+        [147438] = 6145,        -- Prophet's Robe
+        [147439] = 6142,        -- Prophet's Shawl
+        [147440] = 6146,        -- Prophet's Staff
+        [147441] = 6155,        -- Lyris Titanborn's Cuirass
+        -- [147442] = ?,        -- Lyris Titanborn's Helmet
+        [147443] = 6153,        -- Lyris Titanborn's Greaves
+        [147444] = 6152,        -- Lyris Titanborn's Pauldrons
+        [147445] = 6151,        -- Lyris Titanborn's Sabatons
+        [147446] = 6150,        -- Lyris Titanborn's Gauntlets
+        [147447] = 6149,        -- Lyris Titanborn's Girdle
+        [147448] = 6148,        -- Lyris Titanborn's Battle Axe
+        [147449] = 6147,        -- Lyris Titanborn's Shield
+        [147450] = 6157,        -- Sai Sahan's Jack
+        [147451] = 6158,        -- Sai Sahan's Guards
+        [147452] = 6159,        -- Sai Sahan's Arm Cops
+        [147453] = 6160,        -- Sai Sahan's Boots
+        [147454] = 6161,        -- Sai Sahan's Bracers
+        [147455] = 6162,        -- Sai Sahan's Belt
+        [147456] = 6163,        -- Sai Sahan's Greatsword
+        [147457] = 6164,        -- Sai Sahan's Sword
+        [147458] = 6165,        -- Abnur Tharn's Jerkin
+        -- [147459] = ?,        -- Abnur Tharn's Hat
+        [147460] = 6167,        -- Abnur Tharn's Breeches
+        [147461] = 6168,        -- Abnur Tharn's Epaulets
+        [147462] = 6169,        -- Abnur Tharn's Shoes
+        [147463] = 6170,        -- Abnur Tharn's Gloves
+        [147464] = 6171,        -- Abnur Tharn's Sash
+        [147465] = 6172,        -- Abnur Tharn's Dagger
+        [147466] = 6173,        -- Abnur Tharn's Staff
+        [147467] = 6097,        -- Cadwell's "Battle Axe"
+        [147468] = 6098,        -- Cadwell's "Maul"
+        [147469] = 6099,        -- Cadwell's "Greatsword"
+        [147470] = 6100,        -- Cadwell's "Axe"
+        [147471] = 6101,        -- Cadwell's "Bow"
+        [147472] = 6102,        -- Cadwell's "Dagger"
+        [147473] = 6103,        -- Cadwell's "Mace"
+        [147474] = 6104,        -- Cadwell's "Shield"
+        [147475] = 6105,        -- Cadwell's "Staff"
+        [147476] = 6106,        -- Cadwell's "Sword"
+        [147478] = 6097,        -- Cadwell's "Battle Axe"
+        [147479] = 6098,        -- Cadwell's "Maul"
+        [147480] = 6099,        -- Cadwell's "Greatsword"
+        [147481] = 6100,        -- Cadwell's "Axe"
+        [147482] = 6101,        -- Cadwell's "Bow"
+        [147483] = 6102,        -- Cadwell's "Dagger"
+        [147484] = 6103,        -- Cadwell's "Mace"
+        [147485] = 6104,        -- Cadwell's "Shield"
+        [147486] = 6105,        -- Cadwell's "Staff"
+        [147487] = 6106,        -- Cadwell's "Sword"
+        [147499] = 6197,        -- Guar Stomp
+        [147534] = 6229,        -- Pit Daemon Battle Axe
+        [147535] = 6230,        -- Pit Daemon Maul
+        [147536] = 6231,        -- Pit Daemon Greatsword
+        [147537] = 6232,        -- Pit Daemon Axe
+        [147538] = 6233,        -- Pit Daemon Bow
+        [147539] = 6234,        -- Pit Daemon Dagger
+        [147540] = 6235,        -- Pit Daemon Mace
+        [147541] = 6236,        -- Pit Daemon Shield
+        [147542] = 6237,        -- Pit Daemon Staff
+        [147543] = 6238,        -- Pit Daemon Sword
+        [147544] = 6209,        -- Stormlord Battle Axe
+        [147545] = 6210,        -- Stormlord Maul
+        [147546] = 6211,        -- Stormlord Greatsword
+        [147547] = 6212,        -- Stormlord Axe
+        [147548] = 6213,        -- Stormlord Bow
+        [147549] = 6214,        -- Stormlord Dagger
+        [147550] = 6215,        -- Stormlord Mace
+        [147551] = 6216,        -- Stormlord Shield
+        [147552] = 6217,        -- Stormlord Staff
+        [147553] = 6218,        -- Stormlord Sword
+        [147554] = 6219,        -- Firedrake Battle Axe
+        [147555] = 6220,        -- Firedrake Maul
+        [147556] = 6221,        -- Firedrake Greatsword
+        [147557] = 6222,        -- Firedrake Axe
+        [147558] = 6223,        -- Firedrake Bow
+        [147559] = 6224,        -- Firedrake Dagger
+        [147560] = 6225,        -- Firedrake Mace
+        [147561] = 6226,        -- Firedrake Shield
+        [147562] = 6227,        -- Firedrake Staff
+        [147563] = 6228,        -- Firedrake Sword
+        [147601] = 6251,        -- Nightflame's Mask
+        [147602] = 6252,        -- Nightflame's Shoulder
+        [147660] = 6295,        -- Prophet's Breeches
+        [147661] = 6295,        -- Prophet's Breeches
 }
-
 
 function uespLog.BoolToOnOff(flag)
 	if (flag) then return "on" end
@@ -8657,6 +8820,108 @@ function uespLog.CompareItemLogs (itemLog1, itemLog2)
 end
 
 
+uespLog.ITEMTRANSMUTETRAIT_IDS = {
+		[18] = 4610,		-- Armor
+		[17] = 88106,
+		[12] = 61001,
+		[16] = 89276,
+		[20] = 7556,
+		[19] = 7321,
+		[13] = 5832,
+		[11] = 1759,
+		[15] = 26139,
+		[14] = 44259,
+		[25] = 89434,
+		
+		[22] = 29461,	-- Jewelry
+		[21] = 54476,
+		[24] = 15765,
+		[23] = 55373,
+ 
+		[31] = 139761,	-- Update 18	
+		[29] = 140031,
+		[33] = 140120,
+		[27] = 138796,
+		[32] = 140211,
+		[28] = 139941,
+		[30] = 139851,
+		
+		[5] = 89327,		-- 1H Weapons (double for 2H)
+		[1] = 89281,
+		[3] = 88033,
+		[7] = 89341,
+		[6] = 89401,
+		[8] = 89381,
+	
+		[9] = 46281,		-- Weapons
+		[10] = 49399,
+		[2] = 89368,
+		[4] = 89267,
+		[26] = 89422,
+}
+
+uespLog.ITEMTRANSMUTETRAIT_2H_IDS = {
+		
+		[5] = 89332,		-- 2H Weapons		
+		[1] = 89285,
+		[3] = 88036,
+		[7] = 89352,
+		[6] = 88136,
+		[8] = 88112,
+				
+		[9] = 46281,		-- Normal Weapons
+		[10] = 49399,
+		[2] = 89368,
+		[4] = 89267,
+		[26] = 89422,
+}
+
+uespLog.backupTraits = {}
+uespLog.backupTraits2H = {}
+
+
+function uespLog.CreateBackupTraits(backupTraits, trait, itemId)
+	local i, value
+	local level, quality
+	
+	for i, value in ipairs(uespLog.MINEITEM_LEVELS_SAFE) do
+		local levelStart = value[1]
+		local levelEnd = value[2]
+		local qualityStart = value[3]
+		local qualityEnd = value[4]
+		local comment = value[5]
+		
+		for level = levelStart, levelEnd do
+		
+			if (backupTraits[level] == nil) then
+				backupTraits[level] = {}
+			end
+			
+			for quality = qualityStart, qualityEnd do
+				local itemLink = uespLog.MakeItemLink(itemId, level, quality)
+				local trait, traitDesc = GetItemLinkTraitInfo(itemLink)
+				backupTraits[level][quality] = traitDesc
+			end
+		end
+	end
+end
+
+
+function uespLog.LoadBackupTraits()
+
+	for trait, itemId in pairs(uespLog.ITEMTRANSMUTETRAIT_IDS) do
+		uespLog.backupTraits[trait] = {}
+		uespLog.CreateBackupTraits(uespLog.backupTraits[trait], trait, itemId)
+	end
+	
+	for trait, itemId in pairs(uespLog.ITEMTRANSMUTETRAIT_2H_IDS) do
+		uespLog.backupTraits2H[trait] = {}
+		uespLog.CreateBackupTraits(uespLog.backupTraits2H[trait], trait, itemId)
+	end
+
+end
+
+
 function uespLog.CreateItemLinkLog (itemLink)
 	local enchantName, enchantDesc
 	local useAbilityName, useAbilityDesc, cooldown
@@ -8670,16 +8935,20 @@ function uespLog.CreateItemLinkLog (itemLink)
 	local isConsumable, isRune
 	local flagString = ""
 	local flavourText
+	local tmp1, tmp2, tmp3
 	local logData = { }
 	local _, _, itemId, internalLevel, _, _, _, internalSubType  = uespLog.ParseLinkID(itemLink)
 	
 	logData.itemLink = itemLink
-		
+	
 	logData.name = GetItemLinkName(itemLink)
 	local isGunnySack = string.lower(logData.name) == "wet gunny sack"
 	
 	logData.type, logData.specialType = GetItemLinkItemType(itemLink)
-	logData.icon, _, _, _, logData.itemStyle = GetItemLinkInfo(itemLink)
+	logData.icon = GetItemLinkIcon(itemLink)
+	logData.itemStyle = GetItemLinkItemStyle(itemLink)
+	--logData.icon, _, _, _, logData.itemStyle = GetItemLinkInfo(itemLink)
+	
 	logData.equipType = GetItemLinkEquipType(itemLink)
 	logData.weaponType = GetItemLinkWeaponType(itemLink)
 	logData.armorType = GetItemLinkArmorType(itemLink)
@@ -8691,7 +8960,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 	logData.condition = GetItemLinkCondition(itemLink)
 	logData.useType = GetItemLinkItemUseType(itemLink)
 	logData.recipeRank = -1
-		
+
 	if (uespLog.MINEITEM_SHIELDARMORFACTOR ~= nil and uespLog.MINEITEM_SHIELDARMORFACTOR ~= 1 and logData.weaponType == 14) then
 		logData.armorRating = logData.armorRating * uespLog.MINEITEM_SHIELDARMORFACTOR
 	end
@@ -8711,21 +8980,21 @@ function uespLog.CreateItemLinkLog (itemLink)
 	if (hasCharges) then
 		logData.maxCharges = GetItemLinkMaxEnchantCharges(itemLink)
 	end
-	
+
 	hasEnchant, enchantName, enchantDesc = GetItemLinkEnchantInfo(itemLink)
-	
+
 	if (hasEnchant) then
 		logData.enchantName = enchantName
 		logData.enchantDesc = enchantDesc
 	end
-			
+
 	hasUseAbility, useAbilityName, useAbilityDesc, cooldown, hasScaling, minLevel, maxLevel, isChampionPoints = GetItemLinkOnUseAbilityInfo(itemLink)
 	
 	if (isChampionPoints) then
 		minLevel = 50 + math.floor(minLevel/10)
 		maxLevel = 50 + math.floor(maxLevel/10)
 	end
-	
+
 	if (hasUseAbility) then
 		logData.useAbilityName = useAbilityName
 		logData.useAbilityDesc = useAbilityDesc
@@ -8734,14 +9003,59 @@ function uespLog.CreateItemLinkLog (itemLink)
 		logData.minLevel = minLevel
 		logData.maxLevel = maxLevel
 	end
-	
+
 	logData.trait, logData.traitDesc = GetItemLinkTraitInfo(itemLink)
-	local isSetItem, setName, numSetBonuses, numSetEquipped, maxSetEquipped, setId = GetItemLinkSetInfo(itemLink)
+	
+	if (string.find(logData.traitDesc, "\0")) then
+		--uespLog.Msg(itemLink.." Found bad trait: "..logData.traitDesc)
+		
+		local backupTraits = uespLog.backupTraits
+		local reason = ""
+		
+		if (logData.equipType == 6) then
+			backupTraits = uespLog.backupTraits2H
+		end
+	
+		if (backupTraits) then
+			backupTraits = backupTraits[logData.trait]
+			
+			if (backupTraits) then
+				backupTraits = backupTraits[tonumber(internalLevel)]
+				
+				if (backupTraits) then
+					backupTraits = backupTraits[tonumber(internalSubType)]
+					
+					if (not backupTraits) then
+						reason = "Missing Subtype "..internalSubType
+					end
+				else
+					reason = "Missing Level " .. internalLevel
+				end
+			else
+				reason = "Missing Trait "..logData.trait
+			end
+		else
+			reason = "Missing Top Level"
+		end
+		
+		if (backupTraits) then
+			logData.traitDesc = backupTraits
+		else
+			uespLog.Msg("No backup itemId found for trait " .. logData.trait .. " (" .. reason .. ")!")
+		end
+		
+	end
+	
+	if (string.find(logData.traitDesc, "\0")) then
+		uespLog.Msg(backupLink.." Found bad trait: "..logData.traitDesc)
+	end
 	
 	if (logData.traitDesc == "") then
 		logData.traitDesc = nil
 	end
-	
+
+	local isSetItem, setName, numSetBonuses, numSetEquipped, maxSetEquipped, setId = GetItemLinkSetInfo(itemLink)
+			
 	if (isSetItem) then
 		logData.setId = setId
 		logData.setName = setName
@@ -8755,13 +9069,14 @@ function uespLog.CreateItemLinkLog (itemLink)
 			logData["setDesc"..tostring(i)] = tostring(setBonusDesc)
 		end
 	end
-	
+
 	flavourText = GetItemLinkFlavorText(itemLink)
 	if (flavourText ~= "") then logData.flavourText = flavourText end
-		
-	isCrafted = IsItemLinkCrafted(itemLink)
-	if (isCrafted) then flagString = flagString .. "Crafted " end
-	
+
+		-- Only works for actually crafted items and has crash issue
+	--isCrafted = IsItemLinkCrafted(itemLink)
+	--if (isCrafted) then flagString = flagString .. "Crafted " end
+
 	isVendorTrash = IsItemLinkVendorTrash(itemLink)
 	if (isVendorTrash) then flagString = flagString .. "Vendor " end
 	
@@ -8771,7 +9086,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 		logData.siegeType = siegeType
 		logData.maxSiegeHP = GetItemLinkSiegeMaxHP(itemLink)
 	end
-	
+
 	logData.quality = GetItemLinkQuality(itemLink)
 	
 	isUnique = IsItemLinkUnique(itemLink)
@@ -8782,7 +9097,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 	
 	isConsumable = IsItemLinkConsumable(itemLink)
 	if (isConsumable) then flagString = flagString .. "Consumable " end
-	
+
 	runeKnown, logData.reagentTrait1 = GetItemLinkReagentTraitInfo(itemLink, 1)
 	runeKnown, logData.reagentTrait2 = GetItemLinkReagentTraitInfo(itemLink, 2)
 	runeKnown, logData.reagentTrait3 = GetItemLinkReagentTraitInfo(itemLink, 3)
@@ -8795,7 +9110,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 		logData.runeType = GetItemLinkEnchantingRuneClassification(itemLink)
 		logData.runeRank = GetItemLinkRequiredCraftingSkillRank(itemLink)		
 	end
-			
+
 	craftSkill = GetItemLinkCraftingSkillType(itemLink)
 		
 	if (craftSkill > 0) then 
@@ -8806,7 +9121,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 	
 	logData.refinedMatLink = GetItemLinkRefinedMaterialItemLink(itemLink)
 	logData.matLevelDesc = GetItemLinkMaterialLevelDescription(itemLink)
-	
+
 	if (logData.matLevelDesc == "" and logData.refinedMatLink ~= "") then
 		logData.matLevelDesc = GetItemLinkMaterialLevelDescription(logData.refinedMatLink)
 	end
@@ -8823,10 +9138,10 @@ function uespLog.CreateItemLinkLog (itemLink)
 	if (logData.matLevelDesc == "") then
 		logData.matLevelDesc = nil
 	end
-	
+
 	requiredQuality = GetItemLinkRecipeQualityRequirement(itemLink)
 	logData.recipeQuality = requiredQuality
-	
+
 	if (GetItemLinkRecipeNumTradeskillRequirements ~= nil) then
 		local numTradeskills = GetItemLinkRecipeNumTradeskillRequirements(itemLink)
 
@@ -8852,7 +9167,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 	elseif (GetItemLinkRecipeRankRequirement ~= nil) then
 		logData.recipeRank = GetItemLinkRecipeRankRequirement(itemLink)
 	end
-	
+
 	resultItemLink = GetItemLinkRecipeResultItemLink(itemLink)
 	
 	if (resultItemLink ~= nil and resultItemLink ~= "") then
@@ -8876,13 +9191,13 @@ function uespLog.CreateItemLinkLog (itemLink)
 	if (refinedItemLink ~= nil and refinedItemLink ~= "") then
 		logData.refinedItemLink = refinedItemLink
 	end
-	
+
 	craftSkillRank = GetItemLinkRequiredCraftingSkillRank(itemLink)
 	
 	if (craftSkillRank ~= nil) then
 		logData.craftSkillRank = craftSkillRank
 	end
-		
+
 	local numIngredients = GetItemLinkRecipeNumIngredients(itemLink)
 	local ingrList = {}
 	
@@ -8898,7 +9213,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 			ingrList[#ingrList + 1] = tostring(ingredientName).." ("..tostring(numReq)..")"
 		end
 	end
-	
+
 	logData.recipeIngredients = table.concat(ingrList, ", ")
 		
 	--logData.isBound = IsItemLinkBound(itemLink)
@@ -8940,13 +9255,12 @@ function uespLog.CreateItemLinkLog (itemLink)
 		logData.bookTitle = bookTitle
 	end
 	
-	--GetItemLinkInfo()
 	--local known, name = GetItemLinkReagentTraitInfo(itemLink, traitIndex) 
 	
 	if (flagString ~= "") then
 		logData.flag = flagString
 	end
-	
+
 	local tagString = ""
 	
 	if (GetItemLinkNumItemTags ~= nil) then
@@ -9936,10 +10250,9 @@ end
 
 
 function uespLog.IsValidItemLink (itemLink)
-	local icon, sellPrice, meetsUsageRequirement, equipType, itemStyle = GetItemLinkInfo(itemLink)
+	local icon = GetItemLinkIcon(itemLink)
 	
 	return not (icon == nil or icon == "")
-	--return (GetItemLinkItemType(itemLink) > 0)
 end
 
 
@@ -10020,7 +10333,7 @@ function uespLog.MineItemIterateLevelsShort (itemId)
 						
 						itemLink = uespLog.MakeItemLinkEx( { itemId = itemId, level = level, quality = quality, style = 0 } )
 						
-						if (uespLog.IsValidItemLink(itemLink)) then
+						if (true or uespLog.IsValidItemLink(itemLink)) then
 							
 							if (isFirst) then
 								isFirst = false
@@ -10036,7 +10349,6 @@ function uespLog.MineItemIterateLevelsShort (itemId)
 								diffItemLog.event = "mi"
 								uespLog.AppendDataToLog("all", diffItemLog, extraData)
 								lastItemLog = newItemLog
-								--uespLog.LogItemLinkShort(itemLink, "mi", extraData)
 							end
 							
 						else
@@ -12290,7 +12602,7 @@ SLASH_COMMANDS["/uespmakelink"] = function (cmd)
 	
 	local itemLink = uespLog.MakeItemLink(itemId, cmds[2], cmds[3])
 	
-	local icon, sellPrice, meetsUsageRequirement, equipType, itemStyle = GetItemLinkInfo(itemLink)
+	local icon = GetItemLinkIcon(itemLink)
 
 	if (icon == nil or icon == "") then
 		uespLog.Msg("Item "..tostring(itemId).." is not valid!")
@@ -12300,9 +12612,6 @@ SLASH_COMMANDS["/uespmakelink"] = function (cmd)
 	uespLog.Msg("Created Item Link "..itemLink)
 	
 	uespLog.DebugExtraMsg("Icon "..tostring(icon))
-	uespLog.DebugExtraMsg("Value "..tostring(sellPrice))
-	uespLog.DebugExtraMsg("Equip Type "..tostring(equipType))
-	uespLog.DebugExtraMsg("Item Style "..tostring(itemStyle))
 	
 	ZO_PopupTooltip_SetLink(itemLink)
 end
@@ -14034,7 +14343,12 @@ function uespLog.MineCollectibleIDs(note)
 			logData.isSlottable = IsCollectibleSlottable(collectibleId)
 			logData.isUsable = IsCollectibleUsable(collectibleId)
 			logData.isRenameable = IsCollectibleRenameable(collectibleId)
-			logData.isPlaceholder = IsCollectiblePlaceholder(collectibleId)
+			
+			if (IsCollectiblePlaceholder) then
+				logData.isPlaceholder = IsCollectiblePlaceholder(collectibleId)
+			else
+				logData.isPlaceholder = false
+			end
 			logData.itemLink = GetCollectibleLink(collectibleId)
 			
 			logData.nickname = GetCollectibleNickname(collectibleId)
@@ -17572,5 +17886,8 @@ function uespLog.DoNextMineTest()
 	uespLog.NextMineTestIndex = uespLog.NextMineTestIndex + 1
 	zo_callLater(uespLog.DoNextMineTest, 5000)
 end
+
+
+
 
 

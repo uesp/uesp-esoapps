@@ -104,6 +104,7 @@ typedef std::vector<unsigned char> CFileByteArray;
 typedef std::vector<std::string> CUlmLogArray;
 typedef std::vector<ulm_sectiondata_t> CUlmLogDataArray;
 typedef std::unordered_map<std::string, std::string> CUlmLogMap;
+typedef std::vector<std::string> CUlmBuildDataQueue;
 
 struct ulm_screenshot_t 
 {
@@ -116,6 +117,7 @@ struct ulm_screenshot_t
 	bool			IsValid;
 	bool			IsCharData;
 	bool			IsBuildData;
+	int				BuildIndex;
 };
 
 class CuespLogMonitorDlg;
@@ -160,7 +162,7 @@ protected:
 	
 	CUlmLogDataArray	m_SendQueue;
 	CUlmLogDataArray	m_BackupQueue;   // Data that should be backed up but not sent
-	std::string			m_BuildDataQueue;
+	CUlmBuildDataQueue	m_BuildDataQueue;
 	std::string			m_CharDataQueue;
 
 	HANDLE				m_hSendQueueThread;
@@ -170,8 +172,8 @@ protected:
 	int					m_FormErrorRetryCount;
 
 	std::string					m_BuildData;
-	//std::vector<std::string>	m_BuildDataScreenshots;
 	int							m_BuildDataValidScreenshotCount;
+	int							m_BuildDataIndex;
 	std::vector<ulm_screenshot_t> m_Screenshots;
 
 	std::string					m_CharData;
@@ -247,7 +249,7 @@ protected:
   
 	bool ParseBuildDataScreenshots(const int NumBuilds);
 	bool ParseCharDataScreenshots(const bool isCharData);
-	std::string GetScreenshotFormQuery(const bool isCharData);
+	std::string GetScreenshotFormQuery(const bool isCharData, const int BuildIndex);
 	bool LoadScreenshots();
 	bool LoadScreenshot(ulm_screenshot_t& Screenshot);
 	bool ConvertScreenshotToJpg(ulm_screenshot_t& Screenshot);

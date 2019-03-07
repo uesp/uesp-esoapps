@@ -68,6 +68,9 @@
 		- uespSalesPrices.lua is downloaded into its own add-on directory.
 		- The uespSalesPrices.lua file is downloaded compressed to save time.
 
+	v0.61 - 7 March 2019
+		- Fixed build uploading with multiple accounts in the saved variable file.
+
 	TODO:
 		- Proper UI threading.
 
@@ -200,7 +203,8 @@ CuespLogMonitorDlg::CuespLogMonitorDlg(CWnd* pParent) :
 	m_LastLogCheckTime(0),
 	m_LastPriceDownloadTime(0),
 	m_hFileMonitor(INVALID_HANDLE_VALUE),
-	m_hPriceDownloadThread(NULL)
+	m_hPriceDownloadThread(NULL),
+	m_BuildDataIndex(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
@@ -628,8 +632,9 @@ bool CuespLogMonitorDlg::ParseSavedVarGlobals (const std::string VarName, void* 
 bool CuespLogMonitorDlg::ParseSavedVarBuildData(const std::string VarName, void* pUserData)
 {
 	std::string Version = ParseSavedVarDataVersion();
+	std::string Prefix = "uespBuildData";
+	std::string BuildData;
 
-	m_BuildData = "";
 	lua_getfield(m_pLuaState, -1, "data");
 
 	if (lua_isnil(m_pLuaState, -1))
@@ -641,36 +646,43 @@ bool CuespLogMonitorDlg::ParseSavedVarBuildData(const std::string VarName, void*
 
 	int numObjects = lua_rawlen(m_pLuaState, -1);
 
-	m_BuildData = GetLuaVariableString("uespBuildData", false);
+	BuildData += GetLuaVariableString(Prefix, false);
 
-	if (m_BuildData.empty())
+	if (BuildData.empty())
 	{
 		lua_pop(m_pLuaState, 1);
 		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to parse the buildData variable data!");
 		return false;
 	}
 
-	if (m_BuildData.size() < CuespLogMonitorDlg::MINIMUM_VALID_BUILDDATA_SIZE)
+	if (BuildData.size() < CuespLogMonitorDlg::MINIMUM_VALID_BUILDDATA_SIZE)
 	{
 		PrintLogLine(ULM_LOGLEVEL_INFO, "Found the buildData section with no characters.");
-		m_BuildData.clear();
+		BuildData.clear();
 		lua_pop(m_pLuaState, 1);
 		return true;
 	}
 
+	m_BuildData = BuildData;
 	m_BuildData += "\n";
-	m_BuildData += "uespBuildData.UserName = '";
+	m_BuildData += Prefix + ".UserName = '";
 	m_BuildData += GetCurrentUserName();
 	m_BuildData += "'\n";
-	m_BuildData += "uespBuildData.WikiUser = '";
+	m_BuildData += Prefix + ".WikiUser = '";
 	m_BuildData += m_Options.UespWikiAccountName;
 	m_BuildData += "'\n";
 
+	int origScreenshotCount = m_BuildDataValidScreenshotCount;
+
 	ParseBuildDataScreenshots(numObjects);
 
-	PrintLogLine(ULM_LOGLEVEL_INFO, "Found the buildData section with %d characters (%u bytes).", numObjects, m_BuildData.length());
-	PrintLogLine(ULM_LOGLEVEL_INFO, "Found %d valid screenShot files for the character data.", m_BuildDataValidScreenshotCount);
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Found the buildData section with %d characters (%u bytes).", numObjects, BuildData.length());
+	PrintLogLine(ULM_LOGLEVEL_INFO, "Found %d valid screenShot files for the character data.", m_BuildDataValidScreenshotCount - origScreenshotCount);
 	lua_pop(m_pLuaState, 1);
+
+	CheckAndSendBuildData();
+
+	m_BuildDataIndex++;
 
 	return true;
 }
@@ -882,6 +894,7 @@ bool CuespLogMonitorDlg::ParseCharDataScreenshots(const bool isCharData)
 	Screenshot.IsValid = false;
 	Screenshot.IsBuildData = !isCharData;
 	Screenshot.IsCharData = isCharData;
+	Screenshot.BuildIndex = m_BuildDataIndex;
 
 	lua_getfield(m_pLuaState, -1, "ScreenShot");
 
@@ -931,7 +944,7 @@ bool CuespLogMonitorDlg::ParseCharDataScreenshots(const bool isCharData)
 }
 
 
-std::string CuespLogMonitorDlg::GetScreenshotFormQuery(const bool isCharData)
+std::string CuespLogMonitorDlg::GetScreenshotFormQuery(const bool isCharData, const int BuildIndex)
 {
 	std::string FormQuery;
 
@@ -939,6 +952,7 @@ std::string CuespLogMonitorDlg::GetScreenshotFormQuery(const bool isCharData)
 	{
 		if (!it.IsValid) continue;
 		if (it.IsCharData != isCharData) continue;
+		if (!isCharData && it.BuildIndex != BuildIndex) continue;
 
 		FormQuery += "screenshot[]=";
 		FormQuery += it.EncodedFileData;
@@ -1667,40 +1681,42 @@ bool CuespLogMonitorDlg::SendQueuedBuildDataThread()
 		return false;
 	}
 
-	CurrentData = m_BuildDataQueue;
-	m_BuildDataQueue.clear();
-
-	ReleaseMutex(m_hSendQueueMutex);
-
-	std::string TempData = EncodeLogDataForQuery(CurrentData);
-	FormQuery += "chardata=";
-	FormQuery += TempData;
-	FormQuery += "&";
-	if (m_Options.UploadScreenshots) FormQuery += GetScreenshotFormQuery(false);
-
-	bool Result = SendFormData(m_Options.BuildDataFormURL, FormQuery, true, SentSize);
-
-	if (!Result)
+	for (size_t i = 0; i < m_BuildDataQueue.size(); ++i)
 	{
-		if (m_FormErrorRetryCount > MAXIMUM_FORMERROR_RETRYCOUNT)
+		CurrentData = m_BuildDataQueue[i];
+
+		std::string TempData = EncodeLogDataForQuery(CurrentData);
+		FormQuery += "chardata=";
+		FormQuery += TempData;
+		FormQuery += "&";
+		if (m_Options.UploadScreenshots) FormQuery += GetScreenshotFormQuery(false, i);
+
+		bool Result = SendFormData(m_Options.BuildDataFormURL, FormQuery, true, SentSize);
+
+		if (!Result)
 		{
-			m_FormErrorRetryCount = 0;
-			PrintLogLine(ULM_LOGLEVEL_INFO, "Exceeded %d failed send attempts...aborting send of build data!", MAXIMUM_FORMERROR_RETRYCOUNT);
-		}
-		else
-		{
-			if (WaitForSingleObject(m_hSendQueueMutex, INFINITE) != WAIT_OBJECT_0)
+			if (m_FormErrorRetryCount > MAXIMUM_FORMERROR_RETRYCOUNT)
 			{
-				PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to wait for send queue mutex!");
-				return false;
+				m_FormErrorRetryCount = 0;
+				PrintLogLine(ULM_LOGLEVEL_INFO, "Exceeded %d failed send attempts...aborting send of build data!", MAXIMUM_FORMERROR_RETRYCOUNT);
+			}
+			else
+			{
+				if (WaitForSingleObject(m_hSendQueueMutex, INFINITE) != WAIT_OBJECT_0)
+				{
+					PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to wait for send queue mutex!");
+					return false;
+				}
+
+				ReleaseMutex(m_hSendQueueMutex);
 			}
 
-			m_BuildDataQueue += CurrentData;
-			ReleaseMutex(m_hSendQueueMutex);
+			return false;
 		}
-
-		return false;
 	}
+
+	m_BuildDataQueue.clear();
+	ReleaseMutex(m_hSendQueueMutex);
 
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Sent %u bytes of build data!", SentSize);
 	return true;
@@ -1731,7 +1747,7 @@ bool CuespLogMonitorDlg::SendQueuedCharDataThread()
 	FormQuery += "chardata=";
 	FormQuery += TempData;
 	FormQuery += "&";
-	if (m_Options.UploadScreenshots) FormQuery += GetScreenshotFormQuery(true);
+	if (m_Options.UploadScreenshots) FormQuery += GetScreenshotFormQuery(true, 0);
 
 	if (!SendFormData(m_Options.CharDataFormURL, FormQuery, true, SentSize))
 	{
@@ -1880,7 +1896,8 @@ bool CuespLogMonitorDlg::QueueBuildData()
 {
 	if (m_BuildData.empty()) return true;
 
-	m_BuildDataQueue += m_BuildData;
+	m_BuildDataQueue.push_back(m_BuildData);
+	m_BuildData = "";
 
 	return true;
 }
@@ -1891,6 +1908,7 @@ bool CuespLogMonitorDlg::QueueCharData()
 	if (m_CharData.empty()) return true;
 
 	m_CharDataQueue += m_CharData;
+	m_CharData = "";
 
 	return true;
 }
@@ -2730,11 +2748,12 @@ bool CuespLogMonitorDlg::DoLogCheck(const bool OverrideEnable)
 		return false;
 	}
 
+	/*
 	if (!CheckAndSendBuildData())
 	{
 		ReleaseMutex(m_hSendQueueMutex);
 		return false;
-	}
+	} //*/
 
 	if (!CheckAndSendCharData())
 	{
@@ -3206,7 +3225,7 @@ bool CuespLogMonitorDlg::SendEntireLog (const std::string Filename)
 	bool Result = true;
 	
 	Result &= CheckAndSendLogData();
-	Result &= CheckAndSendBuildData();
+	//Result &= CheckAndSendBuildData();
 	Result &= CheckAndSendCharData();
 
 	ReleaseMutex(m_hSendQueueMutex);

@@ -1,12 +1,16 @@
 #!/bin/sh
 
-VERSION="21pts"
-ISPTS="1"
+VERSION="21"
+ISPTS=""
 LASTVERSION="20"
-LASTPTSVERSION="20pts"
+LASTPTSVERSION="21pts"
 
-MAKEPTSDIFF=""
+MAKEPTSDIFF="1"
 MAKEDIFF="1"
+
+if [ "$ISPTS" ]; then
+	MAKEPTSDIFF=""
+fi
 
 #
 # Set to 1 for game updates 20 and prior.
@@ -138,74 +142,71 @@ if [ ! -d "$OUTPUTPATH" ]; then
 fi
 
 
-mkdir "$OUTPUTPATH/esomnf-$VERSION/"
+mkdir "$ESOINPUTPATH"
 ./export/EsoExtractData.exe "$ESODATAFILE" "$ESOINPUTPATH/" -z "$ESOINPUTPATH/zosft.txt" -m "$ESOINPUTPATH/mnf.txt"  --extractsubfile combined
 
-mkdir "$OUTPUTPATH/gamemnf-$VERSION/"
+mkdir "$GAMEINPUTPATH"
 ./export/EsoExtractData.exe "$GAMEDATAFILE" "$GAMEINPUTPATH/" -z "$GAMEINPUTPATH/zosft.txt" -m "$GAMEINPUTPATH/mnf.txt"
 
 
 echo "Converting DDS to PNG..."
-./convertdds.bat "./$GAMEINPUTPATH/esoui/"
-./convertdds.bat "./$ESOINPUTPATH/esoui/"
-./convertdds.bat "./$ESOINPUTPATH/art/"
+./convertdds.bat "$GAMEINPUTPATH/esoui/"
+./convertdds.bat "$ESOINPUTPATH/esoui/"
+./convertdds.bat "$ESOINPUTPATH/art/"
 
 
 echo "Copying Game UI Art..."
-rsync -a --exclude "*.dds" "./$GAMEINPUTPATH/esoui/art/" "./$OUTPUTPATH/GameUIArt/"
+rsync -a --exclude "*.dds" "$GAMEINPUTPATH/esoui/art/" "$OUTPUTPATH/GameUIArt/"
 
 echo "Copying Icons..."
-rsync -a --exclude "*.dds" "./$ESOINPUTPATH/esoui/art/icons/" "./$OUTPUTPATH/Icons/"
+rsync -a --exclude "*.dds" "$ESOINPUTPATH/esoui/art/icons/" "$OUTPUTPATH/Icons/"
 
 echo "Copying Loading Screens..."
 
 if [ "$CROPLOADINGSCREENS" ]; then
-	rsync -a --exclude "*.dds" "./$ESOINPUTPATH/esoui/art/loadingscreens/" "./$OUTPUTPATH/LoadingScreens/raw/"
+	rsync -a --exclude "*.dds" "$ESOINPUTPATH/esoui/art/loadingscreens/" "$OUTPUTPATH/LoadingScreens/raw/"
 else
-	rsync -a --exclude "*.dds" "./$ESOINPUTPATH/esoui/art/loadingscreens/" "./$OUTPUTPATH/LoadingScreens/"
+	rsync -a --exclude "*.dds" "$ESOINPUTPATH/esoui/art/loadingscreens/" "$OUTPUTPATH/LoadingScreens/"
 fi
 
 echo "Copying Treasure Maps..."
-rsync -a --exclude "*.dds" "./$ESOINPUTPATH/esoui/art/treasuremaps/" "./$OUTPUTPATH/TreasureMaps/"
+rsync -a --exclude "*.dds" "$ESOINPUTPATH/esoui/art/treasuremaps/" "$OUTPUTPATH/TreasureMaps/"
 
 echo "Copying Crown Crates Images..."
-rsync -a --exclude "*.dds" "./$ESOINPUTPATH/esoui/art/crowncrates" "./$OUTPUTPATH/MoreImages/"
+rsync -a --exclude "*.dds" "$ESOINPUTPATH/esoui/art/crowncrates" "$OUTPUTPATH/MoreImages/"
 
 echo "Copying Collectible Images..."
-rsync -a --exclude "*.dds" "./$ESOINPUTPATH/esoui/art/collectibles" "./$OUTPUTPATH/MoreImages/"
+rsync -a --exclude "*.dds" "$ESOINPUTPATH/esoui/art/collectibles" "$OUTPUTPATH/MoreImages/"
 
 echo "Copying Store Images..."
-rsync -a --exclude "*.dds" "./$ESOINPUTPATH/esoui/art/store" "./$OUTPUTPATH/MoreImages/"
+rsync -a --exclude "*.dds" "$ESOINPUTPATH/esoui/art/store" "$OUTPUTPATH/MoreImages/"
 
 echo "Copying Tree Icons..."
-rsync -a --exclude "*.dds" "./$ESOINPUTPATH/esoui/art/treeicons" "./$OUTPUTPATH/MoreImages/"
+rsync -a --exclude "*.dds" "$ESOINPUTPATH/esoui/art/treeicons" "$OUTPUTPATH/MoreImages/"
 
 echo "Copying Tutorial Images..."
-rsync -a --exclude "*.dds" "./$ESOINPUTPATH/esoui/art/tutorial" "./$OUTPUTPATH/MoreImages/"
+rsync -a --exclude "*.dds" "$ESOINPUTPATH/esoui/art/tutorial" "$OUTPUTPATH/MoreImages/"
 
 echo "Copying Language files..."
-rsync -a --exclude "*.dds" "./$ESOINPUTPATH/gamedata/lang/" "./$OUTPUTPATH/Lang/"
-rsync -a --exclude "*.dds" "./$ESOINPUTPATH/esoui/lang/" "./$OUTPUTPATH/Lang/client/"
-rsync -a --exclude "*.dds" "./$GAMEINPUTPATH/esoui/ingamelocalization" "./$OUTPUTPATH/Lang/"
-rsync -a --exclude "*.dds" "./$GAMEINPUTPATH/esoui/internalingamelocalization" "./$OUTPUTPATH/Lang/"
-rsync -a --exclude "*.dds" "./$GAMEINPUTPATH/esoui/pregamelocalization" "./$OUTPUTPATH/Lang/"
+rsync -a --exclude "*.dds" "$ESOINPUTPATH/gamedata/lang/" "$OUTPUTPATH/Lang/"
+rsync -a --exclude "*.dds" "$ESOINPUTPATH/esoui/lang/" "$OUTPUTPATH/Lang/client/"
+rsync -a --exclude "*.dds" "$GAMEINPUTPATH/esoui/ingamelocalization" "$OUTPUTPATH/Lang/"
+rsync -a --exclude "*.dds" "$GAMEINPUTPATH/esoui/internalingamelocalization" "$OUTPUTPATH/Lang/"
+rsync -a --exclude "*.dds" "$GAMEINPUTPATH/esoui/pregamelocalization" "$OUTPUTPATH/Lang/"
 
 
 if [ "$CROPLOADINGSCREENS" ]; then
 	echo "Cropping Loading Screens..."
-	cd ./$OUTPUTPATH/LoadingScreens/
+	cd $OUTPUTPATH/LoadingScreens/
 	./croploadscreens.sh
 fi
 
-cd ../../
-
 
 echo "Splitting Icons..."
-cd ./$OUTPUTPATH/Icons/
+cd $OUTPUTPATH/Icons/
 ./moveicons.sh
 ./movesubdiricons.sh
 cd ../../
-
 
 BASEPATH=`realpath ./`
 python "$MAPSOURCEPATH/CombineEsoMaps.py" "$VERSION" "$BASEPATH/" 
@@ -247,24 +248,24 @@ echo "Extracting book and quest data..."
 
 
 echo "Compressing Books..."
-pushd "./$OUTPUTPATH/Books/"
+pushd "$OUTPUTPATH/Books/"
 zip -rq "../books.zip" *
 popd
 
 echo "Compressing Quests..."
-pushd "./$OUTPUTPATH/Quests/"
+pushd "$OUTPUTPATH/Quests/"
 zip -rq "../quests.zip" Quests.txt Zones.txt
 popd
 
 echo "Compressing Game UI Art..."
-pushd "./$OUTPUTPATH/GameUIArt/"
+pushd "$OUTPUTPATH/GameUIArt/"
 zip -rq "../gameuiart.zip" *
 cd ..
 zip -urq "gameuiart.zip" gameuiart.ptsdiff.txt gameuiart.diff.txt
 popd
 
 echo "Compressing Icons..."
-pushd "./$OUTPUTPATH/Icons/"
+pushd "$OUTPUTPATH/Icons/"
 zip -rq "../spliticons.zip" *
 cd ..
 zip -urq "spliticons.zip" icons.ptsdiff.txt icons.diff.txt
@@ -274,17 +275,17 @@ BASEPATH=`realpath $OUTPUTPATH`
 pushd "./esomnf-$VERSION/esoui/art/icons/"
 zip -Rq "$BASEPATH/icons.zip" '*.png'
 popd
-pushd "./$OUTPUTPATH"
+pushd "$OUTPUTPATH"
 zip -urq "icons.zip" icons.ptsdiff.txt icons.diff.txt
 popd
 
 echo "Compressing Language Files..."
-pushd "./$OUTPUTPATH/Lang/"
+pushd "$OUTPUTPATH/Lang/"
 zip -rq "../lang.zip" *
 popd
 
 echo "Compressing Loading Screens..."
-pushd "./$OUTPUTPATH/LoadingScreens/"
+pushd "$OUTPUTPATH/LoadingScreens/"
 
 if [ "$CROPLOADINGSCREENS" ]; then
 	zip -q "../loadscreens.zip" *.jpg
@@ -297,49 +298,49 @@ zip -urq "loadscreens.zip" loadscreens.ptsdiff.txt loadscreens.diff.txt
 popd
 
 echo "Compressing Treasure Maps..."
-pushd "./$OUTPUTPATH/TreasureMaps/"
+pushd "$OUTPUTPATH/TreasureMaps/"
 zip -q "../treasuremaps.zip" *.png
 cd ..
 zip -urq "treasuremaps.zip" treasuremaps.ptsdiff.txt treasuremaps.diff.txt
 popd
 
 echo "Compressing Crown Crate Images..."
-pushd "./$OUTPUTPATH/MoreImages/crowncrates/"
+pushd "$OUTPUTPATH/MoreImages/crowncrates/"
 zip -rq "../../crowncrates.zip" *
 cd ../../
 zip -urq "crowncrates.zip" crowncrates.ptsdiff.txt crowncrates.diff.txt
 popd
 
 echo "Compressing Collectible Images..."
-pushd "./$OUTPUTPATH/MoreImages/collectibles/"
+pushd "$OUTPUTPATH/MoreImages/collectibles/"
 zip -rq "../../collectibles.zip" *
 cd ../../
 zip -urq "collectibles.zip" collectibles.ptsdiff.txt collectibles.diff.txt
 popd
 
 echo "Compressing Store Images..."
-pushd "./$OUTPUTPATH/MoreImages/store/"
+pushd "$OUTPUTPATH/MoreImages/store/"
 zip -rq "../../store.zip" *
 cd ../../
 zip -urq "store.zip" store.ptsdiff.txt store.diff.txt
 popd
 
 echo "Compressing Tree Icons..."
-pushd "./$OUTPUTPATH/MoreImages/treeicons/"
+pushd "$OUTPUTPATH/MoreImages/treeicons/"
 zip -rq "../../treeicons.zip" *
 cd ../../
 zip -urq "treeicons.zip" treeicons.ptsdiff.txt treeicons.diff.txt
 popd
 
 echo "Compressing Tutorial Images..."
-pushd "./$OUTPUTPATH/MoreImages/tutorial/"
+pushd "$OUTPUTPATH/MoreImages/tutorial/"
 zip -rq "../../tutorial.zip" *
 cd ../../
 zip -urq "tutorial.zip" tutorial.ptsdiff.txt tutorial.diff.txt
 popd
 
 echo "Compressing Maps..."
-pushd "./$OUTPUTPATH/CombinedMaps/"
+pushd "$OUTPUTPATH/CombinedMaps/"
 zip -rq "../maps.zip" * maplist.txt
 cd ../maps/
 zip -urq "../maps.zip" mapinfo.txt
@@ -348,7 +349,7 @@ zip -urq "maps.zip" maps.ptsdiff.txt maps.diff.txt
 popd
 
 echo "Copying Updated Maps..."
-pushd "./$OUTPUTPATH/Maps/"
+pushd "$OUTPUTPATH/Maps/"
 xargs -a ../maps.diff.txt.updatedmaps cp -Rt ../NewMaps/
 
 if [ "$MAKEPTSDIFF" ]; then
@@ -359,11 +360,11 @@ fi
 popd
 
 makezipdiff "icons.diff.zip" "./esomnf-$VERSION/esoui/art/icons/" "icons.diff.txt.list"
-makezipdiff "loadscreens.diff.zip" "./$OUTPUTPATH/LoadingScreens/" "loadscreens.diff.txt.list"
-makezipdiff "treasuremaps.diff.zip" "./$OUTPUTPATH/TreasureMaps/" "treasuremaps.diff.txt.list"
-makezipdiff "crowncrates.diff.zip" "./$OUTPUTPATH/MoreImages/crowncrates/" "crowncrates.diff.txt.list"
-makezipdiff "collectibles.diff.zip" "./$OUTPUTPATH/MoreImages/collectibles/" "collectibles.diff.txt.list"
-makezipdiff "store.diff.zip" "./$OUTPUTPATH/MoreImages/store/" "store.diff.txt.list"
-makezipdiff "tutorial.diff.zip" "./$OUTPUTPATH/MoreImages/tutorial/" "tutorial.diff.txt.list"
-makezipdiff "gameuiart.diff.zip" "./$OUTPUTPATH/GameUIArt/" "gameuiart.diff.txt.list"
-makezipdiff "maps.diff.zip" "./$OUTPUTPATH/CombinedMaps/" "maps.diff.txt.list"
+makezipdiff "loadscreens.diff.zip" "$OUTPUTPATH/LoadingScreens/" "loadscreens.diff.txt.list"
+makezipdiff "treasuremaps.diff.zip" "$OUTPUTPATH/TreasureMaps/" "treasuremaps.diff.txt.list"
+makezipdiff "crowncrates.diff.zip" ".OUTPUTPATH/MoreImages/crowncrates/" "crowncrates.diff.txt.list"
+makezipdiff "collectibles.diff.zip" "$OUTPUTPATH/MoreImages/collectibles/" "collectibles.diff.txt.list"
+makezipdiff "store.diff.zip" "$OUTPUTPATH/MoreImages/store/" "store.diff.txt.list"
+makezipdiff "tutorial.diff.zip" "$OUTPUTPATH/MoreImages/tutorial/" "tutorial.diff.txt.list"
+makezipdiff "gameuiart.diff.zip" "$OUTPUTPATH/GameUIArt/" "gameuiart.diff.txt.list"
+makezipdiff "maps.diff.zip" "$OUTPUTPATH/CombinedMaps/" "maps.diff.txt.list"

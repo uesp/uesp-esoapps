@@ -1919,24 +1919,26 @@ function uespLog.GetTradingHouseSearchResultItemInfo(index)
 			end
 		end
 
-		local deal, margin, profit = uespLog.DealCalc(setPrice, salesCount, purchasePrice, stackCount)
+		local deal, margin, profit, isValid = uespLog.DealCalc(setPrice, salesCount, purchasePrice, stackCount)
 		local dealString = ''
 		local marginString = ''
 		
-		if (deal) then 
+		if (isValid) then 
 			dealString = string.format('%.0f', deal) 
 			uespLog.SalesDealValues[index] = deal
-		end
+			
+			if (isValid and profit) then
+				uespLog.SalesDealProfits[index] = profit
+			end
+			
+			if (margin) then 
+				marginString = string.format('%.0f', margin) 
+			end 
 		
-		if (profit) then
-			uespLog.SalesDealProfits[index] = profit
+			sellerName = sellerName .. '|c000000;' .. dealString .. ';' .. marginString .. '|r'
 		end
-		
-		if (margin) then 
-			marginString = string.format('%.0f', margin) 
-		end 
 
-		return icon, name, quality, stackCount, sellerName .. '|c000000;' .. dealString .. ';' .. marginString .. '|r', timeRemaining, purchasePrice, currencyType, sumGold, unitPrice
+		return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, sumGold, unitPrice
 	end
 	
 	return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, sumGold, unitPrice
@@ -1978,24 +1980,26 @@ function uespLog.GetTradingHouseListingItemInfo(index)
 			end
 		end
 
-		local deal, margin, profit = uespLog.DealCalc(setPrice, salesCount, purchasePrice, stackCount)
+		local deal, margin, profit, isValid = uespLog.DealCalc(setPrice, salesCount, purchasePrice, stackCount)
 		local dealString = ''
 		local marginString = ''
 		
-		if (deal) then 
+		if (isValid) then
 			dealString = string.format('%.0f', deal) 
 			uespLog.SalesDealValues[index] = deal
-		end
-		
-		if (profit) then
-			uespLog.SalesDealProfits[index] = profit
+				
+			if (profit) then
+				uespLog.SalesDealProfits[index] = profit
+			end
+
+			if (margin) then 
+				marginString = string.format('%.0f', margin) 
+			end 
+			
+			sellerName = sellerName .. '|c000000;' .. dealString .. ';' .. marginString .. '|r'
 		end
 
-		if (margin) then 
-			marginString = string.format('%.0f', margin) 
-		end 
-
-		return icon, name, quality, stackCount, sellerName .. '|c000000;' .. dealString .. ';' .. marginString .. '|r', timeRemaining, purchasePrice, unknown1, unknown2, unknown3
+		return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, unknown1, unknown2, unknown3
 	end
 	
 	return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, unknown1, unknown2, unknown3
@@ -2009,7 +2013,7 @@ uespLog.SalesDealProfits = {}
 function uespLog.DealCalc(setPrice, salesCount, purchasePrice, stackCount)
 
 	if (uespLog.Old_MM_DealCalc and (uespLog.GetSalesShowDealType() ~= "uesp" or not uespLog.IsSalesShowPrices())) then
-		return uespLog.Old_MM_DealCalc(setPrice, salesCount, purchasePrice, stackCount)
+		return uespLog.Old_MM_DealCalc(setPrice, salesCount, purchasePrice, stackCount), true
 	end
 	
 	local deal = 0
@@ -2017,7 +2021,7 @@ function uespLog.DealCalc(setPrice, salesCount, purchasePrice, stackCount)
 	local profit = 0
 	
 	if (not setPrice) then
-		return 0, 0, 0
+		return 0, 0, 0, false
 	end
 	
 	local unitPrice = (purchasePrice / stackCount) or 0
@@ -2045,7 +2049,7 @@ function uespLog.DealCalc(setPrice, salesCount, purchasePrice, stackCount)
 		deal = 0
 	end
 
-	return deal, margin, profit
+	return deal, margin, profit, true
 end
 
 
@@ -2264,23 +2268,20 @@ function uespLog.AddBuyingAdvice(rowControl, result)
     
     local sellerName, dealString, margin = zo_strsplit(';', result.sellerName)
     --local margin = result.marginString
-    local dealValue = tonumber(dealString)
+    
 	
-    if dealValue then 
-		--if (dealValue ~= 0) then
+    if (dealString ) then 
+		local dealValue = tonumber(dealString)
 			buyingAdvice:SetText(margin .. '%')  
 			local r, g, b = GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, dealValue)
 			if dealValue == 0 then r = 0.98; g = 0.01; b = 0.01; end
 			buyingAdvice:SetColor(r, g, b, 1)
 			buyingAdvice:SetHidden(false)
-		--else
-			--buyingAdvice:SetHidden(true)
-		--end
 		
 		local sellerControl = rowControl:GetNamedChild('SellerName')
 		
 		if (sellerControl) then
-			sellerControl:SetText(zo_strsplit(';', sellerControl:GetText()))
+			sellerControl:SetText(sellerName)
 		end
 		
 	else

@@ -1016,6 +1016,9 @@
 --		- v1.81 -- 
 --			- Fixed use of removed API function in /uespminecollect.
 --			- Updated list of rune box IDs.
+--			- uespLogMonitor: Updated to v0.61 to fix uploading builds from multiple accounts.
+--			- Fixed build/character uploading active skills as all rank 1.
+--			- Fixed display of sales price deal margins in guild stores.
 --
 
 
@@ -1028,7 +1031,7 @@ end
 --	GLOBAL DEFINITIONS
 uespLog = uespLog or {}
 
-uespLog.version = "1.80"
+uespLog.version = "1.81"
 uespLog.releaseDate = "25 February 2019"
 uespLog.DATA_VERSION = 3
 

@@ -663,14 +663,15 @@ bool CuespLogMonitorDlg::ParseSavedVarBuildData(const std::string VarName, void*
 		return true;
 	}
 
-	m_BuildData = BuildData;
-	m_BuildData += "\n";
-	m_BuildData += Prefix + ".UserName = '";
-	m_BuildData += GetCurrentUserName();
-	m_BuildData += "'\n";
-	m_BuildData += Prefix + ".WikiUser = '";
-	m_BuildData += m_Options.UespWikiAccountName;
-	m_BuildData += "'\n";
+	BuildData += "\n";
+	BuildData += Prefix + ".UserName = '";
+	BuildData += GetCurrentUserName();
+	BuildData += "'\n";
+	BuildData += Prefix + ".WikiUser = '";
+	BuildData += m_Options.UespWikiAccountName;
+	BuildData += "'\n";
+
+	m_BuildData.push_back(BuildData);
 
 	int origScreenshotCount = m_BuildDataValidScreenshotCount;
 
@@ -679,8 +680,6 @@ bool CuespLogMonitorDlg::ParseSavedVarBuildData(const std::string VarName, void*
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Found the buildData section with %d characters (%u bytes).", numObjects, BuildData.length());
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Found %d valid screenShot files for the character data.", m_BuildDataValidScreenshotCount - origScreenshotCount);
 	lua_pop(m_pLuaState, 1);
-
-	CheckAndSendBuildData();
 
 	m_BuildDataIndex++;
 
@@ -738,7 +737,7 @@ bool CuespLogMonitorDlg::ParseSavedVarCharData(const std::string VarName, void* 
 	m_CharData += m_Options.UespWikiAccountName;
 	m_CharData += "'\n";
 
-	ParseCharDataScreenshots(true);
+	ParseCharDataScreenshots(true, -1);
 
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Found the charData section with %d rows (%u bytes).", numObjects, m_CharData.length());
 	lua_pop(m_pLuaState, 1);
@@ -875,7 +874,7 @@ bool CuespLogMonitorDlg::ParseBuildDataScreenshots(const int NumBuilds)
 
 		if (!lua_isnil(m_pLuaState, -1))
 		{
-			Result &= ParseCharDataScreenshots(false);
+			Result &= ParseCharDataScreenshots(false, i - 1);
 		}
 
 		lua_pop(m_pLuaState, 1);
@@ -885,7 +884,7 @@ bool CuespLogMonitorDlg::ParseBuildDataScreenshots(const int NumBuilds)
 }
 
 
-bool CuespLogMonitorDlg::ParseCharDataScreenshots(const bool isCharData)
+bool CuespLogMonitorDlg::ParseCharDataScreenshots(const bool isCharData, const int BuildIndex)
 {
 	int index = lua_gettop(m_pLuaState);
 	int i = 1;
@@ -894,7 +893,7 @@ bool CuespLogMonitorDlg::ParseCharDataScreenshots(const bool isCharData)
 	Screenshot.IsValid = false;
 	Screenshot.IsBuildData = !isCharData;
 	Screenshot.IsCharData = isCharData;
-	Screenshot.BuildIndex = m_BuildDataIndex;
+	Screenshot.BuildIndex = BuildIndex;
 
 	lua_getfield(m_pLuaState, -1, "ScreenShot");
 
@@ -1896,8 +1895,8 @@ bool CuespLogMonitorDlg::QueueBuildData()
 {
 	if (m_BuildData.empty()) return true;
 
-	m_BuildDataQueue.push_back(m_BuildData);
-	m_BuildData = "";
+	m_BuildDataQueue.insert(m_BuildDataQueue.end(), m_BuildData.begin(), m_BuildData.end());
+	m_BuildData.clear();
 
 	return true;
 }
@@ -2726,7 +2725,7 @@ bool CuespLogMonitorDlg::DoLogCheck(const bool OverrideEnable)
 	//PrintLogLine(ULM_LOGLEVEL_INFO, "Pre-TimeStamp: %I64d", m_Options.LastTimeStamp);
 	//PrintLogLine(ULM_LOGLEVEL_INFO, "Pre-Backup TimeStamp: %I64d", m_Options.LastBackupTimeStamp);
 
-	m_BuildData = "";
+	m_BuildData.clear();
 	m_CharData = "";
 	m_CharDataCount = 0;
 	m_Screenshots.clear();
@@ -2748,12 +2747,11 @@ bool CuespLogMonitorDlg::DoLogCheck(const bool OverrideEnable)
 		return false;
 	}
 
-	/*
 	if (!CheckAndSendBuildData())
 	{
 		ReleaseMutex(m_hSendQueueMutex);
 		return false;
-	} //*/
+	}
 
 	if (!CheckAndSendCharData())
 	{
@@ -3020,10 +3018,13 @@ bool CuespLogMonitorDlg::BackupBuildData()
 		return false;
 	}
 
-	if (!File.WriteString(m_BuildData))
+	for (auto const& BuildData : m_BuildData)
 	{
-		PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to write the build data to the backup file!");
-		return false;
+		if (!File.WriteString(BuildData))
+		{
+			PrintLogLine(ULM_LOGLEVEL_ERROR, "ERROR: Failed to write the build data to the backup file!");
+			return false;
+		}
 	}
 
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Backed up %u bytes of build data...", m_BuildData.size());
@@ -3225,7 +3226,7 @@ bool CuespLogMonitorDlg::SendEntireLog (const std::string Filename)
 	bool Result = true;
 	
 	Result &= CheckAndSendLogData();
-	//Result &= CheckAndSendBuildData();
+	Result &= CheckAndSendBuildData();
 	Result &= CheckAndSendCharData();
 
 	ReleaseMutex(m_hSendQueueMutex);

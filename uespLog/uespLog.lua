@@ -1019,6 +1019,9 @@
 --			- uespLogMonitor: Updated to v0.61 to fix uploading builds from multiple accounts.
 --			- Fixed build/character uploading active skills as all rank 1.
 --			- Fixed display of sales price deal margins in guild stores.
+--			- Re-added the "Scan Sales" and "Reset Sales" button at the bottom of the new guild store window.
+--			- Sales item list will update while doing a scan. Note that if AwesomeGuildStore is installed the item list will not be
+--			  updated during the scan (sales data is still being collected however).
 --
 
 
@@ -3795,6 +3798,7 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_ERROR, uespLog.OnTradingHouseError)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_OPERATION_TIME_OUT, uespLog.OnTradingHouseTimeOut)		
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_SEARCH_COOLDOWN_UPDATE, uespLog.OnTradingHouseSearchCooldownUpdate)	
+	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_STATUS_RECEIVED, uespLog.OnTradingHouseStatusReceived)	
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_MAIL_NUM_UNREAD_CHANGED, uespLog.OnMailNumUnreadChanged)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_MAIL_OPEN_MAILBOX, uespLog.OnMailOpenMailbox)

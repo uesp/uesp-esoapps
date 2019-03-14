@@ -634,6 +634,12 @@ end
 function uespLog.OnTradingHouseSearchResultsReceived_Delay (eventCode, guildId, numItemsOnPage, currentPage, hasMorePages)
 
 	if (uespLog.IsSalesDataSave()) then
+	
+			-- Update 21 doesn't update results control when scanning
+		if (uespLog.SalesGuildSearchScanStarted) then
+			TRADING_HOUSE:RebuildSearchResultsPage()
+		end
+		
 		uespLog.SaveTradingHouseSalesData(guildId, numItemsOnPage, currentPage)
 		
 		if (uespLog.SalesGuildSearchScanStarted) then
@@ -743,6 +749,7 @@ function uespLog.OnTradingHouseResponseReceived(event, responseType, result)
 	--TRADING_HOUSE_RESULT_PURCHASE_PENDING
 	--TRADING_HOUSE_RESULT_POST_PENDING
 	--TRADING_HOUSE_RESULT_LISTINGS_PENDING
+	--TRADING_HOUSE_RESULT_SEARCH_PENDING = 14
 	
 	uespLog.DebugExtraMsg("UESP: OnTradingHouseResponseReceived "..tostring(responseType).. " - "..tostring(result))
 	
@@ -762,6 +769,10 @@ function uespLog.OnTradingHouseResponseReceived(event, responseType, result)
 		uespLog.OnTradingHouseListingCancel()
 	elseif (responseType == TRADING_HOUSE_RESULT_POST_PENDING) then
 		uespLog.OnTradingHouseListingNew()
+	elseif (responseType == TRADING_HOUSE_RESULT_SEARCH_PENDING) then
+		local numItemsOnPage, currentPage, hasMorePages = GetTradingHouseSearchResultsInfo()
+		local guildId = GetCurrentTradingHouseGuildDetails()
+		uespLog.OnTradingHouseSearchResultsReceived_Delay(0, guildId, numItemsOnPage, currentPage, hasMorePages)
 	end
 	
     uespLog.SetupTradingHouseRowCallbacks()
@@ -2138,8 +2149,8 @@ function uespLog.SetupTraderControls()
 	
 	local isAGSInstalled = AwesomeGuildStore ~= nil
 
-	local salesScanButton = CreateControlFromVirtual('UespSalesScanButton', ZO_TradingHouseLeftPane, 'ZO_DefaultButton')
-	local salesResetButton = CreateControlFromVirtual('UespSalesResetButton', ZO_TradingHouseLeftPane, 'ZO_DefaultButton')
+	local salesScanButton = CreateControlFromVirtual('UespSalesScanButton', ZO_TradingHouseBrowseItemsLeftPane, 'ZO_DefaultButton')
+	local salesResetButton = CreateControlFromVirtual('UespSalesResetButton', ZO_TradingHouseBrowseItemsLeftPane, 'ZO_DefaultButton')
 	
 	if (salesScanButton == nil or salesResetButton == nil) then
 		uespLog.DebugMsg("UESP: Failed to setup sales buttons!")
@@ -2147,11 +2158,11 @@ function uespLog.SetupTraderControls()
 	end
 	
 	if (isAGSInstalled) then
-		salesScanButton:SetAnchor(CENTER, ZO_TradingHouseLeftPane, BOTTOM, 0, -25)
-		salesScanButton:SetWidth(90)
+		salesScanButton:SetAnchor(CENTER, ZO_TradingHouseBrowseItemsLeftPane, BOTTOM, -75, 25)
+		salesScanButton:SetWidth(120)
 		salesScanButton:SetHeight(20)
 	else
-		salesScanButton:SetAnchor(CENTER, ZO_TradingHouseLeftPane, BOTTOM, 0, -50)
+		salesScanButton:SetAnchor(CENTER, ZO_TradingHouseBrowseItemsLeftPane, BOTTOM, -75, 25)
 		salesScanButton:SetWidth(120)
 		salesScanButton:SetHeight(20)
 	end
@@ -2162,11 +2173,11 @@ function uespLog.SetupTraderControls()
 	salesScanButton:SetFont("EsoUi/Common/Fonts/Univers57.otf|15|")
 	
 	if (isAGSInstalled) then
-		salesResetButton:SetAnchor(CENTER, ZO_TradingHouseLeftPane, BOTTOM, 100, -50)
-		salesResetButton:SetWidth(90)
+		salesResetButton:SetAnchor(CENTER, ZO_TradingHouseBrowseItemsLeftPane, BOTTOM, 50, 25)
+		salesResetButton:SetWidth(120)
 		salesResetButton:SetHeight(20)
 	else
-		salesResetButton:SetAnchor(CENTER, ZO_TradingHouseLeftPane, BOTTOM, 0, -15)
+		salesResetButton:SetAnchor(CENTER, ZO_TradingHouseBrowseItemsLeftPane, BOTTOM, 75, 25)
 		salesResetButton:SetWidth(120)
 		salesResetButton:SetHeight(20)
 	end

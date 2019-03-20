@@ -691,13 +691,14 @@ function uespLog.SaveTradingHouseSalesItem(guildId, itemIndex, currentTimestamp,
 	logData.event = "GuildSaleSearchEntry"
 	logData.guildId, logData.guild = GetCurrentTradingHouseGuildDetails()
 	logData.server = GetWorldName()
-	logData.icon, logData.item, logData.quality, logData.qnt, logData.seller, logData.timeRemaining, logData.price, logData.currency = GetTradingHouseSearchResultItemInfo(itemIndex)
+	logData.icon, logData.item, logData.quality, logData.qnt, logData.seller, logData.timeRemaining, logData.price, logData.currency, logData.uniqueId = GetTradingHouseSearchResultItemInfo(itemIndex)
 	logData.itemLink = GetTradingHouseSearchResultItemLink(itemIndex)
 	logData.trait = GetItemLinkTraitInfo(logData.itemLink)
 	logData.quality = GetItemLinkQuality(logData.itemLink)
 	logData.level = uespLog.GetItemLinkRequiredEffectiveLevel(logData.itemLink)
 	local listTimestamp = currentTimestamp + logData.timeRemaining - uespLog.SALES_MAX_LISTING_TIME
 	logData.listTimestamp = tostring(listTimestamp)
+	logData.uniqueId = Id64ToString(logData.uniqueId)
 	
 	if (checkScan and uespLog.SalesGuildSearchScanStarted and listTimestamp < uespLog.SalesGuildSearchScanLastTimestamp) then
 		uespLog.SalesGuildSearchScanFinish = true
@@ -920,7 +921,7 @@ function uespLog.MakeSalesListingData()
 	local currentTimestamp = uespLog.GuildSalesLastListingTimestamp
 	
 	for i = 1, numListings do
-		local icon, name, quality, qnt, seller, timeRemaining, price = GetTradingHouseListingItemInfo(i)
+		local icon, name, quality, qnt, seller, timeRemaining, price, currency, uniqueId = GetTradingHouseListingItemInfo(i)
 		local itemLink = GetTradingHouseListingItemLink(i)
 	
 		data[i] = 
@@ -932,6 +933,7 @@ function uespLog.MakeSalesListingData()
 			["name"] = name,		
 			["quality"] = quality,	
 			["seller"] = seller,
+			["uniqueId"] = Id64ToString(uniqueId),
 		}
 	end
 	
@@ -1143,7 +1145,7 @@ function uespLog.StartGuildSearchSalesScan(startPage)
 		
 	if (salesConfig.guildListTimes[guildName] == nil) then
 		uespLog.SalesGuildSearchScanLastTimestamp = 0
-		uespLog.Msg("Starting guild listing scan for "..tostring(guildName).."(all items)...do not leave trader until it is finished.")
+		uespLog.Msg("Starting guild listing scan for "..tostring(guildName).." (all items)...do not leave trader until it is finished.")
 	else
 		uespLog.SalesGuildSearchScanLastTimestamp = salesConfig.guildListTimes[guildName]
 		local diff = GetTimeStamp() - uespLog.SalesGuildSearchScanLastTimestamp
@@ -1901,7 +1903,7 @@ function uespLog.GetTradingHouseSearchResultItemInfo(index)
 		return uespLog.Old_MM_GetTradingHouseSearchResultItemInfo(index)
 	end
 
-	local icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, sumGold, unitPrice = uespLog.Old_GetTradingHouseSearchResultItemInfo(index)
+	local icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, uniqueId, unitPrice = uespLog.Old_GetTradingHouseSearchResultItemInfo(index)
 	local setPrice = nil
 	local salesCount = 0
 	local tipLine = nil
@@ -1949,10 +1951,10 @@ function uespLog.GetTradingHouseSearchResultItemInfo(index)
 			sellerName = sellerName .. '|c000000;' .. dealString .. ';' .. marginString .. '|r'
 		end
 
-		return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, sumGold, unitPrice
+		return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, uniqueId, unitPrice
 	end
 	
-	return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, sumGold, unitPrice
+	return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, uniqueId, unitPrice
 end
 	
 	
@@ -1962,7 +1964,7 @@ function uespLog.GetTradingHouseListingItemInfo(index)
 		return uespLog.Old_MM_GetTradingHouseListingItemInfo(index)
 	end
 	
-	local icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, unknown1, unknown2, unknown3 = uespLog.Old_GetTradingHouseListingItemInfo(index)
+	local icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, uniqueId, salePricePerUnit = uespLog.Old_GetTradingHouseListingItemInfo(index)
 	local setPrice = nil
 	local salesCount = 0
 	local tipLine = nil
@@ -2010,10 +2012,10 @@ function uespLog.GetTradingHouseListingItemInfo(index)
 			sellerName = sellerName .. '|c000000;' .. dealString .. ';' .. marginString .. '|r'
 		end
 
-		return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, unknown1, unknown2, unknown3
+		return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, uniqueId, salePricePerUnit
 	end
 	
-	return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, unknown1, unknown2, unknown3
+	return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, uniqueId, salePricePerUnit
 end
 
 

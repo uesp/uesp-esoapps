@@ -1022,6 +1022,7 @@
 --			- Re-added the "Scan Sales" and "Reset Sales" button at the bottom of the new guild store window.
 --			- Sales item list will update while doing a scan. Note that if AwesomeGuildStore is installed the item list will not be
 --			  updated during the scan (sales data is still being collected however).
+--			- Sale item data saved from guild stores now includes the new uniqueId which prevents any duplicates from being saved.
 --
 
 

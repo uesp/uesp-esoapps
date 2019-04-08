@@ -1023,6 +1023,7 @@
 --			- Sales item list will update while doing a scan. Note that if AwesomeGuildStore is installed the item list will not be
 --			  updated during the scan (sales data is still being collected however).
 --			- Sale item data saved from guild stores now includes the new uniqueId which prevents any duplicates from being saved.
+--			- Fixed skill coefficient descriptions missing description header.
 --
 
 
@@ -3792,6 +3793,7 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_GUILD_SELF_JOINED_GUILD, uespLog.OnJoinedGuild)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_GUILD_SELF_LEFT_GUILD, uespLog.OnLeftGuild)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_OPEN_TRADING_HOUSE, uespLog.OnTradingHouseOpen)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CLOSE_TRADING_HOUSE, uespLog.OnTradingHouseClose)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_SEARCH_RESULTS_RECEIVED, uespLog.OnTradingHouseSearchResultsReceived)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_RESPONSE_RECEIVED, uespLog.OnTradingHouseResponseReceived)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_GUILD_HISTORY_RESPONSE_RECEIVED, uespLog.OnGuildHistoryResponseReceived)

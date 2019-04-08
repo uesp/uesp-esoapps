@@ -4651,18 +4651,26 @@ end
 
 
 function uespLog.GetSkillCoefAbilityDescription(abilityId, rank)
+	local baseRankData = uespLog.SKILL_RANKDATA[abilityId]
+	local descHeader = ""
+	local desc = ""
 	
 	if (abilityId > 20000000) then
-		return GetAbilityDescription(abilityId % 10000000, rank)
+		desc = GetAbilityDescription(abilityId % 10000000, rank)
+		descHeader = tostring(GetAbilityDescriptionHeader(abilityId % 10000000))
+	elseif (baseRankData ~= nil) then
+		desc = GetAbilityDescription(baseRankData[1], rank)
+		descHeader = tostring(GetAbilityDescriptionHeader(baseRankData[1]))
+	else
+		desc = GetAbilityDescription(abilityId, rank)
+		descHeader = tostring(GetAbilityDescriptionHeader(abilityId))
 	end
 	
-	local baseRankData = uespLog.SKILL_RANKDATA[abilityId]
-	
-	if (baseRankData ~= nil) then
-		return GetAbilityDescription(baseRankData[1], rank)
+	if (descHeader ~= "") then
+		desc = "|cffffff" .. descHeader .."|r\n".. desc
 	end
 	
-	return GetAbilityDescription(abilityId, rank)
+	return desc
 end
 
 

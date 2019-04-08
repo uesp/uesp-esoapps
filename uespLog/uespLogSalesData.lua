@@ -42,6 +42,7 @@ uespLog.SalesLastSearchCooldownGameTime = 0
 uespLog.SalesLastSearchCooldownUpdate = false
 uespLog.SalesLastSearchCooldownCount = 0
 uespLog.SalesLastSearchCooldownMaxCount = 10
+uespLog.SalesLastTraderRequestTime = 0
 
 uespLog.Orig_WritWorthyMMPrice = nil
 
@@ -722,9 +723,15 @@ end
 
 
 function uespLog.OnTradingHouseError(event, errorCode)
-	uespLog.DebugExtraMsg("Trading House Error " .. tostring(errorCode))
+	uespLog.DebugMsg("Trading House Error " .. tostring(errorCode))
 	
 	if (errorCode == 8) then
+		-- Error handled elsewhere?
+	elseif (errorCode == 17) then
+	
+		if (uespLog.SalesGuildSearchScanStarted) then
+			zo_callLater(uespLog.DoNextGuildListingScan, GetTradingHouseCooldownRemaining() + uespLog.SALESSCAN_EXTRADELAY)	
+		end
 	end
 	
 end
@@ -1030,6 +1037,11 @@ function uespLog.StartGuildSearchSalesScanAll()
 	
 	if (GetNumTradingHouseGuilds() == 0) then
 		uespLog.Msg("You must be in a guild store in order to start a listing scan!")
+		
+		if (uespSalesHelper and uespSalesHelper.autoScanStores and uespSalesHelper.currentState == "SCANNING") then
+			zo_callLater(uespLog.StartGuildSearchSalesScanAll, 1000)
+		end
+		
 		return
 	end
 	
@@ -1081,6 +1093,11 @@ function uespLog.StartGuildSearchSalesScanNextGuild()
 		uespLog.SalesGuildSearchScanStarted = false
 		uespLog.Msg("Finished scanning listings from all guilds!")
 		uespLog.UpdateUespScanSalesButton()
+		
+		if (uespSalesHelper and uespSalesHelper.autoScanStores) then
+			EndInteraction(26)
+		end
+		
 		return
 	end
 	
@@ -1171,16 +1188,19 @@ function uespLog.StartGuildSearchSalesScan(startPage)
 		
 	uespLog.SalesLastSearchCooldownUpdate = false
 	uespLog.SalesLastSearchCooldownCount = 0
+	uespLog.SalesLastTraderRequestTime = GetTimeStamp()
 	
 	ClearAllTradingHouseSearchTerms()
 	ExecuteTradingHouseSearch(startPage, TRADING_HOUSE_SORT_EXPIRY_TIME, false)
 end
 
 
-function uespLog.StopGuildSearchSalesScan()
+function uespLog.StopGuildSearchSalesScan(quiet)
 
 	if (not uespLog.SalesGuildSearchScanStarted) then
-		uespLog.Msg("Guild listing scan has been stopped!")
+		if (quiet ~= true) then
+			uespLog.Msg("Guild listing scan has been stopped!")
+		end
 	end
 	
 	uespLog.SalesGuildSearchScanStarted = false
@@ -1203,7 +1223,7 @@ function uespLog.OnGuildSearchScanItemsReceived(guildId, numItemsOnPage, current
 
 	if (not hasMorePages or uespLog.SalesGuildSearchScanFinish) then
 		local deltaTime = GetTimeStamp() - uespLog.SalesGuildSearchScanStartTime
-		uespLog.Msg("Finished guild listing scan for "..tostring(guildName).."! "..uespLog.SalesGuildSearchScanNumItems.." items in "..tostring(uespLog.SalesGuildSearchScanPage-1).." pages scanned in "..tostring(deltaTime).." secs.")	
+		uespLog.Msg("Finished guild listing scan for "..tostring(guildName).."! "..uespLog.SalesGuildSearchScanNumItems.." items in "..tostring(uespLog.SalesGuildSearchScanPage).." pages scanned in "..tostring(deltaTime).." secs.")	
 		uespLog.SalesGuildSearchScanStarted = false
 		uespLog.UpdateUespScanSalesButton()
 		
@@ -1212,6 +1232,8 @@ function uespLog.OnGuildSearchScanItemsReceived(guildId, numItemsOnPage, current
 		
 		if (uespLog.SalesGuildSearchScanAllGuilds) then
 			zo_callLater(uespLog.StartGuildSearchSalesScanNextGuild, GetTradingHouseCooldownRemaining() + uespLog.SALESSCAN_EXTRADELAY)	
+		elseif (uespSalesHelper and uespSalesHelper.autoScanStores) then
+			EndInteraction(26)
 		end
 		
 		return
@@ -1248,6 +1270,7 @@ function uespLog.DoNextGuildListingScan()
 	
 	uespLog.SalesLastSearchCooldownUpdate = false
 	uespLog.SalesLastSearchCooldownCount = 0
+	uespLog.SalesLastTraderRequestTime = GetTimeStamp()
 	
 	ExecuteTradingHouseSearch(uespLog.SalesGuildSearchScanPage, TRADING_HOUSE_SORT_EXPIRY_TIME, false)
 end
@@ -2234,6 +2257,11 @@ end
 
 function uespLog.OnTradingHouseOpen()
 	uespLog.SetupTradingHouseRowCallbacks() 
+end
+
+
+function uespLog.OnTradingHouseClose()
+	uespLog.StopGuildSearchSalesScan(true)
 end
 
 

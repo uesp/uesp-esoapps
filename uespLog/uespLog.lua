@@ -11345,9 +11345,9 @@ SLASH_COMMANDS["/uespreset"] = function (cmd)
 		uespLog.InitializeTrackLootData(true)
 		uespLog.SkillCoefResetSkillList()
 		uespLog.Msg("Reset all logged data")
-	elseif (cmd == "builddata") then
+	elseif (cmd == "builddata" or cmd == "build" ) then
 		uespLog.ClearBuildData()
-	elseif (cmd == "chardata") then
+	elseif (cmd == "chardata" or cmd == "char") then
 		uespLog.ClearCharData()
 	elseif (cmd == "log") then
 		uespLog.ClearSavedVarSection("all")
@@ -11355,7 +11355,7 @@ SLASH_COMMANDS["/uespreset"] = function (cmd)
 	elseif (cmd == "temp" or cmd == "tempdata") then
 		uespLog.ClearSavedVarSection("tempData")
 		uespLog.Msg("Reset temporary logged data")
-	elseif (cmd == "globals") then
+	elseif (cmd == "globals" or cmd == "global") then
 		uespLog.ClearSavedVarSection("globals")
 		uespLog.Msg("Reset logged global data")
 	elseif (cmd == "skillcoef") then
@@ -11364,19 +11364,20 @@ SLASH_COMMANDS["/uespreset"] = function (cmd)
 	elseif (cmd == "inspiration") then
 		uespLog.SetTotalInspiration(0)
 		uespLog.Msg("Reset crafting inspiration total")
-	elseif (cmd == "lootdata" or cmd == "trackloot") then
+	elseif (cmd == "lootdata" or cmd == "trackloot" or cmd == "loot") then
 		uespLog.InitializeTrackLootData(true)
 		uespLog.Msg("Reset loot tracking data!")
 	else
 		uespLog.Msg("Expected command format is one of")
 		uespLog.Msg(".       /uespreset log                         Collected log information")
-		uespLog.Msg(".       /uespreset builddata               Saved build data")
-		uespLog.Msg(".       /uespreset chardata                Character data")
+		uespLog.Msg(".       /uespreset build                  Saved build data")
+		uespLog.Msg(".       /uespreset char                   Character data")
 		uespLog.Msg(".       /uespreset temp                      Temporary data")
 		uespLog.Msg(".       /uespreset globals                  Mined globals data")
 		uespLog.Msg(".       /uespreset achievements       Mined achievement data")
 		uespLog.Msg(".       /uespreset inspiration             Set crafting inspiration to 0")
 		uespLog.Msg(".       /uespreset skillcoef             Clear all skill coefficient data")
+		uespLog.Msg(".       /uespreset loot                    Clear all loot tracking data")
 		uespLog.Msg(".       /uespreset all                          All saved data")		
 	end
 

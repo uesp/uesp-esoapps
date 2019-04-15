@@ -726,7 +726,11 @@ function uespLog.OnTradingHouseError(event, errorCode)
 	uespLog.DebugMsg("Trading House Error " .. tostring(errorCode))
 	
 	if (errorCode == 8) then
-		-- Error handled elsewhere?
+	
+		if (uespLog.SalesGuildSearchScanStarted) then
+			zo_callLater(uespLog.DoNextGuildListingScan, GetTradingHouseCooldownRemaining() + uespLog.SALESSCAN_EXTRADELAY)	
+		end
+		
 	elseif (errorCode == 17) then
 	
 		if (uespLog.SalesGuildSearchScanStarted) then

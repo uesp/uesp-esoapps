@@ -1,0 +1,18 @@
+<Bindings>
+    <Layer name="SI_KEYBINDINGS_LAYER_GENERAL">
+        <Category name="UESP Sales Helper">
+            <Action name="UESPSALESHELPER_SAVEPOINT">
+                <Up>uespSalesHelper.SavePoint()</Up>
+            </Action>
+			<Action name="UESPSALESHELPER_SAVEHEADING">
+                <Up>uespSalesHelper.SaveHeading()</Up>
+            </Action>
+			<Action name="UESPSALESHELPER_SAVEWAYSHRINE">
+                <Up>uespSalesHelper.SaveWayshrine()</Up>
+            </Action>
+			<Action name="UESPSALESHELPER_SAVEDISTFACTOR">
+                <Up>uespSalesHelper.SaveDistFactor()</Up>
+            </Action>
+        </Category>
+    </Layer>
+</Bindings>

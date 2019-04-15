@@ -1,0 +1,13 @@
+## Title: UESP Sales Helper 0.01
+## APIVersion: 100026
+## Version: 0.01
+## Author: Daveh from uesp.net (dave@uesp.net)
+## Description: 
+## OptionalDependsOn: 
+## SavedVariables: uespSalesHelperSavedVars
+
+uespSalesHelper.lua
+uespSalesHelper.xml
+Bindings.xml
+
+

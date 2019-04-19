@@ -137,6 +137,9 @@
  * v0.32 -- 23 October 2018
  *		- Fixed crash from null pointer reference received from Granny API.
  *		- Updated Granny2.dll file which permits more original GR2 filenames to be extracted.
+
+ * v0.33 -- 19 April 2019
+ *		- Added the "-n" / "--filename" option.
  *
  */
 
@@ -1619,6 +1622,7 @@ cmdparamdef_t g_Cmds[] =
 	{ "outputpath",		"",  "",				"Path to save extracted data files to.",							false, false, 1, 0, false, "" },
 	{ "mnfft",			"m", "mnfft",			"Dump the MNF filetable to the specified text file.",				false, true,  1, 0, false, "" },
 	{ "zosft",			"z", "zosft",			"Dump the ZOS filetable to the specified text file.",				false, true,  1, 0, false, "" },
+	{ "filename",		"n", "filename",		"Only extract the given filename.",									false, true,  1, 0, false, "-1" },
 	{ "startindex",		"s", "startindex",		"Start exporting sub-files at the given file index.",				false, true,  1, 0, false, "-1" },
 	{ "endindex",		"e", "endindex",	    "Stop exporting sub-files at the given file index.",				false, true,  1, 0, false, "-1" },
 	{ "archiveindex",	"a", "archive",			"Only export MNF file with the given index.",						false, true,  1, 0, false, "-1" },
@@ -1643,10 +1647,10 @@ cmdparamdef_t g_Cmds[] =
 };
 
 const char g_AppDescription[] = "\
-ExportMnf v0.32 is a simple command line application to load and export files\n\
+ExportMnf v0.33 is a simple command line application to load and export files\n\
 from ESO's MNF and DAT files. Created by Daveh (dave@uesp.net).\n\
 \n\
-WARNING: This app is in early development and is fragile. User discretion is\n\
+WARNING: This app is under constant development and is fragile. User discretion is\n\
 advised.\n\
 ";
 
@@ -1660,22 +1664,6 @@ int _tmain(int argc, _TCHAR* argv[])
 	mnf_exportoptions_t ExportOptions;
 
 	OpenLog("exportmnf.log");
-	/*
-	CCsvFile CsvFile(true);
-
-	CsvFile.Load("d:\\temp\\en.lang.csv");
-	//CsvFile.Dump();
-	CsvFile.Save("d:\\temp\\test.lang.csv");
-
-	CEsoLangFile LangFile;
-	LangFile.CreateFromCsv(CsvFile);
-	LangFile.Save("d:\\temp\\test.lang");
-
-	CEsoLangFile LangFile1;
-	LangFile1.Load("d:\\temp\\en.lang");
-	LangFile1.DumpCsv("d:\\temp\\en.lang.csv");
-
-	return 0; //*/
 
 	CCmdParamHandler CmdParamHandler("ExportMnf", g_AppDescription, g_Cmds);
 
@@ -1723,6 +1711,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	ExportOptions.IdFilename1 = CmdParamHandler.GetParamValue("idfile1", 0);
 	ExportOptions.IdFilename2 = CmdParamHandler.GetParamValue("idfile2", 0);
 	ExportOptions.OrigLangFilename = CmdParamHandler.GetParamValue("origlang");
+	ExportOptions.ExtractFilename = CmdParamHandler.GetParamValue("filename");
 
 	ExportOptions.ExtractSubFileDataType = CmdParamHandler.GetParamValue("extractsubfile");
 	std::transform(ExportOptions.ExtractSubFileDataType.begin(), ExportOptions.ExtractSubFileDataType.end(), ExportOptions.ExtractSubFileDataType.begin(), ::tolower);

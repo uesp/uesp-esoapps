@@ -1,5 +1,5 @@
 ## Title: UESP Sales Helper 0.01
-## APIVersion: 100026
+## APIVersion: 100027
 ## Version: 0.01
 ## Author: Daveh from uesp.net (dave@uesp.net)
 ## Description: 

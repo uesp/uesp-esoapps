@@ -45,6 +45,7 @@ namespace eso {
 		std::string IdFilename1;
 		std::string IdFilename2;
 		std::string ExtractSubFileDataType;
+		std::string ExtractFilename;
 		int MnfStartIndex;
 		int MnfEndIndex;
 		int ArchiveIndex;
@@ -158,6 +159,8 @@ namespace eso {
 
 		bool Export (const mnf_exportoptions_t ExportOptions);
 
+		bool ExtractSpecificFile(std::string Filename, mnf_exportoptions_t ExportOptions);
+		
 		bool FindZosftHash (dword& ZosftHash);
 
 		bool HasFileHash (const dword Hash) { return m_FileHashMap.find(Hash) != m_FileHashMap.end(); }

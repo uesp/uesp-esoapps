@@ -273,8 +273,49 @@ namespace eso {
 			return true;
 		}
 
+		if (!ExportOptions.ExtractFilename.empty()) return ExtractSpecificFile(ExportOptions.ExtractFilename, ExportOptions);
+
 		if (ExportOptions.MnfFileIndex > 0) return SaveSubFile(ExportOptions.MnfFileIndex, ExportOptions);
 		return SaveSubFiles(ExportOptions);
+	}
+
+
+	bool CMnfFile::ExtractSpecificFile(std::string Filename, mnf_exportoptions_t ExportOptions)
+	{
+		bool Result = true;
+
+		std::transform(Filename.begin(), Filename.end(), Filename.begin(), ::tolower);
+		PrintError("Extracting any filename matching '%s'...", Filename.c_str());
+
+		for (size_t i = 0; i < m_FileTable.size(); ++i)
+		{
+			mnf_filetable_t &FileEntry = m_FileTable[i];
+			std::string SubFilenameNoExt;
+			std::string SubFilename;
+			std::string SubFilenameFull;
+
+			if (FileEntry.pZosftEntry != nullptr && !FileEntry.pZosftEntry->Filename.empty())
+			{
+				SubFilenameFull = FileEntry.pZosftEntry->Filename;
+				std::transform(SubFilenameFull.begin(), SubFilenameFull.end(), SubFilenameFull.begin(), ::tolower);
+
+				SubFilename = SubFilenameFull;
+				size_t last_slash_idx = SubFilename.find_last_of("\\/");
+				if (std::string::npos != last_slash_idx) SubFilename.erase(0, last_slash_idx + 1);
+
+				SubFilenameNoExt = SubFilename;
+				size_t period_idx = SubFilenameNoExt.rfind('.');
+				if (std::string::npos != period_idx) SubFilenameNoExt.erase(period_idx);
+			}
+			
+			if (SubFilename == Filename || SubFilenameFull == Filename || SubFilenameNoExt == Filename || Filename == std::to_string(FileEntry.Index))
+			{
+				PrintError("Extracting matching subfile #%d!", FileEntry.Index, SubFilename.c_str());
+				Result &= SaveSubFile(FileEntry, ExportOptions.OutputPath, ExportOptions.ConvertDDS);
+			}
+		}
+
+		return Result;
 	}
 
 

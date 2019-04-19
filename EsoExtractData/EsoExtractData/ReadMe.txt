@@ -1,7 +1,7 @@
 
-	EsoExtractData v0.32 (formally EsoExportMnf)
+	EsoExtractData v0.33 (formally EsoExportMnf)
 	by Dave Humphrey (dave@uesp.net)
-	24 October 2018
+	19 April 2020
 -------------------------------
 EsoextractData is a simple Windows command line application that loads and exports
 data found in ESO's (Elder Scrolls Online) MNF and DAT files.
@@ -91,6 +91,23 @@ There are several more advanced command line options which may be useful:
 		
 	esoextractdata eso.mnf .\export\ -m mnfft.txt -k 80
 		Start extracting at data file index 80 (eso0080.dat).
+
+	esoextractdata eso.mnf .\export\ -n 12345
+		Only extract filenames that match "12345" (case insensitive).
+		This includes filenames like:
+		        File Index #12345
+				12345.dds
+				path/to/file/12345.gr2
+
+	esoextractdata eso.mnf .\export\ -n cyrodiil_map_1
+		Only extract filenames that match "cyrodiil_map_1" (case insensitive). 
+		This includes filenames like:
+				cyrodiil_map_1
+				cyrodiil_map_1.dds
+				path/to/file/cyrodiil_map_1.dds
+		Note that this does not parse GR2 files for their original filename
+		and only checks the filename assigned to by the MNF/ZOSFT data. 
+		Wildcards in the filename are not supported.
 		
 	esoextractdata -l en.lang
 		Convert the given LANG file into a CSV (en.lang.csv).

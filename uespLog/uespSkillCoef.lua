@@ -45,6 +45,8 @@ uespLog.UESP_POWERTYPE_ANIMALCOMPANION = -65
 uespLog.UESP_POWERTYPE_GREENBALANCE = -66
 uespLog.UESP_POWERTYPE_WINTERSEMBRACE = -67
 uespLog.UESP_POWERTYPE_MAGICHEALTHCAP = -68
+uespLog.UESP_POWERTYPE_BONETYRANT = -69
+uespLog.UESP_POWERTYPE_GRAVELORD = -70
 
 uespLog.SKILLCOEF_CHECK_ABILITYID = 28302
 uespLog.SKILLCOEF_CHECK_INDEX = 2
@@ -77,6 +79,8 @@ uespLog.SKILLCOEF_MECHANIC_NAMES = {
 	[uespLog.UESP_POWERTYPE_GREENBALANCE] = "Green Balance Skills Slotted",
 	[uespLog.UESP_POWERTYPE_WINTERSEMBRACE] = "Winter's Embrance Skills Slotted",
 	[uespLog.UESP_POWERTYPE_MAGICHEALTHCAP] = "Magicka with Health Cap",
+	[uespLog.UESP_POWERTYPE_BONETYRANT] = "Bone Tyrant Skills Slotted",
+	[uespLog.UESP_POWERTYPE_GRAVELORD] = "Grave Lord Skills Slotted",
 }
 
 
@@ -115,6 +119,54 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[36193] = { [5] = uespLog.UESP_POWERTYPE_SOULTETHER },
 	[36200] = { [5] = uespLog.UESP_POWERTYPE_SOULTETHER },
 	[36207] = { [5] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	
+	-- NightBlade Dark Cloak
+	[25377] = POWERTYPE_HEALTH,
+	[36341] = POWERTYPE_HEALTH,
+	[36346] = POWERTYPE_HEALTH,
+	[36351] = POWERTYPE_HEALTH,
+	
+	-- NightBlade Summon Shade
+	[33211] = POWERTYPE_ULTIMATE,
+	[36267] = POWERTYPE_ULTIMATE,
+	[36271] = POWERTYPE_ULTIMATE,
+	[36313] = POWERTYPE_ULTIMATE,
+	
+	-- NightBlade Dark Shade
+	[35434] = POWERTYPE_ULTIMATE,
+	[36273] = POWERTYPE_ULTIMATE,
+	[36278] = POWERTYPE_ULTIMATE,
+	[36283] = POWERTYPE_ULTIMATE,
+	
+	-- NightBlade Shadow Image
+	[35441] = POWERTYPE_ULTIMATE,
+	[36288] = POWERTYPE_ULTIMATE,
+	[36293] = POWERTYPE_ULTIMATE,
+	[36298] = POWERTYPE_ULTIMATE,
+	
+	-- NightBlade Mark Target
+	[33357] = POWERTYPE_HEALTH,
+	[37587] = POWERTYPE_HEALTH,
+	[37595] = POWERTYPE_HEALTH,
+	[37603] = POWERTYPE_HEALTH,
+	
+	-- NightBlade Repear's Mark
+	[36967] = POWERTYPE_HEALTH,
+	[37640] = POWERTYPE_HEALTH,
+	[37649] = POWERTYPE_HEALTH,
+	[37658] = POWERTYPE_HEALTH,
+	
+	-- NightBlade Piercing Mark
+	[36968] = POWERTYPE_HEALTH,
+	[37613] = POWERTYPE_HEALTH,
+	[37622] = POWERTYPE_HEALTH,
+	[37631] = POWERTYPE_HEALTH,
+	
+	-- NightBlade Killer's Blade
+	[34843] = { [4] = POWERTYPE_HEALTH },
+	[35586] = { [4] = POWERTYPE_HEALTH },
+	[35588] = { [4] = POWERTYPE_HEALTH },
+	[35590] = { [4] = POWERTYPE_HEALTH },
 	
 	-- Leeching Strikes
 	[36908] = { [1] = POWERTYPE_MAGICKA, [2] = POWERTYPE_STAMINA, },
@@ -201,21 +253,20 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[43447] = { [3] = POWERTYPE_ULTIMATE },
 	
 	-- Undaunted Trapping Webs/Tangling Webs/Shadow Silk	
-	-- Number 4 acts like an ultimate
-	[39425] = { [4] = POWERTYPE_ULTIMATE },
-	[43533] = { [4] = POWERTYPE_ULTIMATE },
-	[43537] = { [4] = POWERTYPE_ULTIMATE },
-	[43541] = { [4] = POWERTYPE_ULTIMATE },
+	[39425] = { [4] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
+	[43533] = { [4] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
+	[43537] = { [4] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
+	[43541] = { [4] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
 	
-	[42012] = { [4] = POWERTYPE_ULTIMATE },
-	[43469] = { [4] = POWERTYPE_ULTIMATE },
-	[43473] = { [4] = POWERTYPE_ULTIMATE },
-	[43477] = { [4] = POWERTYPE_ULTIMATE },
+	[42012] = { [4] = POWERTYPE_ULTIMATE, [7] = POWERTYPE_ULTIMATE },
+	[43469] = { [4] = POWERTYPE_ULTIMATE, [7] = POWERTYPE_ULTIMATE },
+	[43473] = { [4] = POWERTYPE_ULTIMATE, [7] = POWERTYPE_ULTIMATE },
+	[43477] = { [4] = POWERTYPE_ULTIMATE, [7] = POWERTYPE_ULTIMATE },
 	
-	[41990] = { [4] = POWERTYPE_ULTIMATE },
-	[43481] = { [4] = POWERTYPE_ULTIMATE },
-	[43485] = { [4] = POWERTYPE_ULTIMATE },
-	[43489] = { [4] = POWERTYPE_ULTIMATE },
+	[41990] = { [4] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE, [7] = POWERTYPE_ULTIMATE },
+	[43481] = { [4] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE, [7] = POWERTYPE_ULTIMATE },
+	[43485] = { [4] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE, [7] = POWERTYPE_ULTIMATE },
+	[43489] = { [4] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE, [7] = POWERTYPE_ULTIMATE },
 	
 	-- 1H & Shield Shielded Assault	
 	-- Number 3 is based on health
@@ -252,23 +303,53 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[27040] = POWERTYPE_ULTIMATE,
 	[27043] = POWERTYPE_ULTIMATE,
 	
+	-- Templar Sun Shield
+	[22178] = { [1] = POWERTYPE_HEALTH },
+	[27493] = { [1] = POWERTYPE_HEALTH },
+	[27497] = { [1] = POWERTYPE_HEALTH },
+	[27501] = { [1] = POWERTYPE_HEALTH },
+	
+	-- Templar Blazing Shield
+	[22180] = { [1] = POWERTYPE_HEALTH },
+	[27520] = { [1] = POWERTYPE_HEALTH },
+	[27526] = { [1] = POWERTYPE_HEALTH },
+	[27530] = { [1] = POWERTYPE_HEALTH },
+	
+	-- Templar Radiant Ward
+	[22182] = { [1] = POWERTYPE_HEALTH },
+	[27506] = { [1] = POWERTYPE_HEALTH },
+	[27510] = { [1] = POWERTYPE_HEALTH },
+	[27514] = { [1] = POWERTYPE_HEALTH },
+	
 	-- Templar Cleansing Ritual
-	[22265] = { [5] = POWERTYPE_ULTIMATE },
-	[27243] = { [5] = POWERTYPE_ULTIMATE },
-	[27249] = { [5] = POWERTYPE_ULTIMATE },
-	[27255] = { [5] = POWERTYPE_ULTIMATE },
+	[22265] = POWERTYPE_ULTIMATE,
+	[27243] = POWERTYPE_ULTIMATE,
+	[27249] = POWERTYPE_ULTIMATE,
+	[27255] = POWERTYPE_ULTIMATE,
 	
 	-- Templar Purifying Ritual/Ritual of Retribution
-	[22259] = { [8] = POWERTYPE_ULTIMATE },
-	[27261] = { [8] = POWERTYPE_ULTIMATE },
-	[27269] = { [8] = POWERTYPE_ULTIMATE },
-	[27275] = { [8] = POWERTYPE_ULTIMATE },
+	[22259] = POWERTYPE_ULTIMATE,
+	[27261] = POWERTYPE_ULTIMATE,
+	[27269] = POWERTYPE_ULTIMATE,
+	[27275] = POWERTYPE_ULTIMATE,
 	
 	-- Templar Extended Ritual
-	[22262] = { [5] = POWERTYPE_ULTIMATE },
-	[27281] = { [5] = POWERTYPE_ULTIMATE },
-	[27288] = { [5] = POWERTYPE_ULTIMATE },
-	[27295] = { [5] = POWERTYPE_ULTIMATE },
+	[22262] = POWERTYPE_ULTIMATE,
+	[27281] = POWERTYPE_ULTIMATE,
+	[27288] = POWERTYPE_ULTIMATE,
+	[27295] = POWERTYPE_ULTIMATE,
+	
+	-- Sorcerer Streak
+	[23236] = POWERTYPE_ULTIMATE,
+	[30208] = POWERTYPE_ULTIMATE,
+	[30211] = POWERTYPE_ULTIMATE,
+	[30215] = POWERTYPE_ULTIMATE,
+	
+	-- Sorcerer Summon Unstable Clannfear
+	[23319] = { [4] = POWERTYPE_HEALTH },
+	[30647] = { [4] = POWERTYPE_HEALTH },
+	[30652] = { [4] = POWERTYPE_HEALTH },
+	[30657] = { [4] = POWERTYPE_HEALTH },
 	
 	-- Sorcerer Lightning Splash
 	[23182] = { [3] = POWERTYPE_ULTIMATE, [4] = POWERTYPE_ULTIMATE },
@@ -305,7 +386,7 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[30478] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP },
 	[30482] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP },
 	[30486] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP },
-	
+		
 	-- Dragonknight Obsidian Shield	
 	[29071] = { [1] = POWERTYPE_HEALTH },
 	[33862] = { [1] = POWERTYPE_HEALTH },
@@ -324,11 +405,29 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[33878] = { [1] = POWERTYPE_HEALTH },
 	[33881] = { [1] = POWERTYPE_HEALTH },
 	
+	-- Dragonknight Inferno
+	[28967] = POWERTYPE_ULTIMATE,
+	[34051] = POWERTYPE_ULTIMATE,
+	[34056] = POWERTYPE_ULTIMATE,
+	[34061] = POWERTYPE_ULTIMATE,
+	
 	-- Dragonknight Flames of Oblivion
-	[32853] = { [2] = POWERTYPE_ULTIMATE },
-	[34066] = { [2] = POWERTYPE_ULTIMATE },
-	[34073] = { [2] = POWERTYPE_ULTIMATE },
-	[34080] = { [2] = POWERTYPE_ULTIMATE },
+	[32853] = POWERTYPE_ULTIMATE,
+	[34066] = POWERTYPE_ULTIMATE,
+	[34073] = POWERTYPE_ULTIMATE,
+	[34080] = POWERTYPE_ULTIMATE,
+	
+	-- Dragonknight Cauterize
+	[32881] = POWERTYPE_ULTIMATE,
+	[34088] = POWERTYPE_ULTIMATE,
+	[34094] = POWERTYPE_ULTIMATE,
+	[34100] = POWERTYPE_ULTIMATE,
+		
+	-- Dragonknight Hardened Armor
+	[20328] = { [3] = POWERTYPE_HEALTH },
+	[23846] = { [3] = POWERTYPE_HEALTH },
+	[23851] = { [3] = POWERTYPE_HEALTH },
+	[23856] = { [3] = POWERTYPE_HEALTH },
 	
 	-- Dragonknight Standard
 	--[28988] = { [5] = POWERTYPE_HEALTH },
@@ -410,40 +509,60 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[45622] = { [2] = uespLog.UESP_POWERTYPE_SUPPORT },
 	
 	-- Light Armor: Annulment
-	[29338] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP },
-	[41106] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP },
-	[41107] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP },
-	[41108] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP },
+	[29338] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP,
+	[41106] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP,
+	[41107] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP,
+	[41108] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP,
 	
 	-- Light Armor Dampen Magic
-	[39186] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [4] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
-	[41109] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [4] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
-	[41111] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [4] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
-	[41113] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [4] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	[39186] = { [2] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [5] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	[41109] = { [2] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [5] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	[41111] = { [2] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [5] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	[41113] = { [2] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [5] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
 	
 	-- Light Armor Harness Magicka
-	[39182] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [5] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
-	[41115] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [5] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
-	[41118] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [5] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
-	[41121] = { [1] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [5] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	[39182] = { [2] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [5] = POWERTYPE_MAGICKA },
+	[41115] = { [2] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [5] = POWERTYPE_MAGICKA },
+	[41118] = { [2] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [5] = POWERTYPE_MAGICKA },
+	[41121] = { [2] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [5] = POWERTYPE_MAGICKA },
 	
 	-- Medium Armor: Elude
-	[39192] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR },
-	[41133] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR },
-	[41135] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR },
-	[41136] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR },
+	[39192] = { [3] = uespLog.UESP_POWERTYPE_MEDIUMARMOR },
+	[41133] = { [3] = uespLog.UESP_POWERTYPE_MEDIUMARMOR },
+	[41135] = { [3] = uespLog.UESP_POWERTYPE_MEDIUMARMOR },
+	[41136] = { [3] = uespLog.UESP_POWERTYPE_MEDIUMARMOR }, -- ?
+	[41137] = { [3] = uespLog.UESP_POWERTYPE_MEDIUMARMOR }, 
 	
-	--Heavy Armor Immovable Brute/Unstoppable
-	[39205] = { [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
-	[41085] = { [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
-	[41088] = { [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
-	[41091] = { [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	--Heavy Armor Immovable Brute
+	--[39205] = { [3] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	--[41085] = { [3] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	--[41088] = { [3] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	--[41091] = { [3] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
 	
-	[39197] = { [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
-	[41097] = { [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
-	[41100] = { [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
-	[41103] = { [4] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	--Heavy Armor Unstoppable
+	[39197] = { [3] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[41097] = { [3] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[41100] = { [3] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[41103] = { [3] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
 	
+	-- Warden: Nature's Grasp
+	[85564] = POWERTYPE_ULTIMATE,
+	[93932] = POWERTYPE_ULTIMATE,
+	[93933] = POWERTYPE_ULTIMATE,
+	[93934] = POWERTYPE_ULTIMATE,
+	
+	-- Warden: Bursting Vines
+	[85859] = POWERTYPE_ULTIMATE,
+	[93935] = POWERTYPE_ULTIMATE,
+	[93936] = POWERTYPE_ULTIMATE,
+	[93937] = POWERTYPE_ULTIMATE,
+	
+	-- Warden: Nature's Embrace
+	[85858] = POWERTYPE_ULTIMATE,
+	[93938] = POWERTYPE_ULTIMATE,
+	[93939] = POWERTYPE_ULTIMATE,
+	[93940] = POWERTYPE_ULTIMATE,
+		
 	-- Warden: Budding Seeds
 	[85840] = { [3] = POWERTYPE_ULTIMATE, [4] = POWERTYPE_ULTIMATE },
 	[93805] = { [3] = POWERTYPE_ULTIMATE, [4] = POWERTYPE_ULTIMATE },
@@ -457,15 +576,15 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[93804] = { [3] = POWERTYPE_ULTIMATE },
 	
 	-- Warden: Corrupting Pollen
-	[85845] = { [5] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
-	[93808] = { [5] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
-	[93809] = { [5] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
-	[93810] = { [5] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
+	[85845] = { [4] = POWERTYPE_ULTIMATE, [5] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
+	[93808] = { [4] = POWERTYPE_ULTIMATE, [5] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
+	[93809] = { [4] = POWERTYPE_ULTIMATE, [5] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
+	[93810] = { [4] = POWERTYPE_ULTIMATE, [5] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
 	
-	[93859] = { [5] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
-	[90241] = { [5] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
-	[93865] = { [5] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
-	[93871] = { [5] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },	
+	[93859] = { [4] = POWERTYPE_ULTIMATE, [5] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
+	[90241] = { [4] = POWERTYPE_ULTIMATE, [5] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
+	[93865] = { [4] = POWERTYPE_ULTIMATE, [5] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },
+	[93871] = { [4] = POWERTYPE_ULTIMATE, [5] = POWERTYPE_ULTIMATE, [6] = POWERTYPE_ULTIMATE },	
 	
 	-- Warden: Impaling Shards
 	[86161] = POWERTYPE_HEALTH,
@@ -477,6 +596,18 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[86166] = POWERTYPE_HEALTH,
 	[86167] = POWERTYPE_HEALTH,
 	[86168] = POWERTYPE_HEALTH,
+	
+	-- Warden: Artic Wind
+	[86148] = POWERTYPE_HEALTH,
+	[86149] = POWERTYPE_HEALTH,
+	[86150] = POWERTYPE_HEALTH,
+	[86151] = POWERTYPE_HEALTH,
+		
+	-- Warden: Polar Wind
+	[86152] = POWERTYPE_HEALTH,
+	[86153] = POWERTYPE_HEALTH,
+	[86154] = POWERTYPE_HEALTH,
+	[86155] = POWERTYPE_HEALTH,
 	
 	-- Warden: Artic Blast
 	[86156] = POWERTYPE_HEALTH,
@@ -498,8 +629,85 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[86143] = { [1] = POWERTYPE_HEALTH },
 	[86144] = { [1] = POWERTYPE_HEALTH },
 	[86145] = { [1] = POWERTYPE_HEALTH },
-	[86146] = { [1] = POWERTYPE_HEALTH },	
-		
+	[86146] = { [1] = POWERTYPE_HEALTH },
+	
+	-- Necromancer: Bone Goliath Transformation
+	[115001] = POWERTYPE_HEALTH,
+	[20115001] = POWERTYPE_HEALTH,
+	[30115001] = POWERTYPE_HEALTH,
+	[40115001] = POWERTYPE_HEALTH,
+	
+	-- Necromancer: Ravenous Goliath
+	[118279] = POWERTYPE_HEALTH,
+	[20118279] = POWERTYPE_HEALTH,
+	[30118279] = POWERTYPE_HEALTH,
+	[40118279] = POWERTYPE_HEALTH,
+	
+	-- Necromancer: Pummeling Goliath (numbers off by 1 due to header)
+	[118664]   = { [5] = POWERTYPE_HEALTH, [6] = POWERTYPE_HEALTH, [7] = POWERTYPE_ULTIMATE },
+	[20118664] = { [5] = POWERTYPE_HEALTH, [6] = POWERTYPE_HEALTH, [7] = POWERTYPE_ULTIMATE },
+	[30118664] = { [5] = POWERTYPE_HEALTH, [6] = POWERTYPE_HEALTH, [7] = POWERTYPE_ULTIMATE },
+	[40118664] = { [5] = POWERTYPE_HEALTH, [6] = POWERTYPE_HEALTH, [7] = POWERTYPE_ULTIMATE },
+	
+	-- Necromancer: Bitter Harvest
+	[115238] = POWERTYPE_HEALTH,
+	[20115238] = POWERTYPE_HEALTH,
+	[30115238] = POWERTYPE_HEALTH,
+	[40115238] = POWERTYPE_HEALTH,
+	
+	-- Necromancer: Deaden Pain
+	[118623] = POWERTYPE_HEALTH,
+	[20118623] = POWERTYPE_HEALTH,
+	[30118623] = POWERTYPE_HEALTH,
+	[40118623] = POWERTYPE_HEALTH,
+	
+	-- Necromancer: Necrotic Potency
+	[118639] = POWERTYPE_HEALTH,
+	[20118639] = POWERTYPE_HEALTH,
+	[30118639] = POWERTYPE_HEALTH,
+	[40118639] = POWERTYPE_HEALTH,
+	
+	-- Necromancer: Agony Totem
+	[118404] = POWERTYPE_ULTIMATE,
+	[20118404] = POWERTYPE_ULTIMATE,
+	[30118404] = POWERTYPE_ULTIMATE,
+	[40118404] = POWERTYPE_ULTIMATE,
+
+	-- Necromancer: Death Scythe
+	[115115]   = { [2] = POWERTYPE_HEALTH, [3] = POWERTYPE_HEALTH },
+	[20115115] = { [2] = POWERTYPE_HEALTH, [3] = POWERTYPE_HEALTH },
+	[30115115] = { [2] = POWERTYPE_HEALTH, [3] = POWERTYPE_HEALTH },
+	[40115115] = { [2] = POWERTYPE_HEALTH, [3] = POWERTYPE_HEALTH },	
+	
+	-- Necromancer: Ruinous Scythe
+	[118226]   = { [4] = POWERTYPE_HEALTH, [5] = POWERTYPE_HEALTH },
+	[20118226] = { [4] = POWERTYPE_HEALTH, [5] = POWERTYPE_HEALTH },
+	[30118226] = { [4] = POWERTYPE_HEALTH, [5] = POWERTYPE_HEALTH },
+	[40118226] = { [4] = POWERTYPE_HEALTH, [5] = POWERTYPE_HEALTH },	
+	
+	-- Necromancer: Hungry Scythe
+	[118223]   = { [2] = POWERTYPE_HEALTH, [3] = POWERTYPE_HEALTH, [4] = POWERTYPE_HEALTH },
+	[20118223] = { [2] = POWERTYPE_HEALTH, [3] = POWERTYPE_HEALTH, [4] = POWERTYPE_HEALTH },
+	[30118223] = { [2] = POWERTYPE_HEALTH, [3] = POWERTYPE_HEALTH, [4] = POWERTYPE_HEALTH },
+	[40118223] = { [2] = POWERTYPE_HEALTH, [3] = POWERTYPE_HEALTH, [4] = POWERTYPE_HEALTH },	
+	
+	-- Necromancer: Boneyard
+	[115252]   = { [4] = POWERTYPE_ULTIMATE	},
+	[20115252] = { [4] = POWERTYPE_ULTIMATE },
+	[30115252] = { [4] = POWERTYPE_ULTIMATE },
+	[40115252] = { [4] = POWERTYPE_ULTIMATE },	
+	
+	-- Necromancer: Avid Boneyard
+	[117850]   = { [4] = POWERTYPE_ULTIMATE	},
+	[20117850] = { [4] = POWERTYPE_ULTIMATE },
+	[30117850] = { [4] = POWERTYPE_ULTIMATE },
+	[40117850] = { [4] = POWERTYPE_ULTIMATE },	
+	
+	-- Necromancer: Unnerving Boneyard
+	[117805]   = { [5] = POWERTYPE_ULTIMATE	},
+	[20117805] = { [5] = POWERTYPE_ULTIMATE },
+	[30117805] = { [5] = POWERTYPE_ULTIMATE },
+	[40117805] = { [5] = POWERTYPE_ULTIMATE },	
 	
 -- Passives 
 
@@ -687,6 +895,13 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	
 	[86189] = uespLog.UESP_POWERTYPE_WINTERSEMBRACE,
 	[86190] = uespLog.UESP_POWERTYPE_WINTERSEMBRACE,
+	
+	-- Necromancer
+	[116269] = uespLog.UESP_POWERTYPE_BONETYRANT,
+	[116270] = uespLog.UESP_POWERTYPE_BONETYRANT,
+	
+	[116197] = uespLog.UESP_POWERTYPE_GRAVELORD,
+	[116198] = uespLog.UESP_POWERTYPE_GRAVELORD,
 	
 -- CP
 
@@ -3635,6 +3850,8 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		uespLog.SkillCoefAddSkill(cmds[2])
 	elseif (cmd1 == "addcharskills") then
 		uespLog.SkillCoefAddCharSkills()
+	elseif (cmd1 == "addlist") then
+		uespLog.SkillCoefAddList(cmds)
 	elseif (cmd1 == "addmissing") then
 		uespLog.SkillCoefAddMissingSkills()
 	elseif (cmd1 == "addall") then
@@ -3675,6 +3892,7 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		uespLog.Msg(".     /usc addskill [id] [rank]    Adds the given skill to track when saving")
 		uespLog.Msg(".     /usc addcharskills           Adds all character skills to track when saving")
 		uespLog.Msg(".     /usc addmissing              Adds all currently defined missing skills")
+		uespLog.Msg(".     /usc addlist [id] ...     Adds the listed skills")
 	end
 
 end
@@ -4133,6 +4351,28 @@ function uespLog.SkillCoefAddAllSkills()
 	end
 
 	uespLog.Msg("Added "..newSkills.." skills out of "..tostring(validAbilityCount).." possible skills to tracked data!")
+	return true
+end
+
+
+function uespLog.SkillCoefAddList(cmds)
+	local newSkills = 0
+	local i
+	
+	uespLog.Msg("Adding "..(#cmds-1).." skills to tracked skill list...")
+
+	for i = 2, #cmds do
+		local abilityId = tonumber(cmds[i])
+		
+		local result = uespLog.SkillCoefAddSkill(abilityId, -1)
+		
+		if (result) then
+			newSkills = newSkills + 1
+		end
+		
+	end
+	
+	uespLog.Msg("Added "..newSkills.." skills to tracked data!")
 	return true
 end
 
@@ -5032,6 +5272,12 @@ function uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 		x = 0	-- TODO - Actually count skills
 		y = 0		
 	elseif (mechanic == uespLog.UESP_POWERTYPE_FIGHTERSGUILD) then
+		x = 0	-- TODO - Actually count skills
+		y = 0		
+	elseif (mechanic == uespLog.UESP_POWERTYPE_BONETYRANT) then
+		x = 0	-- TODO - Actually count skills
+		y = 0		
+	elseif (mechanic == uespLog.UESP_POWERTYPE_GRAVELORD) then
 		x = 0	-- TODO - Actually count skills
 		y = 0		
 	elseif (mechanic == uespLog.UESP_POWERTYPE_SHADOW) then

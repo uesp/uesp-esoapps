@@ -323,7 +323,19 @@ function uespSalesHelper.Wayshrine(nodeIndex)
 		if (uespSalesHelper.currentState == "JUMP" ) then
 			uespSalesHelper.currentState = "IDLE" 
 		end
-	end, 10000)	
+	end, 11000)	
+end
+
+
+function uespSalesHelper.Home()
+	uespSalesHelper.currentState = "JUMP"
+	 uespLog.TeleportToPrimaryHome()
+	
+	zo_callLater(function() 
+		if (uespSalesHelper.currentState == "JUMP" ) then
+			uespSalesHelper.currentState = "IDLE" 
+		end
+	end, 11000)	
 end
 
 

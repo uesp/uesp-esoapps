@@ -1013,7 +1013,7 @@
 --			- Fixed the copy item link dialog to automatically select all text initially.
 --			- Updated sales price to most recent PC-NA version.
 --
---		- v1.81 -- 
+--		- v1.90 -- 
 --			- Fixed use of removed API function in /uespminecollect.
 --			- Updated list of rune box IDs.
 --			- uespLogMonitor: Updated to v0.61 to fix uploading builds from multiple accounts.
@@ -1024,6 +1024,10 @@
 --			  updated during the scan (sales data is still being collected however).
 --			- Sale item data saved from guild stores now includes the new uniqueId which prevents any duplicates from being saved.
 --			- Fixed skill coefficient descriptions missing description header.
+--		Elsweyr (Update 22)
+--			- Fixed recognizing a valid item link.
+--			- Fixed several incorrect/updated skill coefficient types.
+--			- Added the new styles: Coldsnap, Meridian, Anequina, Pellitine.
 --
 
 
@@ -1036,8 +1040,8 @@ end
 --	GLOBAL DEFINITIONS
 uespLog = uespLog or {}
 
-uespLog.version = "1.81"
-uespLog.releaseDate = "25 February 2019"
+uespLog.version = "1.90"
+uespLog.releaseDate = "?? June 2019"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -1647,7 +1651,7 @@ uespLog.isAutoMiningItems = false
 uespLog.MINEITEMS_AUTODELAY = 1000 -- Delay in ms
 uespLog.MINEITEMS_AUTOLOOPCOUNT = 400
 uespLog.MINEITEMS_AUTOMAXLOOPCOUNT = 400
-uespLog.MINEITEM_AUTO_MAXITEMID = 160000
+uespLog.MINEITEM_AUTO_MAXITEMID = 170000
 uespLog.mineItemsAutoNextItemId = 1
 uespLog.mineItemsAutoLastItemId = uespLog.MINEITEM_AUTO_MAXITEMID
 uespLog.mineItemsEnabled = false
@@ -1670,7 +1674,7 @@ uespLog.IdCheckValidCount = 0
 uespLog.IdCheckTotalCount = 0
 uespLog.mineItemReloadDelay = uespLog.MINEITEM_AUTORELOAD_DELTATIMEMS
 uespLog.mineItemPotionDataEffectIndex = 0
-uespLog.MINEITEM_POTION_MAXEFFECTINDEX = 30
+uespLog.MINEITEM_POTION_MAXEFFECTINDEX = 31
 uespLog.MINEITEM_POTION_ITEMID = 54339
 uespLog.MINEITEM_POISON_ITEMID = 76847
 uespLog.MINEITEM_POTION_MAGICITEMID = 1	-- 1234567
@@ -10260,9 +10264,14 @@ end
 
 
 function uespLog.IsValidItemLink (itemLink)
-	local icon = GetItemLinkIcon(itemLink)
+	--local icon = GetItemLinkIcon(itemLink)
+	--return not (icon == nil or icon == "")
 	
-	return not (icon == nil or icon == "")
+	--local name = GetItemLinkName(itemLink)
+	--return not (name == nil or name == "")
+	
+	local itemId = GetItemLinkItemId(itemLink)
+	return not (itemId == nil or itemId <= 0)
 end
 
 
@@ -11767,6 +11776,12 @@ uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
 	['honor_guard'] = 80,
 	['honorguard'] = 80,
 	['honor'] = 80,
+	
+		-- Elsweyr
+	['coldsnap'] = 82,
+	['meridian'] = 83,
+	['anequina'] = 84,
+	['pellitine'] = 85,
 		
 }
 
@@ -11959,6 +11974,12 @@ uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
 	['honor_guard'] = { 142187, 142188, 142189, 142190, 142191, 142192, 142193, 142194, 142195, 142196, 142197, 142198, 142199, 142200 }, -- 142186, 142201,
 	['honorguard'] = { 142187, 142188, 142189, 142190, 142191, 142192, 142193, 142194, 142195, 142196, 142197, 142198, 142199, 142200 }, -- 142186, 142201,
 	['honor'] = { 142187, 142188, 142189, 142190, 142191, 142192, 142193, 142194, 142195, 142196, 142197, 142198, 142199, 142200 }, -- 142186, 142201,
+	
+		-- Elsweyr
+	['coldsnap'] = { 147667, 147668, 147669, 147670, 147671, 147672, 147673, 147674, 147675, 147676, 147677, 147678, 147679, 147680 }, -- 147666, 147681,
+	['meridian'] = { 147683, 147684, 147685, 147686, 147687, 147688, 147689, 147690, 147691, 147692, 147693, 147694, 147695, 147696 }, -- 147682, 147697,
+	['anequina'] = { 147699, 147700, 147701, 147702, 147703, 147704, 147705, 147706, 147707, 147708, 147709, 147710, 147711, 147712 }, -- 147698, 147713,
+	['pellitine'] = { 147715, 147716, 147717, 147718, 147719, 147720, 147721, 147722, 147723, 147724, 147725, 147726, 147727, 147728 }, -- 147714, 147729,
 }
 
 
@@ -14812,7 +14833,7 @@ function uespLog.GetMagicDamageDone()
 	local value = description:match(" by |c[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]([%d.]+)|r%%")
 	local result = 0
 		
-	if (result ~= nil) then
+	if (value ~= nil) then
 		result = result + tonumber(value)/100
 	end
 	
@@ -14825,7 +14846,7 @@ function uespLog.GetStaminaDamageDone()
 	local value = description:match(" by |c[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]([%d.]+)|r%%")
 	local result = 0
 		
-	if (result ~= nil) then
+	if (value ~= nil) then
 		result = result + tonumber(value)/100
 	end
 	

@@ -104,8 +104,13 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[77] 							 = "uespLog/images/moonhunter.dds",			-- Huntsman, Bloodscent Dew, 77, /esoui/art/icons/crafting_style_item_moonhunter_r2.dds
 	[78] 							 = "uespLog/images/silverdawn.dds",			-- Silver Dawn, Argent Pelt, 78, /esoui/art/icons/crafting_style_item_silverdawn_r2.dds
 	[79] 							 = "uespLog/images/deadwater.dds",			-- Dead-Water, Crocodile Leather, 79, /esoui/art/icons/crafting_style_item_deadwater_r1.dds
-	[81] 							 = "uespLog/images/elderargonian.dds",		-- Elder Argonian, Hackwing Plumage, 81, /esoui/art/icons/crafting_style_item_elderargonian_r2.dds
 	[80] 							 = "uespLog/images/honorguard.dds",			-- Honor Guard, Red Diamond Seals, 80, /esoui/art/icons/crafting_style_item_honorguard.dds
+	[81] 							 = "uespLog/images/elderargonian.dds",		-- Elder Argonian, Hackwing Plumage, 81, /esoui/art/icons/crafting_style_item_elderargonian_r2.dds
+	[82] 							 = "uespLog/images/coldsnap.dds",			-- Coldsnap, Goblin-Cloth Scrap, 82, /esoui/art/icons/crafting_medium_armor_standard_f_001.dds
+	[83] 							 = "uespLog/images/meridian.dds",			-- Meridian, Auroran Dust, 83, /esoui/art/icons/crafting_mushroom_asco_cap_r3.dds
+	[84] 							 = "uespLog/images/anequina.dds",			-- Anequina, Shimmering Sand, 84, /esoui/art/icons/crafting_leather_phlegm.dds
+	[85] 							 = "uespLog/images/pellitine.dds",			-- Pellitine, Dragonthread, 85, /esoui/art/icons/crafting_light_armor_vendor_component_002.dds
+	
 	
 }
 
@@ -182,8 +187,12 @@ uespLog.STYLE_ICON_DATA = {
 	[77] 							 = "/esoui/art/icons/crafting_style_item_moonhunter_r2.dds",
 	[78] 							 = "/esoui/art/icons/crafting_style_item_silverdawn_r2.dds",
 	[79] 							 = "/esoui/art/icons/crafting_style_item_deadwater_r1.dds",
-	[81] 							 = "/esoui/art/icons/crafting_style_item_elderargonian_r2.dds",
 	[80] 							 = "/esoui/art/icons/crafting_style_item_honorguard.dds",
+	[81] 							 = "/esoui/art/icons/crafting_style_item_elderargonian_r2.dds",
+	[82] 							 = "/esoui/art/icons/crafting_medium_armor_standard_f_001.dds",
+	[83] 							 = "/esoui/art/icons/crafting_mushroom_asco_cap_r3.dds",
+	[84] 							 = "/esoui/art/icons/crafting_leather_phlegm.dds",
+	[85] 							 = "/esoui/art/icons/crafting_light_armor_vendor_component_002.dds",
 }
 
 

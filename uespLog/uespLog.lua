@@ -17920,6 +17920,9 @@ function uespLog.DoNextMineTest()
 end
 
 
-
+function uespLog.MakePotionLink(effectIndex)
+	local itemLink = uespLog.MakeItemLinkEx( { itemId = 54339, level = 1, quality = 123, potionEffect = effectIndex } )
+	uespLog.Msg("Potion #" .. tostring(effectIndex)..":" .. tostring(itemLink))
+end
 
 

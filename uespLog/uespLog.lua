@@ -1024,6 +1024,10 @@
 --			  updated during the scan (sales data is still being collected however).
 --			- Sale item data saved from guild stores now includes the new uniqueId which prevents any duplicates from being saved.
 --			- Fixed skill coefficient descriptions missing description header.
+--			- Skill coefficients are now saved/added asynchronously to prevent a data corruption bug. While skill data is being saved
+--			  you should not change equipment/skills to prevent the skill data from changing mid-save.
+--			- Removed usage of Wykkd outfitter in skill coefficient code.
+--			- Item mining is done a little more asynchronously now in order to prevent some data corruption issues.
 --		Elsweyr (Update 22)
 --			- Fixed recognizing a valid item link.
 --			- Fixed several incorrect/updated skill coefficient types.
@@ -1653,12 +1657,13 @@ uespLog.MINEITEMS_AUTOLOOPCOUNT = 400
 uespLog.MINEITEMS_AUTOMAXLOOPCOUNT = 400
 uespLog.MINEITEM_AUTO_MAXITEMID = 170000
 uespLog.mineItemsAutoNextItemId = 1
+uespLog.mineItemsAutoNextListIndex = 1
 uespLog.mineItemsAutoLastItemId = uespLog.MINEITEM_AUTO_MAXITEMID
 uespLog.mineItemsEnabled = false
 uespLog.MINEITEMS_AUTOSTOP_LOGCOUNT = 50000
 uespLog.mineItemAutoReload = false
 uespLog.mineItemLastReloadTimeMS = GetGameTimeMilliseconds()
-uespLog.MINEITEM_AUTORELOAD_DELTATIMEMS = 260000  -- Default value, use uespLog.minedItemReloadDelay instead
+uespLog.MINEITEM_AUTORELOAD_DELTATIMEMS = 1000  -- Default value, use uespLog.minedItemReloadDelay instead
 uespLog.mineItemAutoRestart = false
 uespLog.mineItemAutoRestartOutputEnd = false
 uespLog.mineItemOnlySubType = -1
@@ -1674,6 +1679,7 @@ uespLog.IdCheckValidCount = 0
 uespLog.IdCheckTotalCount = 0
 uespLog.mineItemReloadDelay = uespLog.MINEITEM_AUTORELOAD_DELTATIMEMS
 uespLog.mineItemPotionDataEffectIndex = 0
+uespLog.mineItemPotionDataListIndex = 1
 uespLog.MINEITEM_POTION_MAXEFFECTINDEX = 31
 uespLog.MINEITEM_POTION_ITEMID = 54339
 uespLog.MINEITEM_POISON_ITEMID = 76847
@@ -1756,6 +1762,7 @@ uespLog.DEFAULT_SETTINGS =
 		["craftAutoLootMinProvLevel"] = 1,
 		["mailDeleteNotify"] = false,
 		["mineItemsAutoNextItemId"] = 1,
+		["mineItemsAutoNextListIndex"] = 1,
 		["mineItemsAutoLastItemId"] = uespLog.MINEITEM_AUTO_MAXITEMID,
 		["mineItemAutoReload"] = false,
 		["mineItemAutoRestart"] = false,
@@ -3700,6 +3707,7 @@ function uespLog.Initialize( self, addOnName )
 	
 	uespLog.mineItemsAutoNextItemId = uespLog.savedVars.settings.data.mineItemsAutoNextItemId or uespLog.mineItemsAutoNextItemId
 	uespLog.mineItemsAutoLastItemId = uespLog.savedVars.settings.data.mineItemsAutoLastItemId or uespLog.mineItemsAutoLastItemId
+	uespLog.mineItemsAutoNextListIndex = uespLog.savedVars.settings.data.mineItemsAutoNextListIndex or uespLog.mineItemsAutoNextListIndex
 	uespLog.mineItemAutoReload = uespLog.savedVars.settings.data.mineItemAutoReload or uespLog.mineItemAutoReload
 	uespLog.mineItemAutoRestart = uespLog.savedVars.settings.data.mineItemAutoRestart or uespLog.mineItemAutoRestart
 	uespLog.mineItemsEnabled = uespLog.savedVars.settings.data.mineItemsEnabled or uespLog.mineItemsEnabled
@@ -4193,7 +4201,7 @@ function uespLog.InitAutoMining ()
 			uespLog.MsgColor(uespLog.mineColor, "UESP: Stopped auto-mining due to reaching max ID of "..tostring(uespLog.mineItemsAutoNextItemId))
 		else
 			uespLog.MsgColor(uespLog.mineColor, "UESP: Auto-restarting item mining at ID "..tostring(uespLog.mineItemsAutoNextItemId).." in 10 secs...")
-			zo_callLater(uespLog.MineItemsAutoLoop, 10000)
+			zo_callLater(uespLog.MineItemsAutoLoopSafe, 10000)
 			uespLog.MineItemsOutputStartLog()
 			uespLog.mineItemAutoRestartOutputEnd = false
 		end
@@ -10389,6 +10397,96 @@ function uespLog.MineItemIterateLevelsShort (itemId)
 end
 
 
+uespLog.MINEITEM_AUTOLOOPSAFE_MAXCOUNT = 500
+
+
+function uespLog.MineItemIterateLevelsShortSafe (itemId, listIndex)
+	local i, value
+	local level, quality
+	local setCount = 0
+	local badItems = 0
+	local itemLink
+	local itemName
+	local extraData = { }
+	local isFirst = true
+	local fullItemLog = { }
+	local lastItemLog = { }
+	local newItemLog = { }
+	local diffItemLog = { }
+	local validCount = 0
+	
+	--uespLog.Msg("Starting at: "..itemId..":"..listIndex)
+
+	for i = listIndex, 10000 do
+		local value = uespLog.MINEITEM_LEVELS_SAFE[i]
+		
+		if (value == nil) then
+			return itemId + 1, 1, false
+		end
+		
+		local levelStart = value[1]
+		local levelEnd = value[2]
+		local qualityStart = value[3]
+		local qualityEnd = value[4]
+		local comment = value[5]
+		isFirst = true
+		
+		for level = levelStart, levelEnd do
+		
+			if (uespLog.mineItemOnlyLevel < 0 or level == uespLog.mineItemOnlyLevel) then
+			
+				for quality = qualityStart, qualityEnd do
+				
+					if (uespLog.mineItemOnlySubType < 0 or quality == uespLog.mineItemOnlySubType) then
+						setCount = setCount + 1
+						uespLog.mineItemCount = uespLog.mineItemCount + 1
+						
+						itemLink = uespLog.MakeItemLinkEx( { itemId = itemId, level = level, quality = quality, style = 0 } )
+						
+						if (true or uespLog.IsValidItemLink(itemLink)) then
+							validCount = validCount + 1
+							
+							if (isFirst) then
+								isFirst = false
+								extraData.comment = comment
+								fullItemLog = uespLog.CreateItemLinkLog(itemLink)
+								fullItemLog.event = "mineitem"
+								uespLog.AppendDataToLog("all", fullItemLog, extraData)
+								extraData.comment = nil
+								lastItemLog = fullItemLog
+							else
+								newItemLog = uespLog.CreateItemLinkLog(itemLink)
+								diffItemLog = uespLog.CompareItemLogs(lastItemLog, newItemLog)
+								diffItemLog.event = "mi"
+								uespLog.AppendDataToLog("all", diffItemLog, extraData)
+								lastItemLog = newItemLog
+							end
+							
+						else
+							badItems = badItems + 1
+							uespLog.mineItemBadCount = uespLog.mineItemBadCount + 1
+						end				
+						
+						if (uespLog.mineItemCount % uespLog.mineUpdateItemCount == 0) then
+							uespLog.MsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad...")
+						end
+					end
+				end
+			end
+		end
+		
+		if (validCount > uespLog.MINEITEM_AUTOLOOPSAFE_MAXCOUNT) then
+			--uespLog.Msg("Stopping at: "..itemId..":"..i+1)
+			return itemId, i + 1, true
+		end		
+		
+	end
+	
+	--uespLog.MsgColor(uespLog.mineColor, "UESP: Made "..tostring(setCount).." items with ID "..tostring(itemId)..", "..tostring(badItems).." bad")
+	return itemId + 1, 1, true
+end
+
+
 function uespLog.MineItemIterateOther (itemId)
 	local itemLink
 	local extraData = uespLog.GetTimeData()
@@ -10408,6 +10506,34 @@ function uespLog.MineItemIterateOther (itemId)
 	end
 	
 	return 1, 0
+end
+
+
+function uespLog.MineItemIterateSafe (itemId, listIndex)
+	
+	if (not uespLog.IsValidItemId(itemId)) then
+		uespLog.mineItemCount = uespLog.mineItemCount + 1
+		uespLog.mineItemBadCount = uespLog.mineItemBadCount + 1
+		return itemId + 1, 1, false
+	end
+	
+	local itemLink = uespLog.MakeItemLink(itemId, 1, 1)
+	local itemType = GetItemLinkItemType(itemLink)
+	
+	if (uespLog.mineItemOnlyItemType ~= nil and next(uespLog.mineItemOnlyItemType) ~= nil and uespLog.mineItemOnlyItemType[itemType] == nil) then
+		uespLog.mineItemCount = uespLog.mineItemCount + 1
+		uespLog.mineItemBadCount = uespLog.mineItemBadCount + 1
+		return itemId + 1, 1, false
+	end
+	
+	local changesWithLevel = uespLog.DoesItemChangeWithLevelQuality(itemId)
+	
+	if (changesWithLevel) then
+		return uespLog.MineItemIterateLevelsShortSafe(itemId, listIndex)
+	end
+	
+	uespLog.MineItemIterateOther(itemId)
+	return itemId + 1, 1, false
 end
 
 
@@ -10589,9 +10715,115 @@ function uespLog.MineItemIteratePotionData (effectIndex, realItemId, potionItemI
 	uespLog.MsgColor(uespLog.mineColor, "UESP: Auto-mined "..tostring(setCount).." "..typeMsg.." data, "..
 				tostring(badCount).." bad, effect "..tostring(effectIndex)..
 				" (total "..tostring(uespLog.mineItemCount - uespLog.mineItemBadCount).." items)")	
-
 	
 	return setCount, badCount
+end
+
+
+function uespLog.MineItemIteratePotionDataSafe (effectIndex, realItemId, potionItemId, listIndex)
+	local i, value
+	local level, quality
+	local itemLink
+	local itemName
+	local setCount = 0
+	local badCount = 0
+	local validCount = 0
+	local extraData = uespLog.GetTimeData()
+	local isFirst = true
+	local fullItemLog = { }
+	local lastItemLog = { }
+	local newItemLog = { }
+	local diffItemLog = { }
+	local nextEffectIndex = effectIndex
+	local nextListIndex = listIndex
+
+	for i = listIndex, 10000 do
+		local value = uespLog.MINEITEM_LEVELS_SAFE[i]
+		
+		if (value == nil) then
+			nextEffectIndex = effectIndex + 1
+			nextListIndex = 1
+			break
+		end
+	
+		local levelStart = value[1]
+		local levelEnd = value[2]
+		local qualityStart = value[3]
+		local qualityEnd = value[4]
+		local comment = value[5]
+		
+		for level = levelStart, levelEnd do
+			for quality = qualityStart, qualityEnd do
+				setCount = setCount + 1
+				uespLog.mineItemCount = uespLog.mineItemCount + 1
+				
+				itemLink = uespLog.MakeItemLinkEx( { itemId = realItemId, level = level, quality = quality, potionEffect = effectIndex } )
+				
+				if (uespLog.IsValidItemLink(itemLink)) then
+					validCount = validCount + 1
+				
+					if (isFirst) then
+						isFirst = false
+						
+						extraData.comment = comment
+						extraData.realItemId = realItemId
+						extraData.magicItemId = potionItemId
+												
+						fullItemLog = uespLog.CreateItemLinkLog(itemLink)
+						
+						fullItemLog.event = "mineitem"
+						fullItemLog.itemLink = string.gsub(fullItemLog.itemLink, tostring(extraData.realItemId), tostring(potionItemId))
+						
+						uespLog.AppendDataToLog("all", fullItemLog, extraData)
+						extraData.comment = nil
+						lastItemLog = fullItemLog
+					else
+						newItemLog = uespLog.CreateItemLinkLog(itemLink)
+						
+						extraData.comment = comment
+						extraData.realItemId = realItemId
+						extraData.magicItemId = potionItemId
+						
+						diffItemLog = uespLog.CompareItemLogs(lastItemLog, newItemLog)
+						diffItemLog.itemLink = newItemLog.itemLink
+						diffItemLog.event = "mi"
+						diffItemLog.itemLink = string.gsub(diffItemLog.itemLink, tostring(extraData.realItemId), tostring(potionItemId))
+						
+						uespLog.AppendDataToLog("all", diffItemLog, extraData)
+						lastItemLog = newItemLog
+					end					
+
+				else
+					badItems = badItems + 1
+					uespLog.mineItemBadCount = uespLog.mineItemBadCount + 1
+				end				
+				
+				if (uespLog.mineItemCount % uespLog.mineUpdateItemCount == 0) then
+					--uespLog.MsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." potion data, "..tostring(uespLog.mineItemBadCount).." bad...")
+				end
+				
+			end
+		end
+		
+		if (validCount > uespLog.MINEITEM_AUTOLOOPSAFE_MAXCOUNT/2) then
+			--uespLog.Msg("Stopping at: "..itemId..":"..i+1)
+			nextListIndex = i + 1
+			break
+		end		
+		
+	end
+	
+	local typeMsg = "potion"
+	
+	if (realItemId == uespLog.MINEITEM_POISON_ITEMID) then
+		typeMsg = "poison"
+	end
+	
+	uespLog.MsgColor(uespLog.mineColor, "UESP: Auto-mined "..tostring(setCount).." "..typeMsg.." data, "..
+				tostring(badCount).." bad, effect "..tostring(effectIndex)..
+				" (total "..tostring(uespLog.mineItemCount - uespLog.mineItemBadCount).." items)")	
+	
+	return nextEffectIndex, nextListIndex, true
 end
 
 
@@ -10641,7 +10873,7 @@ function uespLog.MineItems (startId, endId)
 end
 
 
-function uespLog.MineItemsAutoLoop ()
+function uespLog.MineItemsAutoLoop()
 	local initItemCount = uespLog.mineItemCount
 	local initBadCount = uespLog.mineItemBadCount
 	local initItemId = uespLog.mineItemsAutoNextItemId
@@ -10726,6 +10958,88 @@ function uespLog.MineItemsAutoLoop ()
 end
 
 
+function uespLog.MineItemsAutoLoopSafe()
+	local initItemCount = uespLog.mineItemCount
+	local initBadCount = uespLog.mineItemBadCount
+	local initItemId = uespLog.mineItemsAutoNextItemId
+	local itemId
+	local reloadUI = true
+	local i	
+	
+	if (not uespLog.isAutoMiningItems) then
+		return
+	end
+	
+	for i = 1, uespLog.MINEITEMS_AUTOLOOPCOUNT do
+	
+		if (#uespLog.savedVars.all.data >= uespLog.MINEITEMS_AUTOSTOP_LOGCOUNT or uespLog.mineItemsAutoNextItemId > uespLog.mineItemsAutoLastItemId) then
+		
+			if (uespLog.mineItemsAutoNextItemId > uespLog.mineItemsAutoLastItemId) then	
+				if (uespLog.mineItemsAutoLastItemId >= uespLog.MINEITEM_AUTO_MAXITEMID) then
+					uespLog.MsgColor(uespLog.mineColor, "Stopped auto-mining at item "..tostring(uespLog.mineItemsAutoNextItemId).." due to reaching max ID.")
+				else
+					reloadUI = false
+					uespLog.MsgColor(uespLog.mineColor, "Stopped auto-mining at item "..tostring(uespLog.mineItemsAutoNextItemId).." due to reaching last ID.")
+				end
+			elseif (initItemId < uespLog.mineItemsAutoNextItemId) then
+				uespLog.MsgColor(uespLog.mineColor, "Paused auto-mining at item "..tostring(uespLog.mineItemsAutoNextItemId).." due to full log.")
+			end
+			
+			if (not uespLog.mineItemAutoRestartOutputEnd) then
+				uespLog.MineItemsOutputEndLog()
+				uespLog.mineItemAutoRestartOutputEnd = true
+			end
+			
+			local reloadTime = uespLog.mineItemLastReloadTimeMS + uespLog.mineItemReloadDelay - GetGameTimeMilliseconds()
+
+			if (uespLog.mineItemAutoReload and reloadTime <= 0) then
+			
+				if (reloadUI) then
+					uespLog.MsgColor(uespLog.mineColor, "Item mining auto reloading UI....")
+					SLASH_COMMANDS["/reloadui"]()
+				else
+					uespLog.mineItemAutoReload = false
+					uespLog.mineItemAutoRestart = false
+					uespLog.savedVars.settings.data.mineItemAutoReload = false
+					uespLog.savedVars.settings.data.mineItemAutoRestart = false
+					uespLog.isAutoMiningItems = false
+					uespLog.savedVars.settings.data.isAutoMiningItems = false
+					return
+				end
+			elseif (uespLog.mineItemAutoReload) then
+				uespLog.MsgColor(uespLog.mineColor, "Item mining auto UI reload in "..tostring(math.ceil(reloadTime/5000)*5).." secs...")
+			end
+			
+			break
+		end
+		
+		itemId = uespLog.mineItemsAutoNextItemId
+		listIndex = uespLog.mineItemsAutoNextListIndex
+				
+		local nextItemId, nextListIndex, shouldStop = uespLog.MineItemIterateSafe(itemId, listIndex)
+		
+		uespLog.mineItemsAutoNextItemId = nextItemId
+		uespLog.mineItemsAutoNextListIndex = nextListIndex
+		uespLog.savedVars.settings.data.mineItemsAutoNextItemId = nextItemId
+		uespLog.savedVars.settings.data.mineItemsAutoNextListIndex = nextListIndex
+		
+		if (shouldStop or uespLog.mineItemCount - initItemCount > uespLog.MINEITEMS_AUTOMAXLOOPCOUNT) then
+			break
+		end
+
+	end
+
+		-- Chain the call to keep going if required
+	if (uespLog.isAutoMiningItems) then
+		zo_callLater(uespLog.MineItemsAutoLoopSafe, uespLog.MINEITEMS_AUTODELAY)
+	end
+	
+	uespLog.MsgColor(uespLog.mineColor, "Auto-mined "..tostring(uespLog.mineItemCount - initItemCount).." items, "..
+				tostring(uespLog.mineItemBadCount - initBadCount).." bad, IDs "..tostring(initItemId).."-"..tostring(itemId)..
+				" (total "..tostring(uespLog.mineItemCount - uespLog.mineItemBadCount).." items)")	
+end
+
+
 function uespLog.MineItemsAutoLoopPotionData ()
 	local initItemId
 	
@@ -10733,9 +11047,13 @@ function uespLog.MineItemsAutoLoopPotionData ()
 		return
 	end
 	
-	uespLog.MineItemIteratePotionData(uespLog.mineItemPotionDataEffectIndex, uespLog.MINEITEM_POTION_ITEMID, uespLog.MINEITEM_POTION_MAGICITEMID)
-	uespLog.MineItemIteratePotionData(uespLog.mineItemPotionDataEffectIndex, uespLog.MINEITEM_POISON_ITEMID, uespLog.MINEITEM_POISON_MAGICITEMID)
-	uespLog.mineItemPotionDataEffectIndex = uespLog.mineItemPotionDataEffectIndex + 1
+	uespLog.MineItemIteratePotionDataSafe(uespLog.mineItemPotionDataEffectIndex, uespLog.MINEITEM_POTION_ITEMID, uespLog.MINEITEM_POTION_MAGICITEMID, uespLog.mineItemPotionDataListIndex)
+	
+	local nextEffectIndex, nextListIndex = uespLog.MineItemIteratePotionDataSafe(uespLog.mineItemPotionDataEffectIndex, uespLog.MINEITEM_POISON_ITEMID, uespLog.MINEITEM_POISON_MAGICITEMID, uespLog.mineItemPotionDataListIndex)
+	
+	uespLog.mineItemPotionDataEffectIndex = nextEffectIndex
+	uespLog.mineItemPotionDataListIndex = nextListIndex
+	uespLog.savedVars.settings.data.mineItemPotionDataEffectIndex = uespLog.mineItemPotionDataEffectIndex
 
 		-- Chain the call to keep going if required
 	if (uespLog.isAutoMiningItems) then
@@ -10784,7 +11102,7 @@ function uespLog.MineItemsAutoStart ()
 		uespLog.MsgColor(uespLog.mineColor, ".     Only mining items with item types of "..text)
 	end
 	
-	zo_callLater(uespLog.MineItemsAutoLoop, uespLog.MINEITEMS_AUTODELAY)
+	zo_callLater(uespLog.MineItemsAutoLoopSafe, uespLog.MINEITEMS_AUTODELAY)
 end
 
 
@@ -11103,10 +11421,13 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		if (cmds[2] ~= nil) then
 			if (uespLog.mineItemPotionData) then
 				uespLog.mineItemPotionDataEffectIndex = tonumber(cmds[2])
+				uespLog.mineItemPotionDataListIndex = 1
 				uespLog.savedVars.settings.data.mineItemPotionDataEffectIndex = uespLog.mineItemPotionDataEffectIndex
 			else
 				uespLog.mineItemsAutoNextItemId = tonumber(cmds[2])
+				uespLog.mineItemsAutoNextListIndex = 1
 				uespLog.savedVars.settings.data.mineItemsAutoNextItemId = uespLog.mineItemsAutoNextItemId
+				uespLog.savedVars.settings.data.mineItemsAutoNextListIndex = uespLog.mineItemsAutoNextListIndex
 			end
 		end
 		
@@ -11235,10 +11556,13 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		if (cmds[2] ~= nil) then
 			if (uespLog.mineItemPotionData) then
 				uespLog.mineItemPotionDataEffectIndex = tonumber(cmds[2])
+				uespLog.mineItemPotionDataListIndex = 1
 				uespLog.savedVars.settings.data.mineItemPotionDataEffectIndex = uespLog.mineItemPotionDataEffectIndex
 			else
 				uespLog.mineItemsAutoNextItemId = tonumber(cmds[2])
+				uespLog.mineItemsAutoNextListIndex = 1
 				uespLog.savedVars.settings.data.mineItemsAutoNextItemId = uespLog.mineItemsAutoNextItemId
+				uespLog.savedVars.settings.data.mineItemsAutoNextListIndex = uespLog.mineItemsAutoNextListIndex
 			end
 		end
 		
@@ -17990,8 +18314,7 @@ end
 
 function uespLog.StartMineTest(startIndex)
 	uespLog.NextMineTestIndex = startIndex or 1
-	zo_callLater(uespLog.DoNextMineTest, 1000)
-	
+	zo_callLater(uespLog.DoNextMineTest, 1000)	
 end
 
 

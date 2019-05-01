@@ -13,13 +13,6 @@ uespLog.SkillCoefNumBadCoefCount = 0
 uespLog.SkillCoefDataPointCount = 0
 uespLog.SkillCoefDataIsCalculated = false
 
-uespLog.SkillCoef_CaptureWykkyd_Prefix = "SkillCoef"
-uespLog.SkillCoef_CaptureWykkyd_StartIndex = 1
-uespLog.SkillCoef_CaptureWykkyd_IsWorking = false
-uespLog.SkillCoef_CaptureWykkyd_EndIndex = 5
-uespLog.SkillCoef_CaptureWykkyd_CurrentIndex = 5
-uespLog.SkillCoef_CaptureWykkyd_TimeDelayLoadSet = 5000   -- Takes a while for skill data to 'settle' sometimes
-
 uespLog.SkillCoefArmorCountLA = 0
 uespLog.SkillCoefArmorCountMA = 0
 uespLog.SkillCoefArmorCountHA = 0
@@ -3792,13 +3785,7 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 			return false
 		end
 		
-		result = uespLog.CaptureSkillCoefData()
-
-		if (result) then
-			uespLog.Msg("Successfully captured skill data for current character/equipment.")
-		else
-			uespLog.Msg("Error: Failed to capture skill data for current character/equipment!")
-		end
+		uespLog.CaptureSkillCoefData()
 		
 	elseif (cmd1 == "calc" or cmd1 == "compute") then
 		result = uespLog.ComputeSkillCoef()
@@ -3830,10 +3817,6 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		uespLog.Msg("Skill data is "..calcStatus.."calculated with "..tostring(uespLog.SkillCoefNumValidCoefCount).." skill variables with valid coefficients.")
 		uespLog.Msg(".       Failed to compute coefficients for "..tostring(uespLog.SkillCoefNumBadCoefCount).." skill variables.")
 		
-		if (uespLog.SkillCoef_CaptureWykkyd_IsWorking) then
-			local setName = uespLog.SkillCoef_CaptureWykkyd_Prefix .. uespLog.SkillCoef_CaptureWykkyd_CurrentIndex
-			uespLog.Msg(".     Currently saving skill data for Wykkyd's set "..tostring(setName))
-		end
 	elseif (cmd1 == "clear" or cmd1 == "reset") then
 		uespLog.ClearSkillCoefData()
 		uespLog.Msg("Cleared all skill coefficient data.")
@@ -3844,8 +3827,6 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		uespLog.ShowSkillCoefBadData()
 	elseif (cmd1 == "listbadfit" or cmd1 == "showbadfit") then
 		uespLog.ShowSkillCoefBadFitData(cmds[2])
-	elseif (cmd1 == "savewyk") then
-		uespLog.CaptureSkillCoefDataWykkyd(cmds[2], cmds[3], cmds[4])
 	elseif (cmd1 == "addskill" or cmd1 == "add") then
 		uespLog.SkillCoefAddSkill(cmds[2])
 	elseif (cmd1 == "addcharskills") then
@@ -3862,13 +3843,6 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		uespLog.SkillCoefLoadSkillList()
 	elseif (cmd1 == "resetlist") then
 		uespLog.SkillCoefResetSkillList()
-	elseif (cmd1 == "stop" or cmd1 == "end" or cmd1 == "abort") then
-		uespLog.SkillCoef_CaptureWykkyd_CurrentIndex = uespLog.SkillCoef_CaptureWykkyd_EndIndex + 1
-		
-		if (uespLog.SkillCoef_CaptureWykkyd_IsWorking) then
-			uespLog.SkillCoef_CaptureWykkyd_IsWorking = false
-			uespLog.Msg("Stopped saving skill data using Wykkyd's sets...")
-		end
 	else
 		uespLog.Msg("Saves and calculates coefficients for all skills the character knows. Note that the saved skill data is *not* saved when you /reloadui or logout.")
 		uespLog.Msg("To use use the 'save' command with at least 3 different sets of character stat (spell damage/magicka or weapon damage/stamina) and then use the 'calc' command.")
@@ -3881,8 +3855,6 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		uespLog.Msg(".     /usc status                 Current status of saved skill data")
 		uespLog.Msg(".     /usc reset                  Resets the saved skill data")
 		uespLog.Msg(".     /usc resetsaved         Clears all saved data points from")
-		uespLog.Msg(".     /usc savewyk [prefix] [start] [end]  Saves skill data using Wykkyd's Outfitter. For example: '/usc savewyk Test 1 9' would try to load the sets 'Test1'...'Test9' and save the skill data for each of them.")
-		uespLog.Msg(".     /usc stop                          Stops a Wykkyd item set save in progress")
 		uespLog.Msg(".     /usc savetemp [id]           Saves skill data to the tempData section")
 		uespLog.Msg(".     /usc savetemp [name]")
 		uespLog.Msg(".     /usc showdata [id]           Output raw data for a skill")
@@ -3923,6 +3895,11 @@ function uespLog.SkillCoefLoadSkillList()
 	local data
 	local count = 0
 	local newCount = 0
+	
+	if (uespLog.isSkillCoefSaving) then
+		uespLog.Msg("Skill coeffiecient is busy saving data!")
+		return
+	end
 	
 	if (uespLog.savedVars.skillCoefAbilityList == nil) then
 		uespLog.Msg("No skills found in skillCoefAbilityList section!")
@@ -4173,97 +4150,13 @@ function uespLog.LogSkillCoefDataSkillCsv(abilityData, calcData)
 end
 
 
-function uespLog.CaptureSkillCoefDataWykkyd(setPrefix, startIndex, endIndex)
-
-	if (uespLog.SkillCoef_CaptureWykkyd_IsWorking) then
-		return false
-	end
-	
-	if (setPrefix == nil or setPrefix == "" or startIndex == nil or endIndex == nil) then
-		uespLog.Msg("Error: Missing required parameters! Command format is:")
-		uespLog.Msg(".     /usc savewyk [prefix] [start] [end]")
-		return false
-	end
-	
-	startIndex = tonumber(startIndex)
-	endIndex   = tonumber(endIndex)
-	
-	if (startIndex == nil or endIndex == nil) then
-		uespLog.Msg("Error: 'start' and 'end' must be valid numbers! Command format is:")
-		uespLog.Msg(".     /usc savewyk [prefix] [start] [end]")
-		return false
-	end
-	
-	if (SLASH_COMMANDS['/loadset'] == nil) then
-		uespLog.Msg("Error: It doesn't look like the Wykkyd's Outfitter add-on is installed!")
-		return false
-	end
-	
-	uespLog.SkillCoef_CaptureWykkyd_Prefix = setPrefix
-	uespLog.SkillCoef_CaptureWykkyd_StartIndex = startIndex
-	uespLog.SkillCoef_CaptureWykkyd_EndIndex = endIndex
-	uespLog.SkillCoef_CaptureWykkyd_CurrentIndex = 1
-	
-	local startSet = setPrefix .. tostring(startIndex)
-	local endSet = setPrefix .. tostring(endIndex)
-	
-	uespLog.Msg("Starting skill data capture using Wykkyd's sets "..tostring(startSet).."..."..tostring(endSet))
-	
-	uespLog.SkillCoef_CaptureWykkyd_IsWorking = true
-	uespLog.CaptureNextSkillCoefDataWykkyd_LoadSet()
-
-	return true
-end
-
-
-function uespLog.CaptureNextSkillCoefDataWykkyd_LoadSet()
-
-	if (not uespLog.SkillCoef_CaptureWykkyd_IsWorking) then
-		return
-	end
-
-	if (uespLog.SkillCoef_CaptureWykkyd_CurrentIndex > uespLog.SkillCoef_CaptureWykkyd_EndIndex) then
-		local startSet = uespLog.SkillCoef_CaptureWykkyd_Prefix .. tostring(uespLog.SkillCoef_CaptureWykkyd_StartIndex)
-		local endSet = uespLog.SkillCoef_CaptureWykkyd_Prefix .. tostring(uespLog.SkillCoef_CaptureWykkyd_EndIndex)
-		uespLog.Msg("Finished skill data capture using Wykkyd's sets "..tostring(startSet).."..."..tostring(endSet))
-		uespLog.SkillCoef_CaptureWykkyd_IsWorking = false
-		return
-	end
-	
-	local setName = tostring(uespLog.SkillCoef_CaptureWykkyd_Prefix) .. tostring(uespLog.SkillCoef_CaptureWykkyd_CurrentIndex)
-	SLASH_COMMANDS['/loadset'](setName)
-	
-	zo_callLater(uespLog.CaptureNextSkillCoefDataWykkyd_SaveData, uespLog.SkillCoef_CaptureWykkyd_TimeDelayLoadSet)
-end
-
-
-function uespLog.CaptureNextSkillCoefDataWykkyd_SaveData()
-
-	if (not uespLog.SkillCoef_CaptureWykkyd_IsWorking) then
-		return
-	end
-	
-	if (not uespLog.IsSafetoSaveSkillCoef()) then
-		uespLog.Msg("Error: Can't save skill data. Waiting a few more seconds and trying again...")
-		zo_callLater(uespLog.CaptureNextSkillCoefDataWykkyd_SaveData, uespLog.SkillCoef_CaptureWykkyd_TimeDelayLoadSet/2)
-		return false
-	end
-	
-	local setName = tostring(uespLog.SkillCoef_CaptureWykkyd_Prefix) .. tostring(uespLog.SkillCoef_CaptureWykkyd_CurrentIndex)
-
-	if (uespLog.CaptureSkillCoefData()) then
-		uespLog.Msg("Saved skill data for Wykyyd's set '"..tostring(setName).."'.")
-	else
-		uespLog.Msg("Error: Failed to savedskill data for Wykyyd's set '"..tostring(setName).."'!")
-	end
-	
-	uespLog.SkillCoef_CaptureWykkyd_CurrentIndex = uespLog.SkillCoef_CaptureWykkyd_CurrentIndex + 1
-	uespLog.CaptureNextSkillCoefDataWykkyd_LoadSet()
-end
-
-
 function uespLog.SkillCoefAddMissingSkills()
 	local newSkills = 0
+	
+	if (uespLog.isSkillCoefSaving) then
+		uespLog.Msg("Skill coeffiecient is busy saving data!")
+		return
+	end
 	
 	for k, skillData in ipairs(uespLog.MISSING_SKILL_DATA) do
 		local abilityId = skillData[2]
@@ -4317,18 +4210,50 @@ function uespLog.InitPlayerSkill(abilityId)
 end
 
 
+uespLog.SkillCoefAddAllValidCount = 0
+uespLog.SkillCoefAddAllNewCount = 0
+uespLog.SKILLCOEF_ADDALL_MAXABILITYID = 150000
+uespLog.SKILLCOEF_ADDALL_MAXABILITYCOUNT = 1000
+uespLog.SkillCoefAddStartAbilityIndex = 1
+uespLog.SKILLCOEF_ADDALL_DELAY = 500
+
+
 function uespLog.SkillCoefAddAllSkills()
-	local abilityId
-	local endId = 150000
-	local validAbilityCount = 0
-	local newSkills = 0
-	local logData = { }
+		
+	if (uespLog.isSkillCoefSaving) then
+		uespLog.Msg("Skill coeffiecient is busy saving data!")
+		return
+	end
 	
 	uespLog.Msg("Checking all skills for coefficient tracking...")
+	uespLog.SkillCoefAddAllValidCount = 0
+	uespLog.SkillCoefAddAllNewCount = 0
+	uespLog.isSkillCoefSaving = true
+	uespLog.SkillCoefAddStartAbilityIndex = 1
 	
-	for abilityId = 1, endId do
+	uespLog.SkillCoefAddAllSkills_Next()	
+end
+
+
+function uespLog.SkillCoefAddAllSkills_Next()
+	local abilityId
+	local logData = { }
+	local startIndex = uespLog.SkillCoefAddStartAbilityIndex
+	local endIndex = startIndex + uespLog.SKILLCOEF_ADDALL_MAXABILITYCOUNT
+
+	if (not uespLog.isSkillCoefSaving) then
+		return
+	end
+	
+	if (endIndex > uespLog.SKILLCOEF_ADDALL_MAXABILITYID) then
+		endIndex = uespLog.SKILLCOEF_ADDALL_MAXABILITYID
+	end
+	
+	uespLog.Msg("Add skill coefficients for skills from "..tostring(startIndex).."-"..tostring(endIndex).."...")
+
+	for abilityId = startIndex, endIndex do
 		if (DoesAbilityExist(abilityId)) then
-			validAbilityCount = validAbilityCount + 1
+			uespLog.SkillCoefAddAllValidCount = uespLog.SkillCoefAddAllValidCount + 1
 			local desc = GetAbilityDescription(abilityId)
 			
 			if (desc ~= "") then
@@ -4339,25 +4264,42 @@ function uespLog.SkillCoefAddAllSkills()
 					local rankData = uespLog.BASESKILL_RANKDATA[abilityId]
 					
 					if (skillType > 0 or rankData ~= nil) then
-						newSkills = newSkills + uespLog.InitPlayerSkill(abilityId)						
+						uespLog.SkillCoefAddAllNewCount = uespLog.SkillCoefAddAllNewCount + uespLog.InitPlayerSkill(abilityId)						
 					else
 						local result, isNew = uespLog.InitSkillCoefData(abilityId, 0)
-						if (isNew) then newSkills = newSkills + 1 end
+						if (isNew) then uespLog.SkillCoefAddAllNewCount = uespLog.SkillCoefAddAllNewCount + 1 end
 					end
 				end
 			end
 
 		end
 	end
+	
+	if (endIndex < uespLog.SKILLCOEF_ADDALL_MAXABILITYID) then
+		uespLog.SkillCoefAddStartAbilityIndex = endIndex + 1
+		zo_callLater(uespLog.SkillCoefAddAllSkills_Next, uespLog.SKILLCOEF_ADDALL_DELAY)
+	else
+		uespLog.SkillCoefAddAllSkills_End()
+	end
+	
+end
 
-	uespLog.Msg("Added "..newSkills.." skills out of "..tostring(validAbilityCount).." possible skills to tracked data!")
-	return true
+
+function uespLog.SkillCoefAddAllSkills_End()
+	uespLog.Msg("Added "..tostring(uespLog.SkillCoefAddAllNewCount).." skills out of "..tostring(uespLog.SkillCoefAddAllValidCount).." possible skills to tracked data!")
+	
+	uespLog.isSkillCoefSaving = false
 end
 
 
 function uespLog.SkillCoefAddList(cmds)
 	local newSkills = 0
 	local i
+	
+	if (uespLog.isSkillCoefSaving) then
+		uespLog.Msg("Skill coeffiecient is busy saving data!")
+		return
+	end
 	
 	uespLog.Msg("Adding "..(#cmds-1).." skills to tracked skill list...")
 
@@ -4384,6 +4326,11 @@ function uespLog.SkillCoefAddCharSkills()
 	local skillIndex
 	local abilityIndex
 	local result, isNew
+	
+	if (uespLog.isSkillCoefSaving) then
+		uespLog.Msg("Skill coeffiecient is busy saving data!")
+		return
+	end
 	
 	uespLog.Msg("Adding all available character skills to tracked skill list...")
 	
@@ -4447,6 +4394,11 @@ end
 function uespLog.SkillCoefAddSkill(abilityId, rank)
 	local abilityId = tonumber(abilityId)
 	local rank = tonumber(rank) or -1
+	
+	if (uespLog.isSkillCoefSaving) then
+		uespLog.Msg("Skill coeffiecient is busy saving data!")
+		return false
+	end
 	
 	if (abilityId == nil or abilityId == "") then
 		uespLog.Msg("Missing required abilityId!")
@@ -4702,6 +4654,13 @@ function uespLog.ClearSkillCoefData()
 end
 
 
+uespLog.SKILLCOEF_MAXSAVECOUNT = 1000
+uespLog.lastSkillCoefSaveAbilityId = nil
+uespLog.isSkillCoefSaving = false
+uespLog.SkillCoefSaveSkillCount = 0
+uespLog.SKILLCOEF_SAVESKILL_DELAY = 500
+
+
 function uespLog.CaptureSkillCoefData()
 	local numSkillTypes = GetNumSkillTypes()
 	local skillType
@@ -4709,8 +4668,13 @@ function uespLog.CaptureSkillCoefData()
 	local abilityIndex
 	local skillCount = 0
 	local result
+	
+	if (uespLog.isSkillCoefSaving) then
+		uespLog.Msg("Skill coeffiecient is busy saving data!")
+		return
+	end
 		
-	uespLog.Msg("Saving current skill data for character...")
+	uespLog.Msg("Saving current skill data for character (don't change anything until done)...")
 	
 	uespLog.SkillCoefArmorCountLA = uespLog.CountEquippedArmor(ARMORTYPE_LIGHT)
 	uespLog.SkillCoefArmorCountMA = uespLog.CountEquippedArmor(ARMORTYPE_MEDIUM)
@@ -4718,16 +4682,44 @@ function uespLog.CaptureSkillCoefData()
 	uespLog.SkillCoefArmorTypeCount = uespLog.CountEquippedArmorTypes()
 	uespLog.SkillCoefWeaponCountDagger = uespLog.CountEquippedWeapons(WEAPONTYPE_DAGGER)
 	
-	skillCount = 0
+	uespLog.lastSkillCoefSaveAbilityId = nil
+	uespLog.isSkillCoefSaving = true
+	uespLog.SkillCoefSaveSkillCount = 0
 	
-	for abilityId, abilityData in pairs(uespLog.SkillCoefAbilityData) do
+	uespLog.CaptureSkillCoefData_Next()
+end
+
+
+function uespLog.CaptureSkillCoefData_Next()
+	local skillCount = 0
+	
+	uespLog.Msg(".   Saving data for up to "..tostring(uespLog.SKILLCOEF_MAXSAVECOUNT).." skills...")
+	
+	while (skillCount < uespLog.SKILLCOEF_MAXSAVECOUNT) do
+		local abilityId, abilityData = next(uespLog.SkillCoefAbilityData, uespLog.lastSkillCoefSaveAbilityId)
+		uespLog.lastSkillCoefSaveAbilityId = abilityId
+		
+		if (abilityId == nil) then
+			uespLog.CaptureSkillCoefData_End()
+			return
+		end
+		
 		uespLog.SaveSkillCoefData(abilityId, abilityData['rank'])
+		
 		skillCount = skillCount + 1
+		uespLog.SkillCoefSaveSkillCount = uespLog.SkillCoefSaveSkillCount + 1
 	end
-	
-	uespLog.Msg(".     Saved data for "..tostring(skillCount).." skills!")
+		
+	zo_callLater(uespLog.CaptureSkillCoefData_Next, uespLog.SKILLCOEF_SAVESKILL_DELAY)
+end
+
+
+function uespLog.CaptureSkillCoefData_End()
+	uespLog.Msg("Saved skill coef data for "..tostring(uespLog.SkillCoefSaveSkillCount).." skills!")
 	uespLog.SkillCoefDataPointCount = uespLog.SkillCoefDataPointCount + 1
-	return true
+	
+	uespLog.lastSkillCoefSaveAbilityId = nil
+	uespLog.isSkillCoefSaving = false
 end
 
 
@@ -5089,6 +5081,7 @@ function uespLog.ComputeSkillCoef()
 	end
 	
 	uespLog.SkillCoefNumValidCoefCount = 0
+	uespLog.SkillCoefNumBadCoefCount = 0
 	
 	for abilityId, skillsData in pairs(uespLog.SkillCoefData) do
 	
@@ -5352,6 +5345,7 @@ function uespLog.SkillCoefComputeR2(coef, skillsData, abilityData, numberIndex)
 	local x = 0
 	local y = 0
 	local valid
+	local validCount = 0
 	
 	if (count == 0 or coef.a == nil ) then
 		return R2
@@ -5375,15 +5369,16 @@ function uespLog.SkillCoefComputeR2(coef, skillsData, abilityData, numberIndex)
 		
 			SStot = SStot + d * d
 			SSres = SSres + e * e
+			validCount = validCount + 1
 		end
 	end
 	
 	if (SStot == 0) then
-		return R2
+		return R2, validCount
 	end
 
 	R2 = 1 - SSres / SStot
-	return R2
+	return R2, validCount
 end
 
 
@@ -5413,6 +5408,7 @@ function uespLog.SkillCoefComputeAMatrix(skillsData, abilityData, numberIndex)
 	local x = 0
 	local y = 0
 	local valid
+	local validCount = 0
 	
 	A[11] = 0
 	A[12] = 0
@@ -5440,6 +5436,7 @@ function uespLog.SkillCoefComputeAMatrix(skillsData, abilityData, numberIndex)
 			A[31] = A[31] + x
 			A[32] = A[32] + y
 			A[33] = A[33] + 1
+			validCount = validCount + 1
 		end
 	end
 	
@@ -5447,7 +5444,7 @@ function uespLog.SkillCoefComputeAMatrix(skillsData, abilityData, numberIndex)
 		A['size'] = 2
 	end
 	
-	return A
+	return A, validCount
 end
 
 
@@ -5490,6 +5487,7 @@ function uespLog.SkillCoefComputeBMatrix(skillsData, abilityData, numberIndex)
 	local y = 0
 	local z = 0
 	local valid
+	local validCount = 0
 	
 	B[1] = 0
 	B[2] = 0
@@ -5502,11 +5500,12 @@ function uespLog.SkillCoefComputeBMatrix(skillsData, abilityData, numberIndex)
 		if (valid) then
 			B[1] = B[1] + x*z
 			B[2] = B[2] + y*z
-			B[3] = B[3] + z		
+			B[3] = B[3] + z
+			validCount = validCount + 1
 		end
 	end
 	
-	return B
+	return B, validCount
 end
 
 

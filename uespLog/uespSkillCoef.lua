@@ -4943,6 +4943,34 @@ function uespLog.SaveSkillCoefData(abilityId, rank)
 		["desc"] = description,
 	}
 	
+	uespLog.CheckSaveSkillCoefData(uespLog.SkillCoefData[abilityId], i+1, abilityId)
+	
+	return true
+end
+
+
+function uespLog.CheckSaveSkillCoefData(skillCoefData, lastCount, abilityId)
+
+	if (lastCount <= 1) then
+		return true
+	end
+	
+	local desc = skillCoefData[lastCount].desc
+	local lastdesc = skillCoefData[lastCount - 1].desc
+	local s1, numberMatches = string.gsub(desc, "%d+[.]?%d*", "")
+	local s2, lastNumberMatches = string.gsub(lastdesc, "%d+[.]?%d*", "")
+	
+	if (numberMatches ~= lastNumberMatches) then
+		local name = GetAbilityName(abilityId)
+		desc = skillCoefData[lastCount].desc
+		lastdesc = skillCoefData[lastCount - 1].desc
+		
+		uespLog.Msg("Skill coef number mismatch for ability "..tostring(name).." ("..tostring(abilityId).."):")
+		uespLog.Msg(".     "..tostring(lastNumberMatches)..": "..tostring(lastdesc))
+		uespLog.Msg(".     "..tostring(numberMatches)..": "..tostring(desc))
+		return false
+	end
+	
 	return true
 end
 

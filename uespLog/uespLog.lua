@@ -17657,29 +17657,65 @@ function uespLog.GetSkyshardsFound()
 end
 
 
+uespLog.CountConstantsTables = {}
+
 function uespLog.CountConstantsInObject(object, origConstants)
 	local constants = origConstants or {}
 	local k
 	local v
-		
+	local tableIndex = nil
+	
 	if (object == nil) then
 		return 0
 	end
 	
-	for k, v in pairs(object) do
-		local vType = type(v)
-		local kType = type(k)
-		
-		if (kType == "string" or kType == "number" or kType == "boolean") then
-			constants[k] = (constants[k] or 0) + 1
-		end
-		
-		if (vType == "string" or vType == "number" or vType == "boolean") then
-			constants[v] = (constants[v] or 0) + 1
-		elseif (vType == "table") then
-			uespLog.CountConstantsInObject(v, constants)
-		end
+	if (origConstants == nil) then
+		uespLog.CountConstantsTables = {}
+	elseif (uespLog.CountConstantsTables[object]) then
+		return 0	-- Already counted
 	end
+		
+	uespLog.CountConstantsTables[object] = 1
+	
+	repeat
+		local status, nextIndex, value = pcall(next, object, tableIndex)
+						
+		if (nextIndex == nil) then
+			break
+		end
+	
+		if (not status) then
+			local errIndex = string.match(nextIndex, "Attempt to access a private function '(%w*)' from")
+			nextIndex = errIndex
+			-- protected/private function
+		else
+			k = nextIndex
+			v = value
+			
+			local vType = type(v)
+			local kType = type(k)
+			
+			if (kType == "string" or kType == "number" or kType == "boolean") then
+				constants[k] = (constants[k] or 0) + 1
+			end
+			
+			if (vType == "number") then
+			
+					-- NAN check
+				if (v ~= v) then
+					v = "__NAN__"
+				end
+				
+				constants[v] = (constants[v] or 0) + 1
+			elseif (vType == "string" or vType == "boolean") then
+				constants[v] = (constants[v] or 0) + 1
+			elseif (vType == "table") then
+				uespLog.CountConstantsInObject(v, constants)
+			end
+		end
+		
+		tableIndex = nextIndex
+	until nextIndex == nil
 	
 	if (origConstants == nil) then
 		local count = 0
@@ -17692,6 +17728,62 @@ function uespLog.CountConstantsInObject(object, origConstants)
 	end
 	
 	return 0
+end
+
+
+uespLog.CountStringsTables = {}
+
+function uespLog.CountStringsInObject(object, origConstant)
+	local constants = 0
+	local k
+	local v
+	local tableIndex = nil
+	
+	if (object == nil) then
+		return 0
+	end
+	
+	if (origConstants == nil) then
+		uespLog.CountStringsTables = {}
+	elseif (uespLog.CountStringsTables[object]) then
+		return 0	-- Already counted
+	end
+		
+	uespLog.CountStringsTables[object] = 1
+	
+	repeat
+		local status, nextIndex, value = pcall(next, object, tableIndex)
+						
+		if (nextIndex == nil) then
+			break
+		end
+	
+		if (not status) then
+			local errIndex = string.match(nextIndex, "Attempt to access a private function '(%w*)' from")
+			nextIndex = errIndex
+			-- protected/private function
+		else
+			k = nextIndex
+			v = value
+			
+			local vType = type(v)
+			local kType = type(k)
+			
+			if (kType == "string") then
+				constants = constants + #k
+			end
+			
+			if (vType == "string") then
+				constants = constants + #v
+			elseif (vType == "table") then
+				constants = constants + uespLog.CountStringsInObject(v, constants)
+			end
+		end
+		
+		tableIndex = nextIndex
+	until nextIndex == nil
+	
+	return constants
 end
 
 
@@ -17926,3 +18018,25 @@ function uespLog.MakePotionLink(effectIndex)
 end
 
 
+function uespLog.TestSkillDesc(abilityId, maxCount)
+	maxCount = maxCount or 20000
+	abilityId = abilityId or 20328
+	
+	local firstDesc = GetAbilityDescription(abilityId, 1)
+	--local desc
+	
+	d("Testing description of ability "..tostring(abilityId).." with "..tostring(#firstDesc).." characters...")
+	
+	for i = 1, maxCount do
+		local desc = GetAbilityDescription(abilityId, 1)
+		
+		if (desc ~= firstDesc) then
+			d(""..tostring(i)..") Description mismatch")
+			d("Orig Desc:"..tostring(firstDesc))
+			d("Last Desc:"..tostring(desc))
+			return false
+		end
+	end
+	
+	return true
+end

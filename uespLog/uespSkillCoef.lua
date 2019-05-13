@@ -5710,6 +5710,38 @@ function uespLog.FindSkillDiffSavePlayer()
 end
 
 
+function uespLog.FindSkillDiffCountDesc()
+	local abilityId
+	local endId = 150000
+	local validAbilityCount = 0
+	local newSkills = 0
+	local data = uespLog.savedVars.tempData.data
+	
+	uespLog.Msg("Finding all skills with numbers in description...")
+	data[#data+1] = "Valid Description Skills"	
+	
+	for abilityId = 1, endId do
+		if (DoesAbilityExist(abilityId)) then
+			validAbilityCount = validAbilityCount + 1
+			local desc = GetAbilityDescription(abilityId)
+			
+			if (desc ~= "") then
+				local matchResult = desc:match("%d")
+				
+				if (matchResult ~= nil) then
+					newSkills = newSkills + 1
+					local name = GetAbilityName(abilityId)
+					data[#data+1] = tostring(name).." ("..tostring(abilityId)..")"
+				end
+			end
+
+		end
+	end
+
+	uespLog.Msg("Found "..newSkills.." skills out of "..tostring(validAbilityCount).." possible skills with valid descriptions!")
+end
+
+
 function uespLog.FindSkillDiffSaveAll()
 	local abilityId
 	local endId = 150000
@@ -5735,7 +5767,7 @@ function uespLog.FindSkillDiffSaveAll()
 				newDiff.minRange, newDiff.maxRange = GetAbilityRange(abilityId)
 
 				if (matchResult ~= nil or newDiff.cost > 0 or newDiff.duration > 0 or newDiff.minRange > 0 or newDiff.maxRange > 0) then
-					uespLog.SkillDiff[abilityId] = newDiff;
+					uespLog.SkillDiff[abilityId] = newDiff
 					newSkills = newSkills + 1
 				end
 			end

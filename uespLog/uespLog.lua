@@ -1028,6 +1028,7 @@
 --			  you should not change equipment/skills to prevent the skill data from changing mid-save.
 --			- Removed usage of Wykkd outfitter in skill coefficient code.
 --			- Item mining is done a little more asynchronously now in order to prevent some data corruption issues.
+--			- Fixed rare bug with effective weapon/spell power calculation can result in NANs causing issue with saved variable loading.
 --		Elsweyr (Update 22)
 --			- Fixed recognizing a valid item link.
 --			- Fixed several incorrect/updated skill coefficient types.
@@ -15148,7 +15149,14 @@ function uespLog.GetEffectiveSpellPower()
 	result = result * (1 + MagicDamageDone)
 	result = result * (1 + DamageDone)
 		
-	return math.floor(result)
+	result = math.floor(result)
+	
+		-- Prevent rare nan value result from unknown circumstances
+	if (result ~= result) then
+		result = 0
+	end
+	
+	return result
 end
 
 
@@ -15256,7 +15264,14 @@ function uespLog.GetEffectiveWeaponPower()
 	result = result * (1 + StaminaDamageDone)
 	result = result * (1 + DamageDone)
 	
-	return math.floor(result)
+	result = math.floor(result)
+	
+		-- Prevent rare nan value result from unknown circumstances
+	if (result ~= result) then
+		result = 0
+	end
+	
+	return result
 end
 
 

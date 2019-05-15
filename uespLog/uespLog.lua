@@ -1029,6 +1029,7 @@
 --			- Removed usage of Wykkd outfitter in skill coefficient code.
 --			- Item mining is done a little more asynchronously now in order to prevent some data corruption issues.
 --			- Fixed rare bug with effective weapon/spell power calculation can result in NANs causing issue with saved variable loading.
+--			- Fixed incorrect loot source that occurs in certain situations (mainly when looted a chest/sack and targetting something else).
 --		Elsweyr (Update 22)
 --			- Fixed recognizing a valid item link.
 --			- Fixed several incorrect/updated skill coefficient types.
@@ -1290,6 +1291,7 @@ uespLog.lastTargetData = {
 	maxSt = "",
 	action = "",
 	interactionType = "",
+	itemLink = "",
 }
 
 uespLog.lastOnTargetChange = ""
@@ -3771,7 +3773,9 @@ function uespLog.Initialize( self, addOnName )
 	uespLog.Old_ZO_Loot_UpdateLootWindow = ZO_Loot.UpdateLootWindow
 	uespLog.Old_LootWindow_IsControlHidden = LOOT_WINDOW.control.IsControlHidden
 	LOOT_WINDOW.control.IsControlHidden = uespLog.LootWindowIsControlHidden
+
 	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CLIENT_INTERACT_RESULT, uespLog.OnClientInteractResult)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOOT_RECEIVED, uespLog.OnLootGained)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOOT_CLOSED, uespLog.OnLootClosed)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_MONEY_UPDATE, uespLog.OnMoneyUpdate)
@@ -5946,6 +5950,14 @@ function uespLog.OnLootUpdated (eventCode)
 	uespLog.lastLootTargetName = uespLog.lastTargetData.name
 	uespLog.lastLootLockQuality = nil
 	
+	local name, targetType, actionName, isOwned = GetLootTargetInfo()
+	uespLog.lastLootTargetName1 = name
+	uespLog.lastLootTargetType = targetType
+	uespLog.lastLootTargetAction = actionName
+	uespLog.lastLootTargetIsOwned = isOwned
+	
+	uespLog.DebugExtraMsg("OnLootUpdated")
+	
 	uespLog.UpdateLootWindow(eventCode)
 end
 
@@ -6021,7 +6033,26 @@ function uespLog.OnLootClosed (eventCode)
 end
 
 
-function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSound, lootType, self, isPickPocket, extraLogData)
+uespLog.lastActivateInfo = {
+	name = "",
+	gameTime = 0,
+}
+
+uespLog.MAX_LASTACTIVATE_TIMEDIFF = 5
+
+function uespLog.OnClientInteractResult(eventCode, result, targetName)
+	local interactType = GetInteractionType()
+	
+	uespLog.DebugExtraMsg("OnClientInteractResult: "..tostring(result)..", "..tostring(targetName)..", "..tostring(interactType))
+	
+	if (result == 0) then
+		uespLog.lastActivateInfo.name = targetName
+		uespLog.lastActivateInfo.gameTime = GetGameTimeSeconds()
+	end
+end
+
+
+function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSound, lootType, self, isPickPocket, questItemIcon, itemId, isStolen, extraLogData)
 	local logData = { }
 	local posData = uespLog.GetLastTargetData()
 	local msgType = "item"
@@ -6031,14 +6062,17 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 	local itemText, itemColor, itemId, itemLevel, itemData, niceName, niceLink = uespLog.ParseLinkID(itemLink)
 	local itemStyleStr = GetItemStyleName(itemStyle)
 	local lootMsg = ""
+	local diffActivateTime = GetGameTimeSeconds() - uespLog.lastActivateInfo.gameTime
 	
+	--local targetName, targetType, targetActionName, targetIsOwned = GetLootTargetInfo()
+	--uespLog.DebugMsg("Loot: "..tostring(targetName)..", "..tostring(targetType)..", "..tostring(targetActionName)..", "..tostring(targetIsOwned))
+	uespLog.DebugExtraMsg("Loot: "..tostring(uespLog.lastLootTargetName)..", "..tostring(uespLog.lastLootTargetName1))
+	 	
 	if (IsLooting()) then
 		uespLog.lastLootUpdateCount = GetNumLootItems()
 	else
 		uespLog.lastLootUpdateCount = -1
 	end
-	
-	uespLog.lastLootTargetName = uespLog.lastTargetData.name
 	
 	if (uespLog.currentHarvestTarget ~= nil) then
 		posData.x = uespLog.currentHarvestTarget.x
@@ -6046,11 +6080,18 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 		posData.zone = uespLog.currentHarvestTarget.zone
 		posData.lastTarget = uespLog.currentHarvestTarget.name
 		posData.harvestType = uespLog.currentHarvestTarget.harvestType
+		uespLog.lastLootTargetName = uespLog.currentHarvestTarget.name
 		msgType = "resource(" .. tostring(posData.harvestType) .. ")"
 		rcvType = "harvested"
 	elseif (niceLink == niceName) then
 		msgType = "quest item"
 		rcvType = "looted quest item"
+	elseif (diffActivateTime <= uespLog.MAX_LASTACTIVATE_TIMEDIFF and uespLog.lastActivateInfo.name ~= "") then
+		posData.lastTarget = uespLog.lastActivateInfo.name
+	elseif (uespLog.lastLootTargetName ~= "") then
+		posData.lastTarget = uespLog.lastLootTargetName
+	else
+		uespLog.lastLootTargetName = uespLog.lastTargetData.name
 	end
 	
 	if (isPickPocket) then
@@ -6058,7 +6099,7 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 		
 		logData.ppBonus, logData.ppIsHostile, logData.ppChance, logData.ppDifficulty, logData.ppEmpty, logData.ppResult, logData.ppClassString, logData.ppClass = GetGameCameraPickpocketingBonusInfo()
 
-	elseif (uespLog.lastTargetData.action == uespLog.ACTION_STEALFROM or uespLog.lastTargetData.action == uespLog.ACTION_STEAL) then
+	elseif (isStolen or uespLog.lastTargetData.action == uespLog.ACTION_STEALFROM or uespLog.lastTargetData.action == uespLog.ACTION_STEAL) then
 		rcvType = "stole"
 	end
 	
@@ -6087,7 +6128,7 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 	end
 	
 	if (posData.lastTarget ~= nil) then
-		lootMsg = lootMsg .. " from "..tostring(posData.lastTarget)
+		lootMsg = lootMsg .. " from "..tostring(posData.lastTarget):gsub("%^.*", "")
 	end
 
 	if (self) then
@@ -6334,6 +6375,7 @@ function uespLog.OnUseItem(eventCode, bagId, slotIndex, itemLink, itemSoundCateg
 		uespLog.lastTargetData.y = y
 		uespLog.lastTargetData.zone = zone
 		uespLog.lastTargetData.name = "footlocker"
+		uespLog.lastTargetData.itemLink = itemLink
 		
 		uespLog.lastItemLinkUsed = ""
 		uespLog.lastItemLinkUsed_BagId = -1
@@ -6899,15 +6941,29 @@ function uespLog.OnFoundSkyshard ()
 end
 
 
+uespLog.lastFoundTreasure = {
+	name = "",
+	gameTime = 0,
+}
+
+uespLog.FOUNDTREASURE_GAMETIME_MINDIFF = 10
+
+
 function uespLog.OnFoundTreasure (name, lockQuality)
 	local logData = { }
 	local qualityMsg = GetString("SI_LOCKQUALITY", lockQuality)
+	local gameTimeDiff = GetGameTimeSeconds() - uespLog.lastFoundTreasure.gameTime
 	
 	logData.event = "FoundTreasure"
 	logData.name = name
 	logData.lockQuality = lockQuality
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetCurrentTargetData(), uespLog.GetTimeData())
+	
+	if (name == uespLog.lastFoundTreasure.name and gameTimeDiff <= uespLog.FOUNDTREASURE_GAMETIME_MINDIFF) then
+		uespLog.lastFoundTreasure.gameTime = GetGameTimeSeconds()
+		return
+	end
 	
 	if (qualityMsg ~= "") then
 		uespLog.MsgType(uespLog.MSG_OTHER, "UESP: Found "..tostring(name).." ("..qualityMsg..")!")
@@ -6917,6 +6973,9 @@ function uespLog.OnFoundTreasure (name, lockQuality)
 
 	uespLog.lastLootTargetName = name
 	uespLog.lastLootLockQuality = lockQuality
+	
+	uespLog.lastFoundTreasure.name = name
+	uespLog.lastFoundTreasure.gameTime = GetGameTimeSeconds()
 end
 
 
@@ -7119,7 +7178,7 @@ function uespLog.OnUpdate ()
 	local x, y, z, zone
 	
 	if (interactionType ~= INTERACTION_HARVEST and uespLog.currentHarvestTarget ~= nil) then
-		uespLog.DebugExtraMsg("Stopped harvesting "..tostring(uespLog.currentHarvestTarget.name))
+		uespLog.DebugExtraMsg("Stopped harvesting "..tostring(uespLog.currentHarvestTarget.name)..":"..tostring(interactionType)..":"..tostring(action)..":"..tostring(name))
 		uespLog.currentHarvestTarget = nil
 	elseif (interactionType == INTERACTION_HARVEST and uespLog.currentHarvestTarget == nil) then
 		uespLog.currentHarvestTarget = { }
@@ -7130,6 +7189,9 @@ function uespLog.OnUpdate ()
 		uespLog.currentHarvestTarget.harvestType = uespLog.lastHarvestTarget.harvestType
 				
 		uespLog.DebugExtraMsg("Started harvesting "..tostring(uespLog.currentHarvestTarget.name))
+		
+		--local targetName, targetType, targetActionName, targetIsOwned = GetLootTargetInfo()
+		--uespLog.DebugMsg("Loot: "..tostring(targetName)..", "..tostring(targetType)..", "..tostring(targetActionName)..", "..tostring(targetIsOwned))
 	end
 
     if (name == nil) then
@@ -12414,7 +12476,7 @@ end
 
 
 function uespLog.titleCaseHelper( first, rest )
-   return first:upper()..rest:lower()
+   return first:upper() .. rest:lower()
 end
 
 function uespLog.titleCaseString(str)

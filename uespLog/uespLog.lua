@@ -1030,6 +1030,7 @@
 --			- Item mining is done a little more asynchronously now in order to prevent some data corruption issues.
 --			- Fixed rare bug with effective weapon/spell power calculation can result in NANs causing issue with saved variable loading.
 --			- Fixed incorrect loot source that occurs in certain situations (mainly when looted a chest/sack and targetting something else).
+--			- Messages about finding treasures and fishing holes should be a little less spammy.
 --		Elsweyr (Update 22)
 --			- Fixed recognizing a valid item link.
 --			- Fixed several incorrect/updated skill coefficient types.
@@ -6979,14 +6980,27 @@ function uespLog.OnFoundTreasure (name, lockQuality)
 end
 
 
+uespLog.lastFishHole = {
+	gameTime = 0,
+}
+
+uespLog.FISHHOLE_MSG_MINGAMETIME = 10
+
+
 function uespLog.OnFoundFish ()
 	local logData = { }
+	local gameTimeDiff = GetGameTimeSeconds() - uespLog.lastFishHole.gameTime
 	
 	logData.event = "Fish"
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetCurrentTargetData(), uespLog.GetTimeData())
-	
-	uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.fishingColor, "Found fishing hole!")
+			
+	if (gameTimeDiff <= uespLog.FISHHOLE_MSG_MINGAMETIME) then
+		uespLog.lastFishHole.gameTime = GetGameTimeSeconds()
+	else
+		uespLog.lastFishHole.gameTime = GetGameTimeSeconds()
+		uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.fishingColor, "Found fishing hole!")
+	end
 end
 
 

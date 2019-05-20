@@ -101,6 +101,7 @@ end
 
 
 function uespSalesHelper.OnTradingHouseResponseReceived(event, responseType, result)
+	uespLog.DebugMsg("OnTradingHouseResponseReceived: "..tostring(responseType).." = " ..tostring(result))
 end
 
 

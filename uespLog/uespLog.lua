@@ -1013,7 +1013,7 @@
 --			- Fixed the copy item link dialog to automatically select all text initially.
 --			- Updated sales price to most recent PC-NA version.
 --
---		- v1.90 -- 
+--		- v1.90 -- 20 May 2019
 --			- Fixed use of removed API function in /uespminecollect.
 --			- Updated list of rune box IDs.
 --			- uespLogMonitor: Updated to v0.61 to fix uploading builds from multiple accounts.
@@ -1031,6 +1031,7 @@
 --			- Fixed rare bug with effective weapon/spell power calculation can result in NANs causing issue with saved variable loading.
 --			- Fixed incorrect loot source that occurs in certain situations (mainly when looted a chest/sack and targetting something else).
 --			- Messages about finding treasures and fishing holes should be a little less spammy.
+--			- Added a "looting" message when you purchase an item from a guild store.
 --		Elsweyr (Update 22)
 --			- Fixed recognizing a valid item link.
 --			- Fixed several incorrect/updated skill coefficient types.
@@ -1048,7 +1049,7 @@ end
 uespLog = uespLog or {}
 
 uespLog.version = "1.90"
-uespLog.releaseDate = "?? June 2019"
+uespLog.releaseDate = "20 May 2019"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -3810,6 +3811,7 @@ function uespLog.Initialize( self, addOnName )
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_GUILD_SELF_JOINED_GUILD, uespLog.OnJoinedGuild)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_GUILD_SELF_LEFT_GUILD, uespLog.OnLeftGuild)	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_CONFIRM_ITEM_PURCHASE, uespLog.OnTradingHouseConfirmItemPurchase)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_OPEN_TRADING_HOUSE, uespLog.OnTradingHouseOpen)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CLOSE_TRADING_HOUSE, uespLog.OnTradingHouseClose)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_SEARCH_RESULTS_RECEIVED, uespLog.OnTradingHouseSearchResultsReceived)	

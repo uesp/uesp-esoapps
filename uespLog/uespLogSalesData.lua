@@ -785,6 +785,11 @@ function uespLog.OnTradingHouseResponseReceived(event, responseType, result)
 		local numItemsOnPage, currentPage, hasMorePages = GetTradingHouseSearchResultsInfo()
 		local guildId = GetCurrentTradingHouseGuildDetails()
 		uespLog.OnTradingHouseSearchResultsReceived_Delay(0, guildId, numItemsOnPage, currentPage, hasMorePages)
+	elseif (responseType == TRADING_HOUSE_RESULT_PURCHASE_PENDING) then
+	
+		if (uespLog.lastTradingHousePurchaseIndex >= 0 and uespLog.lastTradingHousePurchaseItemLink ~= "" and uespLog.lastTradingHousePurchasePrice > 0) then
+			uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You purchased "..tostring(uespLog.lastTradingHousePurchaseItemLink).." for "..tostring(uespLog.lastTradingHousePurchasePrice).." gp.")
+		end	
 	end
 	
     uespLog.SetupTradingHouseRowCallbacks()
@@ -2256,6 +2261,22 @@ function uespLog.UpdateUespScanSalesButton()
 		UespSalesResetButton:SetHidden(false)
 	end
 
+end
+
+
+uespLog.lastTradingHousePurchaseIndex = -1
+uespLog.lastTradingHousePurchaseItemLink = ""
+uespLog.lastTradingHousePurchasePrice = -1
+
+
+function uespLog.OnTradingHouseConfirmItemPurchase(eventCode, purchaseIndex)
+	--uespLog.DebugMsg("OnTradingHouseConfirmItemPurchase "..tostring(purchaseIndex))
+	
+	local icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice = GetTradingHouseSearchResultItemInfo(purchaseIndex)
+	
+	uespLog.lastTradingHousePurchaseIndex = purchaseIndex
+	uespLog.lastTradingHousePurchaseItemLink = GetTradingHouseSearchResultItemLink(purchaseIndex)
+	uespLog.lastTradingHousePurchasePrice = purchasePrice
 end
 
 

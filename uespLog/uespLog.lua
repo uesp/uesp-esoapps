@@ -1037,6 +1037,11 @@
 --			- Fixed several incorrect/updated skill coefficient types.
 --			- Added the new styles: Coldsnap, Meridian, Anequina, Pellitine.
 --
+--		-- v1.91 -- 24 May 2019
+--			- Updated runebox data.
+--			- Fixed some skill coefficient data.
+--			- Fixed incorrect directory structure in release ZIP.
+--
 
 
 	-- Update 18 prefix
@@ -1048,8 +1053,8 @@ end
 --	GLOBAL DEFINITIONS
 uespLog = uespLog or {}
 
-uespLog.version = "1.90"
-uespLog.releaseDate = "20 May 2019"
+uespLog.version = "1.91"
+uespLog.releaseDate = "24 May 2019"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -2358,6 +2363,57 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [147602] = 6252,        -- Nightflame's Shoulder
         [147660] = 6295,        -- Prophet's Breeches
         [147661] = 6295,        -- Prophet's Breeches
+		
+			-- Elsweyr
+		[147767] = 6388,        -- Lord Warden's Mask
+        [147768] = 6389,        -- Lord Warden's Shoulder
+        [147928] = 6381,        -- Grisly Mummy Tabby
+        [151561] = 5463,        -- Shadowrend Greatsword
+        [151562] = 5464,        -- Shadowrend Bow
+        [151563] = 5465,        -- Shadowrend Shield
+        [151564] = 5466,        -- Shadowrend Staff
+        [151565] = 5467,        -- Shadowrend Axe
+        [151566] = 5162,        -- Ilambris Battle Axe
+        [151567] = 5163,        -- Ilambris Bow
+        [151568] = 5164,        -- Ilambris Shield
+        [151569] = 5165,        -- Ilambris Staff
+        [151570] = 5166,        -- Ilambris Sword
+        [151571] = 5118,        -- Molag Kena Sword
+        [151572] = 5123,        -- Molag Kena Maul
+        [151573] = 5124,        -- Molag Kena Shield
+        [151574] = 5125,        -- Molag Kena Bow
+        [151575] = 5126,        -- Molag Kena Staff
+        [151576] = 5191,        -- Grothdarr Mace
+        [151577] = 5192,        -- Grothdarr Staff
+        [151578] = 5193,        -- Grothdarr Maul
+        [151579] = 5194,        -- Grothdarr Bow
+        [151580] = 5195,        -- Grothdarr Shield
+        [151581] = 5456,        -- Shadowrend's Mask
+        [151582] = 5457,        -- Shadowrend's Shoulder
+        [151583] = 5452,        -- Ilambris' Mask
+        [151584] = 5453,        -- Ilambris' Shoulder
+        [151585] = 5454,        -- Molag Kena's Mask
+        [151586] = 5455,        -- Molag Kena's Shoulder
+        [151587] = 5545,        -- Grothdarr's Mask
+        [151588] = 5546,        -- Grothdarr's Shoulder
+        [151916] = 6586,        -- Second Legion Jack
+        [151917] = 6587,        -- Second Legion Helmet
+        [151918] = 6588,        -- Second Legion Arm Cops
+        [151919] = 6589,        -- Second Legion Guards
+        [151920] = 6590,        -- Second Legion Belt
+        [151921] = 6591,        -- Second Legion Bracers
+        [151922] = 6592,        -- Second Legion Boots
+        [151923] = 6586,        -- Second Legion Jack
+        [151924] = 6587,        -- Second Legion Helmet
+        [151925] = 6588,        -- Second Legion Arm Cops
+        [151926] = 6589,        -- Second Legion Guards
+        [151927] = 6590,        -- Second Legion Belt
+        [151928] = 6591,        -- Second Legion Bracers
+        [151929] = 6592,        -- Second Legion Boots
+        [151931] = 6493,        -- Aldmeri Dominion Banner
+        [151932] = 6365,        -- Daggerfall Covenant Banner
+        [151933] = 6494,        -- Ebonheart Pact Banner
+        [151940] = 6438,        -- Siegemaster Close Helm
 }
 
 function uespLog.BoolToOnOff(flag)

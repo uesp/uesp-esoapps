@@ -137,9 +137,12 @@
  * v0.32 -- 23 October 2018
  *		- Fixed crash from null pointer reference received from Granny API.
  *		- Updated Granny2.dll file which permits more original GR2 filenames to be extracted.
-
+ *
  * v0.33 -- 19 April 2019
  *		- Added the "-n" / "--filename" option.
+
+ * v0.34 -- 30 May 2019
+ *		- Fix default for the "-n" / "--filename" option.
  *
  */
 
@@ -1622,7 +1625,7 @@ cmdparamdef_t g_Cmds[] =
 	{ "outputpath",		"",  "",				"Path to save extracted data files to.",							false, false, 1, 0, false, "" },
 	{ "mnfft",			"m", "mnfft",			"Dump the MNF filetable to the specified text file.",				false, true,  1, 0, false, "" },
 	{ "zosft",			"z", "zosft",			"Dump the ZOS filetable to the specified text file.",				false, true,  1, 0, false, "" },
-	{ "filename",		"n", "filename",		"Only extract the given filename.",									false, true,  1, 0, false, "-1" },
+	{ "filename",		"n", "filename",		"Only extract the given filename.",									false, true,  1, 0, false, "" },
 	{ "startindex",		"s", "startindex",		"Start exporting sub-files at the given file index.",				false, true,  1, 0, false, "-1" },
 	{ "endindex",		"e", "endindex",	    "Stop exporting sub-files at the given file index.",				false, true,  1, 0, false, "-1" },
 	{ "archiveindex",	"a", "archive",			"Only export MNF file with the given index.",						false, true,  1, 0, false, "-1" },
@@ -1647,7 +1650,7 @@ cmdparamdef_t g_Cmds[] =
 };
 
 const char g_AppDescription[] = "\
-ExportMnf v0.33 is a simple command line application to load and export files\n\
+ExportMnf v0.34 is a simple command line application to load and export files\n\
 from ESO's MNF and DAT files. Created by Daveh (dave@uesp.net).\n\
 \n\
 WARNING: This app is under constant development and is fragile. User discretion is\n\

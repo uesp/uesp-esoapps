@@ -2606,6 +2606,7 @@ bool CuespLogMonitorDlg::DownloadPriceList()
 	DownloadURL += "/uespSalesPrices.lua";
 	if (DOWNLOADPRICES_AS_ZIP) DownloadURL += ".gz";
 
+		//TODO check for terminating path character
 	TargetFile.Replace("\\SavedVariables", "\\AddOns\\uespLogSalesPrices");
 	TargetFile += "uespSalesPrices.lua";
 	TmpFile = TargetFile + ".new";

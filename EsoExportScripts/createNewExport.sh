@@ -1,7 +1,7 @@
 #!/bin/sh
 
-VERSION="22pts1"
-ISPTS="1"
+VERSION="22"
+ISPTS=""
 LASTVERSION="21"
 LASTPTSVERSION="22pts"
 
@@ -362,9 +362,19 @@ popd
 makezipdiff "icons.diff.zip" "./esomnf-$VERSION/esoui/art/icons/" "icons.diff.txt.list"
 makezipdiff "loadscreens.diff.zip" "$OUTPUTPATH/LoadingScreens/" "loadscreens.diff.txt.list"
 makezipdiff "treasuremaps.diff.zip" "$OUTPUTPATH/TreasureMaps/" "treasuremaps.diff.txt.list"
-makezipdiff "crowncrates.diff.zip" ".OUTPUTPATH/MoreImages/crowncrates/" "crowncrates.diff.txt.list"
+makezipdiff "crowncrates.diff.zip" "$OUTPUTPATH/MoreImages/crowncrates/" "crowncrates.diff.txt.list"
 makezipdiff "collectibles.diff.zip" "$OUTPUTPATH/MoreImages/collectibles/" "collectibles.diff.txt.list"
 makezipdiff "store.diff.zip" "$OUTPUTPATH/MoreImages/store/" "store.diff.txt.list"
 makezipdiff "tutorial.diff.zip" "$OUTPUTPATH/MoreImages/tutorial/" "tutorial.diff.txt.list"
 makezipdiff "gameuiart.diff.zip" "$OUTPUTPATH/GameUIArt/" "gameuiart.diff.txt.list"
 makezipdiff "maps.diff.zip" "$OUTPUTPATH/CombinedMaps/" "maps.diff.txt.list"
+
+makezipdiff "icons.ptsdiff.zip" "./esomnf-$VERSION/esoui/art/icons/" "icons.ptsdiff.txt.list"
+makezipdiff "loadscreens.ptsdiff.zip" "$OUTPUTPATH/LoadingScreens/" "loadscreens.ptsdiff.txt.list"
+makezipdiff "treasuremaps.ptsdiff.zip" "$OUTPUTPATH/TreasureMaps/" "treasuremaps.ptsdiff.txt.list"
+makezipdiff "crowncrates.ptsdiff.zip" "$OUTPUTPATH/MoreImages/crowncrates/" "crowncrates.ptsdiff.txt.list"
+makezipdiff "collectibles.ptsdiff.zip" "$OUTPUTPATH/MoreImages/collectibles/" "collectibles.ptsdiff.txt.list"
+makezipdiff "store.ptsdiff.zip" "$OUTPUTPATH/MoreImages/store/" "store.ptsdiff.txt.list"
+makezipdiff "tutorial.ptsdiff.zip" "$OUTPUTPATH/MoreImages/tutorial/" "tutorial.ptsdiff.txt.list"
+makezipdiff "gameuiart.ptsdiff.zip" "$OUTPUTPATH/GameUIArt/" "gameuiart.ptsdiff.txt.list"
+makezipdiff "maps.ptsdiff.zip" "$OUTPUTPATH/CombinedMaps/" "maps.ptsdiff.txt.list"

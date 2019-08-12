@@ -336,6 +336,11 @@ end
 
 function uespLog.StartGuildSalesScan(guildIndex)
 
+	if (RequestGuildHistoryCategoryNewest == nil) then
+		uespLog.DebugExtraMsg("UESP: RequestGuildHistoryCategoryNewest is nil...aborting scan")
+		return false
+	end
+
 	if (guildIndex > uespLog.MAX_GUILD_INDEX) then
 	
 		if (uespLog.NewGuildSales > 0) then
@@ -368,6 +373,11 @@ end
 function uespLog.StartGuildSalesScanMore(guildIndex)
 	local guildId = GetGuildId(guildIndex)
 	local hasMore = DoesGuildHistoryCategoryHaveMoreEvents(guildId, GUILD_HISTORY_STORE)
+	
+	if (RequestGuildHistoryCategoryOlder == nil) then
+		uespLog.DebugExtraMsg("UESP: RequestGuildHistoryCategoryOlder is nil...aborting scan")
+		return false
+	end
 	
 	if (not hasMore) then
 	

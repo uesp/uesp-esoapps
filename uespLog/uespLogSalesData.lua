@@ -337,8 +337,8 @@ end
 function uespLog.StartGuildSalesScan(guildIndex)
 
 	if (RequestGuildHistoryCategoryNewest == nil) then
-		uespLog.DebugExtraMsg("UESP: RequestGuildHistoryCategoryNewest is nil...aborting scan")
-		return false
+		--uespLog.DebugExtraMsg("UESP: RequestGuildHistoryCategoryNewest is nil...aborting scan")
+		--return false
 	end
 
 	if (guildIndex > uespLog.MAX_GUILD_INDEX) then
@@ -356,7 +356,7 @@ function uespLog.StartGuildSalesScan(guildIndex)
 	uespLog.DebugExtraMsg("UESP: Starting sales history scan for guild #"..tostring(guildIndex))
 	
 	local guildId = GetGuildId(guildIndex)
-	local requested = RequestGuildHistoryCategoryNewest(guildId, GUILD_HISTORY_STORE)
+	local requested = RequestMoreGuildHistoryCategoryEvents(guildId, GUILD_HISTORY_STORE)
 	uespLog.GuildHistoryLastReceivedTimestamp = GetTimeStamp()
 	
 	uespLog.SalesStartEventIndex = 1
@@ -375,8 +375,8 @@ function uespLog.StartGuildSalesScanMore(guildIndex)
 	local hasMore = DoesGuildHistoryCategoryHaveMoreEvents(guildId, GUILD_HISTORY_STORE)
 	
 	if (RequestGuildHistoryCategoryOlder == nil) then
-		uespLog.DebugExtraMsg("UESP: RequestGuildHistoryCategoryOlder is nil...aborting scan")
-		return false
+		--uespLog.DebugExtraMsg("UESP: RequestGuildHistoryCategoryOlder is nil...aborting scan")
+		--return false
 	end
 	
 	if (not hasMore) then
@@ -396,7 +396,7 @@ function uespLog.StartGuildSalesScanMore(guildIndex)
 	uespLog.DebugExtraMsg("UESP: Loading more sales history for guild #"..tostring(guildIndex)..", starting at event #"..tostring(uespLog.SalesStartEventIndex))
 	
 	uespLog.GuildHistoryLastReceivedTimestamp = GetTimeStamp()
-	local requested = RequestGuildHistoryCategoryOlder(guildId, GUILD_HISTORY_STORE)
+	local requested = RequestMoreGuildHistoryCategoryEvents(guildId, GUILD_HISTORY_STORE)
 			
 	zo_callLater(function() uespLog.ScanGuildSales(guildIndex) end, uespLog.SALES_SCAN_DELAY)
 	

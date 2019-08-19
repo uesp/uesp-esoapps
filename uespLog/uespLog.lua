@@ -1037,12 +1037,19 @@
 --			- Fixed several incorrect/updated skill coefficient types.
 --			- Added the new styles: Coldsnap, Meridian, Anequina, Pellitine.
 --
---		-- v2.00 -- 12 August 2019
+--		-- v1.91 -- 24 May 2019
 --			- Updated runebox data.
 --			- Fixed some skill coefficient data.
 --			- Fixed incorrect directory structure in release ZIP.
+--
+--		-- v2.00 -- 12 August 2019
 --			- Checks for existance of RequestGuildHistoryCategoryNewest and RequestGuildHistoryCategoryOlder functions before using them
 --			  for guild history scans.
+--          - Updated API version for Scalebreaker.
+--	
+--		-- v2.01 -- ?
+--			- Fixed skill coefficients for a bunch of skills.
+--			- Fixed scanning of guild sales history.
 --
 
 
@@ -1055,7 +1062,7 @@ end
 --	GLOBAL DEFINITIONS
 uespLog = uespLog or {}
 
-uespLog.version = "2.00"
+uespLog.version = "2.01"
 uespLog.releaseDate = "12 August 2019"
 uespLog.DATA_VERSION = 3
 

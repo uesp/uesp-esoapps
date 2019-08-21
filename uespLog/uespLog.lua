@@ -18603,7 +18603,7 @@ end
 
 
 function uespLog.StartNextMineTest()
-	zo_callLater(uespLog.DoNextMineTest, 3000)
+	zo_callLater(uespLog.DoNextMinewTest, 3000)
 end
 
 
@@ -18641,5 +18641,9 @@ function uespLog.DoNextMineTest()
 		zo_callLater(uespLog.DoNextMineTest, 2000)
 	end
 end
+
+
+--uespLog.MineSingleItemSafe_FinishCallback = uespLog.StartNextMineTest
+
 
 

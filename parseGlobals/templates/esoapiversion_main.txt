@@ -2,7 +2,6 @@
 	<head>
 		<title>UESP:ESO Data -- API Versions</title>
 		<link rel="stylesheet" href="current/esocommon.css" type="text/css" />
-		<script type="text/javascript" current/src="jquery.js"></script>
 	</head>
 <body>
 <h1>ESO Data -- API Versions</h1>

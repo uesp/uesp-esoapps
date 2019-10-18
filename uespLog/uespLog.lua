@@ -1047,9 +1047,11 @@
 --			  for guild history scans.
 --          - Updated API version for Scalebreaker.
 --	
---		-- v2.01 -- ?
+--		-- v2.10 -- 21 October 2019
 --			- Fixed skill coefficients for a bunch of skills.
 --			- Fixed scanning of guild sales history.
+--			- Added reaction to NPC logged data.
+--			- /uespmakelink will default to a CP160 gold item by default.
 --
 
 
@@ -1062,8 +1064,8 @@ end
 --	GLOBAL DEFINITIONS
 uespLog = uespLog or {}
 
-uespLog.version = "2.01"
-uespLog.releaseDate = "12 August 2019"
+uespLog.version = "2.10"
+uespLog.releaseDate = "21 October 2019"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -6602,6 +6604,7 @@ function uespLog.OnTargetChange (eventCode)
 		logData.maxHp = maxHp
 		logData.maxMg = maxMg
 		logData.maxSt = maxSt
+		logData.reaction = GetUnitReaction(unitTag)
 		
 		uespLog.AppendDataToLog("all", logData, uespLog.GetLastTargetData(), uespLog.GetTimeData())
 		
@@ -8397,6 +8400,8 @@ function uespLog.DumpSkillsEnd()
 	
 	uespLog.Msg("Found "..tostring(uespLog.SkillDump_validAbilityCount).." abilities...")
 	uespLog.Msg("Last valid ability ID is "..tostring(uespLog.SkillDump_lastValidAbilityId)..".")
+	
+	uespLog.SkillDump_startAbilityId =  uespLog.SkillDump_lastAbilityId
 
 	logData.event = "skillDump::End"
 	logData.abilityCount = validAbilityCount
@@ -13084,8 +13089,8 @@ end
 
 
 function uespLog.MakeItemLink(itemId, inputLevel, inputQuality)
-	local itemLevel = inputLevel or 1
-	local itemQuality = inputQuality or 1
+	local itemLevel = inputLevel or 50
+	local itemQuality = inputQuality or 370
 	
 	local itemLink = "|H0:item:"..tostring(itemId)..":"..tostring(itemQuality)..":"..tostring(itemLevel)..":0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h"
 	
@@ -13306,7 +13311,7 @@ function uespLog.OnPickpocketFailed(eventCode)
 	logData.class = GetUnitClass(unitTag)   	-- Empty?
 	logData.race = GetUnitRace(unitTag)			-- Empty?
 	logData.difficulty = GetUnitDifficulty(unitTag)
-	
+		
 	uespLog.AppendDataToLog("all", logData, uespLog.GetLastTargetData(), uespLog.GetTimeData())
 end
 
@@ -16956,7 +16961,7 @@ SLASH_COMMANDS["/uespnirnsound"] = uespLog.NirnSoundCommand
 uespLog.FindNameChangeItemId = 1
 uespLog.FindNameChangeIsScanning = false
 uespLog.FindNameChangeScanIds = 2000
-uespLog.FindNameChangeScanEndId = 150000
+uespLog.FindNameChangeScanEndId = 170000
 uespLog.FindNameChangeScanDelayMS = 1000
 uespLog.FindNameChangeItemCount = 0
 

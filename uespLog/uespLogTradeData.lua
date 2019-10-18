@@ -109,8 +109,11 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[82] 							 = "uespLog/images/coldsnap.dds",			-- Coldsnap, Goblin-Cloth Scrap, 82, /esoui/art/icons/crafting_medium_armor_standard_f_001.dds
 	[83] 							 = "uespLog/images/meridian.dds",			-- Meridian, Auroran Dust, 83, /esoui/art/icons/crafting_mushroom_asco_cap_r3.dds
 	[84] 							 = "uespLog/images/anequina.dds",			-- Anequina, Shimmering Sand, 84, /esoui/art/icons/crafting_leather_phlegm.dds
-	[85] 							 = "uespLog/images/pellitine.dds",			-- Pellitine, Dragonthread, 85, /esoui/art/icons/crafting_light_armor_vendor_component_002.dds
-	
+	[85] 							 = "uespLog/images/pellitine.dds",			-- Pellitine, Dragonthread, 85, /esoui/art/icons/crafting_dragonthread.dds
+	[86] 							 = "uespLog/images/sunspire.dds",			-- Sunspire, Frost Embers, 86, /esoui/art/icons/crafting_style_item_celestial_r1.dds
+	-- [88] 						 = "uespLog/images/moongrave.dds",			-- Moongrave Fane, ?, 88, ?
+	[89] 							 = "uespLog/images/stagsofzen.dds",			-- Stags of Z'en, Oath Cord, 89, /esoui/art/icons/crafting_light_armor_vendor_component_002.dds
+	[92] 							 = "uespLog/images/dragonguard.dds",		-- Dragonguard, Gilding Salts, 92, /esoui/art/icons/crafting_humanoid_daedra_fire_salts.dds
 	
 }
 
@@ -192,7 +195,10 @@ uespLog.STYLE_ICON_DATA = {
 	[82] 							 = "/esoui/art/icons/crafting_medium_armor_standard_f_001.dds",
 	[83] 							 = "/esoui/art/icons/crafting_mushroom_asco_cap_r3.dds",
 	[84] 							 = "/esoui/art/icons/crafting_leather_phlegm.dds",
-	[85] 							 = "/esoui/art/icons/crafting_light_armor_vendor_component_002.dds",
+	[85] 							 = "/esoui/art/icons/crafting_style_item_celestial_r1.dds",
+	-- [88] 						 = "",			-- Moongrave Fane
+	[89] 							 = "/esoui/art/icons/crafting_light_armor_vendor_component_002.dds",
+	[92] 							 = "/esoui/art/icons/crafting_humanoid_daedra_fire_salts.dds",
 }
 
 

@@ -1055,6 +1055,10 @@
 --			- Fixed icon for the Pellitine style.
 --			- Added new styles: Sunspire, Dragonguard, Stag's of Zen, Moongrave Fane
 --
+--		-- v2.11 --
+--			- Updated runebox data.
+--			- Updated game time clock to match other clock addons (lost one day and shifted day of the week by one).
+--
 
 
 	-- Update 18 prefix
@@ -1164,10 +1168,9 @@ uespLog.savedVars = {}
 	-- 17280 / 9000 / 0
 	-- 21000 / 4475 / 207360
 uespLog.DEFAULT_GAMETIME_OFFSET = 1396569600 		-- Offset to make in-game date 1st Morning Star
-uespLog.DEFAULT_GAMETIME_OFFSET = 1396548645 		-- Fix to match time used in Clock v0.7.7
 uespLog.DEFAULT_GAMETIME_OFFSET_EXTRA = -1909707 	-- Extra offset to make in-game date on launch day 4th Rain's Hand,
-uespLog.GAMETIME_WEEKDAY_OFFSET = 5					-- Weekday offset to make launch dat Fredas
-uespLog.GAMETIME_WEEKDAY_OFFSET = 6					-- Fix to match Clock v0.7.7
+uespLog.GAMETIME_WEEKDAY_OFFSET = 4					-- Weekday offset to make launch day Fredas
+uespLog.GAMETIME_WEEKDAY_OFFSET = 2					-- Fix to match Clock v0.7.13
 uespLog.DEFAULT_GAMETIME_YEAROFFSET = 582
 
 uespLog.DEFAULT_REALSECONDSPERGAMEDAY = 20955
@@ -2092,19 +2095,19 @@ uespLog.ITEMCHANGE_IGNORE_FIELDS = {
 
 
 uespLog.RUNEBOX_COLLECTIBLE_IDS = {
-		[79329] = 148, 			-- Xivkyn Dreadguard
-        [79330] = 147, 			-- Xivkyn Tormentor
-        [79331] = 146, 			-- Xivkyn Augur
-        [83516] = 439, 			-- Pumpkin Spectre Mask
-        [83517] = 440, 			-- Scarecrow Spectre Mask
-        [96391] = 601, 			-- Mud Ball Pouch
-        [96392] = 597, 			-- Sword-Swallower's Blade
-        [96393] = 598, 			-- Juggler's Knives
-        [96394] = 599, 			-- Pint of Belching
-        [96395] = 600, 			-- Fire-Breather's Torches
-        [96951] = 753, 			-- Nordic Bather's Towel
-        [96952] = 755, 			-- Colovian Fur Hood
-        [96953] = 754, 			-- Colovian Filigreed Hood
+        [79329] = 148,  -- Xivkyn Dreadguard
+        [79330] = 147,  -- Xivkyn Tormentor
+        [79331] = 146,  -- Xivkyn Augur
+        [83516] = 439,  -- Pumpkin Spectre Mask
+        [83517] = 440,  -- Scarecrow Spectre Mask
+        [96391] = 601,  -- Mud Ball Pouch
+        [96392] = 597,  -- Sword-Swallower's Blade
+        [96393] = 598,  -- Juggler's Knives
+        [96394] = 599,  -- Pint of Belching
+        [96395] = 600,  -- Fire-Breather's Torches
+        [96951] = 753,  -- Nordic Bather's Towel
+        [96952] = 755,  -- Colovian Fur Hood
+        [96953] = 754,  -- Colovian Filigreed Hood
         [119692] = 1108,        -- Cherry Blossom Branch
         [124658] = 1232,        -- Dwarven Theodolite
         [124659] = 1230,        -- Sixth House Robe
@@ -2219,7 +2222,7 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [142015] = 5607,        -- Troll King's Mask
         [146038] = 5924,        -- Bloodspawn's Mask
         [146040] = 5925,        -- Bloodspawn's Shoulder
-        [146041] = 5746,        -- Gladiator Emote
+        [146041] = 5746,        -- Gladiator Taunt
         [146043] = 5763,        -- Sellistrix's Mask
         [146044] = 5764,        -- Sellistrix's Shoulder
         [146045] = 5926,        -- Swarm Mother's Mask
@@ -2289,7 +2292,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [147364] = 6173,        -- Abnur Tharn's Staff
         [147428] = 6174,        -- Valkyn Skoria's Mask
         [147429] = 6175,        -- Valkyn Skoria's Shoulder
-        [147435] = 6141,        -- Prophet's Hood
         [147436] = 6143,        -- Prophet's Sandals
         [147437] = 6144,        -- Prophet's Wraps
         [147438] = 6145,        -- Prophet's Robe
@@ -2376,9 +2378,7 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [147602] = 6252,        -- Nightflame's Shoulder
         [147660] = 6295,        -- Prophet's Breeches
         [147661] = 6295,        -- Prophet's Breeches
-		
-			-- Elsweyr
-		[147767] = 6388,        -- Lord Warden's Mask
+        [147767] = 6388,        -- Lord Warden's Mask
         [147768] = 6389,        -- Lord Warden's Shoulder
         [147928] = 6381,        -- Grisly Mummy Tabby
         [151561] = 5463,        -- Shadowrend Greatsword
@@ -2427,6 +2427,196 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [151932] = 6365,        -- Daggerfall Covenant Banner
         [151933] = 6494,        -- Ebonheart Pact Banner
         [151940] = 6438,        -- Siegemaster Close Helm
+        [152121] = 3720,        -- the Maelstrom's Battle Axe
+        [152122] = 3721,        -- the Maelstrom's Maul
+        [152123] = 3722,        -- the Maelstrom's Greatsword
+        [152124] = 3723,        -- the Maelstrom's Axe
+        [152125] = 3724,        -- the Maelstrom's Bow
+        [152126] = 3725,        -- the Maelstrom's Mace
+        [152127] = 3726,        -- the Maelstrom's Shield
+        [152128] = 3727,        -- the Maelstrom's Staff
+        [152129] = 3728,        -- the Maelstrom's Sword
+        [152130] = 4892,        -- the Maelstrom's Dagger
+        [152131] = 3720,        -- the Maelstrom's Battle Axe
+        [152132] = 3721,        -- the Maelstrom's Maul
+        [152133] = 3722,        -- the Maelstrom's Greatsword
+        [152134] = 3723,        -- the Maelstrom's Axe
+        [152135] = 3724,        -- the Maelstrom's Bow
+        [152136] = 3725,        -- the Maelstrom's Mace
+        [152137] = 3726,        -- the Maelstrom's Shield
+        [152138] = 3727,        -- the Maelstrom's Staff
+        [152139] = 3728,        -- the Maelstrom's Sword
+        [152140] = 4892,        -- the Maelstrom's Dagger
+        [152252] = 6690,        -- Mighty Chudan's Mask
+        [152253] = 6691,        -- Mighty Chudan's Shoulder
+        [152254] = 6693,        -- Velidreth's Shoulder
+        [152255] = 6692,        -- Velidreth's Mask
+        [153475] = 6721,        -- Pirate Skeleton's Mask
+        [153476] = 6722,        -- Pirate Skeleton's Shoulder
+        [153493] = 6728,        -- Battleground Runner Jack
+        [153494] = 6733,        -- Battleground Runner Bracers
+        [153495] = 6730,        -- Battleground Runner Guards
+        [153496] = 6732,        -- Battleground Runner Boots
+        [153497] = 6731,        -- Battleground Runner Arm Cops
+        [153498] = 6729,        -- Battleground Runner Helmet
+        [153499] = 6744,        -- Chokethorn's Mask
+        [153500] = 6745,        -- Chokethorn's Shoulder
+        [153537] = 6665,        -- Siegemaster's Uniform
+        [153564] = 6753,        -- Glenmoril Wyrd Battle Axe
+        [153565] = 6754,        -- Glenmoril Wyrd Maul
+        [153566] = 6755,        -- Glenmoril Wyrd Greatsword
+        [153567] = 6756,        -- Glenmoril Wyrd Axe
+        [153568] = 6757,        -- Glenmoril Wyrd Bow
+        [153569] = 6758,        -- Glenmoril Wyrd Dagger
+        [153570] = 6759,        -- Glenmoril Wyrd Mace
+        [153571] = 6760,        -- Glenmoril Wyrd Shield
+        [153572] = 6761,        -- Glenmoril Wyrd Staff
+        [153573] = 6762,        -- Glenmoril Wyrd Sword
+        [153574] = 6753,        -- Glenmoril Wyrd Battle Axe
+        [153575] = 6754,        -- Glenmoril Wyrd Maul
+        [153576] = 6755,        -- Glenmoril Wyrd Greatsword
+        [153577] = 6756,        -- Glenmoril Wyrd Axe
+        [153578] = 6757,        -- Glenmoril Wyrd Bow
+        [153579] = 6758,        -- Glenmoril Wyrd Dagger
+        [153580] = 6759,        -- Glenmoril Wyrd Mace
+        [153581] = 6760,        -- Glenmoril Wyrd Shield
+        [153582] = 6761,        -- Glenmoril Wyrd Staff
+        [153583] = 6762,        -- Glenmoril Wyrd Sword
+        [153619] = 6775,        -- Spawn of Mephala's Mask
+        [153620] = 6776,        -- Spawn of Mephala's Shoulder
+        [153740] = 6911,        -- Opal Ilambris' Shoulder
+        [153741] = 6910,        -- Opal Ilambris' Mask
+        [153742] = 6913,        -- Opal Troll King's Shoulder
+        [153743] = 6912,        -- Opal Troll King's Mask
+        [153744] = 6906,        -- Opal Bloodspawn's Mask
+        [153745] = 6907,        -- Opal Bloodspawn's Shoulder
+        [153746] = 6909,        -- Opal Engine Guardian's Shoulder
+        [153747] = 6908,        -- Opal Engine Guardian's Mask
+        [153776] = 6787,        -- Glenmoril Wyrd Jerkin
+        [153777] = 6788,        -- Glenmoril Wyrd Hat
+        [153778] = 6789,        -- Glenmoril Wyrd Breeches
+        [153779] = 6790,        -- Glenmoril Wyrd Epaulets
+        [153780] = 6791,        -- Glenmoril Wyrd Sash
+        [153781] = 6792,        -- Glenmoril Wyrd Shoes
+        [153782] = 6793,        -- Glenmoril Wyrd Gloves
+        [153783] = 6794,        -- Glenmoril Wyrd Robe
+        [153784] = 6787,        -- Glenmoril Wyrd Jerkin
+        [153785] = 6788,        -- Glenmoril Wyrd Hat
+        [153786] = 6789,        -- Glenmoril Wyrd Breeches
+        [153787] = 6790,        -- Glenmoril Wyrd Epaulets
+        [153788] = 6791,        -- Glenmoril Wyrd Sash
+        [153789] = 6792,        -- Glenmoril Wyrd Shoes
+        [153790] = 6793,        -- Glenmoril Wyrd Gloves
+        [153791] = 6794,        -- Glenmoril Wyrd Robe
+        -- [153883] = ?,        -- Infernal Guardian Shoulder
+        -- [153884] = ?,        -- Infernal Guardian Mask
+        -- [153885] = ?,        -- Kra'gh Shoulder
+        -- [153886] = ?,        -- Kra'gh Mask
+        -- [154834] = ?,        -- Sentinel of Rkugamz Shoulder
+        -- [154835] = ?,        -- Sentinel of Rkugamz Mask
+        -- [156625] = ?,        -- Kra'gh Mask
+        [156626] = 1338,        -- Hollowjack Spectre Mask
+        -- [156672] = ?,        -- Battleground Runner Waster
+        -- [156673] = ?,        -- Battleground Runner Staff
+        -- [156674] = ?,        -- Battleground Runner Bow
+        -- [156675] = ?,        -- Battleground Runner Bludgeon
+        -- [156676] = ?,        -- Battleground Runner Shield
+        [156681] = 7300,        -- Skaal Explorer Battle Axe
+        [156682] = 7301,        -- Skaal Explorer Maul
+        [156683] = 7302,        -- Skaal Explorer Greatsword
+        [156684] = 7303,        -- Skaal Explorer Axe
+        [156685] = 7304,        -- Skaal Explorer Bow
+        [156686] = 7305,        -- Skaal Explorer Mace
+        [156687] = 7306,        -- Skaal Explorer Shield
+        [156688] = 7307,        -- Skaal Explorer Staff
+        [156689] = 7308,        -- Skaal Explorer Sword
+        [156690] = 7309,        -- Skaal Explorer Dagger
+        [156691] = 7299,        -- Skaal Explorer Sash
+        [156692] = 7293,        -- Skaal Explorer Jerkin
+        [156693] = 7294,        -- Skaal Explorer Hat
+        [156694] = 7295,        -- Skaal Explorer Breeches
+        [156695] = 7296,        -- Skaal Explorer Epaulets
+        [156696] = 7297,        -- Skaal Explorer Shoes
+        [156697] = 7298,        -- Skaal Explorer Gloves
+        [156698] = 7300,        -- Skaal Explorer Battle Axe
+        [156699] = 7301,        -- Skaal Explorer Maul
+        [156700] = 7302,        -- Skaal Explorer Greatsword
+        [156701] = 7303,        -- Skaal Explorer Axe
+        [156702] = 7304,        -- Skaal Explorer Bow
+        [156703] = 7305,        -- Skaal Explorer Mace
+        [156704] = 7306,        -- Skaal Explorer Shield
+        [156705] = 7307,        -- Skaal Explorer Staff
+        [156706] = 7308,        -- Skaal Explorer Sword
+        [156707] = 7309,        -- Skaal Explorer Dagger
+        [156708] = 7299,        -- Skaal Explorer Sash
+        [156709] = 7293,        -- Skaal Explorer Jerkin
+        [156710] = 7294,        -- Skaal Explorer Hat
+        [156711] = 7295,        -- Skaal Explorer Breeches
+        [156712] = 7296,        -- Skaal Explorer Epaulets
+        [156713] = 7297,        -- Skaal Explorer Shoes
+        [156714] = 7298,        -- Skaal Explorer Gloves
+        [156718] = 6911,        -- Opal Ilambris' Shoulder
+        [156719] = 6910,        -- Opal Ilambris' Mask
+        [156720] = 6913,        -- Opal Troll King's Shoulder
+        [156721] = 6912,        -- Opal Troll King's Mask
+        [156722] = 6906,        -- Opal Bloodspawn's Mask
+        [156723] = 6907,        -- Opal Bloodspawn's Shoulder
+        [156724] = 6909,        -- Opal Engine Guardian's Shoulder
+        [156725] = 6908,        -- Opal Engine Guardian's Mask
+        [156726] = 6814,        -- Opal Ilambris Battle Axe
+        [156727] = 6815,        -- Opal Ilambris Bow
+        [156728] = 6816,        -- Opal Ilambris Shield
+        [156729] = 6817,        -- Opal Ilambris Staff
+        [156730] = 6818,        -- Opal Ilambris Sword
+        [156737] = 6819,        -- Opal Engine Guardian Dagger
+        [156738] = 6820,        -- Opal Engine Guardian Staff
+        [156739] = 6821,        -- Opal Engine Guardian Greatsword
+        [156740] = 6822,        -- Opal Engine Guardian Bow
+        [156741] = 6823,        -- Opal Engine Guardian Shield
+        [156742] = 6824,        -- Opal Bloodspawn Battle Axe
+        [156743] = 6825,        -- Opal Bloodspawn Bow
+        [156744] = 6826,        -- Opal Bloodspawn Shield
+        [156745] = 6827,        -- Opal Bloodspawn Staff
+        [156746] = 6828,        -- Opal Bloodspawn Mace
+        [156747] = 6829,        -- Opal Troll King Axe
+        [156748] = 6830,        -- Opal Troll King Staff
+        [156749] = 6831,        -- Opal Troll King Battle Axe
+        [156750] = 6832,        -- Opal Troll King Bow
+        [156751] = 6833,        -- Opal Troll King Shield
+        [156781] = 7310,        -- Legion Zero Cuirass
+        [156782] = 7311,        -- Legion Zero Helm
+        [156783] = 7312,        -- Legion Zero Greaves
+        [156784] = 7313,        -- Legion Zero Pauldrons
+        [156785] = 7314,        -- Legion Zero Sabatons
+        [156786] = 7315,        -- Legion Zero Gauntlets
+        [156787] = 7316,        -- Legion Zero Girdle
+        [156788] = 7310,        -- Legion Zero Cuirass
+        [156789] = 7311,        -- Legion Zero Helm
+        [156790] = 7312,        -- Legion Zero Greaves
+        [156791] = 7313,        -- Legion Zero Pauldrons
+        [156792] = 7314,        -- Legion Zero Sabatons
+        [156793] = 7315,        -- Legion Zero Gauntlets
+        [156794] = 7316,        -- Legion Zero Girdle
+        [156811] = 6814,        -- Opal Ilambris Battle Axe
+        [156812] = 6815,        -- Opal Ilambris Bow
+        [156813] = 6816,        -- Opal Ilambris Shield
+        [156814] = 6817,        -- Opal Ilambris Staff
+        [156815] = 6818,        -- Opal Ilambris Sword
+        [156816] = 6819,        -- Opal Engine Guardian Dagger
+        [156817] = 6820,        -- Opal Engine Guardian Staff
+        [156818] = 6821,        -- Opal Engine Guardian Greatsword
+        [156819] = 6822,        -- Opal Engine Guardian Bow
+        [156820] = 6823,        -- Opal Engine Guardian Shield
+        [156821] = 6824,        -- Opal Bloodspawn Battle Axe
+        [156822] = 6825,        -- Opal Bloodspawn Bow
+        [156823] = 6826,        -- Opal Bloodspawn Shield
+        [156824] = 6827,        -- Opal Bloodspawn Staff
+        [156825] = 6828,        -- Opal Bloodspawn Mace
+        [156826] = 6829,        -- Opal Troll King Axe
+        [156827] = 6830,        -- Opal Troll King Staff
+        [156828] = 6831,        -- Opal Troll King Battle Axe
+        [156829] = 6832,        -- Opal Troll King Bow
+        [156830] = 6833,        -- Opal Troll King Shield
 }
 
 function uespLog.BoolToOnOff(flag)
@@ -18637,7 +18827,7 @@ end
 
 
 function uespLog.StartNextMineTest()
-	zo_callLater(uespLog.DoNextMinewTest, 3000)
+	zo_callLater(uespLog.DoNextMineTest, 3000)
 end
 
 
@@ -18678,6 +18868,5 @@ end
 
 
 --uespLog.MineSingleItemSafe_FinishCallback = uespLog.StartNextMineTest
-
 
 

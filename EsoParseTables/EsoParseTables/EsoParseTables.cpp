@@ -10,6 +10,26 @@
 #include <algorithm>
 #include <iostream>
 
+/*
+Power and Spell Power (1)
+Health, Magicka, Stamina (2)
+Regeneration Rates (3)
+Resistances (4)
+Weapon Proc Damage (5)
+Armor & Spell Resistance (6)
+Reduce Cost (7)
+Linear Lookup Table (8)
+Potion Reduction (9)
+Crafted Potion Scaling Ceiling (11)
+Crafted Food Scaling Ceiling (12)
+Crafted Scaling Base Level (13)
+Quality Call (14)
+Poison Ravage Health Damage (15)
+Damage Shield Weapon Proc (16)
+Power and Spell Power Wpn Proc (17)
+Armor & Spell Res Weapon Proc (18)
+*/
+
 
 //const std::string INPUT_FILENAME = "E:\\Temp\\testexport\\000\\498177_Uncompressed.dat";
 //const std::string INPUT_FILENAME1 = "E:\\Temp\\testexport\\000\\497777_Uncompressed.dat";
@@ -17,6 +37,7 @@
 //const std::string INPUT_FILENAME1 = "E:\\esoexport\\esomnf-17\\000\\589825_Uncompressed.EsoFileData";
 //const std::string INPUT_FILENAME1 = "E:\\esoexport\\esomnf-17\\000\\590243_Uncompressed.EsoFileData";
 const std::string INPUT_FILENAME1 = "E:\\esoexport\\esomnf-20\\000\\680337_Uncompressed.EsoFileData";
+
 
 
 typedef unsigned int dword;

@@ -1058,7 +1058,7 @@
 --		-- v2.11 --
 --			- Updated runebox data.
 --			- Updated game time clock to match other clock addons (lost one day and shifted day of the week by one).
---			- Logs extra data for quest gold rewards.
+--			- Logs extra data for quest gold and experience rewards.
 --
 
 
@@ -5557,6 +5557,24 @@ function uespLog.LogQuestGoldReward(questName, goldReward)
 end
 
 
+function uespLog.LogQuestExperienceReward(questName, xpReward)
+	local logData = {}
+	
+	if (xpReward <= 0) then
+		return
+	end
+	
+	logData.event = "QuestXPReward"
+	logData.xp = xpReward
+	logData.quest = questName
+	logData.level = GetUnitLevel("player")
+	logData.effLevel = GetUnitEffectiveLevel("player")
+	logData.esoPlus = IsESOPlusSubscriber()
+	
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+end
+
+
 function uespLog.LogQuestStepData (journalIndex)
 	local numSteps = GetJournalQuestNumSteps(journalIndex)
 	local questName = GetJournalQuestName(journalIndex)
@@ -5650,7 +5668,9 @@ function uespLog.OnQuestComplete(eventCode, questName, level, previousExperience
 		
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	
-	--uespLog.DebugMsg("Quest "..tostring(questName).." Complete: "..tostring(logData.xp).." AD")
+	uespLog.LogQuestExperienceReward(questName, logData.xp)
+	
+	--uespLog.DebugExtraMsg("Quest "..tostring(questName).." Complete: "..tostring(logData.xp).." XP")
 end
 
 

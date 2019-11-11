@@ -1058,6 +1058,7 @@
 --		-- v2.11 --
 --			- Updated runebox data.
 --			- Updated game time clock to match other clock addons (lost one day and shifted day of the week by one).
+--			- Logs extra data for quest gold rewards.
 --
 
 
@@ -5533,8 +5534,26 @@ function uespLog.LogQuestRewardData (journalIndex)
 		logData.collectId = GetJournalQuestRewardCollectibleId(journalIndex, rewardIndex)
 		logData.uniqueId = questUniqueId
 
-		uespLog.AppendDataToLog("all", logData)
+		uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+		
+		if (logData.type == REWARD_TYPE_MONEY) then
+			uespLog.LogQuestGoldReward(questName, logData.count)
+		end
 	end
+end
+
+
+function uespLog.LogQuestGoldReward(questName, goldReward)
+	local logData = {}
+	
+	logData.event = "QuestGoldReward"
+	logData.gold = goldReward
+	logData.quest = questName
+	logData.level = GetUnitLevel("player")
+	logData.effLevel = GetUnitEffectiveLevel("player")
+	logData.esoPlus = IsESOPlusSubscriber()
+	
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 end
 
 

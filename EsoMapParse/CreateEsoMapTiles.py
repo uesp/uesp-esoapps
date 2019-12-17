@@ -10,7 +10,7 @@ import csv
 USE_COMMAND_ARGS = True
 
 if (not USE_COMMAND_ARGS):
-    BasePathIndex = "20"
+    BasePathIndex = "24"
     BasePath = "e:/esoexport/"
 elif (len(sys.argv) < 3):
     print("Missing required command line arguments!")

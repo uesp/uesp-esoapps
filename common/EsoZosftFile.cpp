@@ -1,16 +1,18 @@
 
 
 #include "EsoZosftFile.h"
+#include "oodle\oodle.h"
 
 
 namespace eso {
 
 
-	CZosftFile::CZosftFile() :
+	CZosftFile::CZosftFile(const dword MnfVersion) :
 					m_Header(),
 					m_Footer(),
 					m_RawFileDataSize(0),
-					m_pRawFileData(nullptr)
+					m_pRawFileData(nullptr),
+					m_MnfVersion(MnfVersion)
 	{
 	}
 
@@ -113,7 +115,7 @@ namespace eso {
 			return false;
 		}		
 
-		for (size_t i = 0; i < m_Header.RecordCount; ++i)
+		for (dword i = 0; i < m_Header.RecordCount; ++i)
 		{
 			Entry.UserData = 0;
 			Entry.Index = i;
@@ -244,7 +246,7 @@ namespace eso {
 
 		return true;
 	}
-
+	
 
 	zosft_filetable_t* CZosftFile::LookupIndex (dword FileIndex)
 	{

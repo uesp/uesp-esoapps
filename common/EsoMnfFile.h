@@ -6,6 +6,7 @@
 #include "EsoDatFile.h"
 #include "EsoZosftFile.h"
 #include "EsoSubFile.h"
+#include <vector>
 
 
 namespace eso {
@@ -57,6 +58,7 @@ namespace eso {
 		bool UsePOSourceText;
 		bool UseLangText;
 		bool NoParseGR2;
+		bool OodleRawOutput;
 
 		mnf_exportoptions_t() :
 					MnfStartIndex(-1), 
@@ -70,20 +72,27 @@ namespace eso {
 					UsePOSourceText(false),
 					UseLangText(false),
 					ExtractSubFileDataType("none"),
-					NoParseGR2(false)
+					NoParseGR2(false),
+					OodleRawOutput(false)
 		{
 		}
 
 	};
 
+	typedef std::vector<word> mnf_filetypes_t;
+
 
 	struct mnf_header_t
 	{
 		byte	FileID[MNF_HEADER_MAGICSIZE];
-		word	Unknown1;
-		byte	FileCount;
-		dword	Unknown2;
+		word	Version;
+		dword	FileCount;
+		dword	Type;
 		dword	DataSize;
+
+		mnf_filetypes_t FileTypes;
+
+		word    Unknown1;
 	};
 
 
@@ -110,6 +119,7 @@ namespace eso {
 	typedef std::vector<mnf_filetable_t> CMnfFileTableArray;
 	typedef std::unordered_map<dword, mnf_filetable_t*> CMnfFileHashMap;
 	typedef std::unordered_map<dword, mnf_filetable_t*> CMnfFileIndexMap;
+	typedef std::unordered_map<std::string, dword> CMnfDuplicateMap;
 
 
 	class CMnfFile
@@ -127,6 +137,9 @@ namespace eso {
 		CMnfFileHashMap     m_FileHashMap;
 		CMnfFileIndexMap    m_FileIndexMap;
 		CMnfFileIndexMap	m_FileInternalIndexMap;
+		CMnfDuplicateMap	m_DuplicateNameMap;
+
+		bool				m_DecompressOodle;
 
 
 	protected:
@@ -134,12 +147,16 @@ namespace eso {
 
 		bool CreateFileTable (void);
 		bool CreateFileMaps  (void);
+		bool CreateDuplicateMap (CZosftFile& ZosftFile);
 
 		bool DumpFileTable (const char* pFilename, CMnfFileTableArray& FileTable);
+
+		bool ParseDataFileVer3(mnf_filetable_t& FileEntry, dat_subfileinfo_t& DataInfo);
 
 		bool ReadDataFile(mnf_filetable_t& FileEntry, dat_subfileinfo_t& OutputDataInfo, CFile* pFile = nullptr);
 
 		bool ReadHeader (CBaseFile& File);
+		bool ReadHeaderVersion3(CBaseFile& File);
 		bool ReadBlocks (CBaseFile& File);
 
 		bool SaveSubFileZosft(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo);

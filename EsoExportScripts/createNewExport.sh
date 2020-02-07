@@ -1,8 +1,8 @@
 #!/bin/sh
 
-VERSION="24"
-ISPTS=""
-LASTVERSION="23"
+VERSION="25pts"
+ISPTS="1"
+LASTVERSION="24"
 LASTPTSVERSION="24pts"
 
 MAKEPTSDIFF="1"
@@ -369,12 +369,14 @@ makezipdiff "tutorial.diff.zip" "$OUTPUTPATH/MoreImages/tutorial/" "tutorial.dif
 makezipdiff "gameuiart.diff.zip" "$OUTPUTPATH/GameUIArt/" "gameuiart.diff.txt.list"
 makezipdiff "maps.diff.zip" "$OUTPUTPATH/CombinedMaps/" "maps.diff.txt.list"
 
-makezipdiff "icons.ptsdiff.zip" "./esomnf-$VERSION/esoui/art/icons/" "icons.ptsdiff.txt.list"
-makezipdiff "loadscreens.ptsdiff.zip" "$OUTPUTPATH/LoadingScreens/" "loadscreens.ptsdiff.txt.list"
-makezipdiff "treasuremaps.ptsdiff.zip" "$OUTPUTPATH/TreasureMaps/" "treasuremaps.ptsdiff.txt.list"
-makezipdiff "crowncrates.ptsdiff.zip" "$OUTPUTPATH/MoreImages/crowncrates/" "crowncrates.ptsdiff.txt.list"
-makezipdiff "collectibles.ptsdiff.zip" "$OUTPUTPATH/MoreImages/collectibles/" "collectibles.ptsdiff.txt.list"
-makezipdiff "store.ptsdiff.zip" "$OUTPUTPATH/MoreImages/store/" "store.ptsdiff.txt.list"
-makezipdiff "tutorial.ptsdiff.zip" "$OUTPUTPATH/MoreImages/tutorial/" "tutorial.ptsdiff.txt.list"
-makezipdiff "gameuiart.ptsdiff.zip" "$OUTPUTPATH/GameUIArt/" "gameuiart.ptsdiff.txt.list"
-makezipdiff "maps.ptsdiff.zip" "$OUTPUTPATH/CombinedMaps/" "maps.ptsdiff.txt.list"
+if [ "$MAKEPTSDIFF" ]; then
+	makezipdiff "icons.ptsdiff.zip" "./esomnf-$VERSION/esoui/art/icons/" "icons.ptsdiff.txt.list"
+	makezipdiff "loadscreens.ptsdiff.zip" "$OUTPUTPATH/LoadingScreens/" "loadscreens.ptsdiff.txt.list"
+	makezipdiff "treasuremaps.ptsdiff.zip" "$OUTPUTPATH/TreasureMaps/" "treasuremaps.ptsdiff.txt.list"
+	makezipdiff "crowncrates.ptsdiff.zip" "$OUTPUTPATH/MoreImages/crowncrates/" "crowncrates.ptsdiff.txt.list"
+	makezipdiff "collectibles.ptsdiff.zip" "$OUTPUTPATH/MoreImages/collectibles/" "collectibles.ptsdiff.txt.list"
+	makezipdiff "store.ptsdiff.zip" "$OUTPUTPATH/MoreImages/store/" "store.ptsdiff.txt.list"
+	makezipdiff "tutorial.ptsdiff.zip" "$OUTPUTPATH/MoreImages/tutorial/" "tutorial.ptsdiff.txt.list"
+	makezipdiff "gameuiart.ptsdiff.zip" "$OUTPUTPATH/GameUIArt/" "gameuiart.ptsdiff.txt.list"
+	makezipdiff "maps.ptsdiff.zip" "$OUTPUTPATH/CombinedMaps/" "maps.ptsdiff.txt.list"
+fi

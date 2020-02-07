@@ -11,8 +11,8 @@
 #endif
 
 #include "snappy/snappy.h"
-#include "devil/include/il/il.h"
-#include "devil/include/il/ilu.h"
+#include "devil/win64/include/il/il.h"
+#include "devil/win64/include/il/ilu.h"
 #include <string>
 #include <vector>
 #include <map>
@@ -68,7 +68,10 @@ inline word ConvertMotorolaBytesToWord(byte *pData)
 bool ReadDword(FILE* pFile, dword& Output, const bool IsBigEndian = false);
 bool ReadWord(FILE* pFile, word& Output, const bool IsBigEndian = false);
 
+word ParseBufferWord(const byte* pBuffer, const bool IsBigEndian = false);
+dword ParseBufferDword3(const byte* pBuffer, const bool IsBigEndian = false);
 dword ParseBufferDword(const byte* pBuffer, const bool IsBigEndian = false);
+
 std::string ParseBufferString(const byte* pBuffer, const size_t Offset, const size_t Size);
 
 bool InflateSnappyBlock (byte* pOutputData, dword& OutputSize, const size_t MaxOutputSize, const byte* pInputData, const size_t InputSize, const bool Quiet = false);

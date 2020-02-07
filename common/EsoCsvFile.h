@@ -25,8 +25,8 @@ namespace eso
 
 		const std::vector<csvrow_t>& GetData (void) const { return m_Data; }
 
-		int GetNumRows (void) const { return m_Data.size(); }
-		int GetNumDataRows (void) const { return m_Data.size() <= 0 ? m_Data.size() : (m_HasHeaderRow ? m_Data.size() - 1 : m_Data.size()); }
+		int GetNumRows (void) const { return  (int) m_Data.size(); }
+		int GetNumDataRows (void) const { return m_Data.size() <= 0 ? (int) m_Data.size() : (m_HasHeaderRow ? (int) m_Data.size() - 1 : (int) m_Data.size()); }
 		bool HasHeaderRow (void) const { return m_HasHeaderRow; }
 
 		void Dump (void);

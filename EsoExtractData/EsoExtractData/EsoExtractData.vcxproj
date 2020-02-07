@@ -302,6 +302,7 @@
     <ClInclude Include="..\..\common\EsoMnfFile.h" />
     <ClInclude Include="..\..\common\EsoSubFile.h" />
     <ClInclude Include="..\..\common\EsoZosftFile.h" />
+    <ClInclude Include="..\..\common\oodle\oodle.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -406,6 +407,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\..\common\oodle\oodle.cpp" />
     <ClCompile Include="..\..\common\snappy\snappy-c.cc">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -491,21 +493,11 @@
     <ClCompile Include="EsoExtractData.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\common\devil\lib\DevIL.lib" />
-    <Library Include="..\..\common\devil\lib\ILU.lib" />
-    <Library Include="..\..\common\devil\lib\ILUT.lib">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release - Game.mnf|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release - Eso.mnf|x64'">false</ExcludedFromBuild>
-    </Library>
-    <Library Include="..\..\common\zlib\zdll.lib">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release - Game.mnf|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release - Eso.mnf|x64'">false</ExcludedFromBuild>
-    </Library>
-    <Library Include="granny2.lib" />
+    <Library Include="..\..\common\devil\win64\lib\x64\Release\DevIL.lib" />
+    <Library Include="..\..\common\devil\win64\lib\x64\Release\ILU.lib" />
+    <Library Include="..\..\common\devil\win64\lib\x64\Release\ILUT.lib" />
+    <Library Include="..\..\common\granny\win64\granny2_x64.lib" />
+    <Library Include="..\..\common\zlib\lib64\zlib.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -12,14 +12,14 @@ namespace eso {
 		if (FileInfo.pUncompressedData == nullptr) return PrintError("Error: No uncompressed data in DAT sub-file to parse!");
 		if (FileInfo.UncompressedSize < 4) return PrintError("Error: Uncompressed data in DAT sub-file too small to parse!");
 
-		if (Header.Unknown2 != 6)
+		if (Header.Type != 6)
 		{
 			FileInfo.DataSize1 = 0;
 			FileInfo.DataSize2 = 0;
 			FileInfo.pData1 = nullptr;
 			FileInfo.pData2 = nullptr;
 			FileInfo.pFileDataStart = FileInfo.pUncompressedData;
-			FileInfo.FileDataSize = FileInfo.UncompressedSize;
+			FileInfo.FileDataSize = (dword) FileInfo.UncompressedSize;
 			return true;
 		}
 
@@ -39,7 +39,7 @@ namespace eso {
 		FileInfo.pData2 = FileInfo.pUncompressedData + 12 + FileInfo.DataSize1;
 
 		FileInfo.pFileDataStart = FileInfo.pUncompressedData + 12 + FileInfo.DataSize1 + FileInfo.DataSize2;
-		FileInfo.FileDataSize = FileInfo.UncompressedSize - 12 - FileInfo.DataSize1 - FileInfo.DataSize2;
+		FileInfo.FileDataSize = (dword) FileInfo.UncompressedSize - 12 - FileInfo.DataSize1 - FileInfo.DataSize2;
 
 		if (snappy::IsValidCompressedBuffer((char *)FileInfo.pData1, FileInfo.DataSize1)) PrintLog("\tData1 is snappy format");
 		if (snappy::IsValidCompressedBuffer((char *)FileInfo.pData2, FileInfo.DataSize2)) PrintLog("\tData2 is snappy format");

@@ -115,7 +115,7 @@ int CEsoLangFile::CreateRecordsFromPOCSV (const eso::CCsvFile& CsvFile, const bo
 		else
 			Record.Text = ReplaceStrings(ReplaceStrings(ReplaceStrings(r->at(2), "\\n", "\x0a"), "\\r", "\x0d"), "\"\"", "\"");
 
-		Offset += Record.Text.length() + 1;
+		Offset += (int) Record.Text.length() + 1;
 		++RecordCount;
 	}
 
@@ -153,7 +153,7 @@ int CEsoLangFile::CreateRecordsFromTEXT (const std::vector<std::string>& TextFil
 		Record.Offset  = Offset;
 		Record.Text = ReplaceStrings(ReplaceStrings(ReplaceStrings(TextFile[i], "\\n", "\x0a"), "\\r", "\x0d"), "\"\"", "\"");
 
-		Offset += Record.Text.length() + 1;
+		Offset += (int) Record.Text.length() + 1;
 		++RecordCount;
 	}
 		
@@ -172,9 +172,9 @@ bool CEsoLangFile::CreateFromText (const std::vector<std::string>& TextFile, con
 	PrintError("UsePOFormat = %d", UsePOFormat);
 
 	if (UsePOFormat)
-		m_RecordCount = TextFile.size()/2;
+		m_RecordCount = (int) TextFile.size()/2;
 	else
-		m_RecordCount = TextFile.size();
+		m_RecordCount = (int) TextFile.size();
 
 	m_Records.reserve(m_RecordCount + 100);
 	m_Records.resize(m_RecordCount);
@@ -352,7 +352,18 @@ bool CEsoLangFile::ParseData (eso::byte* pData, const fpos_t Size)
 	m_FileId = ParseBufferDword(pData+0, true);
 	m_RecordCount = ParseBufferDword(pData+4, true);
 
-	if (m_RecordCount > INT_MAX/TEXT_RECORD_SIZE - 100) return PrintError ("Error: Too many records found in language file!");
+	if (m_RecordCount > UINT_MAX / TEXT_RECORD_SIZE - 100) {
+		PrintError("Error: Too many records found in language file (%d)!", m_RecordCount);
+		m_RecordCount = 0;
+		return false;
+	}
+
+	if (m_RecordCount*TEXT_RECORD_SIZE > Size)
+	{
+		PrintError("Error: Language file has too many records (read past end of file)!");
+		m_RecordCount = 0;
+		return false;
+	}
 
 	m_Records.clear();
 	m_Records.reserve(m_RecordCount + 100);
@@ -370,7 +381,7 @@ bool CEsoLangFile::ParseData (eso::byte* pData, const fpos_t Size)
 		Record.Index   = ParseBufferDword(pData+Offset+0x8, true);
 		Record.Offset  = ParseBufferDword(pData+Offset+0xC, true);
 
-		size_t TextOffset = Record.Offset + StartTextOffset;
+		fpos_t TextOffset = Record.Offset + StartTextOffset;
 
 		if (TextOffset < Size)
 		{
@@ -379,7 +390,9 @@ bool CEsoLangFile::ParseData (eso::byte* pData, const fpos_t Size)
 			Record.Text = ParseBufferString(pData, TextOffset, (size_t)Size);
 		}
 		else
-			PrintLog("Warning: Read passed end of file (offset 0x%08X) in text record #%d", TextOffset, i);
+		{
+			PrintLog("Warning: Read past end of file (offset 0x%08X) in text record #%d", TextOffset, i);
+		}
 	}
 
 	return true;
@@ -425,7 +438,7 @@ bool CEsoLangFile::Write (CFile& File)
 		if (!File.WriteDword(Record.Index, false)) return false;
 		if (!File.WriteDword(Record.Offset, false)) return false;
 
-		Offset += Record.Text.length() + 1;
+		Offset += (int) Record.Text.length() + 1;
 	}
 
 	for (size_t i = 0; i < m_RecordCount; ++i)

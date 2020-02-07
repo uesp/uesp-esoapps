@@ -3,24 +3,30 @@
 
 #include "EsoMnfFile.h"
 #include "EsoLangFile.h"
-#include "granny.h"
+#include "granny/granny211.h"
 #include <Windows.h>  
 #include <exception>  
+#include <inttypes.h>
+#include "oodle/oodle.h"
 
 
 namespace eso {
+
+	typedef granny_file GrannyFile_t;
+	typedef granny_file_info FileInfo_t;
 
 
 	CMnfFile::CMnfFile() :
 				m_HasBlock0(false),
 				m_Block0(false, false),
-				m_Block3(false, false)
+				m_Block3(false, false),
+				m_DecompressOodle(true)
 	{
 		memcpy(m_Header.FileID, MNF_MAGIC_ID, MNF_HEADER_MAGICSIZE);
 		m_Header.DataSize  = 0;
 		m_Header.FileCount = 0;
-		m_Header.Unknown1  = 2;
-		m_Header.Unknown2  = 1;
+		m_Header.Version   = 2;
+		m_Header.Type      = 1;
 	}
 
 
@@ -111,6 +117,13 @@ namespace eso {
 				TableEntry.ArchiveIndex   = pData3->pUncompressedData[Offset3 + 17];
 				TableEntry.Unknown2       = *((word  *) (pData3->pUncompressedData + Offset3 + 18));
 				Offset3 += MNF_BLOCK3_RECORDSIZE;
+
+				if (m_Header.Version >= 3)
+				{
+					byte tmp = TableEntry.CompressType;
+					TableEntry.CompressType = TableEntry.ArchiveIndex;
+					TableEntry.ArchiveIndex = tmp;
+				}
 			}
 			else
 			{
@@ -145,6 +158,10 @@ namespace eso {
 		m_FileIndexMap.clear();
 		m_FileInternalIndexMap.clear();
 
+		m_FileHashMap.reserve(m_FileTable.size());
+		m_FileIndexMap.reserve(m_FileTable.size());
+		m_FileInternalIndexMap.reserve(m_FileTable.size());
+
 		for (size_t i = 0; i < m_FileTable.size(); ++i)
 		{
 			m_FileHashMap[m_FileTable[i].Hash]       = &m_FileTable[i];
@@ -152,9 +169,31 @@ namespace eso {
 			m_FileInternalIndexMap[m_FileTable[i].Index] = &m_FileTable[i];
 		}
 
+		return true;
+	}
+
+
+	bool CMnfFile::CreateDuplicateMap(CZosftFile& ZosftFile)
+	{
+		m_DuplicateNameMap.reserve(ZosftFile.GetSize());
+
+		for (size_t i = 0; i < m_FileTable.size(); ++i)
+		{
+			zosft_filetable_t* pZosftEntry = m_FileTable[i].pZosftEntry;
+			if (pZosftEntry == nullptr) continue;
+			if (pZosftEntry->UserData <= 1) continue;
+
+			dword Index = m_FileTable[i].Index;
+
+			if (m_DuplicateNameMap[pZosftEntry->Filename] < Index)
+			{
+				m_DuplicateNameMap[pZosftEntry->Filename] = Index;
+			}
+		}
 
 		return true;
 	}
+
 
 	bool CMnfFile::DumpFileTable (const char* pFilename) 
 	{
@@ -228,15 +267,17 @@ namespace eso {
 
 	bool CMnfFile::Export (const mnf_exportoptions_t ExportOptions)
 	{
-		CZosftFile ZosftFile;
-
 		PrintError("Loading MNF file '%s'...", ExportOptions.MnfFilename.c_str());
+
+		m_DecompressOodle = !ExportOptions.OodleRawOutput;
 
 		if (!Load(ExportOptions.MnfFilename.c_str()))
 		{
 			PrintError("Failed to load MNF file '%s'...aborting!", ExportOptions.MnfFilename.c_str());
 			return false;
 		}
+
+		CZosftFile ZosftFile(m_Header.Version);
 
 		PrintError("Trying to find and load ZOSFT entry from MNF file!");
 
@@ -397,15 +438,12 @@ namespace eso {
 		if (!ZosftFile.Load(File))
 		{
 			PrintLog("Failed to load ZOSFT sub-file identified by hash 0x%08X!", Hash);
-			//delete [] DataInfo.pRawData;
-			//delete [] DataInfo.pUncompressedData;
 			return false;
 		}
 
-		//delete [] DataInfo.pRawData;
-		//delete [] DataInfo.pUncompressedData;
-
 		LinkToZosft(ZosftFile);
+		CreateDuplicateMap(ZosftFile);
+
 		return true;
 	}
 
@@ -422,6 +460,62 @@ namespace eso {
 		OutputDataInfo.pRawData = nullptr;
 				
 		if (!ReadSubFileData(OutputDataInfo, m_Header, pFile)) return false;
+
+		if (m_Header.Version >= 3) {
+			if (!ParseDataFileVer3(FileEntry, OutputDataInfo)) PrintError("\t%d: Failed to parse V3 data file!", FileEntry.FileIndex);
+			return true;
+		}
+
+		return true;
+	}
+
+
+	bool CMnfFile::ParseDataFileVer3(mnf_filetable_t& FileEntry, dat_subfileinfo_t& DataInfo)
+	{
+		if (DataInfo.pFileDataStart == nullptr) return true;
+		if (DataInfo.pFileDataStart[0] != 0x8C && DataInfo.pFileDataStart[0] != 0xCC) return true;
+		if (DataInfo.pFileDataStart[1] != 0x06 && DataInfo.pFileDataStart[1] != 0x0A) return true;
+
+		if (!m_DecompressOodle) return true;
+
+		int OutputBufferSize = FileEntry.Size + 10000;
+		byte* pOutputBuffer = new byte[OutputBufferSize];
+
+		int BytesDecompressed = g_OodleDecompressFunc(DataInfo.pFileDataStart, DataInfo.FileDataSize, pOutputBuffer, FileEntry.Size, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
+
+		if (BytesDecompressed <= 0)
+		{
+			delete[] pOutputBuffer;
+			return false;
+		}
+		
+		DataInfo.pOoodleCompressedData = DataInfo.pFileDataStart;
+		DataInfo.OodleCompressedSize = DataInfo.FileDataSize;
+
+		DataInfo.pOodleDecompressed = pOutputBuffer;
+		DataInfo.pFileDataStart = pOutputBuffer;
+		DataInfo.FileDataSize = BytesDecompressed;
+
+		if (DataInfo.pFileDataStart[0] != 0x00 || DataInfo.pFileDataStart[1] != 0x00 || DataInfo.pFileDataStart[2] != 0x00 || DataInfo.pFileDataStart[3] != 0x00) return true;
+
+		word HeaderOffset1 = ParseBufferWord(pOutputBuffer + 6, true) + 8;
+
+		if (HeaderOffset1 >= BytesDecompressed) 
+		{
+			PrintLog("Header Offset #1 in V3 DAT file exceeds file size (0x%04X > 0x%08X)!", (dword)HeaderOffset1, BytesDecompressed);
+			return false;
+		}
+
+		dword HeaderOffset2 = ParseBufferDword(pOutputBuffer + HeaderOffset1, true) + 4 + HeaderOffset1;
+
+		if (HeaderOffset2 >= BytesDecompressed) 
+		{
+			PrintLog("Header Offset #2 in V3 DAT file exceeds file size (0x%04X > 0x%08X)!", HeaderOffset2, BytesDecompressed);
+			return false;
+		}
+
+		DataInfo.pFileDataStart = pOutputBuffer + HeaderOffset2;
+		DataInfo.FileDataSize = BytesDecompressed - HeaderOffset2;
 
 		return true;
 	}
@@ -448,7 +542,7 @@ namespace eso {
 		}
 		else
 		{
-			PrintError("Error: Found unknown block type %d in MNF file!", (int) BlockID);
+			PrintError("Error: Found unknown block type %d in MNF file at 0x%" PRIx64 "!", (int) BlockID, File.Tell());
 			return false;
 		}
 				
@@ -469,9 +563,36 @@ namespace eso {
 		if (!File.ReadBytes(m_Header.FileID, MNF_HEADER_MAGICSIZE)) return false;
 		if (memcmp(m_Header.FileID, MNF_MAGIC_ID, MNF_HEADER_MAGICSIZE) != 0) PrintLog("Warning: Did not find the magic bytes of '%s' at start of MNF file!", MNF_MAGIC_ID);
 
+		if (!File.ReadWord(m_Header.Version)) return false;
+
+		if (m_Header.Version >= 3) return ReadHeaderVersion3(File);
+
+		byte TempVersion = 0;
+		if (!File.ReadByte(TempVersion)) return false;
+		m_Header.FileCount = TempVersion;
+				
+		if (!File.ReadDword(m_Header.Type)) return false;
+		if (!File.ReadDword(m_Header.DataSize)) return false;
+
+		return true;
+	}
+
+
+	bool CMnfFile::ReadHeaderVersion3(CBaseFile& File) 
+	{
+		if (!File.ReadDword(m_Header.FileCount)) return false;
+
+		if (m_Header.FileCount > 0) {
+			m_Header.FileTypes.resize(m_Header.FileCount);
+
+			for (dword i = 0; i < m_Header.FileCount; ++i) {
+				word FileType;
+				if (!File.ReadWord(FileType)) return false;
+				m_Header.FileTypes[i] = FileType;
+			}
+		}
+
 		if (!File.ReadWord(m_Header.Unknown1)) return false;
-		if (!File.ReadByte(m_Header.FileCount)) return false;
-		if (!File.ReadDword(m_Header.Unknown2)) return false;
 		if (!File.ReadDword(m_Header.DataSize)) return false;
 
 		return true;
@@ -519,6 +640,14 @@ namespace eso {
 		CFile File;
 
 		if (!EnsurePathExists(OutputPath)) return false;
+		
+		dword ValidIndex = m_DuplicateNameMap[FileEntry.pZosftEntry->Filename];
+
+		if (ValidIndex > 0 && FileEntry.Index != ValidIndex)
+		{
+			PrintError("Warning: Skipping duplicate file '%s' with index %d!", OutputFilename.c_str(), FileEntry.Index);
+			return false;
+		}
 
 		if (!File.Open(OutputFilename.c_str(), "wb")) return false;
 		if (!File.WriteBytes(DataInfo.pFileDataStart, DataInfo.FileDataSize)) return false;
@@ -610,7 +739,7 @@ namespace eso {
 
 		__try
 		{
-			pGrannyFile = _GrannyReadEntireFileFromMemory(DataInfo.FileDataSize, DataInfo.pFileDataStart);
+			pGrannyFile = GrannyReadEntireFileFromMemory(DataInfo.FileDataSize, DataInfo.pFileDataStart);
 		}
 		__except (1) {
 			PrintError("\tError: Expection occurred when parsing Granny file data (file %03u\\%06u.gr2)!", (dword)FileEntry.ArchiveIndex, FileEntry.Index);
@@ -633,17 +762,17 @@ namespace eso {
 			return PrintError("\tError: Failed to parse Granny file data (file %03u\\%06u.gr2)!", (dword)FileEntry.ArchiveIndex, FileEntry.Index);
 		}
 
-		FileInfo_t* pGrannyInfo = _GrannyGetFileInfo(pGrannyFile);
+		FileInfo_t* pGrannyInfo = GrannyGetFileInfo(pGrannyFile);
 
 		if (pGrannyInfo == nullptr)
 		{
-			_GrannyFreeFile(pGrannyFile);
+			GrannyFreeFile(pGrannyFile);
 			return PrintError("\tError: Failed to get Granny file info (file %03u\\%06u.gr2)!", (dword)FileEntry.ArchiveIndex, FileEntry.Index);
 		}
 
 		std::string OrigFile = pGrannyInfo->FromFileName ? pGrannyInfo->FromFileName : "";
 
-		_GrannyFreeFile(pGrannyFile);
+		GrannyFreeFile(pGrannyFile);
 
 		if (OrigFile == "")
 		{
@@ -786,6 +915,7 @@ namespace eso {
 		size_t StartIndex;
 		size_t EndIndex;
 		bool Result;
+		bool SkipEmptyDat = false;
 		double StartTime = GetTimerMS();
 		size_t ArchiveCount = 0;
 		
@@ -808,12 +938,11 @@ namespace eso {
 				}
 			}
 
-
 			for (; i < SortedTable.size(); ++i)
 			{
 				if (SortedTable[i].ArchiveIndex != ExportOptions.ArchiveIndex) 
 				{
-					EndIndex = i-1;
+					EndIndex = i - 1;
 					break;
 				}
 				++ArchiveCount;
@@ -854,13 +983,32 @@ namespace eso {
 
 			if (SortedTable[i].ArchiveIndex != LastArchive)
 			{
-				InputFilename = CreateDataFilename(SortedTable[i].ArchiveIndex);
-				InputFile.Close();
-				PrintError("Loading DAT '%s'...", InputFilename.c_str());
-
-				if (!InputFile.Open(InputFilename, "rb")) continue;
+				SkipEmptyDat = false;
 				LastArchive = SortedTable[i].ArchiveIndex;
+				InputFile.Close();
+
+				InputFilename = CreateDataFilename(SortedTable[i].ArchiveIndex);
+				
+				if (!InputFile.Open(InputFilename, "rb")) 
+				{
+					PrintError("Error: Failed to open DAT '%s'...", InputFilename.c_str());
+					SkipEmptyDat = true;
+					continue;
+				}
+
+				fpos_t FileSize = InputFile.GetSize();
+
+				if (FileSize <= 14) 
+				{
+					PrintError("Skipping empty DAT '%s'...", InputFilename.c_str());
+					SkipEmptyDat = true;
+					continue;
+				}
+
+				PrintError("Loading DAT '%s'...", InputFilename.c_str());
 			}
+
+			if (SkipEmptyDat) continue;
 
 			Result = SaveSubFile(SortedTable[i], ExportOptions.OutputPath, ExportOptions.ConvertDDS, &InputFile, ExportOptions.ExtractSubFileDataType);
 			if (Result) ++SuccessCount;

@@ -50,6 +50,7 @@ namespace eso {
 
 	class CZosftFile 
 	{
+		dword			m_MnfVersion;
 		zosft_header_t	m_Header;
 
 		CZosftFileArray	m_Filenames;
@@ -81,13 +82,15 @@ namespace eso {
 
 	public:
 
-		CZosftFile();
+		CZosftFile(const dword MnfVersion);
 		~CZosftFile();
 		void Destroy ();
 
 		void CheckBlockFormats (void);
 
 		bool DumpFileTable (const char* pFilename);
+
+		size_t GetSize() { return m_FileTable.size(); }
 
 		zosft_filetable_t* LookupIndex (dword FileIndex);
 

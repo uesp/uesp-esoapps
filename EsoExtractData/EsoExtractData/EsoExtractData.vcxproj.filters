@@ -55,6 +55,9 @@
     <ClInclude Include="..\..\common\EsoSubFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\common\oodle\oodle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -105,13 +108,24 @@
     <ClCompile Include="..\..\common\EsoSubFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\common\oodle\oodle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\common\zlib\zdll.lib" />
-    <Library Include="..\..\common\devil\lib\ILU.lib" />
-    <Library Include="..\..\common\devil\lib\ILUT.lib" />
-    <Library Include="..\..\common\devil\lib\DevIL.lib" />
-    <Library Include="granny2.lib">
+    <Library Include="..\..\common\granny\win64\granny2_x64.lib">
+      <Filter>Source Files</Filter>
+    </Library>
+    <Library Include="..\..\common\zlib\lib64\zlib.lib">
+      <Filter>Source Files</Filter>
+    </Library>
+    <Library Include="..\..\common\devil\win64\lib\x64\Release\DevIL.lib">
+      <Filter>Source Files</Filter>
+    </Library>
+    <Library Include="..\..\common\devil\win64\lib\x64\Release\ILU.lib">
+      <Filter>Source Files</Filter>
+    </Library>
+    <Library Include="..\..\common\devil\win64\lib\x64\Release\ILUT.lib">
       <Filter>Source Files</Filter>
     </Library>
   </ItemGroup>

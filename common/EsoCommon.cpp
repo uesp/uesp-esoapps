@@ -622,6 +622,33 @@ bool ConvertDDStoPNG (const byte* pData, const size_t Size, const std::string Fi
 }
 
 
+word ParseBufferWord(const byte* pBuffer, const bool IsBigEndian)
+{
+	word Result = 0;
+
+	memcpy(&Result, pBuffer, sizeof(word));
+
+	if (IsBigEndian) return WordSwap(Result);
+	return Result;
+}
+
+
+dword ParseBufferDword3(const byte* pBuffer, const bool IsBigEndian)
+{
+	dword Result = 0;
+		
+	if (IsBigEndian) 
+	{
+		memcpy(((byte *) &Result) + 1, pBuffer, 3);
+		return DwordSwap(Result);
+	}
+
+	memcpy(&Result, pBuffer, 3);
+
+	return Result;
+}
+
+
 dword ParseBufferDword(const byte* pBuffer, const bool IsBigEndian)
 {
 	dword Result = 0;

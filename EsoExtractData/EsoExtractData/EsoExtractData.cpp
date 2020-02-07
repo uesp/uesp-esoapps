@@ -144,6 +144,12 @@
  * v0.34 -- 30 May 2019
  *		- Fix default for the "-n" / "--filename" option.
  *
+ * v0.40 -- 6 February 2020
+ *		- Changed to a 64 bit build (to support Oodle decompression).
+ *		- Supports the new DAT format introduced in update 25 PTS.
+ *		- Skips empty DAT files which reduces the number of error messages.
+ *		- Added the "--oodleraw" option which saves subfiles in their original Oodle compression format.
+ *
  */
 
 
@@ -165,6 +171,8 @@
 #include "CmdParamHandler.h"
 #include "EsoLangFile.h"
 #include "EsoCsvFile.h"
+#include "oodle/oodle.h"
+#include <memory>
 
 using namespace eso;
 
@@ -256,7 +264,7 @@ struct esosubfile_t
 
 	}
 
-	int GetInputSize(void) { return EndOffset - StartOffset; }
+	int GetInputSize(void) { return (int) (EndOffset - StartOffset); }
 
 };
 
@@ -447,7 +455,7 @@ bool ProcessZOSFT (const TCHAR* pFilename, const char* pOutputPath)
 
 	if (memcmp(pInputBuffer, "ZOSFT", 5) != 0)
 	{
-		PrintError("Warning: Last file is not a ZOSFT format!");
+		PrintError("Warning: File is not a ZOSFT format!");
 		delete[] pInputBuffer;
 		return false;
 	}
@@ -606,7 +614,7 @@ ENDDEFLATE:
 
 	for (size_t i = 0; i < Lines.size(); ++i)
 	{
-		_snprintf(BaseSrcFilename, 200, "%d.dat", i+1);
+		_snprintf(BaseSrcFilename, 200, "%d.dat", (int) i+1);
 		SrcFilename = pOutputPath;
 		SrcFilename += BaseSrcFilename;
 
@@ -1646,28 +1654,30 @@ cmdparamdef_t g_Cmds[] =
 	{ "origlang",		"g", "origlang",		"Use this LANG/CSV/TXT file for source texts when comparing files.",false, true,  1, 0, false, "" },
 	{ "extractsubfile",	"",	 "extractsubfile",	"Extract compressed subfile data (none/combined/seperate).",        false, true,  1, 0, false, "" },
 	{ "noparsegr2",		"",	 "noparsegr2",		"Don't parse GR2 files for their original filename.",               false, true,  0, 0, false, "" },
+	{ "oodleoutput",	"",	 "oodleoutput",		"Output the raw/compressed Oodle files.",                           false, true,  0, 0, false, "" },
 	{ "",   "", "", "", false, false, false, false, "" }
 };
 
 const char g_AppDescription[] = "\
-ExportMnf v0.34 is a simple command line application to load and export files\n\
+ExportMnf v0.40 is a simple command line application to load and export files\n\
 from ESO's MNF and DAT files. Created by Daveh (dave@uesp.net).\n\
 \n\
 WARNING: This app is under constant development and is fragile. User discretion is\n\
 advised.\n\
 ";
 
+
 int _tmain(int argc, _TCHAR* argv[])
 { 
 	CMnfFile GameMnf;
 	CMnfFile EsoMnf;
 	CMnfFile EsoAudioMnf;
-	CZosftFile GameZosft;
-	CZosftFile EsoZosft;
 	mnf_exportoptions_t ExportOptions;
 
 	OpenLog("exportmnf.log");
 
+	if (!LoadOodleLib()) return -1;
+	
 	CCmdParamHandler CmdParamHandler("ExportMnf", g_AppDescription, g_Cmds);
 
 	if (!CmdParamHandler.ParseCommandLine(argc, argv)) 
@@ -1715,6 +1725,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	ExportOptions.IdFilename2 = CmdParamHandler.GetParamValue("idfile2", 0);
 	ExportOptions.OrigLangFilename = CmdParamHandler.GetParamValue("origlang");
 	ExportOptions.ExtractFilename = CmdParamHandler.GetParamValue("filename");
+	ExportOptions.OodleRawOutput = CmdParamHandler.HasParamValue("oodleraw");
 
 	ExportOptions.ExtractSubFileDataType = CmdParamHandler.GetParamValue("extractsubfile");
 	std::transform(ExportOptions.ExtractSubFileDataType.begin(), ExportOptions.ExtractSubFileDataType.end(), ExportOptions.ExtractSubFileDataType.begin(), ::tolower);

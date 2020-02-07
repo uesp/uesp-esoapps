@@ -28,8 +28,20 @@ namespace eso {
 		byte*		pData1;
 		dword		DataSize2;		
 		byte*		pData2;
+
 		byte*		pFileDataStart;
 		dword		FileDataSize;
+
+		//byte*		pFileDataStartV3;
+		//dword		FileDataSizeV3;
+		//byte*		pFooterV3;
+		//dword		FooterSizeV3;
+		//dword		HeaderSizeV3;
+
+		byte*		pOoodleCompressedData;
+		dword		OodleCompressedSize;
+		byte*		pOodleDecompressed;
+
 
 		dat_subfileinfo_t() :
 			ArchiveIndex(0),
@@ -45,9 +57,13 @@ namespace eso {
 			pData1(nullptr),
 			DataSize2(0),
 			pData2(nullptr),
-			pFileDataStart(nullptr)
+			pFileDataStart(nullptr),
+			pOoodleCompressedData(nullptr),
+			OodleCompressedSize(0),
+			pOodleDecompressed(nullptr)
 		{
 		}
+
 
 		~dat_subfileinfo_t() 
 		{
@@ -55,6 +71,11 @@ namespace eso {
 			{
 				delete[] pRawData;
 				delete[] pUncompressedData;
+			}
+
+			if (pOodleDecompressed) {
+				delete[] pOodleDecompressed;
+				pOodleDecompressed = nullptr;
 			}
 		}
 

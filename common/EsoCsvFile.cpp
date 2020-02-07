@@ -7,7 +7,7 @@ namespace eso
 	{
 		int RowCount = 0;
 
-		printf("CSV has %d rows...\n", m_Data.size());
+		printf("CSV has %d rows...\n", (dword) m_Data.size());
 
 		for (auto r = m_Data.begin(); r != m_Data.end(); ++r)
 		{

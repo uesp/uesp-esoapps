@@ -125,7 +125,7 @@ namespace eso
 		bool SaveCombined(FILE* pFile, const int Index)
 		{
 			if (m_pUncompressedData == nullptr || m_UncompressedSize == 0) return false;
-			dword BytesWritten;
+			size_t BytesWritten;
 
 			BytesWritten = fwrite("####", 1, 4, pFile);
 			if (BytesWritten != 4) return false;
@@ -205,7 +205,7 @@ namespace eso
 
 			byte* pFileData = new byte[FileSize + 100];
 
-			long BytesRead = fread(pFileData, 1, FileSize, pFile);
+			size_t BytesRead = fread(pFileData, 1, FileSize, pFile);
 
 			fclose(pFile);
 
@@ -401,7 +401,7 @@ namespace eso
 
 			byte* pFileData = new byte[FileSize + 100];
 
-			long BytesRead = fread(pFileData, 1, FileSize, pFile);
+			size_t BytesRead = fread(pFileData, 1, FileSize, pFile);
 
 			fclose(pFile);
 

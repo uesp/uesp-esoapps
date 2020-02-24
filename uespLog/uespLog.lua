@@ -1055,10 +1055,11 @@
 --			- Fixed icon for the Pellitine style.
 --			- Added new styles: Sunspire, Dragonguard, Stag's of Zen, Moongrave Fane
 --
---		-- v2.11 --
+--		-- v2.20 -- 24 February 2020
 --			- Updated runebox data.
 --			- Updated game time clock to match other clock addons (lost one day and shifted day of the week by one).
 --			- Logs extra data for quest gold and experience rewards.
+--			- Updated sales data with latest NA prices.
 --
 
 
@@ -1071,8 +1072,8 @@ end
 --	GLOBAL DEFINITIONS
 uespLog = uespLog or {}
 
-uespLog.version = "2.10"
-uespLog.releaseDate = "21 October 2019"
+uespLog.version = "2.20"
+uespLog.releaseDate = "24 February 2020"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

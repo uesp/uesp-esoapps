@@ -42,6 +42,7 @@ uespLog.UESP_POWERTYPE_BONETYRANT = -69
 uespLog.UESP_POWERTYPE_GRAVELORD = -70
 uespLog.UESP_POWERTYPE_SPELLDAMAGECAPPED = -71
 uespLog.UESP_POWERTYPE_MAGICKAWITHWD = -72
+uespLog.UESP_POWERTYPE_MAGICKACAPPED = -73
 
 uespLog.SKILLCOEF_CHECK_ABILITYID = 28302
 uespLog.SKILLCOEF_CHECK_INDEX = 2
@@ -77,12 +78,16 @@ uespLog.SKILLCOEF_MECHANIC_NAMES = {
 	[uespLog.UESP_POWERTYPE_BONETYRANT] = "Bone Tyrant Skills Slotted",
 	[uespLog.UESP_POWERTYPE_GRAVELORD] = "Grave Lord Skills Slotted",
 	[uespLog.UESP_POWERTYPE_SPELLDAMAGECAPPED] = "Spell Damage Capped",
-	[uespLog.UESP_POWERTYPE_MAGICKAWITHWD] = "Magicka and Weapon Damage"
+	[uespLog.UESP_POWERTYPE_MAGICKAWITHWD] = "Magicka and Weapon Damage",
+	[uespLog.UESP_POWERTYPE_MAGICKACAPPED] = "Magicka Capped",
 }
 
 
 -- Some skills have different mechanics that what the game data says
 uespLog.SKILLCOEF_SPECIALTYPES = {
+
+	-- Bash
+	[21970] = POWERTYPE_ULTIMATE,
 
 	-- NightBlade Grim Focus/Merciless Resolve/Relentless Focus
 	[61919] = POWERTYPE_MAGICKA,
@@ -445,10 +450,10 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[34061] = POWERTYPE_ULTIMATE,
 	
 	-- Dragonknight Engulfing Flames
-	[20930] = { [5] = uespLog.UESP_POWERTYPE_SPELLDAMAGECAPPED },
-	[34042] = { [5] = uespLog.UESP_POWERTYPE_SPELLDAMAGECAPPED },
-	[34045] = { [5] = uespLog.UESP_POWERTYPE_SPELLDAMAGECAPPED },
-	[34048] = { [5] = uespLog.UESP_POWERTYPE_SPELLDAMAGECAPPED },
+	[20930] = { [5] = uespLog.UESP_POWERTYPE_MAGICKACAPPED },
+	[34042] = { [5] = uespLog.UESP_POWERTYPE_MAGICKACAPPED },
+	[34045] = { [5] = uespLog.UESP_POWERTYPE_MAGICKACAPPED },
+	[34048] = { [5] = uespLog.UESP_POWERTYPE_MAGICKACAPPED },
 	
 	-- Dragonknight Flames of Oblivion
 	[32853] = POWERTYPE_ULTIMATE,
@@ -5437,6 +5442,9 @@ function uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 	elseif (mechanic == uespLog.UESP_POWERTYPE_SPELLDAMAGECAPPED) then
 		x = skill.sd
 		y = 0
+	elseif (mechanic == uespLog.UESP_POWERTYPE_MAGICKACAPPED) then
+		x = skill.mag
+		y = skill.sd
 	elseif (mechanic == uespLog.UESP_POWERTYPE_MAGICKAWITHWD) then
 		x = skill.mag
 		y = skill.wd

@@ -1061,6 +1061,9 @@
 --			- Logs extra data for quest gold and experience rewards.
 --			- Updated sales data with latest NA prices.
 --
+--		-- v2.21 -- 
+--			- Warning is displayed for /uespmineitems and /uespdump if logging is disabled.
+--
 
 
 	-- Update 18 prefix
@@ -8096,6 +8099,10 @@ end
 SLASH_COMMANDS["/uespdump"] = function(cmd)
 	local helpString = "Use one of: recipes, skills, achievements, inventory, globals, cp"
 	local cmds, firstCmd = uespLog.SplitCommands(cmd)
+	
+	if (not uespLog.IsLogData()) then
+		uespLog.MsgColor(uespLog.mineColorWarning, "WARNING -- Logging is currently disabled. Enable with '/uesplog on'.")
+	end
 
 	if (#cmds <= 0) then
 		uespLog.Msg(helpString)
@@ -11852,6 +11859,10 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		uespLog.MsgColor(uespLog.mineColor, "Use of /uespmineitems (/umi) is currently disabled!")
 		uespLog.MsgColor(uespLog.mineColor, ".         Enable with: /uespmineitems enable")
 		return
+	end
+	
+	if (not uespLog.IsLogData()) then
+		uespLog.MsgColor(uespLog.mineColorWarning, "WARNING -- Logging is currently disabled. Enable with '/uesplog on'.")
 	end
 	
 	if (command == "start" or command == "begin") then
@@ -18908,5 +18919,4 @@ end
 
 
 --uespLog.MineSingleItemSafe_FinishCallback = uespLog.StartNextMineTest
-
 

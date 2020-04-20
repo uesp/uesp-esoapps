@@ -148,7 +148,6 @@ mkdir "$ESOINPUTPATH"
 mkdir "$GAMEINPUTPATH"
 ./export/EsoExtractData.exe "$GAMEDATAFILE" "$GAMEINPUTPATH/" -z "$GAMEINPUTPATH/zosft.txt" -m "$GAMEINPUTPATH/mnf.txt"
 
-
 echo "Converting DDS to PNG..."
 ./convertdds.bat "$GAMEINPUTPATH/esoui/"
 ./convertdds.bat "$ESOINPUTPATH/esoui/"

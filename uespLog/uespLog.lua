@@ -1061,26 +1061,47 @@
 --			- Logs extra data for quest gold and experience rewards.
 --			- Updated sales data with latest NA prices.
 --
---		-- v2.21 -- 
+--		-- v2.21 -- 4 May 2020
+--			- Fixed the map coordinates being displayed after the map window was closed.
+--			- Improved logging of quest data. Among other things, quest IDs are logged when the quest is removed in an 
+--			  attempt to better identify quests with identical names.
 --			- Warning is displayed for /uespmineitems and /uespdump if logging is disabled.
+--			- Fixed style entry for Moongrave Fane.
+--			- Added inventory icon for the unique style.
+--
+--		-- v2.30 -- Greymoor fixes
+--			- Increased max potion effect to 32 when mining potion item data.
+--			- Increased maximum item ID for auto-mining to 180,000.
+--			- Added new data when logging skills (toggle and cost over time).
+--			- Added style entries for Shield of Senchal, Blackreach Vanguard, Ancestral High Elf, Ancestral Orc,
+--			  Ancestral Nord, Icreach Coven, and Pyre Watch.
+--			- Updated collectible runebox IDs.
+--			- Logging of Mythic item quality data is now supported (GetItemLinkDisplayQuality()).
 --
 
 
-	-- Update 18 prefix
-if (CRAFTING_TYPE_JEWELRYCRAFTING == nil) then
-	CRAFTING_TYPE_JEWELRYCRAFTING = 7
+-- Functions needed for update 26 code
+if (IsAbilityDurationToggled == nil) then
+	IsAbilityDurationToggled = function(id) return nil end
 end
 
+if (GetAbilityCostOverTime == nil) then
+	GetAbilityCostOverTime = function(id) return nil, nil, nil end
+end
+
+if (GetItemLinkDisplayQuality == nil) then
+	GetItemLinkDisplayQuality = GetItemLinkQuality
+end
 
 --	GLOBAL DEFINITIONS
 uespLog = uespLog or {}
 
-uespLog.version = "2.20"
-uespLog.releaseDate = "24 February 2020"
+uespLog.version = "2.21"
+uespLog.releaseDate = "4 May 2020"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
-uespLog.MAX_LOGSTRING_LENGTH = 1900
+uespLog.MAX_LOGSTRING_LENGTH = 19000
 
 uespLog.TAB_CHARACTER = "\t"
 uespLog.MIN_TARGET_CHANGE_TIMEMS = 2000
@@ -1300,6 +1321,10 @@ uespLog.ignoredNPCs = {
 	["Lesser Sea Adder"] = 1,	-- Summerset
 	["Fledgeling Gryphon"] = 1,	-- Summerset
 	["Swamp Jelly"] = 1, 	-- Murkmire
+	["Elk"] = 1,	-- Greymoore
+	["Cockroach"] = 1,	-- Greymoore
+	["Winter Moth"] = 1,	-- Greymoore
+	["Vale Buck Deer"] = 1,	-- Greymoore
 }
 
 uespLog.lastTargetData = {
@@ -1686,7 +1711,7 @@ uespLog.isAutoMiningItems = false
 uespLog.MINEITEMS_AUTODELAY = 1000 -- Delay in ms
 uespLog.MINEITEMS_AUTOLOOPCOUNT = 400
 uespLog.MINEITEMS_AUTOMAXLOOPCOUNT = 400
-uespLog.MINEITEM_AUTO_MAXITEMID = 170000
+uespLog.MINEITEM_AUTO_MAXITEMID = 180000
 uespLog.mineItemsAutoNextItemId = 1
 uespLog.mineItemsAutoNextListIndex = 1
 uespLog.mineItemsAutoLastItemId = uespLog.MINEITEM_AUTO_MAXITEMID
@@ -1711,7 +1736,7 @@ uespLog.IdCheckTotalCount = 0
 uespLog.mineItemReloadDelay = uespLog.MINEITEM_AUTORELOAD_DELTATIMEMS
 uespLog.mineItemPotionDataEffectIndex = 0
 uespLog.mineItemPotionDataListIndex = 1
-uespLog.MINEITEM_POTION_MAXEFFECTINDEX = 31
+uespLog.MINEITEM_POTION_MAXEFFECTINDEX = 32
 uespLog.MINEITEM_POTION_ITEMID = 54339
 uespLog.MINEITEM_POISON_ITEMID = 76847
 uespLog.MINEITEM_POTION_MAGICITEMID = 1	-- 1234567
@@ -2100,19 +2125,18 @@ uespLog.ITEMCHANGE_IGNORE_FIELDS = {
 
 
 uespLog.RUNEBOX_COLLECTIBLE_IDS = {
-        [79329] = 148,  -- Xivkyn Dreadguard
-        [79330] = 147,  -- Xivkyn Tormentor
-        [79331] = 146,  -- Xivkyn Augur
-        [83516] = 439,  -- Pumpkin Spectre Mask
-        [83517] = 440,  -- Scarecrow Spectre Mask
-        [96391] = 601,  -- Mud Ball Pouch
-        [96392] = 597,  -- Sword-Swallower's Blade
-        [96393] = 598,  -- Juggler's Knives
-        [96394] = 599,  -- Pint of Belching
-        [96395] = 600,  -- Fire-Breather's Torches
-        [96951] = 753,  -- Nordic Bather's Towel
-        [96952] = 755,  -- Colovian Fur Hood
-        [96953] = 754,  -- Colovian Filigreed Hood
+		[79329] = 148,  		-- Xivkyn Dreadguard
+        [79330] = 147, 			-- Xivkyn Tormentor
+        [79331] = 146, 			-- Xivkyn Augur
+        [83516] = 439, 			-- Pumpkin Spectre Mask
+        [83517] = 440, 			-- Scarecrow Spectre Mask
+        [96391] = 601, 			-- Mud Ball Pouch
+        [96392] = 597, 			-- Sword-Swallower's Blade
+        [96393] = 598, 			-- Juggler's Knives
+        [96395] = 600, 			-- Fire-Breather's Torches
+        [96951] = 753, 			-- Nordic Bather's Towel
+        [96952] = 755, 			-- Colovian Fur Hood
+        [96953] = 754, 			-- Colovian Filigreed Hood
         [119692] = 1108,        -- Cherry Blossom Branch
         [124658] = 1232,        -- Dwarven Theodolite
         [124659] = 1230,        -- Sixth House Robe
@@ -2297,37 +2321,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [147364] = 6173,        -- Abnur Tharn's Staff
         [147428] = 6174,        -- Valkyn Skoria's Mask
         [147429] = 6175,        -- Valkyn Skoria's Shoulder
-        [147436] = 6143,        -- Prophet's Sandals
-        [147437] = 6144,        -- Prophet's Wraps
-        [147438] = 6145,        -- Prophet's Robe
-        [147439] = 6142,        -- Prophet's Shawl
-        [147440] = 6146,        -- Prophet's Staff
-        [147441] = 6155,        -- Lyris Titanborn's Cuirass
-        -- [147442] = ?,        -- Lyris Titanborn's Helmet
-        [147443] = 6153,        -- Lyris Titanborn's Greaves
-        [147444] = 6152,        -- Lyris Titanborn's Pauldrons
-        [147445] = 6151,        -- Lyris Titanborn's Sabatons
-        [147446] = 6150,        -- Lyris Titanborn's Gauntlets
-        [147447] = 6149,        -- Lyris Titanborn's Girdle
-        [147448] = 6148,        -- Lyris Titanborn's Battle Axe
-        [147449] = 6147,        -- Lyris Titanborn's Shield
-        [147450] = 6157,        -- Sai Sahan's Jack
-        [147451] = 6158,        -- Sai Sahan's Guards
-        [147452] = 6159,        -- Sai Sahan's Arm Cops
-        [147453] = 6160,        -- Sai Sahan's Boots
-        [147454] = 6161,        -- Sai Sahan's Bracers
-        [147455] = 6162,        -- Sai Sahan's Belt
-        [147456] = 6163,        -- Sai Sahan's Greatsword
-        [147457] = 6164,        -- Sai Sahan's Sword
-        [147458] = 6165,        -- Abnur Tharn's Jerkin
-        -- [147459] = ?,        -- Abnur Tharn's Hat
-        [147460] = 6167,        -- Abnur Tharn's Breeches
-        [147461] = 6168,        -- Abnur Tharn's Epaulets
-        [147462] = 6169,        -- Abnur Tharn's Shoes
-        [147463] = 6170,        -- Abnur Tharn's Gloves
-        [147464] = 6171,        -- Abnur Tharn's Sash
-        [147465] = 6172,        -- Abnur Tharn's Dagger
-        [147466] = 6173,        -- Abnur Tharn's Staff
         [147467] = 6097,        -- Cadwell's "Battle Axe"
         [147468] = 6098,        -- Cadwell's "Maul"
         [147469] = 6099,        -- Cadwell's "Greatsword"
@@ -2385,7 +2378,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [147661] = 6295,        -- Prophet's Breeches
         [147767] = 6388,        -- Lord Warden's Mask
         [147768] = 6389,        -- Lord Warden's Shoulder
-        [147928] = 6381,        -- Grisly Mummy Tabby
         [151561] = 5463,        -- Shadowrend Greatsword
         [151562] = 5464,        -- Shadowrend Bow
         [151563] = 5465,        -- Shadowrend Shield
@@ -2521,11 +2513,11 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         -- [154835] = ?,        -- Sentinel of Rkugamz Mask
         -- [156625] = ?,        -- Kra'gh Mask
         [156626] = 1338,        -- Hollowjack Spectre Mask
-        -- [156672] = ?,        -- Battleground Runner Waster
-        -- [156673] = ?,        -- Battleground Runner Staff
-        -- [156674] = ?,        -- Battleground Runner Bow
-        -- [156675] = ?,        -- Battleground Runner Bludgeon
-        -- [156676] = ?,        -- Battleground Runner Shield
+        [156672] = 6786,        -- Battleground Runner Waster
+        [156673] = 6785,        -- Battleground Runner Staff
+        [156674] = 6783,        -- Battleground Runner Bow
+        [156675] = 6782,        -- Battleground Runner Bludgeon
+        [156676] = 6784,        -- Battleground Runner Shield
         [156681] = 7300,        -- Skaal Explorer Battle Axe
         [156682] = 7301,        -- Skaal Explorer Maul
         [156683] = 7302,        -- Skaal Explorer Greatsword
@@ -2622,6 +2614,72 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [156828] = 6831,        -- Opal Troll King Battle Axe
         [156829] = 6832,        -- Opal Troll King Bow
         [156830] = 6833,        -- Opal Troll King Shield
+        -- [156833] = ?,        -- <SETNAME> Shoulder
+        -- [156834] = ?,        -- <SETNAME> Mask
+        [156835] = 7330,        -- Slimecraw's Shoulder
+        [156836] = 7329,        -- Slimecraw's Mask
+        [156837] = 7425,        -- Stormfist Shoulder
+        [156838] = 7424,        -- Stormfist Mask
+        [156839] = 7331,        -- Jephrine Paladin Cuirass
+        [156840] = 7338,        -- Knight of the Circle Cuirass
+        [156841] = 7339,        -- Knight of the Circle Helm
+        [159472] = 7332,        -- Jephrine Paladin Helm
+        [159473] = 7333,        -- Jephrine Paladin Greaves
+        [159474] = 7334,        -- Jephrine Paladin Pauldrons
+        [159475] = 7335,        -- Jephrine Paladin Sabatons
+        [159476] = 7336,        -- Jephrine Paladin Gauntlets
+        [159477] = 7337,        -- Jephrine Paladin Girdle
+        [159478] = 7375,        -- Jephrine Paladin Greatsword
+        [159479] = 7376,        -- Jephrine Paladin Bow
+        [159480] = 7377,        -- Jephrine Paladin Shield
+        [159481] = 7378,        -- Jephrine Paladin Staff
+        [159482] = 7379,        -- Jephrine Paladin Sword
+        [159483] = 7331,        -- Jephrine Paladin Cuirass
+        [159484] = 7332,        -- Jephrine Paladin Helm
+        [159485] = 7333,        -- Jephrine Paladin Greaves
+        [159486] = 7334,        -- Jephrine Paladin Pauldrons
+        [159487] = 7335,        -- Jephrine Paladin Sabatons
+        [159488] = 7336,        -- Jephrine Paladin Gauntlets
+        [159489] = 7337,        -- Jephrine Paladin Girdle
+        [159490] = 7375,        -- Jephrine Paladin Greatsword
+        [159491] = 7376,        -- Jephrine Paladin Bow
+        [159492] = 7377,        -- Jephrine Paladin Shield
+        [159493] = 7378,        -- Jephrine Paladin Staff
+        [159494] = 7379,        -- Jephrine Paladin Sword
+        [159505] = 7340,        -- Knight of the Circle Greaves
+        [159506] = 7341,        -- Knight of the Circle Pauldrons
+        [159507] = 7342,        -- Knight of the Circle Sabatons
+        [159508] = 7343,        -- Knight of the Circle Gauntlets
+        [159509] = 7380,        -- Knight of the Circle Maul
+        [159510] = 7381,        -- Knight of the Circle Bow
+        [159511] = 7382,        -- Knight of the Circle Shield
+        [159512] = 7383,        -- Knight of the Circle Staff
+        [159513] = 7384,        -- Knight of the Circle Sword
+        [159574] = 7426,        -- Balorgh Mask
+        [159575] = 7427,        -- Balorgh Shoulder
+        [159691] = 7683,        -- Scourge Harvester Shoulder
+        [159692] = 7682,        -- Scourge Harvester Mask
+        [160516] = 7750,        -- Domihaus Shoulder
+        [160517] = 7749,        -- Domihaus Mask
+        [160526] = 7785,        -- Nerien'eth's Shoulder
+        [160527] = 7784,        -- Nerien'eth's Mask
+        [165900] = 8116,        -- Snowhawk Mage Jerkin
+        [165901] = 8117,        -- Snowhawk Mage Hat
+        [165902] = 8118,        -- Snowhawk Mage Breeches
+        [165903] = 8119,        -- Snowhawk Mage Epaulets
+        [165904] = 8120,        -- Snowhawk Mage Shoes
+        [165905] = 8121,        -- Snowhawk Mage Gloves
+        [165906] = 8123,        -- Snowhawk Mage Robe
+        [165907] = 8122,        -- Snowhawk Mage's Sash
+        [165954] = 8116,        -- Snowhawk Mage Jerkin
+        [165955] = 8117,        -- Snowhawk Mage Hat
+        [165956] = 8118,        -- Snowhawk Mage Breeches
+        [165957] = 8119,        -- Snowhawk Mage Epaulets
+        [165958] = 8120,        -- Snowhawk Mage Shoes
+        [165959] = 8121,        -- Snowhawk Mage Gloves
+        [165960] = 8123,        -- Snowhawk Mage Robe
+        [165961] = 8122,        -- Snowhawk Mage's Sash
+        [166468] = 7595,        -- Reach-Mage Ceremonial Skullcap
 }
 
 function uespLog.BoolToOnOff(flag)
@@ -4907,7 +4965,7 @@ function uespLog.ShowItemInfo (itemLink)
 	local isVendorTrash = IsItemLinkVendorTrash(itemLink)
 	local maxSiegeHP = GetItemLinkSiegeMaxHP(itemLink)
 	local siegeType = GetItemLinkSiegeType(itemLink)
-	local quality = GetItemLinkQuality(itemLink)
+	local quality = GetItemLinkDisplayQuality(itemLink)
 	local isUnique = IsItemLinkUnique(itemLink)
 	local isUniqueEquipped = IsItemLinkUniqueEquipped(itemLink)
 	local equipType1 = GetItemLinkEquipType(itemLink)
@@ -5459,13 +5517,38 @@ function uespLog.OnSellReceipt (eventCode, itemLink, itemQuantity, money)
 end
 
 
+function uespLog.GetQuestUniqueDataId(journalIndex, questName, poiIndex)
+
+	if (questName == nil or poiIndex == nil) then
+		local _
+		questName = GetJournalQuestInfo(journalIndex)
+		_, _, _, poiIndex = GetJournalQuestLocationInfo(journalIndex)
+	end
+		
+	if (questName == "A Bitter Pill") then
+		if (poiIndex <= 100) then
+			return questName .. "1"
+		else
+			return questName .. "2"
+		end
+	end
+		
+	if (questName == nil or questName == "") then
+		return "nil"
+	end
+	
+	return questName
+end
+
+
 function uespLog.OnQuestAdded (eventCode, journalIndex, questName, objectiveName)
 	local logData = { }
 	local questStageData = uespLog.GetCharQuestStageData()
 	local questUniqueIds = uespLog.GetCharQuestUniqueIds()
+	local questDataId = uespLog.GetQuestUniqueDataId(journalIndex)
 	
-	questStageData[questName] = 1
-	questUniqueIds[questName] = GetGameTimeMilliseconds()
+	questStageData[questDataId] = 1
+	questUniqueIds[questDataId] = GetGameTimeMilliseconds()
 	
 	--logData.event = "QuestAdded"
 	--logData.quest = questName
@@ -5492,9 +5575,9 @@ function uespLog.LogQuestData (journalIndex)
 	local logData = { }
 	local numSteps = GetJournalQuestNumSteps(journalIndex)
 	local questName = GetJournalQuestName(journalIndex)
-	
-	local questStageIndex = uespLog.GetCharQuestStageData()[questName] or nil
-	local questUniqueId = uespLog.GetCharQuestUniqueIds()[questName] or 0
+	local questDataId = uespLog.GetQuestUniqueDataId(journalIndex)
+	local questStageIndex = uespLog.GetCharQuestStageData()[questDataId] or nil
+	local questUniqueId = uespLog.GetCharQuestUniqueIds()[questDataId] or 0
 	
 	logData.event = "Quest::Start"
 	logData.level = GetJournalQuestLevel(journalIndex)
@@ -5525,7 +5608,8 @@ end
 function uespLog.LogQuestRewardData (journalIndex)
 	local questName = GetJournalQuestName(journalIndex)
 	local numRewards = GetJournalQuestNumRewards(journalIndex)
-	local questUniqueId = uespLog.GetCharQuestUniqueIds()[questName] or 0
+	local questDataId = uespLog.GetQuestUniqueDataId(journalIndex)
+	local questUniqueId = uespLog.GetCharQuestUniqueIds()[questDataId] or 0
 	local logData = { }
 	
 	for rewardIndex = 1, numRewards do
@@ -5541,13 +5625,13 @@ function uespLog.LogQuestRewardData (journalIndex)
 		uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 		
 		if (logData.type == REWARD_TYPE_MONEY) then
-			uespLog.LogQuestGoldReward(questName, logData.count)
+			uespLog.LogQuestGoldReward(questName, logData.count, questUniqueId)
 		end
 	end
 end
 
 
-function uespLog.LogQuestGoldReward(questName, goldReward)
+function uespLog.LogQuestGoldReward(questName, goldReward, uniqueId)
 	local logData = {}
 	
 	logData.event = "QuestGoldReward"
@@ -5556,12 +5640,13 @@ function uespLog.LogQuestGoldReward(questName, goldReward)
 	logData.level = GetUnitLevel("player")
 	logData.effLevel = GetUnitEffectiveLevel("player")
 	logData.esoPlus = IsESOPlusSubscriber()
+	logData.uniqueId = uniqueId
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 end
 
 
-function uespLog.LogQuestExperienceReward(questName, xpReward)
+function uespLog.LogQuestExperienceReward(questName, xpReward, uniqueId)
 	local logData = {}
 	
 	if (xpReward <= 0) then
@@ -5571,6 +5656,7 @@ function uespLog.LogQuestExperienceReward(questName, xpReward)
 	logData.event = "QuestXPReward"
 	logData.xp = xpReward
 	logData.quest = questName
+	logData.uniqueId = uniqueId
 	logData.level = GetUnitLevel("player")
 	logData.effLevel = GetUnitEffectiveLevel("player")
 	logData.esoPlus = IsESOPlusSubscriber()
@@ -5582,8 +5668,9 @@ end
 function uespLog.LogQuestStepData (journalIndex)
 	local numSteps = GetJournalQuestNumSteps(journalIndex)
 	local questName = GetJournalQuestName(journalIndex)
-	local questStageIndex = uespLog.GetCharQuestStageData()[questName] or nil
-	local questUniqueId = uespLog.GetCharQuestUniqueIds()[questName] or 0
+	local questDataId = uespLog.GetQuestUniqueDataId(journalIndex)
+	local questStageIndex = uespLog.GetCharQuestStageData()[questDataId] or nil
+	local questUniqueId = uespLog.GetCharQuestUniqueIds()[questDataId] or 0
 	local logData = {}
 
 	for stepIndex = 1, numSteps do
@@ -5599,7 +5686,7 @@ function uespLog.LogQuestStepData (journalIndex)
 			logData.visible = -1
 		end
 		
-		uespLog.AppendDataToLog("all", logData, logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
+		uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 		
 		local numConditions = logData.numCond
 		
@@ -5634,32 +5721,56 @@ function uespLog.LogQuestStepData (journalIndex)
 	
 end
 
+uespLog.lastQuestRemovedJournalIndex = -1
+uespLog.lastQuestRemovedDataId = -1
 
-function uespLog.OnQuestRemoved (eventCode, isCompleted, questIndex, questName, zoneIndex, poiIndex)
+
+function uespLog.OnQuestRemoved (eventCode, isCompleted, journalIndex, questName, zoneIndex, poiIndex, questId)
 	local logData = { }
 	local questStageData = uespLog.GetCharQuestStageData()
 	local questUniqueIds = uespLog.GetCharQuestUniqueIds()
+	local questDataId = uespLog.GetQuestUniqueDataId(journalIndex, questName, poiIndex)
 	
-	questStageData[questName] = nil
-	questUniqueIds[questName] = nil
-	
+	uespLog.lastQuestRemovedJournalIndex = journalIndex
+	uespLog.lastQuestRemovedDataId = questDataId
+		
 	logData.event = "QuestRemoved"
 	logData.quest = questName
 	logData.completed = isCompleted
 	logData.zoneIndex = zoneIndex
 	logData.poiIndex = poiIndex
-	
+	logData.questId = questId
+	logData.journalIndex = journalIndex
+	logData.stageIndex = questStageData[questDataId] or nil
+	logData.uniqueId = questUniqueIds[questDataId] or 0
+		
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 
 	uespLog.MsgType(uespLog.MSG_QUEST, "Quest "..tostring(questName).." removed!")
 	
-	uespLog.DailyQuestOnQuestComplete(questName, questIndex, isCompleted)
+	uespLog.DailyQuestOnQuestComplete(questName, journalIndex, isCompleted)
+	
+		-- Reset saved data in a bit so other events yet to be called can use it
+	zo_callLater(function() 
+		uespLog.ResetSavedQuestData(questDataId) 
+	end, 2000)
+end
+
+
+function uespLog.ResetSavedQuestData(questDataId)
+	local questStageData = uespLog.GetCharQuestStageData()
+	local questUniqueIds = uespLog.GetCharQuestUniqueIds()
+	
+	questStageData[questDataId] = nil
+	questUniqueIds[questDataId] = nil
 end
 
 
 function uespLog.OnQuestComplete(eventCode, questName, level, previousExperience, currentExperience, championPoints, questType, instanceDisplayType)
 	local logData = { }
-	local questUniqueId = uespLog.GetCharQuestUniqueIds()[questName] or 0
+	local journalIndex = uespLog.lastQuestRemovedJournalIndex
+	local questDataId = uespLog.lastQuestRemovedDataId
+	local questUniqueId = uespLog.GetCharQuestUniqueIds()[questDataId] or 0
 	
 	logData.event = "QuestComplete"
 	logData.quest = questName
@@ -5669,11 +5780,14 @@ function uespLog.OnQuestComplete(eventCode, questName, level, previousExperience
 	logData.displayType = instanceDisplayType
 	logData.xp = currentExperience - previousExperience
 	logData.uniqueId = questUniqueId
+	logData.journalIndex = journalIndex
 		
 	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
 	
-	uespLog.LogQuestExperienceReward(questName, logData.xp)
+	uespLog.LogQuestExperienceReward(questName, logData.xp, questUniqueId)
 	
+	uespLog.lastQuestRemovedJournalIndex = -1
+	uespLog.lastQuestRemovedDataId = -1
 	--uespLog.DebugExtraMsg("Quest "..tostring(questName).." Complete: "..tostring(logData.xp).." XP")
 end
 
@@ -6015,11 +6129,12 @@ end
 
 function uespLog.OnQuestAdvanced (eventCode, journalIndex, questName, isPushed, isComplete, mainStepChanged)
 	local logData = { }
+	local questDataId = uespLog.GetQuestUniqueDataId(journalIndex)
 	local questStageData = uespLog.GetCharQuestStageData()
-	local questUniqueId = uespLog.GetCharQuestUniqueIds()[questName] or 0
+	local questUniqueId = uespLog.GetCharQuestUniqueIds()[questDataId] or 0
 	
-	if (questStageData[questName] ~= nil) then
-		questStageData[questName] = questStageData[questName] + 1
+	if (questStageData[questDataId] ~= nil) then
+		questStageData[questDataId] = questStageData[questDataId] + 1
 	end	
 	
 	logData.event = "QuestAdvanced"
@@ -6027,7 +6142,7 @@ function uespLog.OnQuestAdvanced (eventCode, journalIndex, questName, isPushed, 
 	logData.isPushed = isPushed
 	logData.isComplete = isComplete
 	logData.mainStepChanged = mainStepChanged
-	logData.stageIndex = questStageData[questName]
+	logData.stageIndex = questStageData[questDataId]
 	logData.uniqueId = questUniqueId
 	logData.stepIndex, logData.condIndex = uespLog.FindQuestCurrentStage(journalIndex)
 	
@@ -8663,8 +8778,10 @@ function uespLog.DumpSkill(abilityId, extraData)
 	local description = GetAbilityDescription(abilityId)
 	local upgradeLines = uespLog.FormatSkillUpgradeLines(GetAbilityUpgradeLines(abilityId))
 	local effectLines = uespLog.FormatSkillEffectLines(GetAbilityNewEffectLines(abilityId))
+	local isToggle = IsAbilityDurationToggled(abilityId)
+	local costTime, mechanicTime, chargeFreqMS = GetAbilityCostOverTime(abilityId)
 	local logData = { }
-	
+		
 	extraData = extraData or {}
 	
 	if (GetAbilityBuffType ~= nil) then
@@ -8685,6 +8802,10 @@ function uespLog.DumpSkill(abilityId, extraData)
 	logData.angleDistance = angleDistance
 	logData.duration = duration
 	logData.cost = cost
+	logData.isToggle = isToggle
+	logData.costTime = costTime
+	logData.mechanicTime = mechanicTime
+	logData.chargeFreqMS = chargeFreqMS
 	logData.mechanic = mechanic
 	logData.icon = GetAbilityIcon(abilityId)
 	logData.perm = IsAbilityPermanent(abilityId)
@@ -8781,6 +8902,10 @@ function uespLog.DumpSkill(abilityId, extraData)
 		logData.target3 = tostring(GetAbilityTargetDescription(abilityId, 3))
 		logData.target4 = tostring(GetAbilityTargetDescription(abilityId, 4))
 		
+		logData.costTime1, logData.mechanicTime1, logData.chargeFreqMS1 = GetAbilityCostOverTime(abilityId, 1)
+		logData.costTime2, logData.mechanicTime2, logData.chargeFreqMS2 = GetAbilityCostOverTime(abilityId, 2)
+		logData.costTime3, logData.mechanicTime3, logData.chargeFreqMS3 = GetAbilityCostOverTime(abilityId, 3)
+		logData.costTime4, logData.mechanicTime4, logData.chargeFreqMS4 = GetAbilityCostOverTime(abilityId, 4)
 	else
 		logData.desc1 = nil
 		logData.desc2 = nil
@@ -9502,7 +9627,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 		logData.maxSiegeHP = GetItemLinkSiegeMaxHP(itemLink)
 	end
 
-	logData.quality = GetItemLinkQuality(itemLink)
+	logData.quality = GetItemLinkDisplayQuality(itemLink)
 	
 	isUnique = IsItemLinkUnique(itemLink)
 	if (isUnique) then flagString = flagString .. "Unique " end
@@ -9802,7 +9927,7 @@ function uespLog.LogItemLinkShort (itemLink, event, extraData)
 		logData.maxSiegeHP = GetItemLinkSiegeMaxHP(itemLink)
 	end
 	
-	logData.quality = GetItemLinkQuality(itemLink)
+	logData.quality = GetItemLinkDisplayQuality(itemLink)
 
 	uespLog.AppendDataToLog("all", logData, extraData)
 end
@@ -10994,7 +11119,7 @@ function uespLog.MineEnchantCharges()
 					local maxCharges = GetItemLinkMaxEnchantCharges(itemLink)
 					local numCharges = GetItemLinkNumEnchantCharges(itemLink)
 					local hasCharges = DoesItemLinkHaveEnchantCharges(itemLink)
-					local realQuality = GetItemLinkQuality(itemLink)
+					local realQuality = GetItemLinkDisplayQuality(itemLink)
 					local realLevel = GetItemLinkRequiredLevel(itemLink)
 					local realCP = GetItemLinkRequiredChampionPoints(itemLink)
 					local weaponPower = GetItemLinkWeaponPower(itemLink)
@@ -11681,7 +11806,7 @@ function uespLog.MineItemsAutoStatus ()
 	
 	if (uespLog.mineItemPotionData) then
 		uespLog.MsgColor(uespLog.mineColor, "Mining item potion data.")
-		uespLog.MsgColor(uespLog.mineColor, "ext potion effect index is "..tostring(uespLog.mineItemPotionDataEffectIndex))
+		uespLog.MsgColor(uespLog.mineColor, "Next potion effect index is "..tostring(uespLog.mineItemPotionDataEffectIndex))
 	elseif (uespLog.mineItemOnlyLevel >= 0 and uespLog.mineItemOnlySubType >= 0) then
 		uespLog.MsgColor(uespLog.mineColor, "Only mining items with internal level "..tostring(uespLog.mineItemOnlyLevel).." and internal type of "..tostring(uespLog.mineItemOnlySubType)..".")
 	elseif (uespLog.mineItemOnlyLevel >= 0) then
@@ -11702,7 +11827,7 @@ function uespLog.MineItemsQualityMapLogItem(itemLink, intLevel, intSubtype, extr
 	local logData = { }
 	local reqLevel = GetItemLinkRequiredLevel(itemLink)
 	local reqCP = GetItemLinkRequiredChampionPoints(itemLink)
-	local quality = GetItemLinkQuality(itemLink)
+	local quality = GetItemLinkDisplayQuality(itemLink)
 	
 	logData.event = "mineItem::quality"
 	logData.itemLink = itemLink
@@ -12561,16 +12686,49 @@ uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
 	['dragon bone'] = 87,
 	['dragon_bone'] = 87,
 	['dragonbone'] = 87,
-	['moongrave fane'] = 88,
-	['moongrave_fane'] = 88,
-	['moongravefane'] = 88,
-	['moongrave'] = 88,
 	["stags of z'en"] = 89,
 	["stags_of_z'en"] = 89,
 	["stagsofz'en"] = 89,
 	["stagsofzen"] = 89,
-	['dragonguard'] = 92,	
-		
+	['dragonguard'] = 92,
+	['moongrave fane'] = 93,
+	['moongrave_fane'] = 93,
+	['moongravefane'] = 93,
+	['moongrave'] = 93,
+	['new moon priest'] = 94,
+	['new_moon_priest'] = 94,
+	['newmoonpriest'] = 94,
+	['newmoon'] = 94,
+	['shield of senchal'] = 95,
+	['shield_of_senchal'] = 95,
+	['shieldofsenchal'] = 95,
+	['senchal'] = 95,
+	
+		-- Greymoore
+	['icereach coven'] = 97,
+	['icereach_coven'] = 97,
+	['icereachcoven'] = 97,
+	['pyre watch'] = 98,
+	['pyre_watch'] = 98,
+	['pyrewatch'] = 98,
+	['swordthane'] = 99,
+	['blackreach vanguard'] = 100,
+	['blackreach_vanguard'] = 100,
+	['blackreachvanguard'] = 100,
+	['blackreach'] = 100,
+	['greymoore'] = 101,
+	['sea giant'] = 102,	
+	['sea_giant'] = 102,
+	['seagiant'] = 102,
+	['ancestral nord'] = 103,
+	['ancestral_nord'] = 103,
+	['ancestralnord'] = 103,
+	['ancestral high elf'] = 104,
+	['ancestral_high_elf'] = 104,
+	['ancestralhighelf'] = 104,
+	['ancestral orc'] = 105,
+	['ancestral_orc'] = 105,
+	['ancestralorc'] = 105,
 }
 
 
@@ -12780,6 +12938,36 @@ uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
 	["stags_of_z'en"] = { 156574, 156575, 156576, 156577, 156578, 156579, 156580, 156581, 156582, 156583, 156584, 156585, 156586, 156587 }, -- 156573, 156588
 	["stagsofz'en"] = { 156574, 156575, 156576, 156577, 156578, 156579, 156580, 156581, 156582, 156583, 156584, 156585, 156586, 156587 }, -- 156573, 156588
 	["stagsofzen"] = { 156574, 156575, 156576, 156577, 156578, 156579, 156580, 156581, 156582, 156583, 156584, 156585, 156586, 156587 }, -- 156573, 156588
+	['shield of senchal'] = { 156628, 156629, 156630, 156631, 156632, 156633, 156634, 156635, 156636, 156637, 156638, 156639, 156640, 156641 }, -- 156627, 156642
+	['shield_of_senchal'] = { 156628, 156629, 156630, 156631, 156632, 156633, 156634, 156635, 156636, 156637, 156638, 156639, 156640, 156641 }, -- 156627, 156642
+	['shieldofsenchal'] = { 156628, 156629, 156630, 156631, 156632, 156633, 156634, 156635, 156636, 156637, 156638, 156639, 156640, 156641 }, -- 156627, 156642
+	['senchal'] = { 156628, 156629, 156630, 156631, 156632, 156633, 156634, 156635, 156636, 156637, 156638, 156639, 156640, 156641 }, -- 156627, 156642
+
+	['new moon priest'] = { 156609, 156610, 156611, 156612, 156613, 156614, 156615, 156616, 156617, 156618, 156619, 156620, 156621, 156622 }, -- 156608, 156623
+	['new_moon_priest'] = { 156609, 156610, 156611, 156612, 156613, 156614, 156615, 156616, 156617, 156618, 156619, 156620, 156621, 156622 }, -- 156608, 156623
+	['newmoonpriest'] = { 156609, 156610, 156611, 156612, 156613, 156614, 156615, 156616, 156617, 156618, 156619, 156620, 156621, 156622 }, -- 156608, 156623
+	['newmoon'] = { 156609, 156610, 156611, 156612, 156613, 156614, 156615, 156616, 156617, 156618, 156619, 156620, 156621, 156622 }, -- 156608, 156623
+	
+		-- Greymoore
+	['icereach coven'] = { 157518, 157519, 157520, 157521, 157522, 157523, 157524, 157525, 157526, 157527, 157528, 157529, 157530, 157531 }, -- 157517, 157532
+	['icereach_coven'] = { 157518, 157519, 157520, 157521, 157522, 157523, 157524, 157525, 157526, 157527, 157528, 157529, 157530, 157531 }, -- 157517, 157532
+	['icereachcoven'] = { 157518, 157519, 157520, 157521, 157522, 157523, 157524, 157525, 157526, 157527, 157528, 157529, 157530, 157531 }, -- 157517, 157532
+	['pyre watch'] = { 158292, 158293, 158294, 158295, 158296, 158297, 158298, 158299, 158300, 158301, 158302, 158303, 158304, 158305 }, -- 158291, 158306
+	['pyre_watch'] = { 158292, 158293, 158294, 158295, 158296, 158297, 158298, 158299, 158300, 158301, 158302, 158303, 158304, 158305 }, -- 158291, 158306
+	['pyrewatch'] = { 158292, 158293, 158294, 158295, 158296, 158297, 158298, 158299, 158300, 158301, 158302, 158303, 158304, 158305 }, -- 158291, 158306
+	['blackreach vanguard'] = { 160494, 160495, 160496, 160497, 160498, 160499, 160500, 160501, 160502, 160503, 160504, 160505, 160506, 160507 }, -- 160493, 160508
+	['blackreach_vanguard'] = { 160494, 160495, 160496, 160497, 160498, 160499, 160500, 160501, 160502, 160503, 160504, 160505, 160506, 160507 }, -- 160493, 160508
+	['blackreachvanguard'] = { 160494, 160495, 160496, 160497, 160498, 160499, 160500, 160501, 160502, 160503, 160504, 160505, 160506, 160507 }, -- 160493, 160508
+	['blackreach'] = { 160494, 160495, 160496, 160497, 160498, 160499, 160500, 160501, 160502, 160503, 160504, 160505, 160506, 160507 }, -- 160493, 160508
+	['ancestral nord'] = { 160577, 160578, 160579, 160580, 160581, 160582, 160583, 160584, 160585, 160586, 160587, 160588, 160589, 160590 }, -- 160576, 160591
+	['ancestral_nord'] = { 160577, 160578, 160579, 160580, 160581, 160582, 160583, 160584, 160585, 160586, 160587, 160588, 160589, 160590 }, -- 160576, 160591
+	['ancestralnord'] = { 160577, 160578, 160579, 160580, 160581, 160582, 160583, 160584, 160585, 160586, 160587, 160588, 160589, 160590 }, -- 160576, 160591
+	['ancestral high elf'] = { 160594, 160595, 160596, 160597, 160598, 160599, 160600, 160601, 160602, 160603, 160604, 160605, 160606, 160607 }, -- 160593, 160608
+	['ancestral_high_elf'] = { 160594, 160595, 160596, 160597, 160598, 160599, 160600, 160601, 160602, 160603, 160604, 160605, 160606, 160607 }, -- 160593, 160608
+	['ancestralhighelf'] = { 160594, 160595, 160596, 160597, 160598, 160599, 160600, 160601, 160602, 160603, 160604, 160605, 160606, 160607 }, -- 160593, 160608
+	['ancestral orc'] = { 160611, 160612, 160613, 160614, 160615, 160616, 160617, 160618, 160619, 160620, 160621, 160622, 160623, 160624 }, -- 160610, 160625
+	['ancestral_orc'] = { 160611, 160612, 160613, 160614, 160615, 160616, 160617, 160618, 160619, 160620, 160621, 160622, 160623, 160624 }, -- 160610, 160625
+	['ancestralorc'] = { 160611, 160612, 160613, 160614, 160615, 160616, 160617, 160618, 160619, 160620, 160621, 160622, 160623, 160624 }, -- 160610, 160625
 }
 
 
@@ -13174,7 +13362,7 @@ end
 function uespLog.UpdateCoordinates()
     local mouseOverControl = WINDOW_MANAGER:GetMouseOverControl()
 
-    if (uespLog.GetShowCursorMapCoordsFlag() and (mouseOverControl == ZO_WorldMapContainer or mouseOverControl:GetParent() == ZO_WorldMapContainer)) then
+    if (uespLog.GetShowCursorMapCoordsFlag() and not ZO_WorldMapContainer:IsHidden() and (mouseOverControl == ZO_WorldMapContainer or mouseOverControl:GetParent() == ZO_WorldMapContainer)) then
         local currentOffsetX = ZO_WorldMapContainer:GetLeft()
         local currentOffsetY = ZO_WorldMapContainer:GetTop()
         local parentOffsetX = ZO_WorldMap:GetLeft()
@@ -14368,6 +14556,9 @@ end
 
 function uespLog.LogQuestItemLink(journalIndex, stepIndex, conditionIndex, questName)
 	local itemLink = GetQuestItemLink(journalIndex, stepIndex, conditionIndex)
+	local questDataId = uespLog.GetQuestUniqueDataId(journalIndex)
+	local questStageIndex = uespLog.GetCharQuestStageData()[questDataId] or nil
+	local questUniqueId = uespLog.GetCharQuestUniqueIds()[questDataId] or 0
 	local logData = {}
 	
 	if (itemLink == "") then
@@ -14380,6 +14571,8 @@ function uespLog.LogQuestItemLink(journalIndex, stepIndex, conditionIndex, quest
 	logData.stepIndex = stepIndex
 	logData.conditionIndex = conditionIndex
 	logData.questName = questName
+	logData.uniqueId = questUniqueId
+	logData.stageIndex = questStageIndex
 	
 	logData.texture, logData.stackCount, logData.name1, logData.questId = GetQuestItemInfo(journalIndex, stepIndex, conditionIndex)
 	logData.header, logData.name, logData.desc = GetQuestItemTooltipInfo(journalIndex, stepIndex, conditionIndex)
@@ -14394,6 +14587,9 @@ end
 
 function uespLog.LogQuestToolItemLink(journalIndex, toolIndex, questName)
 	local itemLink = GetQuestToolLink(journalIndex, toolIndex)
+	local questDataId = uespLog.GetQuestUniqueDataId(journalIndex)
+	local questStageIndex = uespLog.GetCharQuestStageData()[questDataId] or nil
+	local questUniqueId = uespLog.GetCharQuestUniqueIds()[questDataId] or 0
 	local logData = {}
 	
 	if (itemLink == "") then
@@ -14405,6 +14601,8 @@ function uespLog.LogQuestToolItemLink(journalIndex, toolIndex, questName)
 	logData.journalIndex = journalIndex
 	logData.toolIndex = toolIndex
 	logData.questName = questName
+	logData.uniqueId = questUniqueId
+	logData.stageIndex = questStageIndex
 		
 	logData.texture, logData.stackCount, logData.isUsuable, logData.name1, logData.questId = GetQuestToolInfo(journalIndex, toolIndex)
 	logData.header, logData.name, logData.desc = GetQuestToolTooltipInfo(journalIndex, toolIndex)
@@ -17231,7 +17429,7 @@ SLASH_COMMANDS["/uespnirnsound"] = uespLog.NirnSoundCommand
 uespLog.FindNameChangeItemId = 1
 uespLog.FindNameChangeIsScanning = false
 uespLog.FindNameChangeScanIds = 2000
-uespLog.FindNameChangeScanEndId = 170000
+uespLog.FindNameChangeScanEndId = 180000
 uespLog.FindNameChangeScanDelayMS = 1000
 uespLog.FindNameChangeItemCount = 0
 
@@ -17470,7 +17668,7 @@ function uespLog.CanItemBeTraitResearched(bagId, slotIndex, craftingType, resear
 	
 	if (maxQuality > 0) then
 		local itemLink = GetItemLink(bagId, slotIndex)
-		local quality = GetItemLinkQuality(itemLink)
+		local quality = GetItemLinkDisplayQuality(itemLink)
 		
 		if (quality > maxQuality) then
 			return false
@@ -17686,7 +17884,7 @@ function uespLog.MineRecipeDataEnd()
 					parsedResultIds[resultId] = 1
 					local itemId = uespLog.MineRecipeResultIds[resultId] or -1
 					local resultName = GetItemLinkName(resultLink)
-					local quality = GetItemLinkQuality(resultLink)
+					local quality = GetItemLinkDisplayQuality(resultLink)
 					
 					tempData[#tempData + 1] = "" .. resultId .. " => array(" .. itemId .. ", \"" .. listName .. "\", \"" .. resultName .. "\", " .. tostring(quality) .. "),"
 				else
@@ -17710,7 +17908,7 @@ function uespLog.MineRecipeDataEnd()
 			local furnCate, furnSubCate = GetFurnitureDataCategoryInfo(furnDataID)
 			local furnCateName = GetFurnitureCategoryName(furnCate)
 			local furnSubCateName = GetFurnitureCategoryName(furnSubCate)
-			local quality = GetItemLinkQuality(resultLink)
+			local quality = GetItemLinkDisplayQuality(resultLink)
 			
 			if (furnCateName ~= "") then
 				recipeType = furnCateName
@@ -18653,7 +18851,7 @@ function uespLog.GetProvMasterWritRecipesKnown()
 		for recipeIndex = 1, numRecipes do
 			local known, name, _, _, quality = GetRecipeInfo(recipeListIndex, recipeIndex)
 			local itemLink = GetRecipeResultItemLink(recipeListIndex, recipeIndex)
-			local resultQuality = GetItemLinkQuality(itemLink)
+			local resultQuality = GetItemLinkDisplayQuality(itemLink)
 	
 			if (name ~= "" and quality >= 3) then
 				recipeCount = recipeCount + 1
@@ -18681,7 +18879,7 @@ function uespLog.ShowProvMasterWritRecipes(cmd)
 		for recipeIndex = 1, numRecipes do
 			local known, name, _, _, quality = GetRecipeInfo(recipeListIndex, recipeIndex)
 			local itemLink = GetRecipeResultItemLink(recipeListIndex, recipeIndex)
-			local resultQuality = GetItemLinkQuality(itemLink)
+			local resultQuality = GetItemLinkDisplayQuality(itemLink)
 	
 			if (name ~= "" and quality >= 3) then
 				recipeCount = recipeCount + 1

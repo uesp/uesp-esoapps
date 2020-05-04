@@ -36,6 +36,7 @@ uespLog.STYLE_ICON_UNKNOWN = "uespLog\\images\\unknown.dds"
 
 
 uespLog.ALT_STYLE_ICON_DATA = {
+	[10]							 = "uesplog/images/unique.dds",				-- Unique Style, 10, /esoui/art/icons/justice_stolen_unique_queenfreydis_trinket.dds
 	[ITEMSTYLE_RACIAL_NORD]  		 = "uespLog/images/stylenord.dds",  		-- Nord, Corundum, 5, /esoui/art/icons/crafting_metals_corundum.dds
 	[ITEMSTYLE_RACIAL_REDGUARD]  	 = "uespLog/images/styleredguard.dds",		-- Redguard, Starmetal, 2, /esoui/art/icons/crafting_medium_armor_sp_names_002.dds
 	[ITEMSTYLE_RACIAL_ORC]  		 = "uespLog/images/styleorc.dds",			-- Orc, Manganese, 3, /esoui/art/icons/crafting_metals_manganese.dds
@@ -111,14 +112,26 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[84] 							 = "uespLog/images/anequina.dds",			-- Anequina, Shimmering Sand, 84, /esoui/art/icons/crafting_leather_phlegm.dds
 	[85] 							 = "uespLog/images/pellitine.dds",			-- Pellitine, Dragonthread, 85, /esoui/art/icons/crafting_dragonthread.dds
 	[86] 							 = "uespLog/images/sunspire.dds",			-- Sunspire, Frost Embers, 86, /esoui/art/icons/crafting_style_item_celestial_r1.dds
-	-- [88] 						 = "uespLog/images/moongrave.dds",			-- Moongrave Fane, ?, 88, ?
+	--[87] 							 = "uespLog/images/dragonbone.dds",			-- Dragon Bone, None, 87
 	[89] 							 = "uespLog/images/stagsofzen.dds",			-- Stags of Z'en, Oath Cord, 89, /esoui/art/icons/crafting_light_armor_vendor_component_002.dds
 	[92] 							 = "uespLog/images/dragonguard.dds",		-- Dragonguard, Gilding Salts, 92, /esoui/art/icons/crafting_humanoid_daedra_fire_salts.dds
-	
+	[93] 						 	 = "uespLog/images/moongrave.dds",			-- Moongrave Fane, Blood of Sahrotnax, 93, /esoui/art/icons/crafting_critter_vertebrate_cold_blood.dds
+	[94] 						 	 = "uespLog/images/newmoonpriest.dds",		-- New Moon Priest, Aeonstone Shard, 94, /esoui/art/icons/item_u25_aeonstoneshard.dds
+	[95] 						 	 = "uespLog/images/shieldofsenchal.dds",	-- Shield of Senchal, Carmine Shieldsilk, 95, /esoui/art/icons/item_u25_carmineshieldsilk.dds
+	[97] 						 	 = "uespLog/images/icereachcoven.dds",		-- Icereach Coven, Fryse Willow, 97, /esoui/art/icons/crafting_style_item_icereach_coven.dds
+	[98] 						 	 = "uespLog/images/pyrewatch.dds",			-- Pyre Watch, Consecrated Myrrh, 98, /esoui/art/icons/crafting_style_item_pyre_watch.dds
+	--[99] 						 	 = "uespLog/images/swordthane.dds",			-- Swordthane, ?, 99, ?
+	[100] 						 	 = "uespLog/images/blackreachvanguard.dds",	-- Blackreach Vanguard, Gloomspore Chitin, 100, /esoui/art/icons/crafting_style_item_blackreach_vanguard.dds
+	--[101] 						 = "uespLog/images/greymoore.dds",			-- Greymoore, ?, 101, ?
+	--[102] 						 = "uespLog/images/seagiant.dds",			-- Sea Giant, ?, 102, ?
+	[103] 						 	 = "uespLog/images/ancestralnord.dds",		-- Ancestral Nord, Etched Corundum, 103, /esoui/art/icons/crafting_style_item_antiquities_nord.dds
+	[104] 						 	 = "uespLog/images/ancestralhighelf.dds",	-- Ancestral High Elf, Etched Adamantite, 104, /esoui/art/icons/crafting_style_item_antiquities_altmer.dds
+	[105] 						 	 = "uespLog/images/ancestralorc.dds",		-- Ancestral Orc, Etched Manganese, 105, /esoui/art/icons/crafting_style_item_antiquities_orc.dds
 }
 
 
 uespLog.STYLE_ICON_DATA = {
+	[10]							 = "/esoui/art/icons/justice_stolen_unique_queenfreydis_trinket.dds",
 	[ITEMSTYLE_RACIAL_NORD]  		 = "/esoui/art/icons/crafting_metals_corundum.dds",
 	[ITEMSTYLE_RACIAL_REDGUARD]  	 = "/esoui/art/icons/crafting_medium_armor_sp_names_002.dds",
 	[ITEMSTYLE_RACIAL_ORC]  		 = "/esoui/art/icons/crafting_metals_manganese.dds",
@@ -196,9 +209,18 @@ uespLog.STYLE_ICON_DATA = {
 	[83] 							 = "/esoui/art/icons/crafting_mushroom_asco_cap_r3.dds",
 	[84] 							 = "/esoui/art/icons/crafting_leather_phlegm.dds",
 	[85] 							 = "/esoui/art/icons/crafting_style_item_celestial_r1.dds",
-	-- [88] 						 = "",			-- Moongrave Fane
+	[86] 							 = "/esoui/art/icons/crafting_style_item_celestial_r1.dds",
 	[89] 							 = "/esoui/art/icons/crafting_light_armor_vendor_component_002.dds",
 	[92] 							 = "/esoui/art/icons/crafting_humanoid_daedra_fire_salts.dds",
+	[93] 						 	 = "/esoui/art/icons/crafting_critter_vertebrate_cold_blood.dds",
+	[94] 						 	 = "/esoui/art/icons/item_u25_aeonstoneshard.dds",
+	[95] 						 	 = "/esoui/art/icons/item_u25_carmineshieldsilk.dds",
+	[97] 						 	 = "/esoui/art/icons/crafting_style_item_icereach_coven.dds",
+	[98] 						 	 = "/esoui/art/icons/crafting_style_item_pyre_watch.dds",
+	[100] 						 	 = "/esoui/art/icons/crafting_style_item_blackreach_vanguard.dds",
+	[103] 						 	 = "/esoui/art/icons/crafting_style_item_antiquities_nord.dds",
+	[104] 						 	 = "/esoui/art/icons/crafting_style_item_antiquities_altmer.dds",
+	[105] 						 	 = "/esoui/art/icons/crafting_style_item_antiquities_orc.dds",
 }
 
 

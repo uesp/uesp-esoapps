@@ -1069,7 +1069,10 @@
 --			- Fixed style entry for Moongrave Fane.
 --			- Added inventory icon for the unique style.
 --
---		-- v2.30 -- Greymoor fixes
+--		-- v2.22 -- 6 May 2020
+--			- Reverted change to outputting long strings to log (strings longer than 2000 bytes still output nil).
+--
+--		-- v2.30 -- 26 May 2020 (Greymoor fixes)
 --			- Increased max potion effect to 32 when mining potion item data.
 --			- Increased maximum item ID for auto-mining to 180,000.
 --			- Added new data when logging skills (toggle and cost over time).
@@ -1096,12 +1099,12 @@ end
 --	GLOBAL DEFINITIONS
 uespLog = uespLog or {}
 
-uespLog.version = "2.21"
-uespLog.releaseDate = "4 May 2020"
+uespLog.version = "2.30"
+uespLog.releaseDate = "26 May 2020"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
-uespLog.MAX_LOGSTRING_LENGTH = 19000
+uespLog.MAX_LOGSTRING_LENGTH = 1900
 
 uespLog.TAB_CHARACTER = "\t"
 uespLog.MIN_TARGET_CHANGE_TIMEMS = 2000

@@ -215,8 +215,14 @@ class CEsoGlobals:
     
 
     def ParseGlobalData(self, parsedLogLines):
+        lineCount = 0
 
         for log in parsedLogLines:
+            if (log is None):
+                print "Found None object in global log file at index ", lineCount, "!"
+                continue
+            
+            lineCount += 1
             event = log.get('event', '')
             name = log.get('name', '')
 
@@ -234,6 +240,10 @@ class CEsoGlobals:
                 continue
 
             instance = self.CreateGlobalInstance(parsedName)
+
+            if (instance is None):
+                print "Created empty instance object in global log file at index ", lineCount, "!"
+                continue
             
             instance.type = log.get('type', '')
             instance.access = log.get('label', '')
@@ -260,6 +270,9 @@ class CEsoGlobals:
 
         parsedLogLines = self.ParseLog(globalContents)
         self.logLineCount = len(parsedLogLines)
+        
+        print "Loaded ", self.logLineCount, " lines from global file!"
+        
         self.ParseGlobalData(parsedLogLines)
 
         self.CreateFunctionMap()

@@ -1,9 +1,9 @@
 #!/bin/sh
 
 VERSION="26"
-ISPTS="1"
+ISPTS=""
 LASTVERSION="25"
-LASTPTSVERSION="25pts"
+LASTPTSVERSION="26pts-2"
 
 MAKEPTSDIFF="1"
 MAKEDIFF="1"
@@ -116,6 +116,7 @@ makemapsdiff () {
 	grep ".jpg" "$3.list" > "$3.updatedmaps"
 	sed -i "s#.*/##g" "$3.updatedmaps"
 	sed -i "s#_base.jpg##g" "$3.updatedmaps"
+	sed -i "s#\.base.jpg##g" "$3.updatedmaps"
 	sed -i "s#.jpg##g" "$3.updatedmaps"
 	
 		# Only in ./esomnf-18pts/art/maps/bangkorai: bangkoraigarrison_alt_base
@@ -123,6 +124,7 @@ makemapsdiff () {
 		# Only in ./esomnf-18pts/art/maps/stormhaven: ui_map_fanglairext_base
 		# Only in ./esomnf-18pts/art/maps/summerset: alinor_base
 	sed -i "s#_base\$##g" "$3.newmaps"
+	sed -i "s#\.base\$##g" "$3.newmaps"
 	sed "s#Only in ./esomnf-$VERSION2/art/maps/\(.*\): \(.*\)#\2,\2,\1,-1#g" "$3.newmaps" > "$OUTPUTPATH/maps_new.txt"
 		
 }

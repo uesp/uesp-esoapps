@@ -1,7 +1,7 @@
 #!/bin/sh
 
-OLDAPI="100029"
-NEWAPI="100030"
+OLDAPI="100030"
+NEWAPI="100031"
 
 APIPATH="/cygdrive/e/esoexport/apidata"
 
@@ -19,3 +19,5 @@ grep -v "\." "$APIPATH/files_Added_$OLDAPI.txt" >> "$APIPATH/apidiff_$NEWAPI.txt
 
 echo -e "\n\nRemoved Functions" >> "$APIPATH/apidiff_$NEWAPI.txt"
 grep -v "\." "$APIPATH/files_Removed_$OLDAPI.txt" >> "$APIPATH/apidiff_$NEWAPI.txt"
+
+cp -f "$APIPATH/apidiff_$NEWAPI.txt" "$APIPATH/$NEWAPI/apidiff.txt"

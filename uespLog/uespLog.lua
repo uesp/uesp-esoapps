@@ -1083,19 +1083,6 @@
 --
 
 
--- Functions needed for update 26 code
-if (IsAbilityDurationToggled == nil) then
-	IsAbilityDurationToggled = function(id) return nil end
-end
-
-if (GetAbilityCostOverTime == nil) then
-	GetAbilityCostOverTime = function(id) return nil, nil, nil end
-end
-
-if (GetItemLinkDisplayQuality == nil) then
-	GetItemLinkDisplayQuality = GetItemLinkQuality
-end
-
 --	GLOBAL DEFINITIONS
 uespLog = uespLog or {}
 
@@ -4101,7 +4088,6 @@ function uespLog.Initialize( self, addOnName )
 	uespLog.Old_LootWindow_IsControlHidden = LOOT_WINDOW.control.IsControlHidden
 	LOOT_WINDOW.control.IsControlHidden = uespLog.LootWindowIsControlHidden
 
-	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CLIENT_INTERACT_RESULT, uespLog.OnClientInteractResult)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOOT_RECEIVED, uespLog.OnLootGained)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOOT_CLOSED, uespLog.OnLootClosed)
@@ -18985,6 +18971,8 @@ end
 
 
 function uespLog.TestSkillDesc(abilityId, maxCount)
+	local i
+	
 	maxCount = maxCount or 20000
 	abilityId = abilityId or 20328
 	
@@ -19033,7 +19021,135 @@ end
 
 --SLASH_COMMANDS["/uespmarket"] = uespLog.MarketCommand
 
-uespLog.MINETEST_RELOAD_COUNT = 40
+
+uespLog.MINEANTIQUITY_MINID = 0
+uespLog.MINEANTIQUITY_MAXID = 2000
+uespLog.MineAntiquitySetData = {}
+uespLog.MineAntiquityCategoryData = {}
+
+
+function uespLog.CreateAntiquitySetData()
+	uespLog.MineAntiquitySetData = {}
+	uespLog.MineAntiquityCategoryData = {}
+	
+	for antiquityId = uespLog.MINEANTIQUITY_MINID, uespLog.MINEANTIQUITY_MAXID do
+		local name = GetAntiquityName(antiquityId)
+	
+		if (name ~= nil and name ~= "") then
+			local setId = GetAntiquitySetId(antiquityId)
+			local categoryId = GetAntiquityCategoryId(antiquityId)
+			
+			if (setId and setId > 0) then
+				if (uespLog.MineAntiquitySetData[setId] == nil) then
+					uespLog.MineAntiquitySetData[setId] = {}
+					uespLog.MineAntiquitySetData[setId].count = 0
+				end
+				
+				uespLog.MineAntiquitySetData[setId].count = uespLog.MineAntiquitySetData[setId].count + 1
+			end
+			
+			if (categoryId and categoryId > 0) then
+				if (uespLog.MineAntiquityCategoryData[categoryId] == nil) then
+					uespLog.MineAntiquityCategoryData[categoryId] = {}
+					uespLog.MineAntiquityCategoryData[categoryId].count = 0
+				end
+				
+				uespLog.MineAntiquityCategoryData[categoryId].count = uespLog.MineAntiquityCategoryData[categoryId].count + 1
+			end
+			
+		end
+		
+	end
+end
+
+
+function uespLog.MineAntiquities() 
+	local validCount = 0
+	local antiquityId
+	local logData = {}
+	
+	uespLog.Msg("Starting to mine antiquities from "..uespLog.MINEANTIQUITY_MINID.." to "..uespLog.MINEANTIQUITY_MAXID.."...")
+	
+	logData.event = "mineanti::start"
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+		
+	uespLog.CreateAntiquitySetData()
+
+	for antiquityId = uespLog.MINEANTIQUITY_MINID, uespLog.MINEANTIQUITY_MAXID do
+		local result = uespLog.MineAntiquity(antiquityId)
+		
+		if (result) then
+			validCount = validCount + 1
+		end
+	end
+	
+	logData.event = "mineanti::end"
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
+	uespLog.Msg("Finished mining antiquities...found "..validCount.." valid antiquities!")
+	
+end
+
+
+function uespLog.MineAntiquity(antiquityId) 
+	local logData = {}
+	
+	logData.name = GetAntiquityName(antiquityId)
+	
+	if (logData.name == nil or logData.name == "") then
+		return false
+	end
+	
+	logData.event = "mineanti"
+	logData.id = antiquityId
+    logData.requiresLead = DoesAntiquityRequireLead(antiquityId)
+    logData.icon = GetAntiquityIcon(antiquityId)
+    logData.quality = GetAntiquityQuality(antiquityId)
+    logData.rewardId = GetAntiquityRewardId(antiquityId)
+    logData.isRepeatable = IsAntiquityRepeatable(antiquityId)
+    logData.zoneId = GetAntiquityZoneId(antiquityId)
+    logData.difficulty = GetAntiquityDifficulty(antiquityId)
+	
+	logData.setId = GetAntiquitySetId(antiquityId)
+		
+	if (logData.setId and logData.setId ~= 0) then
+		local setData = uespLog.MineAntiquitySetData[logData.setId]
+		
+		logData.setCount = setData.count
+		logData.setName = GetAntiquitySetName(logData.setId)
+		logData.setIcon = GetAntiquitySetIcon(logData.setId)
+		logData.setQuality = GetAntiquitySetQuality(logData.setId)
+		logData.setRewardId = GetAntiquitySetRewardId(logData.setId)
+    end
+	
+	logData.categoryId = GetAntiquityCategoryId(antiquityId)
+	
+    if (logData.categoryId and logData.categoryId ~= ZO_SCRYABLE_ANTIQUITY_CATEGORY_ID) then
+		local categoryData = uespLog.MineAntiquityCategoryData[logData.categoryId]
+		
+		logData.categoryCount = categoryData.count
+		logData.categoryOrder = GetAntiquityCategoryOrder(logData.categoryId)
+		logData.categoryName = GetAntiquityCategoryName(logData.categoryId)
+		logData.cateNormalIcon, logData.catePressedIcon, logData.cateMousedOverIcon = GetAntiquityCategoryKeyboardIcons(logData.categoryId)
+		logData.parentCategoryId = GetAntiquityCategoryParentId(logData.categoryId)
+    end
+	
+	logData.numLoreEntries = GetNumAntiquityLoreEntries(antiquityId)
+	
+	for loreEntryIndex = 1, logData.numLoreEntries do
+        local loreDisplayName, loreDescription = GetAntiquityLoreEntry(antiquityId, loreEntryIndex)
+		
+		logData["loreName" .. loreEntryIndex] = loreDisplayName
+		logData["loreDesc" .. loreEntryIndex] = loreDescription
+    end
+	
+	uespLog.AppendDataToLog("all", logData)
+	
+	return true
+end
+
+
+uespLog.MINETEST_RELOAD_COUNT = 150
 uespLog.mineTestCount = 0
 uespLog.mineTestStop = false
 uespLog.MINETEST_AUTOSTARTNEXT = false

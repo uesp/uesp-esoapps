@@ -49,6 +49,9 @@ uespLog.Orig_WritWorthyMMPrice = nil
 uespLog.SalesPrices = nil
 uespLog.SalesPricesVersion = 0
 
+uespLog.SalesDealValues = {}
+uespLog.SalesDealProfits = {}
+
 
 function uespLog.LoadSalePriceData()
 
@@ -1939,13 +1942,36 @@ function uespLog.GotoUespSalesPageRowControl (rowControl)
 end
 
 
-function uespLog.GetTradingHouseSearchResultItemInfo(index)
+-- Copied from /esoui/ingame/tradinghouse/tradinghouse_shared.lua
+function uespLog.ZO_TradingHouse_CreateListingItemData(index)
+    --local icon, name, displayQuality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, itemUniqueId, purchasePricePerUnit = GetTradingHouseListingItemInfo(index)
+	local icon, name, displayQuality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, itemUniqueId, purchasePricePerUnit = uespLog.Old_GetTradingHouseListingItemInfo(index)
+	
+    local itemLink = GetTradingHouseListingItemLink(index)
+    return ZO_TradingHouse_CreateItemData(index, icon, name, displayQuality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, itemLink, itemUniqueId, purchasePricePerUnit)
+end
 
+function uespLog.ZO_TradingHouse_CreateSearchResultItemData(index)
+    --local icon, name, displayQuality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, itemUniqueId, purchasePricePerUnit = GetTradingHouseSearchResultItemInfo(index)
+	local icon, name, displayQuality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, itemUniqueId, purchasePricePerUnit = uespLog.Old_GetTradingHouseSearchResultItemInfo(index)
+    local itemLink = GetTradingHouseSearchResultItemLink(index)
+    return ZO_TradingHouse_CreateItemData(index, icon, name, displayQuality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, itemLink, itemUniqueId, purchasePricePerUnit)
+end
+-- End of Copy
+
+
+function uespLog.GetTradingHouseSearchResultItemInfo(index)
+	
 	if ((uespLog.GetSalesShowDealType() ~= "uesp" or not uespLog.IsSalesShowPrices()) and uespLog.Old_MM_GetTradingHouseSearchResultItemInfo ~= nil) then
 		return uespLog.Old_MM_GetTradingHouseSearchResultItemInfo(index)
 	end
 
 	local icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, uniqueId, unitPrice = uespLog.Old_GetTradingHouseSearchResultItemInfo(index)
+	
+	if (index == nil) then
+		return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, uniqueId, unitPrice
+	end
+	
 	local setPrice = nil
 	local salesCount = 0
 	local tipLine = nil
@@ -2007,6 +2033,11 @@ function uespLog.GetTradingHouseListingItemInfo(index)
 	end
 	
 	local icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, uniqueId, salePricePerUnit = uespLog.Old_GetTradingHouseListingItemInfo(index)
+	
+	if (index == nil) then
+		return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, uniqueId, unitPrice
+	end
+	
 	local setPrice = nil
 	local salesCount = 0
 	local tipLine = nil
@@ -2059,10 +2090,6 @@ function uespLog.GetTradingHouseListingItemInfo(index)
 	
 	return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, uniqueId, salePricePerUnit
 end
-
-
-uespLog.SalesDealValues = {}
-uespLog.SalesDealProfits = {}
 
 
 function uespLog.DealCalc(setPrice, salesCount, purchasePrice, stackCount)
@@ -2280,13 +2307,19 @@ uespLog.lastTradingHousePurchasePrice = -1
 
 
 function uespLog.OnTradingHouseConfirmItemPurchase(eventCode, purchaseIndex)
-	--uespLog.DebugMsg("OnTradingHouseConfirmItemPurchase "..tostring(purchaseIndex))
+
+	uespLog.DebugExtraMsg("OnTradingHouseConfirmItemPurchase "..tostring(purchaseIndex))
 	
 	local icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice = GetTradingHouseSearchResultItemInfo(purchaseIndex)
 	
 	uespLog.lastTradingHousePurchaseIndex = purchaseIndex
 	uespLog.lastTradingHousePurchaseItemLink = GetTradingHouseSearchResultItemLink(purchaseIndex)
 	uespLog.lastTradingHousePurchasePrice = purchasePrice
+	
+	if (purchaseIndex == nil) then
+		uespLog.lastTradingHousePurchaseIndex = -1
+	end
+	
 end
 
 

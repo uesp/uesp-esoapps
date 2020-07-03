@@ -1080,14 +1080,24 @@
 --			  Ancestral Nord, Icreach Coven, and Pyre Watch.
 --			- Updated collectible runebox IDs.
 --			- Logging of Mythic item quality data is now supported (GetItemLinkDisplayQuality()).
+--	
+--		-- v2.31 - 3 July 2020
+--			- Removed the old built-in LibAddonMenu to prevent conflicts with global version.
+--			- Fixed display of (x0) when looting leads.
+--			- Fixed loot source display when looting from container in inventory.
+--			- Items looted from antiquity dig sites are now logged and displayed in chat (if loot messages are on).
+--			- Added a few new critters to the ignored NPC list.
+--			- Removed duplicate message when receiving items from Remains-Silent.
+--			- Sales/tooltip functions are only overridden if sales prices are set to "ON". Requires a UI reload to update.
+--			- Fixed error message when purchasing items from a guild store.
 --
 
 
 --	GLOBAL DEFINITIONS
 uespLog = uespLog or {}
 
-uespLog.version = "2.30"
-uespLog.releaseDate = "26 May 2020"
+uespLog.version = "2.31"
+uespLog.releaseDate = "3 July 2020"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -1175,6 +1185,11 @@ uespLog.lastConversationOption.Important = ""
 
 uespLog.lastLootUpdateCount = -1
 uespLog.lastLootTargetName = ""
+uespLog.lastLootTargetGameTime = 0
+uespLog.lastLootTargetName1 = ""
+uespLog.lastAntiquityGameOver = 0
+uespLog.lastAntiquityIdLeadFound = 0
+uespLog.isDiggingAntiquity = false
 uespLog.lastLootLockQuality = nil
 
 uespLog.savedVars = {}
@@ -1311,10 +1326,14 @@ uespLog.ignoredNPCs = {
 	["Lesser Sea Adder"] = 1,	-- Summerset
 	["Fledgeling Gryphon"] = 1,	-- Summerset
 	["Swamp Jelly"] = 1, 	-- Murkmire
+	["Tangerine Dragon Frog"] = 1,	-- Elsweyr
+	["Jerboa"] = 1,	-- Elsweyr
 	["Elk"] = 1,	-- Greymoore
 	["Cockroach"] = 1,	-- Greymoore
 	["Winter Moth"] = 1,	-- Greymoore
 	["Vale Buck Deer"] = 1,	-- Greymoore
+	["Vale Doe Deer"] = 1,	-- Greymoore
+	["Blackreach Jelly"] = 1,	-- Greymoore
 }
 
 uespLog.lastTargetData = {
@@ -1346,6 +1365,9 @@ uespLog.lastItemLinks = { }
 uespLog.lastItemLinkUsed = ""
 uespLog.lastItemLinkUsed_BagId = -1
 uespLog.lastItemLinkUsed_SlotIndex = -1
+uespLog.lastItemLinkUsed_itemLinks = {}
+uespLog.lastItemLinkUsed_Name = ""
+uespLog.lastItemLinkUsed_itemNames = {}
 
 uespLog.defaultColor = "EEEE00"
 uespLog.debugColor = "999999"
@@ -4080,20 +4102,20 @@ function uespLog.Initialize( self, addOnName )
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTIVE_QUEST_TOOL_CHANGED, uespLog.OnQuestToolChanged)	
 		
-	--EVENT_MANAGER:UnregisterForEvent( "LOOT_SHARED" , EVENT_LOOT_UPDATED)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOOT_UPDATED, uespLog.OnLootUpdated)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOOT_ITEM_FAILED, uespLog.OnLootItemFailed)
 	
-	uespLog.Old_ZO_Loot_UpdateLootWindow = ZO_Loot.UpdateLootWindow
 	uespLog.Old_LootWindow_IsControlHidden = LOOT_WINDOW.control.IsControlHidden
 	LOOT_WINDOW.control.IsControlHidden = uespLog.LootWindowIsControlHidden
 
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CLIENT_INTERACT_RESULT, uespLog.OnClientInteractResult)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOOT_RECEIVED, uespLog.OnLootGained)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ANTIQUITY_DIGGING_GAME_OVER, uespLog.OnAntiquityGameOver)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ANTIQUITY_LEAD_ACQUIRED, uespLog.OnAntiquityLeadAcquired)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_LOOT_CLOSED, uespLog.OnLootClosed)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_MONEY_UPDATE, uespLog.OnMoneyUpdate)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_INVENTORY_SINGLE_SLOT_UPDATE, uespLog.OnInventorySlotUpdate)
-	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_INVENTORY_ITEM_USED, uespLog.OnInventoryItemUsed)
+	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_INVENTORY_ITEM_USED, uespLog.OnInventoryItemUsed)	-- No longer called?
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_BUY_RECEIPT, uespLog.OnBuyReceipt)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SELL_RECEIPT, uespLog.OnSellReceipt)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TELVAR_STONE_UPDATE, uespLog.OnTelvarStoneUpdate)
@@ -4125,7 +4147,7 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_CONFIRM_ITEM_PURCHASE, uespLog.OnTradingHouseConfirmItemPurchase)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_OPEN_TRADING_HOUSE, uespLog.OnTradingHouseOpen)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CLOSE_TRADING_HOUSE, uespLog.OnTradingHouseClose)
-	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_SEARCH_RESULTS_RECEIVED, uespLog.OnTradingHouseSearchResultsReceived)	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_SEARCH_RESULTS_RECEIVED, uespLog.OnTradingHouseSearchResultsReceived)	-- Removed Event?
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_RESPONSE_RECEIVED, uespLog.OnTradingHouseResponseReceived)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_GUILD_HISTORY_RESPONSE_RECEIVED, uespLog.OnGuildHistoryResponseReceived)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_TRADING_HOUSE_CONFIRM_ITEM_PURCHASE, uespLog.OnTradingHouseConfirmPurchase)	
@@ -4302,7 +4324,7 @@ function uespLog.Initialize( self, addOnName )
 	
 	uespLog.SetupSlashCommands()
 		
-	if (MasterMerchant ~= nil) then
+	if (MasterMerchant ~= nil and uespLog.IsSalesShowPrices()) then
 		uespLog.Old_MM_DealCalc = MasterMerchant.DealCalc
 		MasterMerchant.DealCalc = uespLog.DealCalc
 		
@@ -4324,7 +4346,7 @@ function uespLog.Initialize( self, addOnName )
 		--TRADING_HOUSE.SetupPendingPost = uespLog.SetupPendingPost	
 		
 		--MasterMerchant.updateCalc = function() end
-	else
+	elseif (uespLog.IsSalesShowPrices()) then
 		uespLog.Old_MM_GetTradingHouseSearchResultItemInfo = GetTradingHouseSearchResultItemInfo
 		GetTradingHouseSearchResultItemInfo = uespLog.GetTradingHouseSearchResultItemInfo
 		
@@ -4332,7 +4354,10 @@ function uespLog.Initialize( self, addOnName )
 		GetTradingHouseListingItemInfo = uespLog.GetTradingHouseListingItemInfo		
 		
 		uespLog.OriginalSetupPendingPost = TRADING_HOUSE.SetupPendingPost
-		TRADING_HOUSE.SetupPendingPost = uespLog.SetupPendingPost	
+		TRADING_HOUSE.SetupPendingPost = uespLog.SetupPendingPost
+		
+		--ZO_TradingHouse_CreateListingItemData = uespLog.ZO_TradingHouse_CreateListingItemData
+		--ZO_TradingHouse_CreateSearchResultItemData = uespLog.ZO_TradingHouse_CreateSearchResultItemData
 	end	
 	
 	uespLog.UpdateKeepChatOpen()
@@ -4366,7 +4391,7 @@ end
 
 
 function uespLog.InitCrafting()
-	local LLC = LibStub("LibLazyCrafting", true)
+	local LLC = LibLazyCrafting
 
 	if (LLC and LLC.SendCraftEvent) then
 		uespLog.Old_LLCSendCraftEvent = LLC.SendCraftEvent
@@ -4431,6 +4456,8 @@ end
 
 uespLog.Old_GetTradingHouseSearchResultItemInfo = GetTradingHouseSearchResultItemInfo
 uespLog.Old_GetTradingHouseListingItemInfo = GetTradingHouseListingItemInfo
+uespLog.Old_ZO_TradingHouse_CreateListingItemData = ZO_TradingHouse_CreateListingItemData
+uespLog.Old_ZO_TradingHouse_CreateSearchResultItemData = ZO_TradingHouse_CreateSearchResultItemData
 
 
 	--	Hook initialization onto the ADD_ON_LOADED event  
@@ -6281,6 +6308,16 @@ function uespLog.OnMoneyUpdate (eventCode, newMoney, oldMoney, reason)
 		uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "You stole "..tostring(uespLog.lastMoneyChange).." gold"..lootMsg..".")
 		
 		uespLog.TrackLoot("gold", uespLog.lastMoneyChange, posData.lastTarget)
+		
+		-- Antiquity
+	elseif (reason == 11 and uespLog.isDiggingAntiquity) then
+		logData.event = "Antiquity"
+		logData.qnt = uespLog.lastMoneyChange
+
+		uespLog.AppendDataToLog("all", logData, posData, uespLog.GetTimeData())
+		uespLog.MsgColorType(uespLog.MSG_OTHER, uespLog.itemColor, "You looted "..tostring(uespLog.lastMoneyChange).." gold from the dig site.")
+		
+		uespLog.TrackLoot("gold", uespLog.lastMoneyChange, "Dig Site")
 	else
 		uespLog.DebugExtraMsg("UESP: Money Change, New="..tostring(newMoney)..",  Old="..tostring(oldMoney)..",  Diff="..tostring(uespLog.lastMoneyChange)..",  Reason="..tostring(reason))
 	end	
@@ -6358,6 +6395,11 @@ end
 
 function uespLog.OnLootUpdated (eventCode)
 	
+		-- Prevent double messaging/logging
+	--if (uespLog.lastTargetData.name == "Remains-Silent") then
+		--return
+	--end
+	
 	uespLog.lastLootFailed = false
 	uespLog.lastLootAutoLoot = false
 	uespLog.lastLootUpdateCount = GetNumLootItems()
@@ -6365,12 +6407,17 @@ function uespLog.OnLootUpdated (eventCode)
 	uespLog.lastLootLockQuality = nil
 	
 	local name, targetType, actionName, isOwned = GetLootTargetInfo()
-	uespLog.lastLootTargetName1 = name
-	uespLog.lastLootTargetType = targetType
-	uespLog.lastLootTargetAction = actionName
-	uespLog.lastLootTargetIsOwned = isOwned
 	
-	uespLog.DebugExtraMsg("OnLootUpdated")
+	if (name ~= "" and targetType == 2) then
+		uespLog.lastActivateInfo.gameTime = 0
+		uespLog.lastLootTargetGameTime = GetGameTimeSeconds()
+		uespLog.lastLootTargetName1 = name
+		uespLog.lastLootTargetType = targetType
+		uespLog.lastLootTargetAction = actionName
+		uespLog.lastLootTargetIsOwned = isOwned
+	end
+	
+	uespLog.DebugExtraMsg("OnLootUpdated: "..tostring(name)..":"..tostring(targetType)..":"..tostring(actionName))
 	
 	uespLog.UpdateLootWindow(eventCode)
 end
@@ -6441,9 +6488,12 @@ function uespLog.OnLootClosed (eventCode)
 		-- uespLog.DebugMsg("Unknown "..tostring(uespLog.lastLootUpdateCount).."::"..tostring(uespLog.lastLootTargetName))
 	end
 	
+	uespLog.DebugExtraMsg("OnLootClosed")
+	
 	uespLog.lastLootUpdateCount = -1
 	uespLog.lastLootTargetName = ""
 	uespLog.lastLootLockQuality = nil
+	uespLog.lastLootTargetGameTime = 0
 end
 
 
@@ -6452,17 +6502,112 @@ uespLog.lastActivateInfo = {
 	gameTime = 0,
 }
 
-uespLog.MAX_LASTACTIVATE_TIMEDIFF = 5
+uespLog.MAX_LASTACTIVATE_TIMEDIFF = 4
+uespLog.MAX_LASTLOOT_TIMEDIFF = 2
+uespLog.MAX_LASTANTIQUITY_TIMEDIFF = 2
+
 
 function uespLog.OnClientInteractResult(eventCode, result, targetName)
 	local interactType = GetInteractionType()
 	
-	uespLog.DebugExtraMsg("OnClientInteractResult: "..tostring(result)..", "..tostring(targetName)..", "..tostring(interactType))
+	--uespLog.DebugExtraMsg("OnClientInteractResult: "..tostring(result)..", "..tostring(targetName)..", "..tostring(interactType))
 	
+	if (targetName == "Dig Site") then
+		uespLog.isDiggingAntiquity = true
+	end
+		
 	if (result == 0) then
 		uespLog.lastActivateInfo.name = targetName
 		uespLog.lastActivateInfo.gameTime = GetGameTimeSeconds()
+		uespLog.lastLootTargetGameTime = 0
 	end
+    
+end
+
+
+function uespLog.OnAntiquityLeadAcquired(eventId, antiquityId)
+	local antiquityName = zo_strformat(SI_ANTIQUITY_NAME_FORMATTER, GetAntiquityName(antiquityId))
+	local antiquityQuality = GetAntiquityQuality(antiquityId)
+	local qualityColorDef = GetAntiquityQualityColor(antiquityQuality)
+	local coloredName = qualityColorDef:Colorize(antiquityName)
+
+	if (uespLog.isDiggingAntiquity) then
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You looted a lead for |r"..coloredName.."|c"..uespLog.itemColor.." from the dig site.")
+		uespLog.TrackLoot(antiquityName, 1, "Dig Site")
+	else
+		-- Handled elsewhere
+		uespLog.lastAntiquityIdLeadFound = antiquityId
+	end
+	
+end
+
+
+function uespLog.OnAntiquityGameOver(eventId, gameOverFlags)
+
+	uespLog.isDiggingAntiquity = false
+
+	if (gameOverFlags ~= ANTIQUITY_DIGGING_GAME_OVER_FLAGS_VICTORY) then
+		return
+	end
+	
+	uespLog.lastAntiquityGameOver = GetGameTimeSeconds()
+	
+	--[[ Functions are not accessible...handled elsewhere for now
+	
+		-- Antiquity Treasure
+	local antiquityId = GetDigSpotAntiquityId()
+    local antiquitySetId = GetAntiquitySetId(antiquityId)
+	local antiquityName = zo_strformat(SI_ANTIQUITY_NAME_FORMATTER, GetAntiquityName(antiquityId))
+    local antiquityQuality = GetAntiquityQuality(antiquityId)
+    local qualityColorDef = GetAntiquityQualityColor(antiquityQuality)
+	local coloredName = qualityColorDef:Colorize(antiquityName)
+	
+	uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You looted the antiquity |r"..coloredName.."|c"..uespLog.itemColor.." from the dig site.")
+	
+		-- New Lead
+	local newLeadAntiquityId = GetDigSpotNewLeadRewardAntiquityId()
+    
+    if (newLeadAntiquityId ~= 0) then
+        local antiquityLeadName = zo_strformat(SI_ANTIQUITY_LEAD_NAME_FORMATTER, GetAntiquityName(newLeadAntiquityId))
+        local antiquityLeadQuality = GetAntiquityQuality(newLeadAntiquityId)
+        local antiquityLeadQualityColorDef = GetAntiquityQualityColor(antiquityLeadQuality)
+		local coloredLeadName = antiquityLeadQualityColorDef:Colorize(antiquityLeadName)
+        		
+        uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You looted a new lead "..coloredLeadName.." from the dig site.")
+    end 
+	
+	 -- Bonus Rewards
+    local numBonusLootRewards = GetNumDigSpotBonusLootRewards()
+	
+    for i = 1, numBonusLootRewards do
+        local lootType, id, name, icon, count, quality = GetDigSpotBonusLootRewardInfo(i)
+        local qualityColorDef = nil
+        local countText = ""
+		
+        if lootType == LOOT_TABLE_ENTRY_TYPE_CURRENCY then
+            name = zo_strformat(SI_CURRENCY_CUSTOM_TOOLTIP_FORMAT, ZO_Currency_GetAmountLabel(id))
+            countText = ZO_CurrencyControl_FormatCurrency(count, true)
+			
+			uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You looted "..count.." gold from the dig site.")
+        elseif lootType == LOOT_TABLE_ENTRY_TYPE_ITEM then
+            name = zo_strformat(SI_TOOLTIP_ITEM_NAME, name)
+            qualityColorDef = GetItemQualityColor(quality)
+			name = qualityColorDef:Colorize(name)
+
+            if (count > 1) then
+				uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You looted "..name.." (x"..tostring(count)..") from the dig site.")
+			else
+                uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You looted "..name.." from the dig site.")
+            end
+			
+        elseif lootType == LOOT_TABLE_ENTRY_TYPE_ANTIQUITY_LEAD then
+            qualityColorDef = GetAntiquityQualityColor(quality)
+			name = qualityColorDef:Colorize(name)
+			
+			uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You looted a new lead "..name.." from the dig site.")
+        end
+	end
+	--]]
 end
 
 
@@ -6477,15 +6622,36 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 	local itemStyleStr = GetItemStyleName(itemStyle)
 	local lootMsg = ""
 	local diffActivateTime = GetGameTimeSeconds() - uespLog.lastActivateInfo.gameTime
+	local diffLootTime = GetGameTimeSeconds() - uespLog.lastLootTargetGameTime
+		
+	quantity = quantity or 1
+	if (quantity == 0) then quantity = 1 end
 	
 	--local targetName, targetType, targetActionName, targetIsOwned = GetLootTargetInfo()
 	--uespLog.DebugMsg("Loot: "..tostring(targetName)..", "..tostring(targetType)..", "..tostring(targetActionName)..", "..tostring(targetIsOwned))
-	uespLog.DebugExtraMsg("Loot: "..tostring(uespLog.lastLootTargetName)..", "..tostring(uespLog.lastLootTargetName1))
+	--uespLog.DebugExtraMsg("Loot: "..tostring(uespLog.lastLootTargetName)..", "..tostring(uespLog.lastLootTargetName1)..", "..tostring(diffActivateTime)..", "..tostring(diffLootTime))
 	 	
 	if (IsLooting()) then
 		uespLog.lastLootUpdateCount = GetNumLootItems()
 	else
 		uespLog.lastLootUpdateCount = -1
+	end
+	
+	if (lootType == LOOT_TYPE_QUEST_ITEM) then
+		msgType = "quest item"
+		rcvType = "looted quest item"
+	elseif (lootType == LOOT_TYPE_ANTIQUITY_LEAD) then
+		msgType = "antiquity lead"
+		rcvType = "found antiquity lead"
+		
+		if (uespLog.lastAntiquityIdLeadFound > 0) then
+			local antiquityName = zo_strformat(SI_ANTIQUITY_NAME_FORMATTER, GetAntiquityName(uespLog.lastAntiquityIdLeadFound ))
+			local antiquityQuality = GetAntiquityQuality(uespLog.lastAntiquityIdLeadFound )
+			local qualityColorDef = GetAntiquityQualityColor(antiquityQuality)
+			local coloredName = qualityColorDef:Colorize(antiquityName)
+	
+			niceLink = "|r"..coloredName.."|c"..uespLog.itemColor..""
+		end
 	end
 	
 	if (uespLog.currentHarvestTarget ~= nil) then
@@ -6497,15 +6663,15 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 		uespLog.lastLootTargetName = uespLog.currentHarvestTarget.name
 		msgType = "resource(" .. tostring(posData.harvestType) .. ")"
 		rcvType = "harvested"
-	elseif (niceLink == niceName) then
-		msgType = "quest item"
-		rcvType = "looted quest item"
 	elseif (diffActivateTime <= uespLog.MAX_LASTACTIVATE_TIMEDIFF and uespLog.lastActivateInfo.name ~= "") then
 		posData.lastTarget = uespLog.lastActivateInfo.name
+	elseif (diffLootTime <= uespLog.MAX_LASTLOOT_TIMEDIFF and uespLog.lastLootTargetName1 ~= "") then
+		posData.lastTarget = uespLog.lastLootTargetName1
 	elseif (uespLog.lastLootTargetName ~= "") then
 		posData.lastTarget = uespLog.lastLootTargetName
 	else
 		uespLog.lastLootTargetName = uespLog.lastTargetData.name
+		posData.lastTarget = uespLog.lastLootTargetName
 	end
 	
 	if (isPickPocket) then
@@ -6521,7 +6687,7 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 		rcvType = "looted"
 		msgType = "item"
 	end	
-
+	
 	logData.event = "LootGained"
 	logData.itemLink = itemLink
 	logData.qnt = quantity
@@ -6677,7 +6843,7 @@ function uespLog.OnCraftCompleted (eventCode, craftSkill, usingLLC)
 	local craftInteractionType = GetCraftingInteractionType()
 	local itemLink = GetLastCraftingResultItemLink(1)
 	
-	--uespLog.DebugMsg("OnCraftCompleted: "..tostring(craftInteractionType)..":"..tostring(itemLink))
+	--uespLog.DebugExtraMsg("OnCraftCompleted: "..tostring(craftInteractionType)..":"..tostring(itemLink))
 	
 	if (usingLLC) then
 		uespLog.LastCraftCompletedUsedLLC = true
@@ -6737,92 +6903,85 @@ end
 
 
 function uespLog.OnInventoryItemUsed (eventCode, itemSoundCategory)
-	--uespLog.DebugExtraMsg("UESP: OnInventoryItemUsed sound="..tostring(itemSoundCategory))
+	uespLog.DebugExtraMsg("UESP: OnInventoryItemUsed sound="..tostring(itemSoundCategory))
 	
-	uespLog.OnUseItem(eventCode, uespLog.lastItemLinkUsed_BagId, uespLog.lastItemLinkUsed_SlotIndex, uespLog.lastItemLinkUsed, itemSoundCategory)
+	-- Old Event no longer called?
+	
+	--uespLog.OnUseItem(eventCode, uespLog.lastItemLinkUsed_BagId, uespLog.lastItemLinkUsed_SlotIndex, uespLog.lastItemLinkUsed, itemSoundCategory)
 end
 
 
--- Custom event function 
-function uespLog.OnUseItem(eventCode, bagId, slotIndex, itemLink, itemSoundCategory)
+function uespLog.OnOpenFootlocker(eventCode, bagId, slotIndex, itemLink, itemSoundCategory)
 	local logData = { }
 	local itemType = GetItemLinkItemType(itemLink) --ITEMTYPE_CONTAINER
 	
-	uespLog.DebugExtraMsg("UESP: OnUseItem "..tostring(itemLink).."("..tostring(bagId)..","..tostring(slotIndex)..") sound="..tostring(itemSoundCategory)..", type="..tostring(itemType))
+	uespLog.DebugExtraMsg("UESP: OnOpenFootlocker "..tostring(itemLink).."("..tostring(bagId)..","..tostring(slotIndex)..") sound="..tostring(itemSoundCategory)..", type="..tostring(itemType))
 	
 	uespLog.lastItemUsed = itemLink
 	uespLog.lastItemUsedGameTime = GetGameTimeMilliseconds()
 
-	if (itemSoundCategory == ITEM_SOUND_CATEGORY_FOOTLOCKER) then
-		local itemName = GetItemLinkName(itemLink)
-		logData.tradeType = CRAFTING_TYPE_INVALID
-		
-		if (uespLog.BeginsWith(itemName, "Alchemist's")) then
-			logData.tradeType = CRAFTING_TYPE_ALCHEMY
-		elseif (uespLog.BeginsWith(itemName, "Clothier's")) then
-			logData.tradeType = CRAFTING_TYPE_CLOTHIER
-		elseif (uespLog.BeginsWith(itemName, "Blacksmith's")) then
-			logData.tradeType = CRAFTING_TYPE_BLACKSMITHING
-		elseif (uespLog.BeginsWith(itemName, "Enchanter's")) then
-			logData.tradeType = CRAFTING_TYPE_ENCHANTING
-		elseif (uespLog.BeginsWith(itemName, "Provisioner's")) then
-			logData.tradeType = CRAFTING_TYPE_PROVISIONING
-		elseif (uespLog.BeginsWith(itemName, "Woodworker's")) then
-			logData.tradeType = CRAFTING_TYPE_WOODWORKING
-		elseif (uespLog.BeginsWith(itemName, "Jewelry Crafter's")) then
-			logData.tradeType = CRAFTING_TYPE_JEWELRYCRAFTING
-		end
-		
-		logData.hirelingLevel, logData.craftLevel = uespLog.GetHirelingLevel(logData.tradeType)
-		logData.event = "OpenFootLocker"
-		logData.itemName = itemName
-		logData.sound = itemSoundCategory
-		logData.itemLink = itemLink
-		logData.characterName = GetUnitName("player")
-		uespLog.AppendDataToLog("all", logData)
-		uespLog.MsgType(uespLog.MSG_LOOT, "Footlocker "..tostring(itemLink).." opened.")
-		
-		uespLog.lastTargetData.action = "opened"
-		local x, y, z, zone = uespLog.GetUnitPosition(unitTag)
-		
-		uespLog.lastTargetData.x = x	
-		uespLog.lastTargetData.y = y
-		uespLog.lastTargetData.zone = zone
-		uespLog.lastTargetData.name = "footlocker"
-		uespLog.lastTargetData.itemLink = itemLink
-		
-		uespLog.lastItemLinkUsed = ""
-		uespLog.lastItemLinkUsed_BagId = -1
-		uespLog.lastItemLinkUsed_SlotIndex = -1
-		return true
-	elseif (bagId == BAG_BACKPACK and itemLink ~= nil and (itemType == ITEMTYPE_FOOD or itemType == ITEMTYPE_DRINK)) then
-		uespLog.OnEatDrinkItem(itemLink)
-		
-		uespLog.lastItemLinkUsed = ""
-		uespLog.lastItemLinkUsed_BagId = -1
-		uespLog.lastItemLinkUsed_SlotIndex = -1
-		return true
-	end
-	
 	local itemName = GetItemLinkName(itemLink)
-	local itemId = uespLog.GetItemLinkID(itemLink)
+	logData.tradeType = CRAFTING_TYPE_INVALID
 	
-	if (itemId == 69434 or string.lower(itemName) == "merethic restorative resin") then
-		uespLog.UsedMerethicResin = true
+	if (uespLog.BeginsWith(itemName, "Alchemist's")) then
+		logData.tradeType = CRAFTING_TYPE_ALCHEMY
+	elseif (uespLog.BeginsWith(itemName, "Clothier's")) then
+		logData.tradeType = CRAFTING_TYPE_CLOTHIER
+	elseif (uespLog.BeginsWith(itemName, "Blacksmith's")) then
+		logData.tradeType = CRAFTING_TYPE_BLACKSMITHING
+	elseif (uespLog.BeginsWith(itemName, "Enchanter's")) then
+		logData.tradeType = CRAFTING_TYPE_ENCHANTING
+	elseif (uespLog.BeginsWith(itemName, "Provisioner's")) then
+		logData.tradeType = CRAFTING_TYPE_PROVISIONING
+	elseif (uespLog.BeginsWith(itemName, "Woodworker's")) then
+		logData.tradeType = CRAFTING_TYPE_WOODWORKING
+	elseif (uespLog.BeginsWith(itemName, "Jewelry Crafter's")) then
+		logData.tradeType = CRAFTING_TYPE_JEWELRYCRAFTING
 	end
+	
+	logData.hirelingLevel, logData.craftLevel = uespLog.GetHirelingLevel(logData.tradeType)
+	logData.event = "OpenFootLocker"
+	logData.itemName = itemName
+	logData.sound = itemSoundCategory
+	logData.itemLink = itemLink
+	logData.characterName = GetUnitName("player")
+	uespLog.AppendDataToLog("all", logData)
+	uespLog.MsgType(uespLog.MSG_LOOT, "Footlocker "..tostring(itemLink).." opened.")
+	
+	uespLog.lastTargetData.action = "opened"
+	local x, y, z, zone = uespLog.GetUnitPosition(unitTag)
+	
+	uespLog.lastTargetData.x = x	
+	uespLog.lastTargetData.y = y
+	uespLog.lastTargetData.zone = zone
+	uespLog.lastTargetData.name = "footlocker"
+	uespLog.lastTargetData.itemLink = itemLink
 	
 	uespLog.lastItemLinkUsed = ""
 	uespLog.lastItemLinkUsed_BagId = -1
 	uespLog.lastItemLinkUsed_SlotIndex = -1
+	uespLog.lastItemLinkUsed_itemLinks = {}
+	uespLog.lastItemLinkUsed_Name = ""
+	uespLog.lastItemLinkUsed_itemNames = {}
 end
 
 
-function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, itemSoundCategory, updateReason)
+function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, itemSoundCategory, updateReason, stackAmountChange)
+	local linkId = tostring(bagId) .. ":" .. tostring(slotIndex)
+	local lastLinkUsed = uespLog.lastItemLinkUsed_itemLinks[linkId] or uespLog.lastItemLinkUsed
+	local lastLinkName =  uespLog.lastItemLinkUsed_itemNames[linkId] or uespLog.lastItemLinkUsed_Name
 	local itemName = GetItemName(bagId, slotIndex)
 	local itemLink = GetItemLink(bagId, slotIndex, LINK_STYLE_BRACKETS)
 	
-	uespLog.DebugExtraMsg("UESP: Inventory slot("..tostring(bagId)..","..tostring(slotIndex)..") update for "..itemName..", isNew "..tostring(isNewItem)..", reason "..tostring(updateReason)..", sound "..tostring(itemSoundCategory))
-	uespLog.DebugExtraMsg("LastTarget: "..tostring(uespLog.lastTargetData.name))
+	if (itemLink == "" or itemName == "") then
+		itemLink = lastLinkUsed
+		itemName = lastLinkName
+	end
+	
+	local itemId = uespLog.GetItemLinkID(itemLink)
+	
+	--uespLog.DebugExtraMsg("UESP: Inventory slot("..tostring(bagId)..","..tostring(slotIndex)..") update for "..itemName..", isNew "..tostring(isNewItem)..", reason "..tostring(updateReason)..", sound "..tostring(itemSoundCategory)..", qnt="..tostring(stackAmountChange)..", isDigging = "..tostring(uespLog.isDiggingAntiquity))
+	--uespLog.DebugExtraMsg("LastTarget: "..tostring(uespLog.lastTargetData.name))
 
 		-- Skip durability updates or items already logged
 	if (updateReason == INVENTORY_UPDATE_REASON_DURABILITY_CHANGE) then
@@ -6833,18 +6992,38 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 	if (itemSoundCategory == ITEM_SOUND_CATEGORY_BOOSTER) then
 		uespLog.LogInventoryItem(bagId, slotIndex, "SlotUpdate")
 		return
-	end
-	
-	if (itemSoundCategory == ITEM_SOUND_CATEGORY_LURE and (bagId == BAG_BACKPACK or bagId == BAG_VIRTUAL) and not isNewItem) then
+	elseif (itemSoundCategory == ITEM_SOUND_CATEGORY_LURE and (bagId == BAG_BACKPACK or bagId == BAG_VIRTUAL) and not isNewItem) then
 		local action, name = GetGameCameraInteractableActionInfo()
 		
         if (action == GetString(SI_GAMECAMERAACTIONTYPE17) and name == uespLog.FISHING_HOLE and not SCENE_MANAGER:IsInUIMode()) then
 			uespLog.OnFishingReelInReady(0, itemLink, itemName, bagId, slotIndex)
 		end
+		
+	elseif (itemSoundCategory == ITEM_SOUND_CATEGORY_FOOTLOCKER and not isNewItem and stackAmountChange == 0) then
+		
+		uespLog.OnOpenFootlocker(eventCode, bagId, slotIndex, lastLinkUsed, itemSoundCategory)
+		
+	elseif ((itemSoundCategory == ITEM_SOUND_CATEGORY_FOOD or itemSoundCategory == ITEM_SOUND_CATEGORY_DRINK) and stackAmountChange == -1) then
+	
+		uespLog.OnEatDrinkItem(lastLinkUsed)
+		
+		uespLog.lastItemLinkUsed = ""
+		uespLog.lastItemLinkUsed_BagId = -1
+		uespLog.lastItemLinkUsed_SlotIndex = -1
+		uespLog.lastItemLinkUsed_itemLinks = {}
+		uespLog.lastItemLinkUsed_Name = ""
+		uespLog.lastItemLinkUsed_itemNames = {}
+	elseif ((itemId == 69434 or string.lower(itemName) == "merethic restorative resin")) then
+		uespLog.UsedMerethicResin = true
 	end
 	
 	if (not isNewItem) then
-		uespLog.DebugExtraMsg("UESP: Skipping inventory slot update for "..itemName..", old, reason "..tostring(updateReason)..", sound "..tostring(itemSoundCategory))
+	
+		if (itemType == ITEMTYPE_CONTAINER) then
+			uespLog.DebugExtraMsg("Opened Container: "..tostring(itemName))
+		end
+
+		--uespLog.DebugExtraMsg("UESP: Skipping inventory slot update for "..itemName..", old, reason "..tostring(updateReason)..", sound "..tostring(itemSoundCategory))
 		return
 	end
 	
@@ -6854,22 +7033,41 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 	
 		-- Update receiving items from Shadowy Supplier
 	if (updateReason == 0 and isNewItem and uespLog.lastTargetData.name == "Remains-Silent") then
-		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You received "..tostring(itemLink).." from "..tostring(uespLog.lastTargetData.name).."!")
+		-- Now logged in OnLootGained())
+		--uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You received "..tostring(itemLink).." from "..tostring(uespLog.lastTargetData.name).."!")
+		--uespLog.TrackLoot(itemLink, 1, "Remains-Silent")
 	
-	elseif (usedItemType == ITEMTYPE_FISH and itemType == ITEMTYPE_INGREDIENT and usedDeltaTime < 2500) then
-		-- if (itemSoundCategory == ITEM_SOUND_CATEGORY_ANIMAL_COMPONENT) then
-		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You created "..itemLink.." from "..tostring(uespLog.lastItemUsed).."!")
+			-- Using fish
+	-- elseif (usedItemType == ITEMTYPE_FISH and itemType == ITEMTYPE_INGREDIENT and usedDeltaTime < 2500) then
+	elseif (itemSoundCategory == ITEM_SOUND_CATEGORY_ANIMAL_COMPONENT and stackAmountChange == 1 and not uespLog.isDiggingAntiquity and uespLog.lastItemLinkUsed ~= "") then
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You created "..itemLink.." from "..tostring(uespLog.lastItemLinkUsed).."!")
+		
+		uespLog.lastItemLinkUsed = ""
+		uespLog.lastItemLinkUsed_BagId = -1
+		uespLog.lastItemLinkUsed_SlotIndex = -1
+		uespLog.lastItemLinkUsed_itemLinks = {}
+		uespLog.lastItemLinkUsed_Name = ""
+		uespLog.lastItemLinkUsed_itemNames = {}
 	
 		-- Update creation of glass motif chapter
-	elseif (uespLog.UsedMerethicResin) then
+	elseif ((uespLog.UsedMerethicResin or itemSoundCategory == ITEM_SOUND_CATEGORY_BOOK) and not uespLog.isDiggingAntiquity) then
 	
-		if (string.find(string.lower(itemName), "glass") ~= nil) then
+		if (string.find(string.lower(itemName), "crafting motif 16:") ~= nil) then
 			uespLog.MsgColor(uespLog.itemColor, "You used a Merethic Resin to create "..tostring(itemLink).."!")
 		end
 		
 		uespLog.UsedMerethicResin = false
 	elseif (itemType == ITEMTYPE_CONTAINER) then
+		
 		uespLog.CheckAutoOpenContainer(bagId, slotIndex)
+		
+		-- TODO: Temporary check for new antiquity items
+	elseif (updateReason == 0 and isNewItem and uespLog.isDiggingAntiquity) then
+		--local diffTime = GetGameTimeSeconds() - uespLog.lastAntiquityGameOver
+		--diffTime < uespLog.MAX_LASTANTIQUITY_TIMEDIFF
+		
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You looted "..tostring(itemLink).." from the dig site.")
+		uespLog.TrackLoot(itemLink, 1, "Dig Site")
 	end
 	
 	uespLog.LogInventoryItem(bagId, slotIndex, "SlotUpdate")
@@ -6896,6 +7094,10 @@ function uespLog.OnTargetChange (eventCode)
         if (name == nil or name == "" or x <= 0 or y <= 0 or active) then
             return
         end
+		
+		--if (uespLog.lastTargetData.name ~= name) then
+			--uespLog.DebugExtraMsg("Target changed to "..tostring(name))
+		--end
 				
 		uespLog.lastTargetData.x = x
 		uespLog.lastTargetData.y = y
@@ -7452,13 +7654,13 @@ function uespLog.OnMailMessageTakeAttachedMoney (eventCode, mailId)
 	local senderDisplayName, senderCharacterName, subject, icon, unread, fromSystem, fromCustomerService, returned, numAttachments, attachedMoney, codAmount, expiresInDays, secsSinceReceived = GetMailItemInfo(mailId)
 	
 	if (attachedMoney > 0) then
-		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You received "..tostring(attachedMoney).."gp from mail attachment.")
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You received "..tostring(attachedMoney).." gold from mail attachment.")
 	elseif (uespLog.lastMailGold > 0) then
-		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You received "..tostring(uespLog.lastMailGold).."gp from mail attachment.")
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You received "..tostring(uespLog.lastMailGold).." gold from mail attachment.")
 	end
 	
 	if (uespLog.lastMailCOD > 0) then
-		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You paid a mail COD charge of "..tostring(uespLog.lastMailGold).."gp to "..tostring(senderDisplayName)..".")
+		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You paid a mail COD charge of "..tostring(uespLog.lastMailGold).." gold to "..tostring(senderDisplayName)..".")
 	end
 	
 	uespLog.lastMailGold = 0
@@ -7632,10 +7834,16 @@ function uespLog.OnUpdate ()
     end
 	
 	if (not active) then
-	
+		
 		--if (uespLog.lastTargetData.name ~= name) then
-			--uespLog.DebugMsg("Last Target Change: "..tostring(name)..", "..tostring(active)..", "..tostring(action)..", "..tostring(IsInteracting()))
+			--uespLog.DebugExtraMsg("Camera interactable changed to "..tostring(name))
 		--end
+		
+		if (name ~= uespLog.lastActivateInfo.name) then
+			uespLog.lastActivateInfo.name = ""
+			uespLog.lastActivateInfo.gameTime = 0
+			uespLog.lastLootTargetGameTime = 0
+		end
 		
 		uespLog.lastTargetData.name = name
 		uespLog.lastTargetData.x = uespLog.currentTargetData.x
@@ -14433,11 +14641,19 @@ end
 
 function uespLog.IsItemUsable(bagId, slotIndex)
 	local itemLink = GetItemLink(bagId, slotIndex)
+	local linkId = tostring(bagId) .. ":" .. tostring(slotIndex)
+	
 	uespLog.lastItemLinkUsed = itemLink
 	uespLog.lastItemLinkUsed_BagId = bagId
 	uespLog.lastItemLinkUsed_SlotIndex = slotIndex
 	
-	--uespLog.DebugExtraMsg("IsItemUsable: "..tostring(bagId)..", "..tostring(slotIndex))
+	if (itemLink ~= "") then
+		uespLog.lastItemLinkUsed_itemLinks[linkId] = itemLink
+		uespLog.lastItemLinkUsed_Name = GetItemLinkName(itemLink)
+		uespLog.lastItemLinkUsed_itemNames[linkId] = uespLog.lastItemLinkUsed_Name
+	end
+	
+	--uespLog.DebugExtraMsg("IsItemUsable: "..tostring(bagId)..", "..tostring(slotIndex)..", "..tostring(itemLink))
 	
 	return uespLog.Old_IsItemUsable(bagId, slotIndex)
 end	
@@ -14476,6 +14692,9 @@ function uespLog.OnQuickSlotUsed(slotNum)
 	uespLog.lastItemLinkUsed = ""
 	uespLog.lastItemLinkUsed_BagId = -1
 	uespLog.lastItemLinkUsed_SlotIndex = -1
+	uespLog.lastItemLinkUsed_itemLinks = {}
+	uespLog.lastItemLinkUsed_Name = ""
+	uespLog.lastItemLinkUsed_itemNames = {}
 end
 
 
@@ -16249,6 +16468,7 @@ function uespLog.TrackLoot(itemLink, qnt, source)
 	end
 	
 	qnt = qnt or 1
+	if (qnt == 0) then qnt = 1 end
 	source = source or ""
 		
 	if (uespLog.savedVars.charInfo.data.trackedLoot.items[itemLink] == nil) then
@@ -16880,7 +17100,7 @@ function uespLog.CompareRawPrices (materialMatch)
 		local itemMMValue = string.format("%0.1f", itemData.mmValue)
 		local profit = string.format("%0.1f", itemData.profit)
 		
-		uespLog.Msg(".   "..tostring(itemData.itemLink)..": "..tostring(profit).." gp ("..tostring(transformValue).." refined, "..tostring(itemMMValue).." raw)")
+		uespLog.Msg(".   "..tostring(itemData.itemLink)..": "..tostring(profit).." gold ("..tostring(transformValue).." refined, "..tostring(itemMMValue).." raw)")
 	end
 		
 end

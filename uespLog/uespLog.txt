@@ -1,25 +1,11 @@
-## Title: UESP Log v2.30
+## Title: UESP Log v2.31
 ## APIVersion: 100031
-## Version: 2.30
+## Version: 2.31
 ## Author: Daveh from uesp.net (dave@uesp.net)
 ## Description: Logs game data for uesp.net and a few other useful crafting related functions.
-## OptionalDependsOn: LibStub LibAddonMenu-2.0 uespLogSalesPrices
+## DependsOn: LibAddonMenu-2.0
+## OptionalDependsOn: uespLogSalesPrices
 ## SavedVariables: uespLogSavedVars
-
-libs/LibStub/LibStub.lua
-libs/LibAddonMenu-2.0/LibAddonMenu-2.0.lua
-libs/LibAddonMenu-2.0/controls/button.lua
-libs/LibAddonMenu-2.0/controls/checkbox.lua
-libs/LibAddonMenu-2.0/controls/colorpicker.lua
-libs/LibAddonMenu-2.0/controls/custom.lua
-libs/LibAddonMenu-2.0/controls/description.lua
-libs/LibAddonMenu-2.0/controls/dropdown.lua
-libs/LibAddonMenu-2.0/controls/editbox.lua
-libs/LibAddonMenu-2.0/controls/header.lua
-libs/LibAddonMenu-2.0/controls/panel.lua
-libs/LibAddonMenu-2.0/controls/slider.lua
-libs/LibAddonMenu-2.0/controls/submenu.lua
-libs/LibAddonMenu-2.0/controls/texture.lua
 
 uespLog.lua
 uespLogTradeData.lua

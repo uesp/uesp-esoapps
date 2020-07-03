@@ -10,14 +10,12 @@
 -- 		["mineItemOnlySubType"] = -1,
 -- 		["isAutoMiningItems"] = false,
 
-local LAM2 = LibStub:GetLibrary("LibAddonMenu-2.0")
-
-uespLog.SETTINGS_MENU_NAME = "uespLog Options"
+local LAM2 = LibAddonMenu2
 
 uespLog.settingsPanelData = {
 	type = "panel",
-    name = uespLog.SETTINGS_MENU_NAME,
-	displayName = "uespLog Options",
+    name = "uespLog",
+	displayName = "uespLog",
 	author = "Dave Humphrey (dave@uesp.net)",
 	version = uespLog.version,
 	registerForRefresh = true,
@@ -31,8 +29,8 @@ function uespLog.InitSettingsMenu()
 	LAM2:RegisterWidget("uespdescription", 6)
 	uespLog.InitOptionControlsData()
 
-	LAM2:RegisterAddonPanel(uespLog.SETTINGS_MENU_NAME, uespLog.settingsPanelData)
-	LAM2:RegisterOptionControls(uespLog.SETTINGS_MENU_NAME, uespLog.optionControlsData)
+	LAM2:RegisterAddonPanel("uespLog_LAM", uespLog.settingsPanelData)
+	LAM2:RegisterOptionControls("uespLog_LAM", uespLog.optionControlsData)
 end
 
 
@@ -239,6 +237,7 @@ function uespLog.InitOptionControlsData()
 		type = "checkbox",
 		name = "Use UESP Price Data", 
 		tooltip = "Enables/disables the usage of UESP price data.\n      /uespsales prices on/off", 
+		warning = "Requires the UI to be reloaded to take effect.",
 		getFunc = function () return uespLog.IsSalesShowPrices() end,
 		setFunc = function (value) uespLog.SetSalesShowPrices(value) end
 	})

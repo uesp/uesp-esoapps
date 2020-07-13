@@ -1333,6 +1333,7 @@ uespLog.ignoredNPCs = {
 	["Winter Moth"] = 1,	-- Greymoore
 	["Vale Buck Deer"] = 1,	-- Greymoore
 	["Vale Doe Deer"] = 1,	-- Greymoore
+	["Vale Deer Doe"] = 1,	-- Greymoore
 	["Blackreach Jelly"] = 1,	-- Greymoore
 }
 
@@ -1363,6 +1364,7 @@ uespLog.lastMoneyGameTime = 0
 uespLog.lastItemLink = ""
 uespLog.lastItemLinks = { }
 uespLog.lastItemLinkUsed = ""
+uespLog.lastItemLinkTime = 0
 uespLog.lastItemLinkUsed_BagId = -1
 uespLog.lastItemLinkUsed_SlotIndex = -1
 uespLog.lastItemLinkUsed_itemLinks = {}
@@ -6636,24 +6638,7 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 	else
 		uespLog.lastLootUpdateCount = -1
 	end
-	
-	if (lootType == LOOT_TYPE_QUEST_ITEM) then
-		msgType = "quest item"
-		rcvType = "looted quest item"
-	elseif (lootType == LOOT_TYPE_ANTIQUITY_LEAD) then
-		msgType = "antiquity lead"
-		rcvType = "found antiquity lead"
-		
-		if (uespLog.lastAntiquityIdLeadFound > 0) then
-			local antiquityName = zo_strformat(SI_ANTIQUITY_NAME_FORMATTER, GetAntiquityName(uespLog.lastAntiquityIdLeadFound ))
-			local antiquityQuality = GetAntiquityQuality(uespLog.lastAntiquityIdLeadFound )
-			local qualityColorDef = GetAntiquityQualityColor(antiquityQuality)
-			local coloredName = qualityColorDef:Colorize(antiquityName)
-	
-			niceLink = "|r"..coloredName.."|c"..uespLog.itemColor..""
-		end
-	end
-	
+
 	if (uespLog.currentHarvestTarget ~= nil) then
 		posData.x = uespLog.currentHarvestTarget.x
 		posData.y = uespLog.currentHarvestTarget.y
@@ -6672,6 +6657,23 @@ function uespLog.OnLootGained (eventCode, receivedBy, itemLink, quantity, itemSo
 	else
 		uespLog.lastLootTargetName = uespLog.lastTargetData.name
 		posData.lastTarget = uespLog.lastLootTargetName
+	end
+	
+	if (lootType == LOOT_TYPE_QUEST_ITEM) then
+		msgType = "quest item"
+		rcvType = rcvType.." quest item"
+	elseif (lootType == LOOT_TYPE_ANTIQUITY_LEAD) then
+		msgType = "antiquity lead"
+		rcvType = rcvType.." antiquity lead"
+		
+		if (uespLog.lastAntiquityIdLeadFound > 0) then
+			local antiquityName = zo_strformat(SI_ANTIQUITY_NAME_FORMATTER, GetAntiquityName(uespLog.lastAntiquityIdLeadFound ))
+			local antiquityQuality = GetAntiquityQuality(uespLog.lastAntiquityIdLeadFound )
+			local qualityColorDef = GetAntiquityQualityColor(antiquityQuality)
+			local coloredName = qualityColorDef:Colorize(antiquityName)
+	
+			niceLink = "|r"..coloredName.."|c"..uespLog.itemColor..""
+		end
 	end
 	
 	if (isPickPocket) then
@@ -7030,6 +7032,7 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 	local usedDeltaTime = GetGameTimeMilliseconds() - (uespLog.lastItemUsedGameTime or 0)
 	local usedItemType = GetItemLinkItemType(uespLog.lastItemUsed)
 	local itemType = GetItemLinkItemType(itemLink)
+	local lastItemLinkUsedDeltaTime = GetGameTimeMilliseconds() - uespLog.lastItemLinkTime
 	
 		-- Update receiving items from Shadowy Supplier
 	if (updateReason == 0 and isNewItem and uespLog.lastTargetData.name == "Remains-Silent") then
@@ -7039,7 +7042,7 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 	
 			-- Using fish
 	-- elseif (usedItemType == ITEMTYPE_FISH and itemType == ITEMTYPE_INGREDIENT and usedDeltaTime < 2500) then
-	elseif (itemSoundCategory == ITEM_SOUND_CATEGORY_ANIMAL_COMPONENT and stackAmountChange == 1 and not uespLog.isDiggingAntiquity and uespLog.lastItemLinkUsed ~= "") then
+	elseif (itemSoundCategory == ITEM_SOUND_CATEGORY_ANIMAL_COMPONENT and stackAmountChange == 1 and not uespLog.isDiggingAntiquity and uespLog.lastItemLinkUsed ~= "" and lastItemLinkUsedDeltaTime < 1) then
 		uespLog.MsgColorType(uespLog.MSG_LOOT, uespLog.itemColor, "You created "..itemLink.." from "..tostring(uespLog.lastItemLinkUsed).."!")
 		
 		uespLog.lastItemLinkUsed = ""
@@ -14643,6 +14646,7 @@ function uespLog.IsItemUsable(bagId, slotIndex)
 	local itemLink = GetItemLink(bagId, slotIndex)
 	local linkId = tostring(bagId) .. ":" .. tostring(slotIndex)
 	
+	uespLog.lastItemLinkTime = GetGameTimeMilliseconds()
 	uespLog.lastItemLinkUsed = itemLink
 	uespLog.lastItemLinkUsed_BagId = bagId
 	uespLog.lastItemLinkUsed_SlotIndex = slotIndex

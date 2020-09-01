@@ -55,7 +55,7 @@ uespLog.SalesDealProfits = {}
 
 function uespLog.LoadSalePriceData()
 
-	if (uespLog.IsSalesShowPrices() and uespLog.InitSalesPrices ~= nil) then
+	if ((uespLog.IsSalesShowPrices() or uespLog.IsSalesShowTooltip()) and uespLog.InitSalesPrices ~= nil) then
 		uespLog.InitSalesPrices()
 		uespLog.InitSalesFunctions()
 	else

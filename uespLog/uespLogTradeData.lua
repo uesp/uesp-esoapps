@@ -123,7 +123,7 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	--[99] 						 	 = "uespLog/images/swordthane.dds",			-- Swordthane, ?, 99, ?
 	[100] 						 	 = "uespLog/images/blackreachvanguard.dds",	-- Blackreach Vanguard, Gloomspore Chitin, 100, /esoui/art/icons/crafting_style_item_blackreach_vanguard.dds
 	--[101] 						 = "uespLog/images/greymoore.dds",			-- Greymoore, ?, 101, ?
-	--[102] 						 = "uespLog/images/seagiant.dds",			-- Sea Giant, ?, 102, ?
+	[102] 						 	 = "uespLog/images/seagiant.dds",			-- Sea Giant, Sea Snake Fang, 102, /esoui/art/icons/crafting_style_item_seaserpentfang.dds
 	[103] 						 	 = "uespLog/images/ancestralnord.dds",		-- Ancestral Nord, Etched Corundum, 103, /esoui/art/icons/crafting_style_item_antiquities_nord.dds
 	[104] 						 	 = "uespLog/images/ancestralhighelf.dds",	-- Ancestral High Elf, Etched Adamantite, 104, /esoui/art/icons/crafting_style_item_antiquities_altmer.dds
 	[105] 						 	 = "uespLog/images/ancestralorc.dds",		-- Ancestral Orc, Etched Manganese, 105, /esoui/art/icons/crafting_style_item_antiquities_orc.dds
@@ -218,6 +218,7 @@ uespLog.STYLE_ICON_DATA = {
 	[97] 						 	 = "/esoui/art/icons/crafting_style_item_icereach_coven.dds",
 	[98] 						 	 = "/esoui/art/icons/crafting_style_item_pyre_watch.dds",
 	[100] 						 	 = "/esoui/art/icons/crafting_style_item_blackreach_vanguard.dds",
+	[102] 						 	 = "/esoui/art/icons/crafting_style_item_seaserpentfang.dds",
 	[103] 						 	 = "/esoui/art/icons/crafting_style_item_antiquities_nord.dds",
 	[104] 						 	 = "/esoui/art/icons/crafting_style_item_antiquities_altmer.dds",
 	[105] 						 	 = "/esoui/art/icons/crafting_style_item_antiquities_orc.dds",
@@ -1401,7 +1402,7 @@ end
 
 function uespLog.DisplayUespCraftHelp()
 	uespLog.Msg("/uespcraft [on||off]            -- Turns all crafting displays on/off")
-	uespLog.Msg("/uespcraft alchemy [on||off]   -- Turns tooltips on/off in alchemy crafting")
+	--uespLog.Msg("/uespcraft alchemy [on||off]   -- Turns tooltips on/off in alchemy crafting")		-- Needs testing
 	uespLog.Msg("/uespcraft style [option]      -- Adjusts display of styles")
 	uespLog.Msg("/uespcraft trait [option]     -- Sets display of traits known/unknown")
 	uespLog.Msg("/uespcraft traiticon [on||off]     -- Shows ornate/intricate icons in inventory lists")

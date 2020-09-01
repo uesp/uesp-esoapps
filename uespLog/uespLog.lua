@@ -1081,7 +1081,7 @@
 --			- Updated collectible runebox IDs.
 --			- Logging of Mythic item quality data is now supported (GetItemLinkDisplayQuality()).
 --	
---		-- v2.31 - 3 July 2020
+--		-- v2.31 - 3 July 2020 
 --			- Removed the old built-in LibAddonMenu to prevent conflicts with global version.
 --			- Fixed display of (x0) when looting leads.
 --			- Fixed loot source display when looting from container in inventory.
@@ -1091,13 +1091,20 @@
 --			- Sales/tooltip functions are only overridden if sales prices are set to "ON". Requires a UI reload to update.
 --			- Fixed error message when purchasing items from a guild store.
 --
+--		-- v2.40 -- 24 August 2020 (Stonethorn release)
+--			- Updated API versions
+--
+--		-- v2.41 -- 31 August 2020
+--			- Added Sea Giant style.
+--			- Fixed a bug that prevented listing items in guild stores in some cases.
+--
 
 
 --	GLOBAL DEFINITIONS
 uespLog = uespLog or {}
 
-uespLog.version = "2.31"
-uespLog.releaseDate = "3 July 2020"
+uespLog.version = "2.41"
+uespLog.releaseDate = "31 August 2020"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -1335,6 +1342,7 @@ uespLog.ignoredNPCs = {
 	["Vale Doe Deer"] = 1,	-- Greymoore
 	["Vale Deer Doe"] = 1,	-- Greymoore
 	["Blackreach Jelly"] = 1,	-- Greymoore
+	["Pack Guar"] = 1,
 }
 
 uespLog.lastTargetData = {
@@ -4325,6 +4333,8 @@ function uespLog.Initialize( self, addOnName )
 	MAIL_INBOX:RefreshData()
 	
 	uespLog.SetupSlashCommands()
+	
+	uespLog.OriginalSetupPendingPost = TRADING_HOUSE.SetupPendingPost
 		
 	if (MasterMerchant ~= nil and uespLog.IsSalesShowPrices()) then
 		uespLog.Old_MM_DealCalc = MasterMerchant.DealCalc
@@ -4342,7 +4352,6 @@ function uespLog.Initialize( self, addOnName )
 		uespLog.Old_MM_GetProfitValue = MasterMerchant.GetProfitValue
 		MasterMerchant.GetProfitValue = uespLog.GetProfitValue
 		
-		uespLog.OriginalSetupPendingPost = TRADING_HOUSE.SetupPendingPost
 		uespLog.Old_MM_SetupPendingPost = MasterMerchant.SetupPendingPost
 		MasterMerchant.SetupPendingPost = uespLog.SetupPendingPost
 		--TRADING_HOUSE.SetupPendingPost = uespLog.SetupPendingPost	
@@ -4355,7 +4364,6 @@ function uespLog.Initialize( self, addOnName )
 		uespLog.Old_MM_GetTradingHouseListingItemInfo = GetTradingHouseListingItemInfo
 		GetTradingHouseListingItemInfo = uespLog.GetTradingHouseListingItemInfo		
 		
-		uespLog.OriginalSetupPendingPost = TRADING_HOUSE.SetupPendingPost
 		TRADING_HOUSE.SetupPendingPost = uespLog.SetupPendingPost
 		
 		--ZO_TradingHouse_CreateListingItemData = uespLog.ZO_TradingHouse_CreateListingItemData
@@ -9010,9 +9018,9 @@ function uespLog.DumpSkill(abilityId, extraData)
 	logData.icon = GetAbilityIcon(abilityId)
 	logData.perm = IsAbilityPermanent(abilityId)
 	
-	logData.skillType, logData.skillIndex, logData.abilityIndex, logData.morph = GetSpecificSkillAbilityKeysByAbilityId(abilityId)
+	logData.skillType, logData.skillIndex, logData.abilityIndex, logData.morph, logData.tempRank = GetSpecificSkillAbilityKeysByAbilityId(abilityId)
 	
-	if (logData.skillType <= 0) then
+	if (logData.skillType <= 0 or uespLog.EndsWith(name, "Dummy")) then
 		logData.skillType = nil
 		logData.skillIndex = nil
 		logData.abilityIndex = nil
@@ -13168,6 +13176,11 @@ uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
 	['ancestral orc'] = { 160611, 160612, 160613, 160614, 160615, 160616, 160617, 160618, 160619, 160620, 160621, 160622, 160623, 160624 }, -- 160610, 160625
 	['ancestral_orc'] = { 160611, 160612, 160613, 160614, 160615, 160616, 160617, 160618, 160619, 160620, 160621, 160622, 160623, 160624 }, -- 160610, 160625
 	['ancestralorc'] = { 160611, 160612, 160613, 160614, 160615, 160616, 160617, 160618, 160619, 160620, 160621, 160622, 160623, 160624 }, -- 160610, 160625
+	
+		-- Stonethorn
+	['sea giant'] = { 160560, 160561, 160562, 160563, 160564, 160565, 160566, 160567, 160568, 160569, 160570, 160571, 160572, 160573 }, -- 160559, 160574
+	['sea_giant'] = { 160560, 160561, 160562, 160563, 160564, 160565, 160566, 160567, 160568, 160569, 160570, 160571, 160572, 160573 }, -- 160559, 160574
+	['seagiant'] = { 160560, 160561, 160562, 160563, 160564, 160565, 160566, 160567, 160568, 160569, 160570, 160571, 160572, 160573 }, -- 160559, 160574
 }
 
 
@@ -15106,7 +15119,7 @@ function uespLog.BuyPassiveCommand(cmd)
 	uespLog.MsgColor(uespLog.warningColor, ".     /uespbuypassive char all     Buy next rank in all character passives")
 end
 
-SLASH_COMMANDS["/uespbuypassive"] = uespLog.BuyPassiveCommand
+--SLASH_COMMANDS["/uespbuypassive"] = uespLog.BuyPassiveCommand
 
 
 function uespLog.ZO_Alert(category, soundId, msg, ...)
@@ -17104,7 +17117,7 @@ function uespLog.CompareRawPrices (materialMatch)
 		local itemMMValue = string.format("%0.1f", itemData.mmValue)
 		local profit = string.format("%0.1f", itemData.profit)
 		
-		uespLog.Msg(".   "..tostring(itemData.itemLink)..": "..tostring(profit).." gold ("..tostring(transformValue).." refined, "..tostring(itemMMValue).." raw)")
+		uespLog.Msg(".   "..tostring(itemData.itemLink)..": "..tostring(profit).." gold profit ("..tostring(transformValue).." refined, "..tostring(itemMMValue).." raw)")
 	end
 		
 end

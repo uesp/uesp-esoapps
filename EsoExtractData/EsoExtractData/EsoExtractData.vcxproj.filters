@@ -119,14 +119,5 @@
     <Library Include="..\..\common\zlib\lib64\zlib.lib">
       <Filter>Source Files</Filter>
     </Library>
-    <Library Include="..\..\common\devil\win64\lib\x64\Release\DevIL.lib">
-      <Filter>Source Files</Filter>
-    </Library>
-    <Library Include="..\..\common\devil\win64\lib\x64\Release\ILU.lib">
-      <Filter>Source Files</Filter>
-    </Library>
-    <Library Include="..\..\common\devil\win64\lib\x64\Release\ILUT.lib">
-      <Filter>Source Files</Filter>
-    </Library>
   </ItemGroup>
 </Project>

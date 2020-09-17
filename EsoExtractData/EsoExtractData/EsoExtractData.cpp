@@ -150,6 +150,8 @@
  *		- Skips empty DAT files which reduces the number of error messages.
  *		- Added the "--oodleraw" option which saves subfiles in their original Oodle compression format.
  *
+ * v0.41 -- 2 September 2020
+ *		- 
  */
 
 
@@ -1634,12 +1636,13 @@ cmdparamdef_t g_Cmds[] =
 	{ "mnfft",			"m", "mnfft",			"Dump the MNF filetable to the specified text file.",				false, true,  1, 0, false, "" },
 	{ "zosft",			"z", "zosft",			"Dump the ZOS filetable to the specified text file.",				false, true,  1, 0, false, "" },
 	{ "filename",		"n", "filename",		"Only extract the given filename.",									false, true,  1, 0, false, "" },
+	{ "fileext",		"y", "fileext",			"Only extract files with the given extension.",						false, true,  1, 0, false, "" },
 	{ "startindex",		"s", "startindex",		"Start exporting sub-files at the given file index.",				false, true,  1, 0, false, "-1" },
 	{ "endindex",		"e", "endindex",	    "Stop exporting sub-files at the given file index.",				false, true,  1, 0, false, "-1" },
 	{ "archiveindex",	"a", "archive",			"Only export MNF file with the given index.",						false, true,  1, 0, false, "-1" },
 	{ "beginarchive",	"b", "beginarchive",	"start with the given MNF file index.",								false, true,  1, 0, false, "-1" },
 	{ "fileindex",		"f", "fileindex",		"Only export MNF the subfile with the given file index.",			false, true,  1, 0, false, "-1" },
-	{ "convertdds",		"c", "convertdds",		"(Doesn't Work Yet) Attempt to convert DDS files to PNG.",			false, true,  0, 0, false, "0" },
+	//{ "convertdds",		"c", "convertdds",		"(Doesn't Work Yet) Attempt to convert DDS files to PNG.",			false, true,  0, 0, false, "0" },
 	{ "skipsubfiles",	"k", "skipsubfiles",	"Don't export subfiles from the MNF data.",							false, true,  0, 0, false, "0" },
 	{ "langfile",		"l", "lang",	        "Convert the given .lang file to a CSV.",							false, true,  1, 0, false, "" },
 	{ "createlang",		"x", "createlang",		"Convert the given language CSV file to a .LANG.",					false, true,  1, 0, false, "" },
@@ -1655,11 +1658,13 @@ cmdparamdef_t g_Cmds[] =
 	{ "extractsubfile",	"",	 "extractsubfile",	"Extract compressed subfile data (none/combined/seperate).",        false, true,  1, 0, false, "" },
 	{ "noparsegr2",		"",	 "noparsegr2",		"Don't parse GR2 files for their original filename.",               false, true,  0, 0, false, "" },
 	{ "oodleoutput",	"",	 "oodleoutput",		"Output the raw/compressed Oodle files.",                           false, true,  0, 0, false, "" },
+	{ "luafilelist",	"",	 "luafilelist",		"Output filenames to a LUA formatted array.",					    false, true,  1, 0, false, "" },
+	{ "luastartindex",	"",	 "luastartindex",	"Start index for the --luafilelist option.",						false, true,  1, 0, false, "1" },
 	{ "",   "", "", "", false, false, false, false, "" }
 };
 
 const char g_AppDescription[] = "\
-ExportMnf v0.40 is a simple command line application to load and export files\n\
+ExportMnf v0.41 is a simple command line application to load and export files\n\
 from ESO's MNF and DAT files. Created by Daveh (dave@uesp.net).\n\
 \n\
 WARNING: This app is under constant development and is fragile. User discretion is\n\
@@ -1696,9 +1701,11 @@ int _tmain(int argc, _TCHAR* argv[])
 		return 0;
 	}
 
+#ifndef __UESP_NODEVIL
 	ilInit();
 	iluInit();
 	ilEnable(IL_FILE_OVERWRITE);
+#endif
 
 	ExportOptions.MnfFilename = CmdParamHandler.GetParamValue("mnffile");
 	ExportOptions.OutputPath = TerminatePath(CmdParamHandler.GetParamValue("outputpath"));
@@ -1709,7 +1716,10 @@ int _tmain(int argc, _TCHAR* argv[])
 	ExportOptions.ArchiveIndex = CmdParamHandler.GetParamValueAsInt("archiveindex");
 	ExportOptions.BeginArchiveIndex = CmdParamHandler.GetParamValueAsInt("beginarchive");
 	ExportOptions.MnfFileIndex = CmdParamHandler.GetParamValueAsInt("fileindex");
-	ExportOptions.ConvertDDS = CmdParamHandler.HasParamValue("convertdds");
+
+	//ExportOptions.ConvertDDS = CmdParamHandler.HasParamValue("convertdds");
+	ExportOptions.ConvertDDS = false;
+
 	ExportOptions.SkipSubFiles = CmdParamHandler.HasParamValue("skipsubfiles");
 	ExportOptions.UseLangText = CmdParamHandler.HasParamValue("langtext");
 	ExportOptions.UsePOCSVFormat = CmdParamHandler.HasParamValue("pocsv");
@@ -1726,6 +1736,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	ExportOptions.OrigLangFilename = CmdParamHandler.GetParamValue("origlang");
 	ExportOptions.ExtractFilename = CmdParamHandler.GetParamValue("filename");
 	ExportOptions.OodleRawOutput = CmdParamHandler.HasParamValue("oodleraw");
+	ExportOptions.ExtractFileExtension = CmdParamHandler.GetParamValue("fileext");
+	ExportOptions.LuaFileList = CmdParamHandler.GetParamValue("luafilelist");
+	ExportOptions.LuaStartIndex = CmdParamHandler.GetParamValueAsInt("luastartindex");
 
 	ExportOptions.ExtractSubFileDataType = CmdParamHandler.GetParamValue("extractsubfile");
 	std::transform(ExportOptions.ExtractSubFileDataType.begin(), ExportOptions.ExtractSubFileDataType.end(), ExportOptions.ExtractSubFileDataType.begin(), ::tolower);

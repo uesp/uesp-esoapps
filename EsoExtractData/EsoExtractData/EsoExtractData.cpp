@@ -150,10 +150,12 @@
  *		- Skips empty DAT files which reduces the number of error messages.
  *		- Added the "--oodleraw" option which saves subfiles in their original Oodle compression format.
  *
- * v0.41 -- 2 September 2020
- *		- 
+ * v0.41 -- 17 September 2020
+ *		- Removed the -c/--convertdds option.
+ *		- Added the --luafilelist option.
+ *		- Added the --luastartindex option.
+ *		- Added the -y/--fileext option.
  */
-
 
 #include "stdafx.h"
 #include "stddef.h"

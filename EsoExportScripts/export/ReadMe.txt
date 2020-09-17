@@ -1,7 +1,7 @@
 
-	EsoExtractData v0.40 (formally EsoExportMnf)
+	EsoExtractData v0.41 (formally EsoExportMnf)
 	by Dave Humphrey (dave@uesp.net)
-	6 February 2020
+	17 September 2020
 -------------------------------
 EsoextractData is a simple Windows command line application that loads and exports
 data found in ESO's (Elder Scrolls Online) MNF and DAT files.
@@ -220,6 +220,29 @@ There are several more advanced command line options which may be useful:
 		Files that contain compressed record/subfile data are uncompressed and their data output
 		into individual files within a subdirectory. Warning: This creates over 1 million files
 		and adds several hours to the extraction.
+
+	esoextractdata eso.mnf --luafilelist files.lua
+	    Outputs a list of files to the specicied file to a LUA formatted array, for example:
+
+			[1] = "/art/fx/texture/angofwrithingvines.dds",
+			[2] = "/art/fx/texture/aoe_circle.dds",
+			[3] = "/art/fx/texture/aoe_circle_hollow.dds",
+			[4] = "/art/fx/texture/aoe_circle_hollow_thinouter.dds",
+			[5] = "/art/fx/texture/aoe_circlejagged.dds",
+			...
+
+	esoextractdata eso.mnf --luafilelist files.lua --luastartindex 1024
+	    Starts the LUA formatted array at a custom number, for example:
+
+			[1024] = "/art/fx/texture/angofwrithingvines.dds",
+			[1025] = "/art/fx/texture/aoe_circle.dds",
+			[1026] = "/art/fx/texture/aoe_circle_hollow.dds",
+			[1027] = "/art/fx/texture/aoe_circle_hollow_thinouter.dds",
+			[1028] = "/art/fx/texture/aoe_circlejagged.dds",
+			...		
+
+	esoextractdata eso.mnf --luafilelist files.lua --fileext dds
+	    Only outputs files with a DDS extension to the LUA file.
  
 
      Notes

@@ -11,8 +11,12 @@
 #endif
 
 #include "snappy/snappy.h"
-#include "devil/win64/include/il/il.h"
-#include "devil/win64/include/il/ilu.h"
+
+#ifndef __UESP_NODEVIL
+	#include "devil/include/il/il.h"
+	#include "devil/include/il/ilu.h"
+#endif
+
 #include <string>
 #include <vector>
 #include <map>

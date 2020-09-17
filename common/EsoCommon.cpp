@@ -583,6 +583,8 @@ double GetTimerMS (void)
 
 bool ConvertDDStoPNG (const byte* pData, const size_t Size, const std::string Filename)
 {
+
+#ifndef __UESP_NODEVIL
 	std::string OutputFilename = RemoveFileExtension(Filename) + ".png";
 
 	try 
@@ -619,6 +621,9 @@ bool ConvertDDStoPNG (const byte* pData, const size_t Size, const std::string Fi
 	}
 
 	return true;
+#else
+	return PrintError("Not currently implemented!");
+#endif
 }
 
 

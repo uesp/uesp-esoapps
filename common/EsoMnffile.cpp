@@ -308,6 +308,11 @@ namespace eso {
 			PrintError("Saved the ZOSFT to %s!", ExportOptions.ZosOutputFileTable.c_str());
 		}
 
+		if (ExportOptions.LuaFileList != "") 
+		{
+			return ExportLuaFileList(ExportOptions);
+		}
+
 		if (ExportOptions.SkipSubFiles)
 		{
 			PrintError("Skipping extraction of subfile data....\n");
@@ -318,6 +323,42 @@ namespace eso {
 
 		if (ExportOptions.MnfFileIndex > 0) return SaveSubFile(ExportOptions.MnfFileIndex, ExportOptions);
 		return SaveSubFiles(ExportOptions);
+	}
+
+
+	bool CMnfFile::ExportLuaFileList(const mnf_exportoptions_t ExportOptions)
+	{
+		CFile LuaFile;
+		int fileIndex = ExportOptions.LuaStartIndex;
+
+		PrintError("Saving list of files to LUA file '%s'...\n", ExportOptions.LuaFileList.c_str());
+
+		if (ExportOptions.ExtractFileExtension != "")
+		{
+			PrintError("Only outputing files with extension of '%s'...\n", ExportOptions.ExtractFileExtension.c_str());
+		}
+
+		if (!LuaFile.Open(ExportOptions.LuaFileList.c_str(), "wb")) return false;
+		
+		for (size_t i = 0; i < m_FileTable.size(); ++i)
+		{
+			mnf_filetable_t &FileEntry = m_FileTable[i];
+
+			if (FileEntry.pZosftEntry == nullptr) continue;
+
+			if (ExportOptions.ExtractFileExtension != "") 
+			{
+				if (!StringEndsWith(FileEntry.pZosftEntry->Filename, ExportOptions.ExtractFileExtension)) continue;
+			}
+
+			std::string modString = FileEntry.pZosftEntry->Filename;
+			std::replace(modString.begin(), modString.end(), '\\', '/');
+
+			LuaFile.Printf("\t[%d] = \"%s\",\n", fileIndex, modString.c_str());
+			++fileIndex;
+		}
+
+		return true;
 	}
 
 
@@ -823,14 +864,20 @@ namespace eso {
 	}
 
 
-	bool CMnfFile::SaveSubFile (mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, CFile* pFile, const std::string ExtractSubFileDataType, const bool NoExtractGR2)
+	bool CMnfFile::SaveSubFile (mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, CFile* pFile, const std::string ExtractSubFileDataType, const bool NoExtractGR2, const std::string ExtractFileExtension)
 	{
 		dat_subfileinfo_t DataInfo;
 		std::string OutputFilename;
 		std::string OutputPath;
 		CFile File;
-		
+
 		DataInfo.DeletePtrs = true;
+
+		if (ExtractFileExtension != "")
+		{
+			if (FileEntry.pZosftEntry == nullptr) return (false);
+			if (!StringEndsWith(FileEntry.pZosftEntry->Filename, ExtractFileExtension)) return (false);
+		}
 
 		if (!ReadDataFile(FileEntry, DataInfo, pFile)) 
 		{
@@ -900,7 +947,7 @@ namespace eso {
 
 		PrintError("Saving file index %d (0x%08X) from MNF file...", FileIndex, FileIndex);
 		PrintError("Saving data to '%s'...", ExportOptions.OutputPath.c_str());
-		return SaveSubFile(*m_FileIndexMap[FileIndex], ExportOptions.OutputPath, ExportOptions.ConvertDDS, nullptr, ExportOptions.ExtractSubFileDataType, ExportOptions.NoParseGR2);
+		return SaveSubFile(*m_FileIndexMap[FileIndex], ExportOptions.OutputPath, ExportOptions.ConvertDDS, nullptr, ExportOptions.ExtractSubFileDataType, ExportOptions.NoParseGR2, ExportOptions.ExtractFileExtension);
 	}
 
 	
@@ -1010,7 +1057,7 @@ namespace eso {
 
 			if (SkipEmptyDat) continue;
 
-			Result = SaveSubFile(SortedTable[i], ExportOptions.OutputPath, ExportOptions.ConvertDDS, &InputFile, ExportOptions.ExtractSubFileDataType);
+			Result = SaveSubFile(SortedTable[i], ExportOptions.OutputPath, ExportOptions.ConvertDDS, &InputFile, ExportOptions.ExtractSubFileDataType, ExportOptions.NoParseGR2, ExportOptions.ExtractFileExtension);
 			if (Result) ++SuccessCount;
 			SaveResult &= Result;
 		}

@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 #import Image
 from PIL import Image
 import shutil
@@ -10,7 +11,7 @@ import csv
 USE_COMMAND_ARGS = True
 
 if (not USE_COMMAND_ARGS):
-    BasePathIndex = "24"
+    BasePathIndex = "28pts"
     BasePath = "e:/esoexport/"
 elif (len(sys.argv) < 3):
     print("Missing required command line arguments!")
@@ -38,6 +39,15 @@ g_DefaultNullImage = Image.open(DEFAULTNULLTILE)
 g_MapFileCount = 0
 g_MapInfos = []
 
+IGNORE_MAPS = [
+    "housing/halloflunarchampion.base",
+    "housing/newmoonfortress2_base",
+    "reach/u28_markarthmanor_base",
+    "southernelsweyr/newmoonfortress1_base",
+]
+
+MapNameCheckRE = re.compile('.*/')
+
 
 class CMapInfo:
   name = ''
@@ -64,10 +74,19 @@ def SplitMap (RootPath, MapFilename):
     global g_MapInfos
     global g_MapFileCount
     global g_DefaultNullImage
+    global IGNORE_MAPS
+    
+    baseRootPath = os.path.basename(RootPath)
+    baseMapFilename, extMapFilename = os.path.splitext(MapFilename)
+    fullMapName = baseRootPath + "/" + baseMapFilename
 
     if (not MapFilename.endswith(MAPEXTENSION)): return
+
+    if (fullMapName in IGNORE_MAPS):
+        print("Skipping map {0}...".format(fullMapName))
+        return
     
-    print "\t{0}".format(MapFilename)
+    print "\t{0} : {1}".format(MapFilename, fullMapName)
     g_MapFileCount += 1
 
     FullFilename = os.path.join(RootPath, MapFilename)
@@ -185,7 +204,6 @@ def DumpMapInfo (OutputFilename):
 
 
 def IterateMapFiles (MapPath):
-
     
     print "Looking for map files in '{0}'...".format(MapPath)
     (root, subdirs, filenames) = next(os.walk(MapPath))

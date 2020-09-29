@@ -11,7 +11,7 @@ import re
 USE_COMMAND_ARGS = True
 
 if (not USE_COMMAND_ARGS):
-    BasePathIndex = "24"
+    BasePathIndex = "28pts"
     BasePath = "e:/esoexport/"
 elif (len(sys.argv) < 3):
     print("Missing required command line arguments!")
@@ -34,6 +34,14 @@ OUTPUTIMAGESIZE = 256
 ONLYDOMAP = ""
 ONLYDOMAPPATH = ""
 
+IGNORE_MAPS = [
+    "housing/halloflunarchampion.base",
+    "housing/newmoonfortress2_base",
+    "reach/u28_markarthmanor_base",
+    "southernelsweyr/newmoonfortress1_base",
+]
+
+
 g_MapFileCount = 0
 g_DefaultNullImage = Image.open(DEFAULTNULLTILE)
 
@@ -55,8 +63,17 @@ def SplitMap (RootPath, MapFilename):
     global g_MapInfos
     global g_MapFileCount
     global g_DefaultNullImage
+    global IGNORE_MAPS
+
+    baseRootPath = os.path.basename(RootPath)
+    baseMapFilename, extMapFilename = os.path.splitext(MapFilename)
+    fullMapName = baseRootPath + "/" + baseMapFilename
 
     if (not MapFilename.endswith(MAPEXTENSION)): return
+
+    if (fullMapName in IGNORE_MAPS):
+        print("Skipping map {0}...".format(fullMapName))
+        return
     
     print "\t{0}".format(MapFilename)
     g_MapFileCount += 1

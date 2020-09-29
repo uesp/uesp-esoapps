@@ -9,7 +9,7 @@ import fnmatch
 USE_COMMAND_ARGS = True
 
 if (not USE_COMMAND_ARGS):
-    BasePathIndex = "24"
+    BasePathIndex = "28pts"
     BasePath = "e:/esoexport/"
 elif (len(sys.argv) < 3):
     print("Missing required command line arguments!")
@@ -20,15 +20,15 @@ else:
     print("\tUsing Base Path:" + BasePath)
     print("\tUsing Version:" + BasePathIndex)
 
-
 InputPath  = BasePath + 'esomnf-' + BasePathIndex + '/art/maps/'
 OutputPath = BasePath + 'goodimages-' + BasePathIndex + '/CombinedMaps/'
 
 OutputMapList = OutputPath + 'maplist.txt'
-MapImageRE  = re.compile('.*[0-9]+\.png')
+MapImageRE = re.compile('.*[0-9]+\.png')
 MapImageBaseRE = re.compile('.*_base_[0-9]+\.png')
-MapGroupRE  = re.compile('([/\\a-z]*)_.*_?([0-9]+)\.png')
-MapImageNumberRE  = re.compile('.*_([0-9]+)\.png')
+MapGroupRE = re.compile('([/\\a-z]*)_.*_?([0-9]+)\.png')
+MapImageNumberRE = re.compile('.*_([0-9]+)\.png')
+MapNameCheckRE = re.compile('.*/')
 
 
 class CImageFileInfo:
@@ -95,6 +95,19 @@ def GetGroupIndex(Filename):
     if (m == None): return 0
     if len(m.groups()) == 0: return 0
     return int(m.groups(0)[0])
+
+print "Checking for duplicate map names..."
+DupMapCheck = {}
+DupMapCount = 0
+
+for imagegroupname in ImageGroups:
+    mapname = re.sub(MapNameCheckRE, "", imagegroupname)
+
+    if (mapname in DupMapCheck):
+        print("WARNING: Found duplicate map name: {0}, {1}".format(imagegroupname, DupMapCheck[mapname]))
+        DupMapCount = DupMapCount + 1
+    else:
+         DupMapCheck[mapname] = imagegroupname
 
 for imagegroupname in ImageGroups:
     print "Group", imagegroupname, "has", len(ImageGroups[imagegroupname].ImageFiles), "images"

@@ -1084,6 +1084,7 @@ function uespLog.OnZoneChanged(eventCode, zoneName, subZoneName, newSubzone, zon
 		uespLog.SaveCharData()
 	end
 
+	zo_callLater(uespLog.LogLocationData, 500)
 end
 
 

@@ -1100,6 +1100,7 @@
 --
 --		-- v2.50 -- ?? (Markarth)
 --			- Updated runebox data.
+--			- Added more zone and POI logging.
 --
 
 
@@ -4316,7 +4317,8 @@ function uespLog.Initialize( self, addOnName )
 	
 	uespLog.InitSettingsMenu()
 	
-	EVENT_MANAGER:RegisterForEvent( "uespLog", EVENT_PLAYER_ACTIVATED, uespLog.outputInitMessage)
+	EVENT_MANAGER:RegisterForEvent( "uespLog", EVENT_PLAYER_ACTIVATED, uespLog.OnPlayerActivated)
+	EVENT_MANAGER:RegisterForEvent( "uespLog-initmsg", EVENT_PLAYER_ACTIVATED, uespLog.outputInitMessage)
 	EVENT_MANAGER:RegisterForEvent( "uespLog-sales", EVENT_PLAYER_ACTIVATED, uespLog.OnActivateSalesData)
 			
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_RETICLE_TARGET_CHANGED, uespLog.OnTargetChange)
@@ -4803,6 +4805,11 @@ function uespLog.outputInitMessage ()
 	
 	local flagStr = uespLog.BoolToOnOff(uespLog.IsDebug())
 	uespLog.Msg("uespLog v"..uespLog.version.." add-on initialized...debug output is currently "..tostring(flagStr)..".")
+end
+
+
+function uespLog.OnPlayerActivated(eventCode)
+	zo_callLater(uespLog.LogLocationData, 500)
 end
 
 
@@ -19610,6 +19617,53 @@ function uespLog.MineAntiquity(antiquityId)
 	uespLog.AppendDataToLog("all", logData)
 	
 	return true
+end
+
+
+function uespLog.LogLocationData()
+	local logData = {}
+	
+	logData.event = "loglocation"
+	
+	logData.zoneName = GetPlayerActiveZoneName()
+	logData.subzoneName = GetPlayerActiveSubzoneName()
+	logData.zoneIndex = GetCurrentMapZoneIndex()
+	logData.zoneDesc = GetZoneDescription(logData.zoneIndex)
+	logData.zoneId = GetZoneId(logData.zoneIndex)
+	
+	uespLog.DebugExtraMsg("UESP LogLocationData: "..tostring(logData.zoneName)..":"..tostring(logData.subzoneName).." ("..tostring(logData.zoneIndex)..":"..tostring(logData.zoneId)..")")
+	
+	logData.mapName = GetMapName()
+	logData.mapType = GetMapType()
+	logData.mapContentType = GetMapContentType()
+	logData.mapFilterType = GetMapFilterType()
+	
+	logData.allowsScaling = DoesCurrentZoneAllowScalingByLevel()
+	logData.allowsBattleScaling = DoesCurrentZoneAllowBattleLevelScaling()
+	logData.scaleLevelConstraint, logData.minLevel, logData.maxLevel = GetCurrentZoneLevelScalingConstraints()
+	
+	logData.isAvA1 = IsInAvAZone()
+	logData.isAvA2 = IsPlayerInAvAWorld()
+	logData.isBattleground = IsActiveWorldBattleground()
+	logData.telvarBehavior = DoesCurrentZoneHaveTelvarStoneBehavior()
+	logData.isOutlaw = IsInOutlawZone()
+	logData.isJustice = IsInJusticeEnabledZone()
+	logData.isTutorial = IsInTutorialZone()
+	logData.isGroupOwnable = IsActiveWorldGroupOwnable()
+	logData.isDungeon = IsUnitInDungeon("player")
+	logData.dungeonDifficulty = GetCurrentZoneDungeonDifficulty()
+	
+	logData.numPOIs = GetNumPOIs(logData.zoneIndex)
+	
+	logData.subZoneIndex, logData.poiIndex = GetCurrentSubZonePOIIndices()
+	logData.normX, logData.normZ, logData.poiPinType, logData.mapIcon, logData.isShown, _ = GetPOIMapInfo(logData.zoneIndex, logData.poiIndex)
+	logData.poiType = GetPOIType(logData.zoneIndex, logData.poiIndex)
+	
+	uespLog.DebugExtraMsg("UESP LogLocationData: POIs "..tostring(logData.numPOIs)..": "..tostring(logData.zoneIndex)..":"..tostring(logData.poiIndex)..":"..tostring(logData.poiType).."")
+	
+	logData.objectiveName, logData.objectiveLevel, logData.startDesc, logData.endDesc = GetPOIInfo(logData.zoneIndex, logData.poiIndex)
+	
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 end
 
 

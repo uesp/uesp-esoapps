@@ -1101,10 +1101,11 @@
 --		-- v2.50 -- ?? (Markarth)
 --			- Updated runebox data.
 --			- Added more zone and POI logging.
+--			- Location logging now includes the world coordinates from GetUnitRawWorldPosition().
 --
 
 
---	GLOBAL DEFINITIONS
+--	GLOBAL .
 uespLog = uespLog or {}
 
 uespLog.version = "2.50"
@@ -1354,6 +1355,10 @@ uespLog.lastTargetData = {
 	name = "",
 	x = "",
     y = "",
+	worldx = "",
+	worldy = "",
+	worldz = "",
+	worldzoneid = "",
     zone = "",
 	gameTime = "",
 	timeStamp = "",
@@ -1418,6 +1423,10 @@ uespLog.currentTargetData = {
 	zone = "",
 	action = "",
 	interactionType = "",
+	worldx = "",
+	worldy = "",
+	worldz = "",
+	worldzoneid = "",
 }
 
 uespLog.currentConversationData = {
@@ -1426,6 +1435,10 @@ uespLog.currentConversationData = {
     x = "",
     y = "",
     zone = "",
+	worldx = "",
+	worldy = "",
+	worldz = "",
+	worldzoneid = "",
 }
 
 uespLog.ALLIANCE_SHORT_NAMES = {
@@ -3911,6 +3924,11 @@ function uespLog.GetLastTargetData()
 	result.zone = uespLog.lastTargetData.zone
 	result.lastTarget = uespLog.lastTargetData.name
 	
+	result.worldx = uespLog.lastTargetData.worldx
+	result.worldy = uespLog.lastTargetData.worldy
+	result.worldz = uespLog.lastTargetData.worldz
+	result.worldzoneid = uespLog.lastTargetData.worldzoneid
+	
 	return result
 end
 
@@ -3923,6 +3941,11 @@ function uespLog.GetCurrentTargetData()
 	result.zone = uespLog.currentTargetData.zone
 	result.lastTarget = uespLog.currentTargetData.name
 	
+	result.worldx = uespLog.currentTargetData.worldx
+	result.worldy = uespLog.currentTargetData.worldy
+	result.worldz = uespLog.currentTargetData.worldz
+	result.worldzoneid = uespLog.currentTargetData.worldzoneid
+	
 	return result
 end
 
@@ -3934,16 +3957,20 @@ end
 
 function uespLog.GetUnitPositionData(unitTag)
 	local result = { }
+	local useTag = unitTag
 	
 	if (unitTag == "reticleover") then
-		result.x, result.y = GetMapPlayerPosition("player")
+		useTag = "player"
 	elseif (unitTag == "interact") then
-		result.x, result.y = GetMapPlayerPosition("player")
-	else
-		result.x, result.y = GetMapPlayerPosition(unitTag)
+		useTag = "player"
 	end
-	
+
+	result.x, result.y = GetMapPlayerPosition(useTag)	
 	result.zone = GetMapName()
+	
+	if (GetUnitRawWorldPosition ~= nil) then
+		result.worldzoneid, result.worldx, result.worldy, result.worldz = GetUnitRawWorldPosition("player")
+	end
 	
 	return result
 end
@@ -3951,17 +3978,29 @@ end
 
 function uespLog.GetUnitPosition(unitName)
 	local x, y, z
+	local worldzoneid = nil
+	local worldx = nil
+	local worldy = nil
+	local worldz = nil
+	local useTag = unitName
                      
 	if (unitName == "reticleover") then
+		useTag = "player"
 		x, y, z = GetMapPlayerPosition("player")
 	elseif (unitName == "interact") then
+		useTag = "player"
 		x, y, z = GetMapPlayerPosition("player")
 	else
 		x, y, z = GetMapPlayerPosition(unitName)
 	end
 	
 	local zone = GetMapName()
-	return x, y, z, zone
+	
+	if (GetUnitRawWorldPosition ~= nil) then
+		worldzoneid, worldx, worldy, worldz = GetUnitRawWorldPosition("player")
+	end
+	
+	return x, y, z, zone, worldzoneid, worldx, worldy, worldz
 end
 
 
@@ -4801,7 +4840,7 @@ end
 
 
 function uespLog.outputInitMessage ()
-	EVENT_MANAGER:UnregisterForEvent("uespLog", EVENT_PLAYER_ACTIVATED)
+	EVENT_MANAGER:UnregisterForEvent("uespLog-initmsg", EVENT_PLAYER_ACTIVATED)
 	
 	local flagStr = uespLog.BoolToOnOff(uespLog.IsDebug())
 	uespLog.Msg("uespLog v"..uespLog.version.." add-on initialized...debug output is currently "..tostring(flagStr)..".")
@@ -5556,6 +5595,10 @@ function uespLog.OnChatterEnd (eventCode)
     uespLog.currentConversationData.x = ""
     uespLog.currentConversationData.y = ""
     uespLog.currentConversationData.zone = ""
+	uespLog.currentConversationData.worldx = ""
+    uespLog.currentConversationData.worldy = ""
+	uespLog.currentConversationData.worldz = ""
+    uespLog.currentConversationData.worldzoneid = ""
 	
 	uespLog.lastConversationOption.Text = ""
 	uespLog.lastConversationOption.Type = ""
@@ -5591,6 +5634,10 @@ function uespLog.OnChatterBegin (eventCode, optionCount)
     uespLog.currentConversationData.x = x
     uespLog.currentConversationData.y = y
     uespLog.currentConversationData.zone = zone
+	
+	if (GetUnitRawWorldPosition ~= nil) then
+		uespLog.currentConversationData.worldzoneid, uespLog.currentConversationData.worldx, uespLog.currentConversationData.worldy, uespLog.currentConversationData.worldz = GetUnitRawWorldPosition("player")
+	end
 		
 	logData.event = "ChatterBegin"
 	logData.bodyText = ChatterGreeting
@@ -7201,6 +7248,10 @@ function uespLog.OnOpenFootlocker(eventCode, bagId, slotIndex, itemLink, itemSou
 	uespLog.lastTargetData.name = "footlocker"
 	uespLog.lastTargetData.itemLink = itemLink
 	
+	if (GetUnitRawWorldPosition ~= nil) then
+		uespLog.lastTargetData.worldzoneid, uespLog.lastTargetData.worldx, uespLog.lastTargetData.worldy, uespLog.lastTargetData.worldz = GetUnitRawWorldPosition("player")
+	end
+	
 	uespLog.lastItemLinkUsed = ""
 	uespLog.lastItemLinkUsed_BagId = -1
 	uespLog.lastItemLinkUsed_SlotIndex = -1
@@ -7348,6 +7399,10 @@ function uespLog.OnTargetChange (eventCode)
 		uespLog.lastTargetData.y = y
 		uespLog.lastTargetData.zone = zone
 		uespLog.lastTargetData.name = name
+		
+		if (GetUnitRawWorldPosition ~= nil) then
+			uespLog.lastTargetData.worldzoneid, uespLog.lastTargetData.worldx, uespLog.lastTargetData.worldy, uespLog.lastTargetData.worldz = GetUnitRawWorldPosition("player")
+		end
 		
         local level = GetUnitLevel(unitTag)
 		local gender = GetUnitGender(unitTag)
@@ -8075,6 +8130,10 @@ function uespLog.OnUpdate ()
 		uespLog.currentTargetData.x = ""
 		uespLog.currentTargetData.y = ""
 		uespLog.currentTargetData.zone = ""
+		uespLog.currentTargetData.worldx = ""
+		uespLog.currentTargetData.worldy = ""
+		uespLog.currentTargetData.worldz = ""
+		uespLog.currentTargetData.worldzoneid = ""
         return
     end
 	
@@ -8094,6 +8153,10 @@ function uespLog.OnUpdate ()
 		uespLog.lastTargetData.x = uespLog.currentTargetData.x
 		uespLog.lastTargetData.y = uespLog.currentTargetData.y
 		uespLog.lastTargetData.zone = uespLog.currentTargetData.zone
+		uespLog.lastTargetData.worldx = uespLog.currentTargetData.worldx
+		uespLog.lastTargetData.worldy = uespLog.currentTargetData.worldy
+		uespLog.lastTargetData.worldz = uespLog.currentTargetData.worldz
+		uespLog.lastTargetData.worldzoneid = uespLog.currentTargetData.worldzoneid
 		uespLog.lastTargetData.gameTime = GetGameTimeMilliseconds()
 		uespLog.lastTargetData.timeStamp = GetTimeStamp()
 		uespLog.lastTargetData.action = uespLog.currentTargetData.action
@@ -8131,10 +8194,19 @@ function uespLog.OnUpdate ()
 	
 	if (DoesUnitExist("reticleover")) then
 		x, y, z, zone = uespLog.GetUnitPosition("reticleover")
+		
+		if (GetUnitRawWorldPosition ~= nil) then
+			uespLog.currentTargetData.worldzoneid, uespLog.currentTargetData.worldx, uespLog.currentTargetData.worldy, uespLog.currentTargetData.worldz = GetUnitRawWorldPosition("player")
+		end
+		
 		--uespLog.DebugMsg("UnitPos: "..tostring(x)..", "..tostring(y))
 	else
 		--local x1, y1 = uespLog.GetUnitPosition("reticleover")
 		x, y, z, zone = uespLog.GetPlayerPosition()
+		
+		if (GetUnitRawWorldPosition ~= nil) then
+			uespLog.currentTargetData.worldzoneid, uespLog.currentTargetData.worldx, uespLog.currentTargetData.worldy, uespLog.currentTargetData.worldz = GetUnitRawWorldPosition("player")
+		end
 		--uespLog.DebugMsg("PlayerPos: "..tostring(x)..", "..tostring(y))
 		--uespLog.DebugMsg("UnitPos: "..tostring(x1)..", "..tostring(y1))
 	end

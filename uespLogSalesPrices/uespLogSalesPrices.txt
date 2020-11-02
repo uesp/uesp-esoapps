@@ -1,5 +1,5 @@
-## Title: UESP Log Sales Prices v1.06
-## APIVersion: 100032
+## Title: UESP Log Sales Prices v1.07
+## APIVersion: 100033
 ## Version: 1.06
 ## Author: Daveh@uesp
 ## Description: Holds sales prices for all items from esosales.uesp.net for use with the uespLog add-on.

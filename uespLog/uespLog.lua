@@ -1098,7 +1098,7 @@
 --			- Added Sea Giant style.
 --			- Fixed a bug that prevented listing items in guild stores in some cases.
 --
---		-- v2.50 -- ?? (Markarth)
+--		-- v2.50 -- 2 November 2020 (Markarth)
 --			- Updated runebox data.
 --			- Added more zone and POI logging.
 --			- Location logging now includes the world coordinates from GetUnitRawWorldPosition().
@@ -1109,7 +1109,7 @@
 uespLog = uespLog or {}
 
 uespLog.version = "2.50"
-uespLog.releaseDate = "31 August 2020"
+uespLog.releaseDate = "2 November 2020"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

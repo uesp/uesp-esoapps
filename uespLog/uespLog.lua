@@ -1103,6 +1103,10 @@
 --			- Added more zone and POI logging.
 --			- Location logging now includes the world coordinates from GetUnitRawWorldPosition().
 --
+--		-- v2.51 -- 
+--			- Fixed character/build data recognizing vampirism.
+--
+--
 
 
 --	GLOBAL .
@@ -5642,7 +5646,7 @@ function uespLog.OnChatterBegin (eventCode, optionCount)
 	logData.event = "ChatterBegin"
 	logData.bodyText = ChatterGreeting
 	logData.optionCount = optionCount
-	-- logData.chatText, logData.numOptions, logData.atGreeting = GetChatterData()   -- Still has issue with facial animations
+	--logData.chatText, logData.numOptions, logData.atGreeting = GetChatterData()   -- Has an issue with facial animations not showing up in the initial dialog.
 		
 	uespLog.AppendDataToLog("all", logData, uespLog.currentConversationData, uespLog.GetTimeData())
 	
@@ -5657,9 +5661,12 @@ function uespLog.OnChatterBegin (eventCode, optionCount)
 	
 	uespLog.DebugExtraMsg("UESP: Chatter begin...")
 	
-		-- Manually call the original function to update the chat window
+		-- Manually call the original function to update the chat window.
+		-- If you don't call these the NPC dialog window doesn't show up.
 	INTERACTION:InitializeInteractWindow(ChatterGreeting)
-	INTERACTION.optionCount, INTERACTION.importantOptions = INTERACTION:PopulateChatterOptions(optionCount, false)
+	INTERACTION:UpdateChatterOptions(optionCount, false)
+	--INTERACTION.optionCount, INTERACTION.importantOptions = INTERACTION:PopulateChatterOptions(optionCount, false)
+	        
 end
 
 

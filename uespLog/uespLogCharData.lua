@@ -1327,7 +1327,9 @@ function uespLog.CreateCharDataBuffs()
 		
 		if (string.find(buffName, "Vampirism") ~= nil) then 
 			isVampire = true
-		elseif (buffName == "Lycanthropy") then 
+		elseif (string.find(buffName, "Vampire Stage") ~= nil) then 
+			isVampire = true
+		elseif (buffName == "Lycanthropy") then
 			werewolfStage = 1
 		end
 		

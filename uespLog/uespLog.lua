@@ -1103,8 +1103,9 @@
 --			- Added more zone and POI logging.
 --			- Location logging now includes the world coordinates from GetUnitRawWorldPosition().
 --
---		-- v2.51 -- 
+--		-- v2.60 -- (Flames of Ambition)
 --			- Fixed character/build data recognizing vampirism.
+--			- Increased max skill/item ID when mining to 200,000.
 --
 --
 
@@ -1754,7 +1755,7 @@ uespLog.isAutoMiningItems = false
 uespLog.MINEITEMS_AUTODELAY = 1000 -- Delay in ms
 uespLog.MINEITEMS_AUTOLOOPCOUNT = 400
 uespLog.MINEITEMS_AUTOMAXLOOPCOUNT = 400
-uespLog.MINEITEM_AUTO_MAXITEMID = 180000
+uespLog.MINEITEM_AUTO_MAXITEMID = 200000
 uespLog.mineItemsAutoNextItemId = 1
 uespLog.mineItemsAutoNextListIndex = 1
 uespLog.mineItemsAutoLastItemId = uespLog.MINEITEM_AUTO_MAXITEMID
@@ -9217,7 +9218,7 @@ end
 uespLog.SkillDump_validAbilityCount = 0
 uespLog.SkillDump_startAbilityId = 0
 uespLog.SkillDump_countAbilityId = 5000
-uespLog.SkillDump_lastAbilityId = 150000
+uespLog.SkillDump_lastAbilityId = 200000
 uespLog.SkillDump_lastValidAbilityId = 0
 uespLog.SkillDump_delay = 2000
 
@@ -15604,6 +15605,10 @@ function uespLog.DumpChampionPointSkill(disciplineIndex, skillIndex)
 	local maxPoints = GetMaxPossiblePointsInChampionSkill()
 	local logData = {}
 	
+	if (GetChampionAbilityDescription == null) then
+		return
+	end
+	
 	logData.event = "CP"
 	logData.discIndex = disciplineIndex
 	logData.skillIndex = skillIndex
@@ -16295,6 +16300,11 @@ end
 
 
 function uespLog.GetPlayerSpellCriticalDamage()
+
+	if (GetChampionAbilityDescription == null) then
+		return 0
+	end
+	
 	local critDamage = uespLog.GetPlayerBaseCriticalDamage()
 		
 		-- The Apprentice:Elfborn 61680	7	3
@@ -16316,6 +16326,11 @@ end
 
 
 function uespLog.GetPlayerWeaponCriticalDamage()
+
+	if (GetChampionAbilityDescription == null) then
+		return 0
+	end	
+	
 	local critDamage = uespLog.GetPlayerBaseCriticalDamage()
 		
 		--The Ritual:Precise Strikes 59105	5	2
@@ -16372,6 +16387,11 @@ end
 
 
 function uespLog.GetMagicDamageDone()
+
+	if (GetChampionAbilityDescription == null) then
+		return 0
+	end
+	
 	local description = GetChampionAbilityDescription(63848, 0)
 	local value = description:match(" by |c[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]([%d.]+)|r%%")
 	local result = 0
@@ -16385,6 +16405,11 @@ end
 
 
 function uespLog.GetStaminaDamageDone()
+
+	if (GetChampionAbilityDescription == null) then
+		return 0
+	end
+	
 	local description = GetChampionAbilityDescription(63868, 0)
 	local value = description:match(" by |c[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]([%d.]+)|r%%")
 	local result = 0
@@ -16554,8 +16579,17 @@ function uespLog.AddCharacterWindowStats()
     local lastControl = ZO_CharacterWindowStatsScrollScrollChildStatEntry24
     local nextPaddingY = 25
 	
+	if (parentControl == null or lastControl == null) then
+		return
+	end
+	
 	local statControl = CreateControlFromVirtual("$(parent)StatEntry", parentControl, "ZO_StatsEntry", STAT_SPELL_PENETRATION)
 	local relativeAnchorSide = (lastControl == nil) and TOP or BOTTOM
+	
+	if (statControl == null) then
+		return
+	end
+	
 	statControl:SetAnchor(TOP, lastControl, relativeAnchorSide, 0, nextPaddingY)
 	local statEntry = ZO_StatEntry_Keyboard:New(statControl, STAT_SPELL_PENETRATION)
 	statEntry.tooltipAnchorSide = LEFT
@@ -17968,7 +18002,7 @@ SLASH_COMMANDS["/uespnirnsound"] = uespLog.NirnSoundCommand
 uespLog.FindNameChangeItemId = 1
 uespLog.FindNameChangeIsScanning = false
 uespLog.FindNameChangeScanIds = 2000
-uespLog.FindNameChangeScanEndId = 180000
+uespLog.FindNameChangeScanEndId = 200000
 uespLog.FindNameChangeScanDelayMS = 1000
 uespLog.FindNameChangeItemCount = 0
 

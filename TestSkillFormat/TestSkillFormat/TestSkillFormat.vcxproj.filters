@@ -76,10 +76,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\common\devil\lib\DevIL.lib" />
-    <Library Include="..\..\common\devil\lib\ILU.lib" />
-    <Library Include="..\..\common\devil\lib\ILUT.lib" />
-    <Library Include="..\..\common\zlib\zdll.lib" />
+    <Library Include="..\..\common\devil\lib\x64\Release\DevIL.lib" />
+    <Library Include="..\..\common\devil\lib\x64\Release\ILU.lib" />
+    <Library Include="..\..\common\devil\lib\x64\Release\ILUT.lib" />
+    <Library Include="..\..\common\zlib\lib64\zlib.lib" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\common\snappy\snappy-stubs-public.h.in">

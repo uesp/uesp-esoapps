@@ -1103,9 +1103,17 @@
 --			- Added more zone and POI logging.
 --			- Location logging now includes the world coordinates from GetUnitRawWorldPosition().
 --
---		-- v2.60 -- (Flames of Ambition)
+--		-- v2.60 -- 8 March 2021 (Flames of Ambition)
 --			- Fixed character/build data recognizing vampirism.
 --			- Increased max skill/item ID when mining to 200,000.
+--			- Character data saves the new advanced stats and champion point data.
+--			- "/uespdump cp" now saves the new champion point data.
+--			- Fixed error with initializing custom character stats.
+--			- Spell/Weapon Critical Damage custom stats are modified by the new CP.
+--			- Added new motifs/styles: Greymoore, Thorn Legion, Hazardous Alchemy, Ancestral Reach, 
+--			  Nighthollow, Arkthzand Armory, and Wayward Guardian.
+--			- API updated to 100034.
+--			- Updated runebox data.
 --
 --
 
@@ -1113,8 +1121,8 @@
 --	GLOBAL .
 uespLog = uespLog or {}
 
-uespLog.version = "2.50"
-uespLog.releaseDate = "2 November 2020"
+uespLog.version = "2.60"
+uespLog.releaseDate = "8 March 2021"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -2169,18 +2177,18 @@ uespLog.ITEMCHANGE_IGNORE_FIELDS = {
 
 
 uespLog.RUNEBOX_COLLECTIBLE_IDS = {
-		[79329] = 148, 			-- Xivkyn Dreadguard
-        [79330] = 147, 			-- Xivkyn Tormentor
-        [79331] = 146, 			-- Xivkyn Augur
-        [83516] = 439, 			-- Pumpkin Spectre Mask
-        [83517] = 440, 			-- Scarecrow Spectre Mask
-        [96391] = 601, 			-- Mud Ball Pouch
-        [96392] = 597, 			-- Sword-Swallower's Blade
-        [96393] = 598, 			-- Juggler's Knives
-        [96395] = 600, 			-- Fire-Breather's Torches
-        [96951] = 753, 			-- Nordic Bather's Towel
-        [96952] = 755, 			-- Colovian Fur Hood
-        [96953] = 754, 			-- Colovian Filigreed Hood
+        [79329] = 148,  		-- Xivkyn Dreadguard
+        [79330] = 147,  		-- Xivkyn Tormentor
+        [79331] = 146,  		-- Xivkyn Augur
+        [83516] = 439,  		-- Pumpkin Spectre Mask
+        [83517] = 440,  		-- Scarecrow Spectre Mask
+        [96391] = 601,  		-- Mud Ball Pouch
+        [96392] = 597,  		-- Sword-Swallower's Blade
+        [96393] = 598,  		-- Juggler's Knives
+        [96395] = 600,  		-- Fire-Breather's Torches
+        [96951] = 753,  		-- Nordic Bather's Towel
+        [96952] = 755,  		-- Colovian Fur Hood
+        [96953] = 754,  		-- Colovian Filigreed Hood
         [119692] = 1108,        -- Cherry Blossom Branch
         [124658] = 1232,        -- Dwarven Theodolite
         [124659] = 1230,        -- Sixth House Robe
@@ -2855,6 +2863,8 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [170166] = 8737,        -- Rkindaleft Dwarven Mace
         [170167] = 8738,        -- Rkindaleft Dwarven Sword
         [170168] = 8739,        -- Rkindaleft Dwarven Dagger
+        [170169] = 8762,        -- Zaan Shoulder
+        [170170] = 8761,        -- Zaan Mask
         [170172] = 8749,        -- Ebonsteel Knight Cuirass
         [170173] = 8750,        -- Ebonsteel Knight Helm
         [170174] = 8751,        -- Ebonsteel Knight Greaves
@@ -2948,6 +2958,44 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [171477] = 8125,        -- Slag Town Diver
         [171478] = 8658,        -- Thetys Ramarys's Bait Kit
         [171533] = 8655,        -- Rage of the Reach
+        [171578] = 8959,        -- Symphony of Blades Shoulder
+        [171579] = 8958,        -- Symphony of Blades Mask
+        [171597] = 9002,        -- Stonekeeper Shoulder
+        [171598] = 9001,        -- Stonekeeper Mask
+        [171715] = 9020,        -- Regal Regalia Jerkin
+        [171716] = 9020,        -- Regal Regalia Jerkin
+        [171717] = 9021,        -- Regal Regalia Hat
+        [171718] = 9021,        -- Regal Regalia Hat
+        [171719] = 9022,        -- Regal Regalia Breeches
+        [171720] = 9022,        -- Regal Regalia Breeches
+        [171721] = 9023,        -- Regal Regalia Epaulets
+        [171722] = 9023,        -- Regal Regalia Epaulets
+        [171723] = 9024,        -- Regal Regalia Shoes
+        [171724] = 9024,        -- Regal Regalia Shoes
+        [171725] = 9025,        -- Regal Regalia Gloves
+        [171726] = 9025,        -- Regal Regalia Gloves
+        [171727] = 9026,        -- Regal Regalia Sash
+        [171728] = 9026,        -- Regal Regalia Sash
+        [171733] = 9028,        -- Imperial Champion Battle Axe
+        [171734] = 9029,        -- Imperial Champion Bow
+        [171735] = 9030,        -- Imperial Champion Shield
+        [171736] = 9031,        -- Imperial Champion Staff
+        [171737] = 9032,        -- Imperial Champion Axe
+        [171738] = 9033,        -- Imperial Champion Maul
+        [171739] = 9034,        -- Imperial Champion Greatsword
+        [171740] = 9035,        -- Imperial Champion Mace
+        [171741] = 9036,        -- Imperial Champion Sword
+        [171742] = 9037,        -- Imperial Champion Dagger
+        [171743] = 9028,        -- Imperial Champion Battle Axe
+        [171744] = 9033,        -- Imperial Champion Maul
+        [171745] = 9034,        -- Imperial Champion Greatsword
+        [171746] = 9032,        -- Imperial Champion Axe
+        [171747] = 9029,        -- Imperial Champion Bow
+        [171748] = 9035,        -- Imperial Champion Mace
+        [171749] = 9030,        -- Imperial Champion Shield
+        [171750] = 9031,        -- Imperial Champion Staff
+        [171751] = 9036,        -- Imperial Champion Sword
+        [171752] = 9037,        -- Imperial Champion Dagger
 }
 
 function uespLog.BoolToOnOff(flag)
@@ -2966,7 +3014,7 @@ function uespLog.GetMessageDisplay(msgType)
 		uespLog.savedVars.settings.data.messageDisplay = uespLog.DEFAULT_SETTINGS.messageDisplay
 	end
 	
-	if (uespLog.savedVars.settings.data.messageDisplay[msgType] == null) then
+	if (uespLog.savedVars.settings.data.messageDisplay[msgType] == nil) then
 		return false
 	end
 	
@@ -8752,7 +8800,7 @@ SLASH_COMMANDS["/uespdump"] = function(cmd)
 	elseif (firstCmd == "inventory") then
 		uespLog.DumpInventory()
 	elseif (firstCmd == "cp" or firstCmd == "championpoints") then
-		uespLog.DumpChampionPoints(cmds[2])
+		uespLog.DumpChampionPoints2(cmds[2])
 	elseif (firstCmd == "globals") then
 		
 		if (cmds[2] == "end" or cmds[2] == "stop") then
@@ -10490,7 +10538,7 @@ function uespLog.DumpInventory ()
 	logData.event = "InvDumpEnd"
 	uespLog.AppendDataToLog("all", logData)
 	
-	uespLog.Msg("Output ".. slotCount .." inventory items to log!");
+	uespLog.Msg("Output ".. slotCount .." inventory items to log!")
 end
 
 
@@ -11285,7 +11333,7 @@ function uespLog.DumpAchievements (note)
 	logData.event = "Achievement::End"
 	uespLog.AppendDataToLog("all", logData)
 	
-	uespLog.Msg("Output "..categoryCount.." categories, ".. outputCount .." achievements, ".. rewardCount.." rewards, and "..criteriaCount.." criterias to log!");
+	uespLog.Msg("Output "..categoryCount.." categories, ".. outputCount .." achievements, ".. rewardCount.." rewards, and "..criteriaCount.." criterias to log!")
 end
 
 
@@ -12368,7 +12416,7 @@ function uespLog.MineItemsQualityMapLogItem(itemLink, intLevel, intSubtype, extr
 	uespLog.AppendDataToLog("all", logData, extraData)
 	
 	local data = uespLog.savedVars.tempData.data
-	data[#data+1] = tostring(intLevel) .. ","..tostring(intSubtype)..","..tostring(logData.effLevel)..","..tostring(quality);
+	data[#data+1] = tostring(intLevel) .. ","..tostring(intSubtype)..","..tostring(logData.effLevel)..","..tostring(quality)
 end
 
 
@@ -12567,7 +12615,7 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		return
 	elseif (command == "subtype" or command == "type") then
 		uespLog.mineItemOnlySubType = tonumber(cmds[2])
-		if (uespLog.mineItemOnlySubType == null) then uespLog.mineItemOnlySubType = -1 end
+		if (uespLog.mineItemOnlySubType == nil) then uespLog.mineItemOnlySubType = -1 end
 		uespLog.savedVars.settings.data.mineItemOnlySubType = uespLog.mineItemOnlySubType
 		
 		if (uespLog.mineItemOnlySubType < 0) then
@@ -12579,7 +12627,7 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		return
 	elseif (command == "level") then
 		uespLog.mineItemOnlyLevel = tonumber(cmds[2])
-		if (uespLog.mineItemOnlyLevel == null) then uespLog.mineItemOnlyLevel = -1 end
+		if (uespLog.mineItemOnlyLevel == nil) then uespLog.mineItemOnlyLevel = -1 end
 		uespLog.savedVars.settings.data.mineItemOnlyLevel = uespLog.mineItemOnlyLevel
 		
 		if (uespLog.mineItemOnlyLevel < 0) then
@@ -13251,6 +13299,32 @@ uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
 	['ancestral orc'] = 105,
 	['ancestral_orc'] = 105,
 	['ancestralorc'] = 105,
+	
+	-- Stonethorn
+	['thorn legion'] = 106,
+	['thorn_legion'] = 106,
+	['thornlegion'] = 106,
+	['hazardous alchemy'] = 107,
+	['hazardous_alchemy'] = 107,
+	['hazardousalchemy'] = 107,
+	['hazardous'] = 107,
+	
+	-- Flames of Ambition
+	['ancestral reach'] = 110,
+	['ancestral_reach'] = 110,
+	['ancestralreach'] = 110,
+	['night hollow'] = 111,
+	['night_hollow'] = 111,
+	['nighthollow'] = 111,
+	['arkthzand armory'] = 112,
+	['arkthzand_armory'] = 112,
+	['arkthzandarmory'] = 112,
+	['arkthzand'] = 112,
+	['wayward guardian'] = 113,
+	['wayward_guardian'] = 113,
+	['waywardguardian'] = 113,
+	['wayward'] = 113,
+	
 }
 
 
@@ -13490,11 +13564,29 @@ uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
 	['ancestral orc'] = { 160611, 160612, 160613, 160614, 160615, 160616, 160617, 160618, 160619, 160620, 160621, 160622, 160623, 160624 }, -- 160610, 160625
 	['ancestral_orc'] = { 160611, 160612, 160613, 160614, 160615, 160616, 160617, 160618, 160619, 160620, 160621, 160622, 160623, 160624 }, -- 160610, 160625
 	['ancestralorc'] = { 160611, 160612, 160613, 160614, 160615, 160616, 160617, 160618, 160619, 160620, 160621, 160622, 160623, 160624 }, -- 160610, 160625
+	['greymoore'] = { 160543, 160544, 160545, 160546, 160547, 160548, 160549, 160550, 160551, 160552, 160553, 160554, 160555, 160556 }, -- 160542, 160557
 	
 		-- Stonethorn
 	['sea giant'] = { 160560, 160561, 160562, 160563, 160564, 160565, 160566, 160567, 160568, 160569, 160570, 160571, 160572, 160573 }, -- 160559, 160574
 	['sea_giant'] = { 160560, 160561, 160562, 160563, 160564, 160565, 160566, 160567, 160568, 160569, 160570, 160571, 160572, 160573 }, -- 160559, 160574
 	['seagiant'] = { 160560, 160561, 160562, 160563, 160564, 160565, 160566, 160567, 160568, 160569, 160570, 160571, 160572, 160573 }, -- 160559, 160574
+	
+	-- Flames of Ambition
+	['ancestral reach'] = { 167271, 167272, 167273, 167274, 167275, 167276, 167277, 167278, 167279, 167280, 167281, 167282, 167283, 167284 }, -- 167270, 167285
+	['ancestral_reach'] = { 167271, 167272, 167273, 167274, 167275, 167276, 167277, 167278, 167279, 167280, 167281, 167282, 167283, 167284 }, -- 167270, 167285
+	['ancestralreach'] = { 167271, 167272, 167273, 167274, 167275, 167276, 167277, 167278, 167279, 167280, 167281, 167282, 167283, 167284 }, -- 167270, 167285
+	['night hollow'] = { 167944, 167945, 167946, 167947, 167948, 167949, 167950, 167951, 167952, 167953, 167954, 167955, 167956, 167957 }, -- 167943, 167958
+	['night_hollow'] = { 167944, 167945, 167946, 167947, 167948, 167949, 167950, 167951, 167952, 167953, 167954, 167955, 167956, 167957 }, -- 167943, 167958
+	['nighthollow'] = { 167944, 167945, 167946, 167947, 167948, 167949, 167950, 167951, 167952, 167953, 167954, 167955, 167956, 167957 }, -- 167943, 167958
+	['arkthzand armory'] = { 167961, 167962, 167963, 167964, 167965, 167966, 167967, 167968, 167969, 167970, 167971, 167972, 167973, 167974 }, -- 167960, 167975
+	['arkthzand_armory'] = { 167961, 167962, 167963, 167964, 167965, 167966, 167967, 167968, 167969, 167970, 167971, 167972, 167973, 167974 }, -- 167960, 167975
+	['arkthzandarmory'] = { 167961, 167962, 167963, 167964, 167965, 167966, 167967, 167968, 167969, 167970, 167971, 167972, 167973, 167974 }, -- 167960, 167975
+	['arkthzand'] = { 167961, 167962, 167963, 167964, 167965, 167966, 167967, 167968, 167969, 167970, 167971, 167972, 167973, 167974 }, -- 167960, 167975
+	['wayward guardian'] = { 167978, 167979, 167980, 167981, 167982, 167983, 167984, 167985, 167986, 167987, 167988, 167989, 167990, 167991 }, -- 167977, 167992
+	['wayward_guardian'] = { 167978, 167979, 167980, 167981, 167982, 167983, 167984, 167985, 167986, 167987, 167988, 167989, 167990, 167991 }, -- 167977, 167992
+	['waywardguardian'] = { 167978, 167979, 167980, 167981, 167982, 167983, 167984, 167985, 167986, 167987, 167988, 167989, 167990, 167991 }, -- 167977, 167992
+	['wayward'] = { 167978, 167979, 167980, 167981, 167982, 167983, 167984, 167985, 167986, 167987, 167988, 167989, 167990, 167991 }, -- 167977, 167992
+	
 }
 
 
@@ -15561,6 +15653,139 @@ function uespLog.OnFishingReelInReady(eventCode, itemLink, itemName, bagId, slot
 end
 
 
+function uespLog.DumpChampionPoints2(note)
+	local numDisc = GetNumChampionDisciplines()
+	local logData = {}
+	
+	uespLog.Msg("Dumping all champion point data to log...")
+	logData.event = "CP2::start"
+	logData.note = note
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
+	for disciplineIndex = 1, numDisc do
+		uespLog.DumpChampionPointDiscipine2(disciplineIndex)
+	end
+	
+	logData = {}
+	logData.event = "CP2::end"
+	uespLog.AppendDataToLog("all", logData)
+end
+
+
+function uespLog.DumpChampionPointDiscipine2(disciplineIndex)
+	local logData = {}
+	
+	logData.event = "CP2::disc"
+	logData.discIndex = disciplineIndex
+	logData.discId = GetChampionDisciplineId(disciplineIndex)
+	logData.name = GetChampionDisciplineName(logData.discId)
+	logData.type = GetChampionDisciplineType(logData.discId)
+	logData.bgTexture = GetChampionDisciplineBackgroundTexture(logData.discId)
+	logData.glowTexture = GetChampionDisciplineBackgroundGlowTexture(logData.discId)
+	logData.selTexture = GetChampionDisciplineBackgroundSelectedTexture(logData.discId)
+	logData.numSkills = GetNumChampionDisciplineSkills(disciplineIndex)	
+	
+	uespLog.AppendDataToLog("all", logData)
+	
+	for skillIndex = 1, logData.numSkills do
+		uespLog.DumpChampionPointSkill2(disciplineIndex, skillIndex)
+	end
+end
+
+
+function uespLog.DumpChampionPointSkill2(disciplineIndex, skillIndex)
+	local logData = {}
+	
+	logData.event = "CP2"
+	logData.discIndex = disciplineIndex
+	logData.discId = GetChampionDisciplineId(disciplineIndex)
+	logData.skillIndex = skillIndex
+	logData.skillId = GetChampionSkillId(disciplineIndex, skillIndex)
+	logData.x, logData.y = GetChampionSkillPosition(logData.skillId)
+	logData.name = GetChampionSkillName(logData.skillId)
+	logData.skillType = GetChampionSkillType(logData.skillId)
+	
+	local linkedIds = { GetChampionSkillLinkIds(logData.skillId) }
+	
+	if (linkedIds ~= nil) then
+		logData.linkedIds = uespLog.implode(linkedIds, ",")
+	end
+	
+	if (DoesChampionSkillHaveJumpPoints(logData.skillId)) then
+		local jumpPoints = { GetChampionSkillJumpPoints(logData.skillId) }
+		logData.jumpPoints = uespLog.implode(jumpPoints, ",")
+	end	
+		
+	logData.isRoot = IsChampionSkillRootNode(logData.skillId)
+	logData.isClusterRoot = IsChampionSkillClusterRoot(logData.skillId)
+	
+	if (logData.isClusterRoot) then
+		logData.clusterName = GetChampionClusterName(logData.skillId)
+		logData.clusterTexture = GetChampionClusterBackgroundTexture(logData.skillId)
+		local skillIds = { GetChampionClusterSkillIds(logData.skillId) }
+		logData.clusterSkills = uespLog.implode(skillIds, ",")
+	end
+	
+	--logData.unlockLevel = GetChampionSkillUnlockLevel(disciplineIndex, skillIndex)
+	--logData.isUnlocked = WouldChampionSkillNodeBeUnlocked(*integer* _championSkillId_, *integer* _pendingPoints_)
+	logData.maxPoints = GetChampionSkillMaxPoints(logData.skillId)
+	logData.abilityId = GetChampionAbilityId(logData.skillId)
+	
+	local minBonus = GetChampionSkillCurrentBonusText(logData.skillId, 0)
+	local maxBonus = GetChampionSkillCurrentBonusText(logData.skillId, logData.maxPoints)
+	local minDesc = GetChampionSkillDescription(logData.skillId, 0)
+	local maxDesc = GetChampionSkillDescription(logData.skillId, logData.maxPoints)
+	
+	minDesc = minDesc:gsub("\n\nCurrent bonus: |cffffff0|r%%", "")
+	maxDesc = maxDesc:gsub("\n\nCurrent bonus: |cffffff0|r%%", "")
+	minDesc = minDesc:gsub("\n\nCurrent value: |cffffff0|r%%", "")
+	maxDesc = maxDesc:gsub("\n\nCurrent value: |cffffff0|r%%", "")
+	minDesc = minDesc:gsub("\n\nCurrent bonus: |cffffff0|r", "")
+	maxDesc = maxDesc:gsub("\n\nCurrent bonus: |cffffff0|r", "")
+	minDesc = minDesc:gsub("\n\nCurrent value: |cffffff0|r", "")
+	maxDesc = maxDesc:gsub("\n\nCurrent value: |cffffff0|r", "")
+	
+	if (maxBonus ~= "") then
+		logData.desc = minDesc .. "\nCurrent bonus: " .. minBonus
+		logData.maxDesc = maxDesc .. "\nCurrent bonus: " .. maxBonus
+	else
+		logData.desc = minDesc
+		logData.maxDesc = maxDesc
+	end
+	
+	uespLog.AppendDataToLog("all", logData)
+	
+	local maxPoints = logData.maxPoints
+	local skillId = logData.skillId
+	local abilityId = logData.abilityId
+	
+	for i = 0, maxPoints do
+		local bonus = GetChampionSkillCurrentBonusText(skillId, i)
+		
+		logData = {}
+		logData.event = "CP2::desc"
+		logData.skillId = skillId
+		logData.abilityId = abilityId
+		logData.points = i
+		
+		local desc = GetChampionSkillDescription(skillId, i)
+		desc = desc:gsub("\n\nCurrent bonus: |cffffff0|r%%", "")
+		desc = desc:gsub("\n\nCurrent bonus: |cffffff0|r", "")
+		desc = desc:gsub("\n\nCurrent value: |cffffff0|r%%", "")
+		desc = desc:gsub("\n\nCurrent value: |cffffff0|r", "")
+		
+		if (bonus ~= "") then
+			logData.desc = desc .. "\nCurrent bonus: " .. bonus
+		else
+			logData.desc = desc
+		end
+		
+		uespLog.AppendDataToLog("all", logData)
+	end	
+
+end
+
+
 function uespLog.DumpChampionPoints(note)
 	local numDisc = GetNumChampionDisciplines()
 	local logData = {}
@@ -15605,7 +15830,7 @@ function uespLog.DumpChampionPointSkill(disciplineIndex, skillIndex)
 	local maxPoints = GetMaxPossiblePointsInChampionSkill()
 	local logData = {}
 	
-	if (GetChampionAbilityDescription == null) then
+	if (GetChampionAbilityDescription == nil) then
 		return
 	end
 	
@@ -16299,18 +16524,36 @@ function uespLog.GetPlayerBaseCriticalDamage()
 end
 
 
-function uespLog.GetPlayerSpellCriticalDamage()
+function uespLog.IsCp2SkillEquipped(findSkillId)
 
-	if (GetChampionAbilityDescription == null) then
-		return 0
+	if (GetAssignableChampionBarStartAndEndSlots == nil) then
+		return false
 	end
 	
+	local startSlotIndex, endSlotIndex = GetAssignableChampionBarStartAndEndSlots()
+	local slotIndex
+	local slotData = {}
+	
+	for slotIndex = startSlotIndex, endSlotIndex do
+		local skillId = GetSlotBoundId(slotIndex, HOTBAR_CATEGORY_CHAMPION)
+		
+		if (skillId == findSkillId) then
+			return true
+		end
+	end
+	
+	return false
+end
+
+
+function uespLog.GetPlayerSpellCriticalDamage()
+
 	local critDamage = uespLog.GetPlayerBaseCriticalDamage()
 		
 		-- The Apprentice:Elfborn 61680	7	3
 	local numPoints = GetNumPointsSpentOnChampionSkill(7, 3)
 	
-	if (numPoints ~= nil and numPoints > 0) then
+	if (numPoints ~= nil and numPoints > 0 and GetChampionAbilityDescription ~= nil) then
 		local abilityId = GetChampionAbilityId(7, 3)
 		local description = GetChampionAbilityDescription(abilityId, 0)
 		local value = description:match(" by |c[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]([%d.]+)|r%%")
@@ -16318,7 +16561,30 @@ function uespLog.GetPlayerSpellCriticalDamage()
 		if (value ~= nil) then
 			critDamage = critDamage + tonumber(value)/100
 		end
+	end
+	
+		-- 141899 Fighting Finesse
+	if (uespLog.IsCp2SkillEquipped(12)) then
+		local spentPoints = GetNumPointsSpentOnChampionSkill(12)
+		local description = GetChampionSkillDescription(12, spentPoints)
+		local bonusText = GetChampionSkillCurrentBonusText(12, spentPoints)
+		local value = description:match(" |c[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]([%d.]+)|r%%")
 		
+		if (value ~= nil) then
+			critDamage = critDamage + tonumber(value)/100
+		end
+	end
+	
+		-- 142006 Backstabber
+	if (uespLog.IsCp2SkillEquipped(31)) then
+		local spentPoints = GetNumPointsSpentOnChampionSkill(31)
+		local description = GetChampionSkillDescription(31, spentPoints)
+		local bonusText = GetChampionSkillCurrentBonusText(31, spentPoints)
+		local value = description:match(" |c[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]([%d.]+)|r%%")
+		
+		if (value ~= nil) then
+			critDamage = critDamage + tonumber(value)/100
+		end
 	end
 	
 	return math.floor(critDamage*1000 + 0.5)/1000
@@ -16326,17 +16592,13 @@ end
 
 
 function uespLog.GetPlayerWeaponCriticalDamage()
-
-	if (GetChampionAbilityDescription == null) then
-		return 0
-	end	
 	
 	local critDamage = uespLog.GetPlayerBaseCriticalDamage()
 		
 		--The Ritual:Precise Strikes 59105	5	2
 	local numPoints = GetNumPointsSpentOnChampionSkill(5, 2)
 	
-	if (numPoints ~= nil and numPoints > 0) then
+	if (numPoints ~= nil and numPoints > 0 and GetChampionAbilityDescription ~= nil) then
 		local abilityId = GetChampionAbilityId(5, 2)
 		local description = GetChampionAbilityDescription(abilityId, 0)
 		local value = description:match(" by |c[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]([%d.]+)|r%%")
@@ -16346,6 +16608,30 @@ function uespLog.GetPlayerWeaponCriticalDamage()
 		end
 		
 	end	
+	
+		-- 141899 Fighting Finesse
+	if (uespLog.IsCp2SkillEquipped(12)) then
+		local spentPoints = GetNumPointsSpentOnChampionSkill(12)
+		local description = GetChampionSkillDescription(12, spentPoints)
+		local bonusText = GetChampionSkillCurrentBonusText(12, spentPoints)
+		local value = description:match(" |c[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]([%d.]+)|r%%")
+		
+		if (value ~= nil) then
+			critDamage = critDamage + tonumber(value)/100
+		end
+	end
+	
+		-- 142006 Backstabber
+	if (uespLog.IsCp2SkillEquipped(31)) then
+		local spentPoints = GetNumPointsSpentOnChampionSkill(31)
+		local description = GetChampionSkillDescription(31, spentPoints)
+		local bonusText = GetChampionSkillCurrentBonusText(31, spentPoints)
+		local value = description:match(" |c[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]([%d.]+)|r%%")
+		
+		if (value ~= nil) then
+			critDamage = critDamage + tonumber(value)/100
+		end
+	end
 	
 	return math.floor(critDamage*1000 + 0.5)/1000
 end
@@ -16366,7 +16652,7 @@ function uespLog.GetEffectiveSpellPower()
 	local DamageDone = uespLog.GetDamageDone()
 	local result = 0
 	
-	SpellCrit = math.floor(AttackCrit / (2 * EffectiveLevel * (100 + EffectiveLevel)) * 1000 + 0.5)/1000;
+	SpellCrit = math.floor(AttackCrit / (2 * EffectiveLevel * (100 + EffectiveLevel)) * 1000 + 0.5)/1000
 	
 		-- EffectiveSpellPower = (round(Magicka/10.5) + SpellDamage)*(1 + AttackSpellCrit*SpellCritDamage)*(AttackSpellMitigation)
 	result = math.floor(Magicka/10.5 + 0.5) + SpellDamage
@@ -16388,16 +16674,15 @@ end
 
 function uespLog.GetMagicDamageDone()
 
-	if (GetChampionAbilityDescription == null) then
-		return 0
-	end
-	
-	local description = GetChampionAbilityDescription(63848, 0)
-	local value = description:match(" by |c[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]([%d.]+)|r%%")
 	local result = 0
+
+	if (GetChampionAbilityDescription ~= nil) then
+		local description = GetChampionAbilityDescription(63848, 0)
+		local value = description:match(" by |c[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]([%d.]+)|r%%")
 		
-	if (value ~= nil) then
-		result = result + tonumber(value)/100
+		if (value ~= nil) then
+			result = result + tonumber(value)/100
+		end
 	end
 	
 	return result
@@ -16406,16 +16691,15 @@ end
 
 function uespLog.GetStaminaDamageDone()
 
-	if (GetChampionAbilityDescription == null) then
-		return 0
-	end
-	
-	local description = GetChampionAbilityDescription(63868, 0)
-	local value = description:match(" by |c[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]([%d.]+)|r%%")
 	local result = 0
+
+	if (GetChampionAbilityDescription ~= nil) then	
+		local description = GetChampionAbilityDescription(63868, 0)
+		local value = description:match(" by |c[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]([%d.]+)|r%%")
 		
-	if (value ~= nil) then
-		result = result + tonumber(value)/100
+		if (value ~= nil) then
+			result = result + tonumber(value)/100
+		end
 	end
 	
 	return result
@@ -16491,7 +16775,7 @@ function uespLog.GetEffectiveWeaponPower()
 	local DamageDone = uespLog.GetDamageDone()
 	local result = 0
 	
-	WeaponCrit = math.floor(AttackCrit / (2 * EffectiveLevel * (100 + EffectiveLevel)) * 1000 + 0.5)/1000;
+	WeaponCrit = math.floor(AttackCrit / (2 * EffectiveLevel * (100 + EffectiveLevel)) * 1000 + 0.5)/1000
 	
 		--EffectiveWeaponPower = (round(Stamina/10.5) + WeaponDamage)*(1 + AttackWeaponCrit*WeaponCritDamage)*(AttackPhysicalMitigation)
 	result = math.floor(Stamina/10.5 + 0.5) + WeaponDamage
@@ -16579,14 +16863,14 @@ function uespLog.AddCharacterWindowStats()
     local lastControl = ZO_CharacterWindowStatsScrollScrollChildStatEntry24
     local nextPaddingY = 25
 	
-	if (parentControl == null or lastControl == null) then
+	if (parentControl == nil or lastControl == nil) then
 		return
 	end
 	
-	local statControl = CreateControlFromVirtual("$(parent)StatEntry", parentControl, "ZO_StatsEntry", STAT_SPELL_PENETRATION)
+	local statControl = CreateControlFromVirtual("$(parent)StatEntryUesp", parentControl, "ZO_StatsEntry", STAT_SPELL_PENETRATION)
 	local relativeAnchorSide = (lastControl == nil) and TOP or BOTTOM
 	
-	if (statControl == null) then
+	if (statControl == nil) then
 		return
 	end
 	
@@ -16597,7 +16881,7 @@ function uespLog.AddCharacterWindowStats()
 	lastControl = statControl
 	nextPaddingY = 5
 	
-	statControl = CreateControlFromVirtual("$(parent)StatEntry", parentControl, "ZO_StatsEntry", STAT_PHYSICAL_PENETRATION)
+	statControl = CreateControlFromVirtual("$(parent)StatEntryUesp", parentControl, "ZO_StatsEntry", STAT_PHYSICAL_PENETRATION)
 	relativeAnchorSide = (lastControl == nil) and TOP or BOTTOM
 	statControl:SetAnchor(TOP, lastControl, relativeAnchorSide, 0, nextPaddingY)
 	statEntry = ZO_StatEntry_Keyboard:New(statControl, STAT_PHYSICAL_PENETRATION)
@@ -16606,7 +16890,7 @@ function uespLog.AddCharacterWindowStats()
 	lastControl = statControl
 	nextPaddingY = 25
 	
-	statControl = CreateControlFromVirtual("$(parent)StatEntry", parentControl, "ZO_StatsEntry", uespLog.STAT_SPELL_CRITICAL_DAMAGE)
+	statControl = CreateControlFromVirtual("$(parent)StatEntryUesp", parentControl, "ZO_StatsEntry", uespLog.STAT_SPELL_CRITICAL_DAMAGE)
 	relativeAnchorSide = (lastControl == nil) and TOP or BOTTOM
 	statControl:SetAnchor(TOP, lastControl, relativeAnchorSide, 0, nextPaddingY)
 	statEntry = ZO_StatEntry_Keyboard:New(statControl, uespLog.STAT_SPELL_CRITICAL_DAMAGE)
@@ -16615,7 +16899,7 @@ function uespLog.AddCharacterWindowStats()
 	lastControl = statControl
 	nextPaddingY = 5
 	
-	statControl = CreateControlFromVirtual("$(parent)StatEntry", parentControl, "ZO_StatsEntry", uespLog.STAT_WEAPON_CRITICAL_DAMAGE)
+	statControl = CreateControlFromVirtual("$(parent)StatEntryUesp", parentControl, "ZO_StatsEntry", uespLog.STAT_WEAPON_CRITICAL_DAMAGE)
 	relativeAnchorSide = (lastControl == nil) and TOP or BOTTOM
 	statControl:SetAnchor(TOP, lastControl, relativeAnchorSide, 0, nextPaddingY)
 	statEntry = ZO_StatEntry_Keyboard:New(statControl, uespLog.STAT_WEAPON_CRITICAL_DAMAGE)
@@ -16624,7 +16908,7 @@ function uespLog.AddCharacterWindowStats()
 	lastControl = statControl
 	nextPaddingY = 25
 	
-	statControl = CreateControlFromVirtual("$(parent)StatEntry", parentControl, "ZO_StatsEntry", uespLog.STAT_EFFECTIVE_SPELL_POWER)
+	statControl = CreateControlFromVirtual("$(parent)StatEntryUesp", parentControl, "ZO_StatsEntry", uespLog.STAT_EFFECTIVE_SPELL_POWER)
 	relativeAnchorSide = (lastControl == nil) and TOP or BOTTOM
 	statControl:SetAnchor(TOP, lastControl, relativeAnchorSide, 0, nextPaddingY)
 	statEntry = ZO_StatEntry_Keyboard:New(statControl, uespLog.STAT_EFFECTIVE_SPELL_POWER)
@@ -16633,7 +16917,7 @@ function uespLog.AddCharacterWindowStats()
 	lastControl = statControl
 	nextPaddingY = 5
 	
-	statControl = CreateControlFromVirtual("$(parent)StatEntry", parentControl, "ZO_StatsEntry", uespLog.STAT_EFFECTIVE_WEAPON_POWER)
+	statControl = CreateControlFromVirtual("$(parent)StatEntryUesp", parentControl, "ZO_StatsEntry", uespLog.STAT_EFFECTIVE_WEAPON_POWER)
 	relativeAnchorSide = (lastControl == nil) and TOP or BOTTOM
 	statControl:SetAnchor(TOP, lastControl, relativeAnchorSide, 0, nextPaddingY)
 	statEntry = ZO_StatEntry_Keyboard:New(statControl, uespLog.STAT_EFFECTIVE_WEAPON_POWER)
@@ -18533,7 +18817,7 @@ end
 uespLog.LastUnreadMails = 0
 
 function uespLog.OnMailNumUnreadChanged(event, numUnread)
-	local isMailShowing = MAIL_INTERACTION_FRAGMENT:IsShowing();
+	local isMailShowing = MAIL_INTERACTION_FRAGMENT:IsShowing()
 	
 	uespLog.DebugExtraMsg("OnMailNumUnreadChanged "..tostring(numUnread))
 	

@@ -241,6 +241,12 @@ uespLog.FREE_SKILLS = {
 	[42379] = 1,		-- Werewolf Berserker 4
 	
 	[32634] = 1,		-- Werewolf Devour (Update 20)
+	
+	[152778] = 1,		-- Armor bonuses/penalties (Update 29)
+	[150185] = 1,
+	[150181] = 1,
+	[152780] = 1,
+	[150184] = 1,
 }
 
 
@@ -479,7 +485,7 @@ function uespLog.CreateInventorySlotData (bagId, slotIndex)
 		extraData = extraData .. "Cons "
 	end
 	
-	return tostring(count) .. " " .. niceLink .. " " .. extraData;
+	return tostring(count) .. " " .. niceLink .. " " .. extraData
 end
 
 
@@ -675,7 +681,9 @@ function uespLog.CreateBuildData (note, forceSave, suppressMsg)
 	charData.ActionBar = uespLog.CreateCharDataActionBar()
 	charData.EquipSlots = uespLog.CreateCharDataEquipSlots()
 	charData.ChampionPoints = uespLog.CreateCharDataChampionPoints()
+	charData.ChampionPoints2 = uespLog.CreateCharDataChampionPoints2()
 	charData.Crafting = uespLog.CreateCharDataCrafting()
+	charData.AdvancedStats = uespLog.CreateCharDataAdvancedStats()
 			
 			-- Note: This function only works if the character is actually in Werewolf form at the time
 	if (IsWerewolf()) then
@@ -1490,11 +1498,120 @@ function uespLog.CreateCharDataSkills()
 end
 
 
+function uespLog.CreateCharDataAdvancedStats()
+
+	if (GetNumAdvancedStatCategories == nil) then
+		return {}
+	end
+	
+	local numCategories = GetNumAdvancedStatCategories()
+	local categoryIndex
+	local statIndex
+	local stats = {}
+	
+	for categoryIndex = 1, numCategories do
+		local categoryId = GetAdvancedStatsCategoryId(categoryIndex)
+		local categoryName, numStats = GetAdvancedStatCategoryInfo(categoryId)
+		
+		for statIndex = 1, numStats do
+			local statId, statDisplayName, description, flatValueDescription, percentValueDescription = GetAdvancedStatInfo(categoryId, statIndex)
+			local statFormatType, flatValue, percentValue = GetAdvancedStatValue(statId)
+			
+			stats[statDisplayName] = {}
+			stats[statDisplayName]['statId'] = statId
+			stats[statDisplayName]['category'] = categoryName
+			stats[statDisplayName]['flatValue'] = flatValue
+			stats[statDisplayName]['percentValue'] = percentValue
+			stats[statDisplayName]['formatType'] = statFormatType
+		end
+	end
+
+	return stats
+end
+
+
+function uespLog.CreateCharDataChampionPoints2()
+	local championPoints = {}
+	local numDisc = GetNumChampionDisciplines()
+	local discIndex
+	local skillIndex
+	local totalSpent = 0
+	local totalUnspent = 0
+	local skillsSlotted = {}
+	
+	if (GetChampionDisciplineType == nil) then
+		return championPoints, 0, 0
+	end
+	
+	local startSlotIndex, endSlotIndex = GetAssignableChampionBarStartAndEndSlots()
+	local slotIndex
+	local slotData = {}
+	
+	for slotIndex = startSlotIndex, endSlotIndex do
+		local skillId = GetSlotBoundId(slotIndex, HOTBAR_CATEGORY_CHAMPION)
+		slotData[slotIndex] = skillId
+		
+		if (skillId > 0) then
+			skillsSlotted[skillId] = slotIndex
+		end
+	end
+	
+	championPoints["Slots"] = slotData	
+	
+	for discIndex = 1, numDisc do
+		local disciplineId = GetChampionDisciplineId(discIndex)
+		local discType = GetChampionDisciplineType(disciplineId)
+		local discName = tostring(GetChampionDisciplineName(disciplineId))
+		local numSkills = GetNumChampionDisciplineSkills(discIndex)
+		local discPoints = GetNumSpentChampionPoints(disciplineId)
+		local unspentPoints = GetNumUnspentChampionPoints(disciplineId)
+
+		totalSpent = totalSpent + discPoints
+		totalUnspent = totalUnspent + unspentPoints
+		championPoints[discName .. ":Points"] = discPoints
+		championPoints[discName .. ":Unspent"] = unspentPoints
+		
+		for skillIndex = 1, numSkills do
+			local skillId = GetChampionSkillId(discIndex, skillIndex)
+			local skillName = GetChampionSkillName(skillId)
+			local abilityId = GetChampionAbilityId(skillId)
+			local name = discName .. ":" .. tostring(skillName)
+			local spentPoints = GetNumPointsSpentOnChampionSkill(skillId)
+			local description = GetChampionSkillDescription(skillId, spentPoints)
+			local bonusText = GetChampionSkillCurrentBonusText(skillId, spentPoints)
+			local isUnlocked = WouldChampionSkillNodeBeUnlocked(skillId, spentPoints)
+			local slotIndex = skillsSlotted[skillId]
+			
+			if (slotIndex == nil) then
+				slotIndex = -1
+			end
+			
+			if (spentPoints == 0 and not isUnlocked) then
+				spentPoints = -1
+			end
+			
+			if (spentPoints > 0) then
+				championPoints[name] = { ["points"] = spentPoints, ["desc"] = description, ["id"] = abilityId, ["skillId"] = skillId, ["slot"] = slotIndex }
+			end
+		end
+	end
+		
+	championPoints["Total:Unspent"] = totalUnspent
+	championPoints["Total:Spent"]   = totalSpent
+	
+	return championPoints, championPoints["Total:Spent"] , championPoints["Total:Unspent"]
+end
+
+
 function uespLog.CreateCharDataChampionPoints()
 	local championPoints = {}
 	local numDisc = GetNumChampionDisciplines()
 	local discIndex
 	local skillIndex
+	
+	if (GetNumPointsSpentInChampionDiscipline == nil or GetChampionAbilityDescription == nil) then
+		return championPoints, 0, 0
+	end
 	
 	for discIndex = 1, numDisc do
 		local discName = tostring(GetChampionDisciplineName(discIndex))
@@ -2074,7 +2191,7 @@ SLASH_COMMANDS["/uespskillpoints"] = function (cmd)
 	local foundSkyshards, totalSkyshards = uespLog.GetSkyshardsFound()
 	
 	uespLog.Msg("You have used "..tostring(skillPointsUsed).." skill points, "..tostring(skillPointsUnused).." unused skill points ("..totalPoints.." total) and "..tostring(skyShards).." skyshards.")
-	uespLog.Msg("You found a total of "..tostring(foundSkyshards).." out of "..tostring(totalSkyshards).." skyshards!");
+	uespLog.Msg("You found a total of "..tostring(foundSkyshards).." out of "..tostring(totalSkyshards).." skyshards!")
 end
 
 

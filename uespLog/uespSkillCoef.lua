@@ -377,6 +377,30 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[30211] = POWERTYPE_ULTIMATE,
 	[30215] = POWERTYPE_ULTIMATE,
 	
+	-- Sorcerer Encase
+	[28025] = POWERTYPE_ULTIMATE,
+	[30083] = POWERTYPE_ULTIMATE,
+	[30085] = POWERTYPE_ULTIMATE,
+	[30087] = POWERTYPE_ULTIMATE,
+	
+	-- Sorcerer Shattering Prison
+	[28308] = { [3] = POWERTYPE_ULTIMATE },
+	[30089] = { [3] = POWERTYPE_ULTIMATE },
+	[30092] = { [3] = POWERTYPE_ULTIMATE },
+	[30095] = { [3] = POWERTYPE_ULTIMATE },
+	
+	-- Sorcerer Restraining Prison
+	[28311] = POWERTYPE_ULTIMATE,
+	[30098] = POWERTYPE_ULTIMATE,
+	[30103] = POWERTYPE_ULTIMATE,
+	[30107] = POWERTYPE_ULTIMATE,
+	
+	-- Sorcerer Summon Unstable Familiar
+	--[23304] = { [1] = POWERTYPE_STAMINA },
+	--[30631] = { [1] = POWERTYPE_STAMINA },
+	--[30636] = { [1] = POWERTYPE_STAMINA },
+	--[30641] = { [1] = POWERTYPE_STAMINA },
+	
 	-- Sorcerer Summon Unstable Clannfear
 	[23319] = { [1] = POWERTYPE_STAMINA, [2] = POWERTYPE_STAMINA, [5] = POWERTYPE_HEALTH, [6] = POWERTYPE_HEALTH },
 	[30647] = { [1] = POWERTYPE_STAMINA, [2] = POWERTYPE_STAMINA, [5] = POWERTYPE_HEALTH, [6] = POWERTYPE_HEALTH },
@@ -607,10 +631,10 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[41113] = { [2] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [5] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
 	
 	-- Light Armor Harness Magicka
-	[39182] = { [2] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [5] = POWERTYPE_MAGICKA },
-	[41115] = { [2] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [5] = POWERTYPE_MAGICKA },
-	[41118] = { [2] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [5] = POWERTYPE_MAGICKA },
-	[41121] = { [2] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [5] = POWERTYPE_MAGICKA },
+	[39182] = { [2] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [5] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	[41115] = { [2] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [5] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	[41118] = { [2] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [5] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	[41121] = { [2] = uespLog.UESP_POWERTYPE_MAGICHEALTHCAP, [5] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
 	
 	-- Medium Armor: Elude
 	[39192] = { [3] = uespLog.UESP_POWERTYPE_MEDIUMARMOR, [4] = uespLog.UESP_POWERTYPE_MEDIUMARMOR },
@@ -625,11 +649,11 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	--[41088] = { [3] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
 	--[41091] = { [3] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
 	
-	--Heavy Armor Unstoppable
-	[39197] = { [3] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
-	[41097] = { [3] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
-	[41100] = { [3] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
-	[41103] = { [3] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	--Heavy Armor Unstoppable/Immovable
+	[39197] = uespLog.UESP_POWERTYPE_HEAVYARMOR,
+	[41097] = uespLog.UESP_POWERTYPE_HEAVYARMOR,
+	[41100] = uespLog.UESP_POWERTYPE_HEAVYARMOR,
+	[41103] = uespLog.UESP_POWERTYPE_HEAVYARMOR,
 			
 	-- Destruction: Destructive Reach (Broken on update 24pts)
 	[38937] = { [1] = uespLog.UESP_POWERTYPE_MAGICKAWITHWD },
@@ -732,20 +756,20 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[86159] = { [1] = POWERTYPE_HEALTH, [2] = POWERTYPE_HEALTH, [5] = POWERTYPE_MAGICKA, },
 	
 	-- Warden: Crystallized Shield
-	[86135] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_MAGICKA },
-	[86136] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_MAGICKA },
-	[86137] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_MAGICKA },
-	[86138] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_MAGICKA },
+	[86135] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_ULTIMATE },
+	[86136] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_ULTIMATE },
+	[86137] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_ULTIMATE },
+	[86138] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_ULTIMATE },
 	
-	[86139] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_MAGICKA, [4] = POWERTYPE_MAGICKA },
-	[86140] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_MAGICKA, [4] = POWERTYPE_MAGICKA },
-	[86141] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_MAGICKA, [4] = POWERTYPE_MAGICKA },
-	[86142] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_MAGICKA, [4] = POWERTYPE_MAGICKA },
+	[86139] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_ULTIMATE, [4] = POWERTYPE_MAGICKA },
+	[86140] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_ULTIMATE, [4] = POWERTYPE_MAGICKA },
+	[86141] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_ULTIMATE, [4] = POWERTYPE_MAGICKA },
+	[86142] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_ULTIMATE, [4] = POWERTYPE_MAGICKA },
 	
-	[86143] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_MAGICKA },
-	[86144] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_MAGICKA },
-	[86145] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_MAGICKA },
-	[86146] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_MAGICKA },
+	[86143] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_ULTIMATE },
+	[86144] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_ULTIMATE },
+	[86145] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_ULTIMATE },
+	[86146] = { [1] = POWERTYPE_HEALTH, [3] = POWERTYPE_ULTIMATE },
 	
 	-- Necromancer: Bone Goliath Transformation
 	[115001] = POWERTYPE_HEALTH,
@@ -859,7 +883,13 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[117805]   = { [5] = POWERTYPE_ULTIMATE	},
 	[20117805] = { [5] = POWERTYPE_ULTIMATE },
 	[30117805] = { [5] = POWERTYPE_ULTIMATE },
-	[40117805] = { [5] = POWERTYPE_ULTIMATE },	
+	[40117805] = { [5] = POWERTYPE_ULTIMATE },
+	
+	-- Psjiic Order: Elemental Weapon
+	[103571]   = { [3] = POWERTYPE_ULTIMATE },
+	[20103571] = { [3] = POWERTYPE_ULTIMATE },
+	[30103571] = { [3] = POWERTYPE_ULTIMATE },
+	[40103571] = { [3] = POWERTYPE_ULTIMATE },
 
 	-- Light Attacks (Changed to Ultimate in update 28)
 	[15435] = POWERTYPE_ULTIMATE,
@@ -925,6 +955,18 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[30893] = { [2] = POWERTYPE_STAMINA, [6] = uespLog.UESP_POWERTYPE_WEAPONDAGGER },
 	[45482] = { [2] = POWERTYPE_STAMINA, [6] = uespLog.UESP_POWERTYPE_WEAPONDAGGER },
 	
+		-- Light Armor: Penalties/Bonuses
+	[152778] = uespLog.UESP_POWERTYPE_LIGHTARMOR,
+	[150185] = uespLog.UESP_POWERTYPE_LIGHTARMOR,
+	
+	-- Light Armor Prodigy
+	[29668] = uespLog.UESP_POWERTYPE_LIGHTARMOR,
+	[45561] = uespLog.UESP_POWERTYPE_LIGHTARMOR,
+	
+	-- Light Armor Concentration
+	[29667] = uespLog.UESP_POWERTYPE_LIGHTARMOR,
+	[45562] = uespLog.UESP_POWERTYPE_LIGHTARMOR,
+	
 	-- Light Armor Spell Warding	
 	[29663] = { [2] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
 	[45559] = { [2] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
@@ -937,23 +979,34 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	-- Light Armor Evocation
 	[29665] = { [2] = uespLog.UESP_POWERTYPE_LIGHTARMOR, [4] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
 	[45557] = { [2] = uespLog.UESP_POWERTYPE_LIGHTARMOR, [4] = uespLog.UESP_POWERTYPE_LIGHTARMOR },
+	
+	-- Medium Armor: Penalties/Bonuses
+	[150181] = uespLog.UESP_POWERTYPE_MEDIUMARMOR,
 		
 	-- Medium Armor Dexterity	
 	[29743] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR},
 	[45563] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR},
 	[45564] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR},
 	
+	-- Medium Armor Wind Walker	
+	[29687] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR, [4] = uespLog.UESP_POWERTYPE_MEDIUMARMOR  },
+	[45565] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR, [4] = uespLog.UESP_POWERTYPE_MEDIUMARMOR  },
+		
 	-- Medium Armor Improved Sneak	
 	[29738] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR, [4] = uespLog.UESP_POWERTYPE_MEDIUMARMOR  },
 	[45567] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR, [4] = uespLog.UESP_POWERTYPE_MEDIUMARMOR  },
+	
+	-- Medium Armor Agility
+	[29686] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR, [4] = uespLog.UESP_POWERTYPE_MEDIUMARMOR },
+	[45572] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR, [4] = uespLog.UESP_POWERTYPE_MEDIUMARMOR },
 	
 	-- Medium Armor Athletics	
 	[29742] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR, [4] = uespLog.UESP_POWERTYPE_MEDIUMARMOR },
 	[45574] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR, [4] = uespLog.UESP_POWERTYPE_MEDIUMARMOR },
 	
-	-- Medium Armor Wind Walker	
-	[29687] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR, [4] = uespLog.UESP_POWERTYPE_MEDIUMARMOR  },
-	[45565] = { [2] = uespLog.UESP_POWERTYPE_MEDIUMARMOR, [4] = uespLog.UESP_POWERTYPE_MEDIUMARMOR  },
+	-- Heavy Armor: Penalties/Bonuses
+	[152780] = uespLog.UESP_POWERTYPE_HEAVYARMOR,
+	[150184] = uespLog.UESP_POWERTYPE_HEAVYARMOR,
 		
 	-- Heavy Armor Resolve
 	[29825] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
@@ -969,10 +1022,14 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[29804] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
 	[45546] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
 	
+	-- Heavy Armor Revitalize
+	[29773] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[45528] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	
 	-- Heavy Armor Rapid Mending
 	-- Note that skill output is truncated to integer values so fit accuracy may be low
-	[29791] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
-	[45529] = { [2] = uespLog.UESP_POWERTYPE_HEAVYARMOR },
+	[29791] = uespLog.UESP_POWERTYPE_HEAVYARMOR,
+	[45529] = uespLog.UESP_POWERTYPE_HEAVYARMOR,
 	
 	-- Nightblade Pressure Points
 	[36636] = uespLog.UESP_POWERTYPE_ASSASSINATION,
@@ -4407,7 +4464,7 @@ end
 
 uespLog.SkillCoefAddAllValidCount = 0
 uespLog.SkillCoefAddAllNewCount = 0
-uespLog.SKILLCOEF_ADDALL_MAXABILITYID = 150000
+uespLog.SKILLCOEF_ADDALL_MAXABILITYID = 200000
 uespLog.SKILLCOEF_ADDALL_MAXABILITYCOUNT = 1000
 uespLog.SkillCoefAddStartAbilityIndex = 1
 uespLog.SKILLCOEF_ADDALL_DELAY = 500
@@ -5878,7 +5935,7 @@ uespLog.SkillDiff = {}
 
 function uespLog.FindSkillDiffSavePlayer()
 	local abilityId
-	local endId = 150000
+	local endId = 200000
 	local validAbilityCount = 0
 	local newSkills = 0
 	
@@ -5916,7 +5973,7 @@ end
 
 function uespLog.FindSkillDiffCountDesc()
 	local abilityId
-	local endId = 150000
+	local endId = 200000
 	local validAbilityCount = 0
 	local newSkills = 0
 	local data = uespLog.savedVars.tempData.data
@@ -5948,7 +6005,7 @@ end
 
 function uespLog.FindSkillDiffSaveAll()
 	local abilityId
-	local endId = 150000
+	local endId = 200000
 	local validAbilityCount = 0
 	local newSkills = 0
 	
@@ -5962,15 +6019,23 @@ function uespLog.FindSkillDiffSaveAll()
 			local desc = GetAbilityDescription(abilityId)
 			
 			if (desc ~= "") then
-				local matchResult = desc:match("%d")
+				--local matchResult = desc:match("%d")
 				local newDiff = {}
+				local index = 0
+				local number
 				
 				newDiff.desc = desc;
 				newDiff.cost = GetAbilityCost(abilityId)
 				newDiff.duration = GetAbilityDuration(abilityId)
 				newDiff.minRange, newDiff.maxRange = GetAbilityRange(abilityId)
+				newDiff.numbers = {}
+				
+				for number in desc:gmatch("%d+[.]?%d*") do
+					newDiff.numbers[index] = number
+					index = index + 1
+				end
 
-				if (matchResult ~= nil or newDiff.cost > 0 or newDiff.duration > 0 or newDiff.minRange > 0 or newDiff.maxRange > 0) then
+				if (index > 0 or newDiff.cost > 0 or newDiff.duration > 0 or newDiff.minRange > 0 or newDiff.maxRange > 0) then
 					uespLog.SkillDiff[abilityId] = newDiff
 					newSkills = newSkills + 1
 				end
@@ -6005,7 +6070,19 @@ function uespLog.FindSkillDiff(note)
 					
 		if (desc ~= origDesc) then
 			local name = GetAbilityName(abilityId)
-			local buffer = tostring(name).." ("..tostring(abilityId)..") - Desc"
+			local buffer = "Desc, " .. tostring(abilityId) .. ", \"" .. tostring(name) .. "\""
+			local number
+			local index = 0
+			
+			for number in desc:gmatch("%d+[.]?%d*") do
+			
+				if (diffData.numbers[index] ~= number) then
+					buffer = buffer .. ", " .. index
+				end
+				
+				index = index + 1
+			end
+			
 			diffSkills = diffSkills + 1
 			data[#data+1] = buffer
 			uespLog.Msg(".    "..buffer)
@@ -6013,7 +6090,7 @@ function uespLog.FindSkillDiff(note)
 		
 		if (diffData.cost ~= cost) then
 			local name = GetAbilityName(abilityId)
-			local buffer = tostring(name).." ("..tostring(abilityId)..") - Cost"
+			local buffer = "Cost, " .. tostring(abilityId) .. ", \"" .. tostring(name) .. "\", " .. tostring(cost)
 			diffSkills = diffSkills + 1
 			data[#data+1] = buffer
 			uespLog.Msg(".    "..buffer)
@@ -6021,7 +6098,7 @@ function uespLog.FindSkillDiff(note)
 		
 		if (diffData.duration ~= duration) then
 			local name = GetAbilityName(abilityId)
-			local buffer = tostring(name).." ("..tostring(abilityId)..") - Duration"
+			local buffer = "Duration, " .. tostring(abilityId) .. ", \"" .. tostring(name) .. "\", " .. tostring(duration)
 			diffSkills = diffSkills + 1
 			data[#data+1] = buffer
 			uespLog.Msg(".    "..buffer)
@@ -6029,7 +6106,7 @@ function uespLog.FindSkillDiff(note)
 		
 		if (diffData.minRange ~= minRange or diffData.maxRange ~= maxRange) then
 			local name = GetAbilityName(abilityId)
-			local buffer = tostring(name).." ("..tostring(abilityId)..") - Range"
+			local buffer = "Range, " .. tostring(abilityId) .. ", \"" .. tostring(name) .. "\", " .. tostring(minRange) .. ", " .. tostring(maxRange)
 			diffSkills = diffSkills + 1
 			data[#data+1] = buffer
 			uespLog.Msg(".    "..buffer)

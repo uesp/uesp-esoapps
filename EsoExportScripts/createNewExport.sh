@@ -1,9 +1,9 @@
 #!/bin/sh
 
-VERSION="28"
+VERSION="29"
 ISPTS=""
-LASTVERSION="27"
-LASTPTSVERSION="28pts"
+LASTVERSION="28"
+LASTPTSVERSION="29pts"
 
 MAKEPTSDIFF="1"
 MAKEDIFF="1"
@@ -351,6 +351,7 @@ popd
 
 echo "Copying Updated Maps..."
 pushd "$OUTPUTPATH/Maps/"
+mkdir ../NewMapsPts/
 xargs -a ../maps.diff.txt.updatedmaps cp -Rt ../NewMaps/
 
 if [ "$MAKEPTSDIFF" ]; then

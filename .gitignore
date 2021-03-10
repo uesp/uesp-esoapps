@@ -26,7 +26,13 @@ uespLogMonitor/uespLogMonitor/BackupBuildData*
 parseGlobals/test*
 *.pyc
 
+*.ipch
+*.tlog
+*.lastbuildstate
+*.ipdb
+*.iobj
 *.obj
+*.VC.db
 *.pdb
 *.user
 *.aps

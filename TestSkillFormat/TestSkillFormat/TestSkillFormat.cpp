@@ -11,19 +11,33 @@ using namespace eso;
 
 	// The file extracted from ESO.MNF that contains the skill data
 //const std::string SKILLDATA_FILENAME = "e:/esoexport/esomnf-21pts/000/694374_Uncompressed.EsoFileData";
-const std::string SKILLDATA_FILENAME = "e:/esoexport/esomnf-29pts/000/807315_Uncompressed.EsoFileData";
-const std::string SKILLDATA_MINEDSKILLS_FILENAME = "e:/esoexport/goodimages-29pts/minedSkills29pts.csv";
+
+//const std::string SKILLDATA_FILENAME = "e:/esoexport/esomnf-29pts/000/807315_Uncompressed.EsoFileData";
+//const std::string SKILLDATA_MINEDSKILLS_FILENAME = "e:/esoexport/goodimages-29pts/minedSkills29pts.csv";
+//const std::string SKILLDATA_SKILLDESC_FILENAME = "e:/esoexport/goodimages-29pts/skillDesc29pts.csv";
+
+const std::string SKILLDATA_FILENAME = "e:/esoexport/esomnf-29pts1/000/807785_Uncompressed.EsoFileData";
+const std::string SKILLDATA_MINEDSKILLS_FILENAME = "e:/esoexport/goodimages-29pts1/minedSkills29pts.csv";
+const std::string SKILLDATA_SKILLDESC_FILENAME = "e:/esoexport/goodimages-29pts1/skillDesc29pts.csv";
+const std::string AOEHEALS_FILENAME = "e:/esoexport/goodimages-29pts1/AoeHeals.csv";
+const std::string HOTHEALS_FILENAME = "e:/esoexport/goodimages-29pts1/HotHeals.csv";
+const std::string STHEALS_FILENAME = "e:/esoexport/goodimages-29pts1/SingleTargetHeals.csv";
+const std::string ALLHEALS_FILENAME = "e:/esoexport/goodimages-29pts1/HealingSpells.csv";
 
 //const std::string OUTPUT_CSV_FILENAME = "e:/esoexport/goodimages-21pts/SummarySkills.csv";
-const std::string OUTPUT_CSV_FILENAME = "e:/esoexport/goodimages-29pts/SkillData/SummarySkills.csv";
-const std::string OUTPUT_FLAG_PATH = "e:/esoexport/goodimages-29pts/SkillData/";
-const std::string OUTPUT_SKILL_PATH = "e:/esoexport/goodimages-29pts/SkillData/Skills/";
+//const std::string OUTPUT_CSV_FILENAME = "e:/esoexport/goodimages-29pts/SkillData/SummarySkills.csv";
+//const std::string OUTPUT_FLAG_PATH = "e:/esoexport/goodimages-29pts/SkillData/";
+//const std::string OUTPUT_SKILL_PATH = "e:/esoexport/goodimages-29pts/SkillData/Skills/";
+
+const std::string OUTPUT_CSV_FILENAME = "e:/esoexport/goodimages-29pts1/SkillData/SummarySkills.csv";
+const std::string OUTPUT_FLAG_PATH = "e:/esoexport/goodimages-29pts1/SkillData/";
+const std::string OUTPUT_SKILL_PATH = "e:/esoexport/goodimages-29pts1/SkillData/Skills/";
 
 const fpos_t SKILLDATA_RECORDSIZE_OFFSET = 32;
 
 	/* Update 21 */
 /*const size_t U2SIZE = 24;
-const size_t FLAGSIZE = 175;test = std::regex_replace(test, std::regex("def"), "klm");
+const size_t FLAGSIZE = 175;
 const size_t U6SIZE = 6;
 const size_t U6ASIZE = 6;
 const size_t U7SIZE = 8;
@@ -35,7 +49,7 @@ const size_t U12SIZE = 23; //*/
 
 	/* Update 29 */
 const size_t U2SIZE = 22;
-const size_t FLAGSIZE = 188;
+const size_t FLAGSIZE = 189;	//188 in first 29pts version
 const size_t U6SIZE = 6;
 const size_t U6ASIZE = 7;
 const size_t U7SIZE = 9;
@@ -139,6 +153,18 @@ struct skilldata_21_t
 
 	dword u12[U12SIZE];
 }; //*/
+
+
+struct skilllist_t {
+	int abilityId;
+	std::string name;
+	std::vector<int> indexes;
+};
+
+std::vector<skilllist_t> g_AoeHealSkills;
+std::vector<skilllist_t> g_HotHealSkills;
+std::vector<skilllist_t> g_StHealSkills;
+std::vector<skilllist_t> g_AllHealSkills;
 
 
 struct skilldata_t
@@ -248,13 +274,76 @@ struct skilldata_t
 };
 
 
+struct minedskill_t
+{
+	int abilityId;
+	int displayId;
+	std::string name;
+	std::string description;
+	std::string target;
+	int skillType;
+	std::string upgradeLines;
+	std::string effectLines;
+	int duration;
+	int cost;
+	int minRange;
+	int maxRange;
+	int radius;
+	bool isPassive;
+	bool isChanneled;
+	bool isPermanent;
+	int castTime;
+	int channelTime;
+	int angleDistance;
+	int mechanic;
+	std::string texture;
+	bool isPlayer;
+	int raceType;
+	int classType;
+	int skillLine;
+	int prevSkill;
+	int nextSkill;
+	int nextSkill2;
+	int baseAbilityId;
+	int learnedLevel;
+	int rank;
+	int morph;
+	int skillIndex;
+	int buffType;
+	bool isToggle;
+	int chargeFreq;
+	int numCoefVars;
+	std::string coefDescription;
+
+	int type[6];
+	float a[6];
+	float b[6];
+	float c[6];
+	float r[6];
+	float avg[6];
+};
+
+
+
 std::vector<skilldata_t> g_Skills;
+std::unordered_map<int, minedskill_t> g_MinedSkills;
+std::unordered_map<int, std::string> g_SkillDescriptions;
+
 std::unordered_map<dword, dword> g_ValidSkillIds;
 std::unordered_map<std::string, dword> g_OtherZeroes;
 std::vector<dword> g_ZeroCounts(500, 0);
 std::vector<dword> g_FlagCounts(FLAGSIZE, 0);
 std::vector<int> g_MinU2Values(U2SIZE + 2, INT_MAX);
 std::vector<int> g_MaxU2Values(U2SIZE + 2, INT_MIN);
+
+//std::unordered_map<dword, dword> g_List8Sizes;
+std::vector<std::unordered_map<int, int>> g_U8Values(U8SIZE);
+std::vector<int> g_MinU8Values(U8SIZE, INT_MAX);
+std::vector<int> g_MaxU8Values(U8SIZE, INT_MIN);
+
+std::vector<std::unordered_map<int, int>> g_List1Values;
+std::vector<std::unordered_map<int, int>> g_List3Values;
+
 dword g_MagicHeader = 0;
 dword g_Unknown1Header = 0;
 dword g_Unknown2Header = 0;
@@ -1074,6 +1163,8 @@ void OutputFlagCsv()
 
 		for (auto&& skill : g_Skills)
 		{
+			//if (!g_MinedSkills[skill.abilityId1].isPlayer) continue;
+
 			std::string name = skill.name;
 			std::replace(name.begin(), name.end(), '"', '\'');
 			if (skill.flags[i]) File.Printf("%06d, %s\n", skill.abilityId1, name.c_str());
@@ -1594,8 +1685,120 @@ skilldata_t CompareSkills(std::vector<dword> skillIds)
 		if (compare.list14[j] == numCompares) printf("\t list14[%zd] = %d\n", j, firstSkill.list14[j]);
 		else compare.list14[j] = 0;
 	}
-
+	
 	return compare;
+}
+
+
+void CompareFlags(std::vector<dword> skillIds)
+{
+	int flagCompare[FLAGSIZE] = {};
+	int uniqueFlags[FLAGSIZE] = {};
+	int skillIndex = 0;
+	int numCompares = 0;
+	skilldata_t firstSkill;
+	std::unordered_map<dword, dword> CheckedIdMap;
+
+	printf("Comparing Flags from %d Skills:\n", skillIds.size());
+	if (skillIds.size() <= 1) return;
+
+	for (auto&& id : skillIds)
+	{
+		CheckedIdMap[id] = 1;
+
+		if (g_ValidSkillIds.find(id) == g_ValidSkillIds.end()) continue;
+		size_t index = g_ValidSkillIds[id] - 1;
+
+		if (index >= g_Skills.size()) continue;
+		skilldata_t& skill = g_Skills[index];
+
+		if (skillIndex == 0)
+		{
+			firstSkill = skill;
+			++skillIndex;
+			continue;
+		}
+
+		++skillIndex;
+		++numCompares;
+
+		for (size_t j = 0; j < FLAGSIZE; ++j) 
+		{
+			if (skill.flags[j] == firstSkill.flags[j]) ++flagCompare[j];
+		}
+	}
+
+	for (size_t j = 0; j < FLAGSIZE; ++j) 
+	{
+		if (flagCompare[j] == numCompares) 
+		{
+			printf("\t flags[%zu] = %d\n", j, firstSkill.flags[j]);
+		}
+	}
+
+	printf(" Flags: ");
+
+	for (size_t j = 0; j < FLAGSIZE; ++j) 
+	{
+		if (flagCompare[j] == numCompares)
+		{
+			printf("%d", firstSkill.flags[j]);
+			uniqueFlags[j] = 1;
+		}
+		else
+		{
+			printf(" ");
+		}
+	}
+
+	printf("\n");
+	std::smatch m;
+	int numSkills = 0;
+
+	for (auto&& skill : g_Skills)
+	{
+		if (CheckedIdMap.find(skill.abilityId1) != CheckedIdMap.end()) continue;
+
+		auto desc = g_SkillDescriptions[skill.abilityId1];
+		if (desc == "") continue;
+		if (!std::regex_search(desc, m, std::regex("<<"))) continue;
+		++numSkills;
+
+		for (size_t j = 0; j < FLAGSIZE; ++j)
+		{
+			if (flagCompare[j] != numCompares) continue;
+			if (firstSkill.flags[j] == skill.flags[j]) uniqueFlags[j] = 0;
+		}
+	}
+
+	printf("Unique Flags (compared against %d skills):\n", numSkills);
+
+	for (size_t j = 0; j < FLAGSIZE; ++j)
+	{
+		if (uniqueFlags[j])
+		{
+			printf("\t flags[%zu] = %d\n", j, firstSkill.flags[j]);
+		}
+	}
+	
+	for (auto&& id : skillIds)
+	{
+		if (g_ValidSkillIds.find(id) == g_ValidSkillIds.end()) continue;
+		size_t index = g_ValidSkillIds[id] - 1;
+
+		if (index >= g_Skills.size()) continue;
+		skilldata_t& skill = g_Skills[index];
+
+		printf("%06d: ", id);
+
+		for (int i = 0; i < FLAGSIZE; ++i)
+		{
+			printf("%1d", skill.flags[i]);
+		}
+
+		printf("\n");
+	}
+
 }
 
 
@@ -1750,63 +1953,204 @@ void OutputSkills()
 }
 
 
-struct minedskill_t 
-{
-	int abilityId;
-	int displayId;
-	std::string name;
-	std::string description;
-	std::string target;
-	int skillType;
-	std::string upgradeLines;
-	std::string effectLines;
-	int duration;
-	int cost;
-	int minRange;
-	int maxRange;
-	int radius;
-	bool isPassive;
-	bool isChanneled;
-	bool isPermanent;
-	int castTime;
-	int channelTime;
-	int angleDistance;
-	int mechanic;
-	std::string texture;
-	bool isPlayer;
-	int raceType;
-	int classType;
-	int skillLine;
-	int prevSkill;
-	int nextSkill;
-	int nextSkill2;
-	int baseAbilityId;
-	int learnedLevel;
-	int rank;
-	int morph;
-	int skillIndex;
-	int buffType;
-	bool isToggle;
-	int chargeFreq;
-	int numCoefVars;
-	std::string coefDescription;
-
-	int type[6];
-	float a[6];
-	float b[6];
-	float c[6];
-	float r[6];
-	float avg[6];
-};
-
-
-std::unordered_map<int, minedskill_t> g_MinedSkills;
-
-
 std::string UnescapeString(std::string value)
 {
-	value = std::regex_replace(value, std::regex("\\\""), "\"");
+	//value = std::regex_replace(value, std::regex("\\\""), "\"");
+	//value = std::regex_replace(value, std::regex("\\n"), "\n");
+	value = ReplaceStrings(value, "\\\"", "\"");
+	value = ReplaceStrings(value, "\\n", "\n");
 	return value;
+}
+
+
+bool LoadSkillListCsv(std::string filename, std::vector<skilllist_t>& List)
+{
+	printf("Loading skill list data from '%s'...\n", filename.c_str());
+
+	CFile File;
+	char Buffer[10100];
+	int lineCount = 0;
+
+	if (!File.Open(filename, "rb")) return false;
+
+	while (!File.IsEOF())
+	{
+		++lineCount;
+
+		char *pError = fgets(Buffer, 10000, File.GetFile());
+
+		if (pError == nullptr && ferror(File.GetFile()))
+		{
+			printf("Error: Failed to read line %d from file %s!\n", lineCount, filename.c_str());
+			return false;
+		}
+
+		const char* pParse = Buffer;
+		const char* pColStart = pParse;
+		const char* pColEnd = nullptr;
+		std::string colValue;
+		bool isInQuote = false;
+		int colIndex = 0;
+		std::vector<std::string> colValues(10, "");
+
+		while (true)
+		{
+			if (*pParse == 0)
+			{
+				if (pColEnd == nullptr) pColEnd = pParse - 1;
+
+				if (pColEnd >= pColStart)
+					colValue.assign(pColStart, pColEnd - pColStart + 1);
+				else
+					colValue = "";
+
+				colValues[colIndex] = UnescapeString(colValue);
+				++colIndex;
+				break;
+			}
+			else if (*pParse == '"')
+			{
+				if (isInQuote)
+				{
+					isInQuote = false;
+					pColEnd = pParse - 1;
+				}
+				else
+				{
+					isInQuote = true;
+					pColStart = pParse + 1;
+				}
+			}
+			else if (*pParse == '\\')
+			{
+				if (pParse[1] == '"') ++pParse;
+			}
+			else if (*pParse == ',' && !isInQuote)
+			{
+				if (pColEnd == nullptr) pColEnd = pParse - 1;
+
+				if (pColEnd >= pColStart)
+					colValue.assign(pColStart, pColEnd - pColStart + 1);
+				else
+					colValue = "";
+
+				colValues[colIndex] = UnescapeString(colValue);
+
+				pColStart = pParse + 1;
+				pColEnd = nullptr;
+				colValue = "";
+				++colIndex;
+			}
+
+			++pParse;
+		}
+
+		skilllist_t entry;
+
+		entry.abilityId = atoi(colValues[0].c_str());
+		entry.name = colValues[1];
+
+		for (int j = 2; j < colIndex; ++j)
+		{ 
+			entry.indexes.push_back(atoi(colValues[j].c_str()) + 1);
+		}
+
+		List.push_back(entry);
+	}
+
+	printf("\tLoaded %d skill list entries!\n", List.size());
+	return true;
+}
+
+
+bool LoadSkillDescriptionCsv(std::string filename)
+{
+	printf("Loading skill description data...\n");
+
+	CFile File;
+	char Buffer[10100];
+	int lineCount = 0;
+
+	if (!File.Open(filename, "rb")) return false;
+
+	while (!File.IsEOF())
+	{
+		++lineCount;
+
+		char *pError = fgets(Buffer, 10000, File.GetFile());
+
+		if (pError == nullptr && ferror(File.GetFile()))
+		{
+			printf("Error: Failed to read line %d from file %s!\n", lineCount, filename.c_str());
+			return false;
+		}
+
+		const char* pParse = Buffer;
+		const char* pColStart = pParse;
+		const char* pColEnd = nullptr;
+		std::string colValue;
+		bool isInQuote = false;
+		int colIndex = 0;
+		std::vector<std::string> colValues(10, "");
+
+		while (true)
+		{
+			if (*pParse == 0)
+			{
+				if (pColEnd == nullptr) pColEnd = pParse - 1;
+
+				if (pColEnd >= pColStart)
+					colValue.assign(pColStart, pColEnd - pColStart + 1);
+				else
+					colValue = "";
+
+				colValues[colIndex] = UnescapeString(colValue);
+				++colIndex;
+				break;
+			}
+			else if (*pParse == '"')
+			{
+				if (isInQuote)
+				{
+					isInQuote = false;
+					pColEnd = pParse - 1;
+				}
+				else
+				{
+					isInQuote = true;
+					pColStart = pParse + 1;
+				}
+			}
+			else if (*pParse == '\\')
+			{
+				if (pParse[1] == '"') ++pParse;
+			}
+			else if (*pParse == ',' && !isInQuote)
+			{
+				if (pColEnd == nullptr) pColEnd = pParse - 1;
+
+				if (pColEnd >= pColStart)
+					colValue.assign(pColStart, pColEnd - pColStart + 1);
+				else
+					colValue = "";
+
+				colValues[colIndex] = UnescapeString(colValue);
+
+				pColStart = pParse + 1;
+				pColEnd = nullptr;
+				colValue = "";
+				++colIndex;
+			}
+
+			++pParse;
+		}
+
+		int id = atoi(colValues[2].c_str());
+		if (id > 0) g_SkillDescriptions[id] = colValues[4];
+	}
+
+	printf("\tLoaded %d skill descriptions!\n", g_SkillDescriptions.size());
+	return true;
 }
 
 
@@ -1975,30 +2319,557 @@ void CompareSkills1()
 }
 
 
+void AnalyzeU8()
+{
+	for (auto&& skill : g_Skills)
+	{
+		for (int i = 0; i < U8SIZE; ++i)
+		{
+			if ((int)skill.u8[i] < g_MinU8Values[i]) g_MinU8Values[i] = (int)skill.u8[i];
+			if ((int)skill.u8[i] > g_MaxU8Values[i]) g_MaxU8Values[i] = (int)skill.u8[i];
+			g_U8Values[i][skill.u8[i]]++;
+		}
+	}
+
+	printf("U8 Values:\n");
+
+	for (int i = 0; i < U8SIZE; ++i)
+	{
+		printf("\t%d: %d - %d (%d values)\n", i, g_MinU8Values[i], g_MaxU8Values[i], g_U8Values[i].size());
+
+		for (auto &&j : g_U8Values[i])
+		{
+			printf("\t\t%d: x%d\n", j.first, j.second);
+		}
+
+	}
+
+}
+
+
+void AnalyzeList1()
+{
+	int minSize = 1000;
+	int maxSize = 0;
+
+	for (auto&& skill : g_Skills)
+	{
+		if (minSize > skill.list1.size()) minSize = skill.list1.size();
+		if (maxSize < skill.list1.size()) maxSize = skill.list1.size();
+
+		for (int i = 0; i < skill.list1.size(); ++i)
+		{
+			if (g_List1Values.size() <= i) g_List1Values.resize(i+1);
+			g_List1Values[i][skill.list1[i]]++;
+		}
+	}
+
+	printf("List1 Data: Size %d - %d\n", minSize, maxSize);
+
+	for (int i = 0; i < g_List1Values.size(); ++i)
+	{
+		printf("\t%d: %d values\n", i, g_List1Values[i].size());
+
+		for (auto&& j : g_List1Values[i])
+		{
+			printf("\t\t%d: x%d\n", j.first, j.second);
+		}
+	}
+
+}
+
+
+void AnalyzeList3()
+{
+	int minSize = 1000;
+	int maxSize = 0;
+
+	for (auto&& skill : g_Skills)
+	{
+		if (minSize > skill.list3.size()) minSize = skill.list3.size();
+		if (maxSize < skill.list3.size()) maxSize = skill.list3.size();
+
+		for (int i = 0; i < skill.list3.size(); ++i)
+		{
+			if (g_List3Values.size() <= i) g_List3Values.resize(i + 1);
+			g_List3Values[i][skill.list3[i]]++;
+		}
+	}
+
+	printf("List3 Data: Size %d - %d\n", minSize, maxSize);
+
+	for (int i = 0; i < g_List3Values.size(); ++i)
+	{
+		printf("\t%d: %d values\n", i, g_List3Values[i].size());
+
+		for (auto&& j : g_List3Values[i])
+		{
+			printf("\t\t%d: x%d\n", j.first, j.second);
+		}
+	}
+
+}
+
+
+void CheckDescriptions()
+{
+	printf("Checking Skill Descriptions:\n");
+
+	for (auto&& skill : g_MinedSkills)
+	{
+		if (skill.second.abilityId > 10000000) continue;
+		if (!skill.second.isPassive && skill.second.rank != 1) continue;
+
+		if (!skill.second.description.empty() && g_SkillDescriptions.find(skill.second.abilityId) == g_SkillDescriptions.end())
+		{
+			printf("\tSkill %d missing skill description text!\n", skill.second.abilityId);
+			printf("\t\t%s\n", skill.second.description.c_str());
+		}
+		else if (skill.second.description.empty() && g_SkillDescriptions.find(skill.second.abilityId) != g_SkillDescriptions.end())
+		{
+			printf("\tSkill %d missing mined skill description!\n", skill.second.abilityId);
+			printf("\t\t%s\n", g_SkillDescriptions[skill.second.abilityId].c_str());
+		}
+	}
+
+}
+
+
+float ConvertDwordToFloat(const dword value)
+{
+	dword rValue = ((value & 0xff) << 24) | ((value & 0xff00) << 8) | ((value & 0xff0000) >> 8) | ((value & 0xff000000) >> 24);
+	return *(float *)&rValue;
+}
+
+
+void CheckSkillCosts()
+{
+	std::unordered_map<int, int> U9_2Values;
+	int u2_14_count = 0;
+	int u2_15_count = 0;
+	int u9_1_count = 0;
+	int error_count = 0;
+	int total_count = 0;
+
+	printf("Checking Skill Costs...\n");
+
+	for (auto&& skill : g_Skills)
+	{
+		if (g_MinedSkills.find(skill.abilityId1) == g_MinedSkills.end()) 
+		{
+			printf("\tError: Missing mined skill %d!\n", skill.abilityId1);
+			continue;
+		}
+
+		minedskill_t& minedSkill = g_MinedSkills[skill.abilityId1];
+		//if (!minedSkill.isPlayer) continue;
+
+		++total_count;
+
+		U9_2Values[skill.u9[2]]++;
+
+		if (minedSkill.cost == skill.u2[14])
+			++u2_14_count;
+		else if (minedSkill.cost == skill.u2[15])
+			++u2_15_count;
+		else if (minedSkill.cost > 0 && abs((int) (floor(ConvertDwordToFloat(skill.u9[1]) * 72)) - minedSkill.cost) <= 1)
+		{
+			//printf("\tFound u9[1] cost match: %d %s\n", skill.abilityId1, skill.name.c_str());
+			++u9_1_count;
+		}
+		else
+		{
+			printf("\tCost No Match: %d %s (%d: %d, %d, %.2f)\n", skill.abilityId1, skill.name.c_str(), minedSkill.cost, skill.u2[14], skill.u2[15], ConvertDwordToFloat(skill.u9[1]) * 72);
+			++error_count;
+		}
+
+	}
+
+	printf("Found %d unique U9[2] values:\n", U9_2Values.size());
+
+	for (auto&& i : U9_2Values)
+	{
+		printf("\t%d (0x%X): x%d\n", i.first, i.first, i.second);
+	}
+
+	printf("Checked %d skills\n", total_count);
+	printf("\tFound %d skills with u2[14] matching cost\n", u2_14_count);
+	printf("\tFound %d skills with u2[15] matching cost\n", u2_15_count);
+	printf("\tFound %d skills with u9[1]*72 matching cost\n", u9_1_count);
+	printf("\tFound %d skills no matching cost\n", error_count);
+}
+
+
+
+void CheckTooltipTypes()
+{
+	std::unordered_map<int, std::vector<std::string> > TypeValues;
+	std::vector<dword> MagicDamageIds;
+	std::vector<dword> FlameDamageIds;
+	std::vector<dword> FrostDamageIds;
+	std::vector<dword> ShockDamageIds;
+	std::vector<dword> PhysicalDamageIds;
+	std::vector<dword> PoisonDamageIds;
+	std::vector<dword> DiseaseDamageIds;
+	std::vector<dword> BleedDamageIds;
+	std::vector<dword> GenericDamageIds;
+
+	int matchCount = 0;
+	int noMatchCount = 0;
+	int totalCount = 0;
+
+	printf("Checking Tooltips:\n");
+
+	for (auto&& skill : g_Skills)
+	{
+		if (g_SkillDescriptions.find(skill.abilityId1) == g_SkillDescriptions.end()) continue;
+		if (g_MinedSkills.find(skill.abilityId1) == g_MinedSkills.end()) continue;
+
+		minedskill_t& minedSkill = g_MinedSkills[skill.abilityId1];
+		std::string desc = g_SkillDescriptions[skill.abilityId1];
+		std::string matchDesc;
+		std::string minedDesc = minedSkill.description;
+		std::smatch m;
+
+		desc = ReplaceStrings(desc, "<<AB_DURATION:17566))>>", "AB_DURATION");
+		desc = ReplaceStrings(desc, ")>>", ">>");	//2 cases?
+		desc = ReplaceStrings(desc, "|cffffff", "");
+		desc = ReplaceStrings(desc, "|r", "");
+		//desc = ReplaceStrings(desc, "  ", " ");	//Helps some, hurts some
+		matchDesc = desc;
+
+		bool hasTooltips = std::regex_match(desc, m, std::regex("<<[0-9]+>>"));
+		hasTooltips = desc.find("<<") != std::string::npos;
+		if (!hasTooltips) continue;
+
+		++totalCount;
+
+		minedDesc = ReplaceStrings(minedDesc, "|cffffff", "");
+		minedDesc = ReplaceStrings(minedDesc, "|r", "");
+
+		for (int i = 0; i <= 10; ++i)
+		{
+			matchDesc = std::regex_replace(matchDesc, std::regex("<<" + std::to_string(i+1) + ">>"), "(.*)");
+		}
+
+		bool isMatched = std::regex_match(minedDesc, m, std::regex(matchDesc));
+
+		if (isMatched)
+		{
+			++matchCount;
+			printf("\t%06d %s: Matched!\n", skill.abilityId1, minedSkill.name.c_str());
+
+			for (unsigned i = 1; i < m.size(); ++i) 
+			{
+				//auto subMatch = m[i];
+				printf("\t\t%d: %s\n", i, m.str(i).c_str());
+
+				if (i - 1 >= skill.list3.size())
+				{
+					printf("\t\tError: Missing tooltip #%d type/ID in data!\n", i);
+				}
+				else
+				{
+					int type = skill.list3[i - 1];
+					TypeValues[type].push_back(m.str(i));
+
+					if (m.str(i).find("Magic Damage") != std::string::npos) {
+						MagicDamageIds.push_back(skill.list4[i - 1]);
+					}
+					else if (m.str(i).find("Frost Damage") != std::string::npos) {
+						FrostDamageIds.push_back(skill.list4[i - 1]);
+					}
+					else if (m.str(i).find("Shock Damage") != std::string::npos) {
+						ShockDamageIds.push_back(skill.list4[i - 1]);
+					}
+					else if (m.str(i).find("Flame Damage") != std::string::npos) {
+						FlameDamageIds.push_back(skill.list4[i - 1]);
+					}
+					else if (m.str(i).find("Physical Damage") != std::string::npos) {
+						PhysicalDamageIds.push_back(skill.list4[i - 1]);
+					}
+					else if (m.str(i).find("Poison Damage") != std::string::npos) {
+						PoisonDamageIds.push_back(skill.list4[i - 1]);
+					}
+					else if (m.str(i).find("Disease Damage") != std::string::npos) {
+						DiseaseDamageIds.push_back(skill.list4[i - 1]);
+					}
+					else if (m.str(i).find("Bleed Damage") != std::string::npos) {
+						BleedDamageIds.push_back(skill.list4[i - 1]);
+					}
+					else if (m.str(i).find("Generic Damage") != std::string::npos) {
+						GenericDamageIds.push_back(skill.list4[i - 1]);
+					}
+				}
+			}
+		}
+		else
+		{
+			++noMatchCount;
+			printf("\t%06d %s: No Match\n", skill.abilityId1, minedSkill.name.c_str());
+			printf("\t\t%s\n", matchDesc.c_str());
+			printf("\t\t%s\n", minedDesc.c_str());
+		}
+	}
+
+	printf("Tooltip Type Values:\n");
+
+	for (auto&& i : TypeValues)
+	{
+		printf("\t%d: x%d values\n", i.first, i.second.size());
+
+		for (auto&& j : i.second)
+		{
+			printf("\t\t%s\n", j.c_str());
+		}
+	}
+
+	printf("Compared %d tooltips, matched %d and %d with no match.\n", totalCount, matchCount, noMatchCount);
+
+	skilldata_t data1 = CompareSkills(MagicDamageIds);
+	skilldata_t data2 = CompareSkills(FlameDamageIds);
+	skilldata_t data3 = CompareSkills(FrostDamageIds);
+	skilldata_t data4 = CompareSkills(ShockDamageIds);
+	skilldata_t data5 = CompareSkills(PhysicalDamageIds);
+	skilldata_t data6 = CompareSkills(PoisonDamageIds);
+	skilldata_t data7 = CompareSkills(DiseaseDamageIds);
+	skilldata_t data8 = CompareSkills(BleedDamageIds);
+	skilldata_t data9 = CompareSkills(GenericDamageIds);
+
+	//DiffSkills(data1, data2, true);
+	//DiffSkills(data1, data3, true);
+	//DiffSkills(data1, data4, true);
+	//DiffSkills(data1, data5, true);
+	//DiffSkills(data1, data6, true);
+	//DiffSkills(data1, data7, true);
+	//DiffSkills(data1, data8, true);
+	//DiffSkills(data1, data9, true);
+
+	printf("Found %d magic damage tooltips.\n", MagicDamageIds.size());
+	printf("Found %d flame damage tooltips.\n", FlameDamageIds.size());
+	printf("Found %d frost damage tooltips.\n", FrostDamageIds.size());
+	printf("Found %d shock damage tooltips.\n", ShockDamageIds.size());
+	printf("Found %d physical damage tooltips.\n", PhysicalDamageIds.size());
+	printf("Found %d poison damage tooltips.\n", PoisonDamageIds.size());
+	printf("Found %d disease damage tooltips.\n", DiseaseDamageIds.size());
+	printf("Found %d bleed damage tooltips.\n", BleedDamageIds.size());
+	printf("Found %d generic damage tooltips.\n", GenericDamageIds.size());
+
+	//Compared 3638 tooltips, matched 3096 and 542 with no match.
+}
+
+
+void CompareSkillList(std::string Name, std::vector<skilllist_t>& SkillList)
+{
+	auto numberRegex = std::regex("[0-9]+(?:\\.[0-9]+)?");
+	std::vector<dword> CompareIds;
+
+	printf("Comparing %d %s Skills:\n", SkillList.size(), Name.c_str());
+
+	for (auto&& entry : SkillList)
+	{
+		int abilityId = entry.abilityId;
+
+		if (g_SkillDescriptions.find(abilityId) == g_SkillDescriptions.end()) {	printf("\tError: Failed to find skill descriptions %d!\n", abilityId);  continue; }
+		if (g_MinedSkills.find(abilityId) == g_MinedSkills.end()) { printf("\tError: Failed to find mined skill %d!\n", abilityId);  continue; }
+		if (g_ValidSkillIds.find(abilityId) == g_ValidSkillIds.end()) { printf("\tError: Failed to find skill data %d!\n", abilityId);  continue; }
+
+		auto& skillDesc = g_SkillDescriptions[abilityId];
+		auto& minedSkill = g_MinedSkills[abilityId];
+		auto skillIndex = g_ValidSkillIds[abilityId] - 1;
+		auto& skill = g_Skills[skillIndex];
+		auto minedDesc = minedSkill.description;
+
+		skillDesc = ReplaceStrings(skillDesc, "<<AB_DURATION:17566))>>", "AB_DURATION");
+		skillDesc = ReplaceStrings(skillDesc, ")>>", ">>");	//2 cases?
+		skillDesc = ReplaceStrings(skillDesc, "|cffffff", "");
+		skillDesc = ReplaceStrings(skillDesc, "|r", "");
+		skillDesc = ReplaceStrings(skillDesc, "  ", " ");
+
+		minedDesc = ReplaceStrings(minedDesc, "|cffffff", "");
+		minedDesc = ReplaceStrings(minedDesc, "|r", "");
+		minedDesc = ReplaceStrings(minedDesc, "  ", " ");
+		minedDesc = std::regex_replace(minedDesc, std::regex("WITH .* EQUIPPED\n"), "");
+		auto niceMinedDesc = ReplaceStrings(minedDesc, "\n\n", "\n");
+
+		/*
+			Call down a battle standard, dealing <<1>> every <<2>> for <<3>> to enemies and applying Major Defile to them, reducing their healing received and Health Recovery by <<4>>.
+			An ally near the standard can activate the |cffffffShackle|r synergy, dealing <<5>> to enemies in the area and immobilizing them for <<6>>.
+
+			Call down a battle standard, dealing 1587 Flame Damage every 1 second for 16 seconds to enemies and applying Major Defile to them, reducing their healing received and Health Recovery by 16%.
+			An ally near the standard can activate the Shackle synergy, dealing 4799 Flame Damage to enemies in the area and immobilizing them for 5 seconds
+		*/
+
+		auto matchDesc = skillDesc;
+
+		for (int i = 0; i <= 10; ++i)
+		{
+			matchDesc = std::regex_replace(matchDesc, std::regex("<<" + std::to_string(i + 1) + ">>"), "(.*)");
+		}
+
+		matchDesc = std::regex_replace(matchDesc, numberRegex, ".*");
+
+		auto indexDesc = minedDesc;
+		std::smatch m;
+		int charIndex = 0;
+
+		while (std::regex_search(indexDesc, m, numberRegex))
+		{
+			char idChar = 'A' + charIndex;
+
+			std::string id = "#";
+			id += idChar;
+			id += "#";
+
+			++charIndex;
+			indexDesc = std::regex_replace(indexDesc, numberRegex, id, std::regex_constants::format_first_only);
+		} 
+
+		printf("----------------------------------------------------------------------------------------------------\n");
+		printf("\t%d: %s\n", abilityId, minedSkill.name.c_str());
+		
+		bool isMatched = std::regex_search(indexDesc, m, std::regex(matchDesc));
+
+		if (!isMatched) 
+		{
+			printf("\t\tError: No match!\n");
+			printf("%s\n", skillDesc.c_str());
+			printf("%s\n", indexDesc.c_str());
+			printf("%s\n", matchDesc.c_str());
+			continue;
+		}
+
+		std::unordered_map<int, int> IndexMap;
+		std::unordered_map<int, int> IndexReverseMap;
+
+		printf("%s\n", niceMinedDesc.c_str());
+
+		for (unsigned i = 1; i < m.size(); ++i)
+		{
+			std::string subMatch = m.str(i);
+			std::smatch m1;
+
+			isMatched = std::regex_search(subMatch, m1, std::regex("#([A-Z])#"));
+
+			if (isMatched)
+			{
+				char ch = m1.str(1).c_str()[0];
+				int index = ch - 'A' + 1;
+
+				IndexMap[i] = index;
+				IndexReverseMap[index] = i;
+
+				printf("\t\t%d: %s => %d\n", i, m.str(i).c_str(), index);
+			}
+			else
+			{
+				printf("\t\t%d: %s\n", i, m.str(i).c_str());
+			}
+		}
+
+		/*
+		  28348: Absorption Field
+				1: #A# seconds
+				2: #B#
+				3: #C# seconds
+		*/
+
+		for (auto&& numberIndex : entry.indexes)
+		{
+			if (IndexMap.find(numberIndex) == IndexMap.end())
+			{
+				printf("\t\tError: Number index %d does not has a valid tooltip index!\n", numberIndex);
+				continue;
+			}
+
+			size_t tooltipIndex = IndexMap[numberIndex];
+
+			if (tooltipIndex - 1 >= skill.list4.size())
+			{
+				printf("\t\tError: TooltipIndex %d (from number index %d) is not valid!\n", tooltipIndex, numberIndex);
+				continue;
+			}
+
+			auto abilityId1 = skill.list4[tooltipIndex - 1];
+
+			if (g_ValidSkillIds.find(abilityId1) == g_ValidSkillIds.end()) 
+			{ 
+				printf("\t\tError: Failed to find skill data for %d!\n", abilityId1);
+				continue; 
+			}
+
+			auto skillIndex1 = g_ValidSkillIds[abilityId1];
+			auto& skill1 = g_Skills[skillIndex1];
+
+			CompareIds.push_back(abilityId1);
+			printf("\t\t%d: %s -- Adding to compare\n", abilityId1, skill1.name.c_str());
+		}
+	}
+
+	printf("Found %d skills to compare\n", CompareIds.size());
+	CompareSkills(CompareIds);
+	CompareFlags(CompareIds);
+}
+
+
 int main()
 {
+	//std::cmatch cm;
+	//bool m1 = std::regex_search("asdasd 1234 asd", cm, std::regex("[0-9]"));
+	//bool m2 = std::regex_search("asdasd 1234 asd", cm, std::regex("[0-9]+"));
+	//bool m3 = std::regex_search("asdasd 1234 asd", cm, std::regex("[0-9]+\\.?"));
+	//bool m4 = std::regex_search("asdasd 1234 asd", cm, std::regex("[0-9]+\\.?[0-9]*"));
+	//return 0;
 
+	//float f1 = ConvertDwordToFloat(0x12345678);
+	//float f2 = ConvertDwordToFloat(-1701197506);
+	//return 0;
+
+	LoadSkillListCsv(AOEHEALS_FILENAME, g_AoeHealSkills);
+	LoadSkillListCsv(HOTHEALS_FILENAME, g_HotHealSkills);
+	LoadSkillListCsv(STHEALS_FILENAME, g_StHealSkills);
+	LoadSkillListCsv(ALLHEALS_FILENAME, g_AllHealSkills);
+
+	LoadSkillDescriptionCsv(SKILLDATA_SKILLDESC_FILENAME);
 	LoadMinedSkillCsv(SKILLDATA_MINEDSKILLS_FILENAME);
 
+	//CheckDescriptions();
 	//return 0;
 
 	if (!LoadSkillData(SKILLDATA_FILENAME)) return ReportError("Failed to load file!");
 
-	CompareSkills1();
+	//CompareSkillList("AOE Heals", g_AoeHealSkills);
+	//CompareSkillList("HOT Heals", g_HotHealSkills);
+	//CompareSkillList("SingleTarget Heals", g_StHealSkills);
+	CompareSkillList("All Heals", g_AllHealSkills);
+
+	OutputFlagCsv();
+	//OutputSkills();
 	return 0;
 
-	AnalyzeZeros();
-	AnalyzeU2Data();
+	//CheckSkillCosts();
+	//CheckTooltipTypes();
+	//return 0;
 
-	PrintZeros();
-	PrintU2Data();
+	//AnalyzeU8();
+	//AnalyzeList1();
+	//AnalyzeList3();
+	//return 0;
 
-	AnalyzeNames();
-	AnalyzeFlags();
+	//CompareSkills1();
+
+	//AnalyzeZeros();
+	//AnalyzeU2Data();
+
+	//PrintZeros();
+	//PrintU2Data();
+
+	//AnalyzeNames();
+	//AnalyzeFlags();
 	//PrintFlags();
 
-	AnalyzeIdLists();
-	OutputIdListSummary();
+	//AnalyzeIdLists();
+	//OutputIdListSummary();
 
 	//OutputSummaryCsv();
 	//OutputFlagCsv();
@@ -2013,10 +2884,24 @@ int main()
 	//44363, 31102			// Flame DOT
 	//44369,31103, 38703, 44540, 44545, 44549			// Poison DOT
 
-	skilldata_t compare1 = CompareSkills({ 23806, 20805, 20657, 20917, 20492, 20499, 20496 });	//Flame DD Skills
-	skilldata_t compare2 = CompareSkills({ 20944, 86019, 94445, 38701, 28869, 38645, 38660 });	//Poison DD Skills
+	//skilldata_t compare1 = CompareSkills({ 23806, 20805, 20657, 20917, 20492, 20499, 20496 });	//Flame DD Skills
+	//skilldata_t compare2 = CompareSkills({ 20944, 86019, 94445, 38701, 28869, 38645, 38660 });	//Poison DD Skills
 
-	DiffSkills(compare1, compare2);
+	//skilldata_t compare1 = CompareSkills({ 44363, 31102, 44369, 31103,  38703, 44540, 44545, 44549 });	//DOT
+	//skilldata_t compare2 = CompareSkills({ 28995, 23806, 20805, 20944, 117624, 86019, 94445, 28869 });	//DD
+	//DiffSkills(compare1, compare2, false);
+
+	skilldata_t compare1 = CompareSkills({ 31837, 36052, 23189 });	//AOE 
+	skilldata_t compare2 = CompareSkills({ 23806, 20657, 33386 });	//Single Target
+
+	//  DD Heals: 22250, 114196,
+	// AOE Heals: 22304, 115318, 28386
+	// DOT Heals: 28536, 28385
+
+	//skilldata_t compare1 = CompareSkills({ 23211, 33333, 101703 });	//DOT
+	//skilldata_t compare2 = CompareSkills({ 22057, 23806,  43714 });	//DD
+
+	//DiffSkills(compare1, compare2);
 	//DiffSkills(20668, 28995);
 	//DiffSkills(20944, 23806);
 
@@ -2026,5 +2911,8 @@ int main()
 
 
  
+
+
+
 
 

@@ -69,3 +69,5 @@ packages/**
 *.resharper
 *.ncrunch*
 *.ndproj
+.vs
+.vs/**

@@ -155,6 +155,9 @@
  *		- Added the --luafilelist option.
  *		- Added the --luastartindex option.
  *		- Added the -y/--fileext option.
+ *
+ * v0.42 -- ?
+ *		- Removed extra "." in DDS files exported from XV4 files.
  */
 
 #include "stdafx.h"

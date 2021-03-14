@@ -847,7 +847,7 @@ namespace eso {
 
 		if (DataInfo.FileDataSize <= 12) return false;
 
-		OutputFilename = CreateFilename(BasePath, "%03u\\%06u.%s", (dword)FileEntry.ArchiveIndex, FileEntry.Index, ".dds");
+		OutputFilename = CreateFilename(BasePath, "%03u\\%06u.%s", (dword)FileEntry.ArchiveIndex, FileEntry.Index, "dds");
 		OutputPath = RemoveFilename(OutputFilename);
 		if (!EnsurePathExists(OutputPath)) return false;
 

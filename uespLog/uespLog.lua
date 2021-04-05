@@ -1115,14 +1115,34 @@
 --			- API updated to 100034.
 --			- Updated runebox data.
 --
+--		-- v2.61 -- 5 April 2021
+--			- Added the WeaponPower skill coefficient type and defined a few skills to use it.
+--			- Added the "/usc savedesc" and "/usc checkdesc [type]" commands. Used for finding skill coefficients
+--			  that change with various skill modifiers (AOE, DOT, HOT, etc...). Note that this data is not saved
+--			  when reloading the UI or logging out.
+--			- Displays a chat message when you fail to equip a CP star due to the 30 second cooldown. Displays
+--			  another chat message when the cooldown expires.
+--			- All ability bars are now captured when saving character and build data (you no longer have to swap
+--			  bars to ensure both are saved). For character data, however, you still need to swap bars at least 
+--			  once after reloading to ensure stats are updated for each bar.
+--			- Reduced the amount the ability bar data is saved for the character data in some cases.
+--			- You won't get double crafting messages when using Dolgubon's Lazy Writ Crafter.
+--			- Fixed cases where opening a container in your inventory is not properly detected.
+--			- If hireling mail autoloot is turned on the mail system tab will be opened by default whenever you
+--			  open mail window.
+--			- All hireling mails should again be autolooted one after the other when hireling mail autoloot is 
+--			  turned on.
+--			- Fixed issue with AwesomeGuildStore (or other trading house addons) that would cause an error
+--			  when purchasing at guild stores.
 --
 
 
---	GLOBAL .
+
+--	GLOBALS
 uespLog = uespLog or {}
 
-uespLog.version = "2.60"
-uespLog.releaseDate = "8 March 2021"
+uespLog.version = "2.61"
+uespLog.releaseDate = "5 April 2021"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -1795,6 +1815,13 @@ uespLog.MINEITEM_POTION_MAGICITEMID = 1	-- 1234567
 uespLog.MINEITEM_POISON_MAGICITEMID = 2
 uespLog.MINEITEM_ENCHANT_ITEMID = 55679
 uespLog.MINEITEM_ENCHANT_ENCHANTID = 26841
+
+uespLog.SkillDump_validAbilityCount = 0
+uespLog.SkillDump_startAbilityId = 0
+uespLog.SkillDump_countAbilityId = 5000
+uespLog.SkillDump_lastAbilityId = 200000
+uespLog.SkillDump_lastValidAbilityId = 0
+uespLog.SkillDump_delay = 2000
 
 uespLog.MASTERWRIT_MAX_CHANCE = 15
 uespLog.MASTERWRIT_MIN_CHANCE = 1
@@ -4459,6 +4486,7 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SHOW_BOOK, uespLog.OnShowBook)
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_SKILL_RANK_UPDATE, uespLog.OnSkillRankUpdate)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CHAMPION_PURCHASE_RESULT, uespLog.OnChampionPointPurchase)
 
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CRAFT_COMPLETED, uespLog.OnCraftCompleted)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CRAFTING_STATION_INTERACT, uespLog.OnCraftStationInteract)
@@ -4466,8 +4494,8 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_END_CRAFTING_STATION_INTERACT, uespLog.OnEndCraftStationInteract)		
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOTS_FULL_UPDATE, uespLog.OnActionSlotsFullUpdate)	
-	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOT_ABILITY_SLOTTED, uespLog.OnActionSlotAbilitySlotted)	
-	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTIVE_QUICKSLOT_CHANGED, uespLog.OnActiveQuickSlotChanged)	
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTION_SLOTS_ACTIVE_HOTBAR_UPDATED, uespLog.OnActiveBarUpdated)	
+	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTIVE_QUICKSLOT_CHANGED, uespLog.OnActiveQuickSlotChanged)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ACTIVE_WEAPON_PAIR_CHANGED, uespLog.OnActiveWeaponPairChanged)	
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_FISHING_LURE_CLEARED, uespLog.OnFishingLureCleared)	
@@ -4725,8 +4753,8 @@ function uespLog.InitCrafting()
 	local LLC = LibLazyCrafting
 
 	if (LLC and LLC.SendCraftEvent) then
-		uespLog.Old_LLCSendCraftEvent = LLC.SendCraftEvent
-		LLC.SendCraftEvent = uespLog.LLCSendCraftEvent
+		--uespLog.Old_LLCSendCraftEvent = LLC.SendCraftEvent
+		--LLC.SendCraftEvent = uespLog.LLCSendCraftEvent
 	end
 end
 
@@ -5604,7 +5632,7 @@ function uespLog.OnQuestOffered (eventCode)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.currentConversationData, uespLog.GetTimeData())
 	
-	uespLog.DebugExtraMsg("UESP: Updated Conversation (QuestOffered)...")
+	--uespLog.DebugExtraMsg("UESP: Updated Conversation (QuestOffered)...")
 	--uespLog.DebugExtraMsg("UESP: dialog = "..tostring(dialog))
 	--uespLog.DebugExtraMsg("UESP: response = "..tostring(response))
 	--uespLog.DebugExtraMsg("UESP: farewell = "..tostring(farewell))	
@@ -5615,7 +5643,7 @@ function uespLog.OnConversationUpdated (eventCode, conversationBodyText, convers
 
 	local logData = { }
 	
-	uespLog.DebugExtraMsg("UESP: Updated conversation START...")
+	--uespLog.DebugExtraMsg("UESP: Updated conversation START...")
 
 	logData.event = "ConversationUpdated"
 	logData.bodyText = conversationBodyText
@@ -5632,7 +5660,7 @@ function uespLog.OnConversationUpdated (eventCode, conversationBodyText, convers
 		uespLog.AppendDataToLog("all", logData)
 	end
 	
-	uespLog.DebugExtraMsg("UESP: Updated conversation...")
+	--uespLog.DebugExtraMsg("UESP: Updated conversation...")
 	
 	uespLog.lastConversationOption.Text = ""
 	uespLog.lastConversationOption.Type = ""
@@ -5708,7 +5736,7 @@ function uespLog.OnChatterBegin (eventCode, optionCount)
 		uespLog.AppendDataToLog("all", logData)
 	end
 	
-	uespLog.DebugExtraMsg("UESP: Chatter begin...")
+	--uespLog.DebugExtraMsg("UESP: Chatter begin...")
 	
 		-- Manually call the original function to update the chat window.
 		-- If you don't call these the NPC dialog window doesn't show up.
@@ -5800,6 +5828,53 @@ function uespLog.OnLoreBookLearned (eventCode, categoryIndex, collectionIndex, b
 	
 	uespLog.LastLoreBookTitle = bookTitle
 	uespLog.LastLoreBookTime = GetGameTimeMilliseconds()
+end
+
+
+uespLog.lastCPChangeTime = 0
+uespLog.CP_SLOT_COOLDOWN = 30000
+uespLog.hasCPReminder = false
+uespLog.cpPurchaseErrorCallback = nil
+uespLog.cpPurchaseSuccessCallback = nil
+uespLog.cpPurchaseCooldownCallback = nil
+
+
+function uespLog.OnChampionPointPurchase (eventCode, result)
+
+	if (result == CHAMPION_PURCHASE_SUCCESS) then
+        uespLog.lastCPChangeTime = GetGameTimeMilliseconds()
+		uespLog.hasCPReminder = false
+		
+		if (uespLog.cpPurchaseSuccessCallback) then
+			uespLog.cpPurchaseSuccessCallback()
+		end
+		
+    elseif (result == CHAMPION_PURCHASE_CHAMPION_BAR_ILLEGAL_SLOT) then
+		local timeLeft = (uespLog.CP_SLOT_COOLDOWN - GetGameTimeMilliseconds() + uespLog.lastCPChangeTime) / 1000
+		uespLog.Msg("You may slot CPs again in "..tostring(timeLeft).." secs.")
+		
+		if (not uespLog.hasCPReminder) then
+			uespLog.hasCPReminder = true
+			zo_callLater(function() uespLog.RemindCPSlotPurchase() end, timeLeft*1000 + 100)
+		end
+		
+		if (uespLog.cpPurchaseErrorCallback) then
+			uespLog.cpPurchaseErrorCallback(result)
+		end
+	end
+end
+
+
+function uespLog.RemindCPSlotPurchase()
+
+	if (uespLog.cpPurchaseCooldownCallback) then
+		uespLog.cpPurchaseCooldownCallback()
+	end
+	
+	if (uespLog.hasCPReminder) then
+		uespLog.hasCPReminder = false
+		uespLog.Msg("You may now slot CPs again!")
+	end
 end
 
 
@@ -7190,7 +7265,7 @@ function uespLog.OnCraftCompleted (eventCode, craftSkill, usingLLC)
 	local craftInteractionType = GetCraftingInteractionType()
 	local itemLink = GetLastCraftingResultItemLink(1)
 	
-	--uespLog.DebugExtraMsg("OnCraftCompleted: "..tostring(craftInteractionType)..":"..tostring(itemLink))
+	uespLog.DebugExtraMsg("OnCraftCompleted: "..tostring(craftInteractionType)..":"..tostring(itemLink) .. ":"..tostring(craftSkill)..":"..tostring(usingLLC))
 	
 	if (usingLLC) then
 		uespLog.LastCraftCompletedUsedLLC = true
@@ -7198,7 +7273,7 @@ function uespLog.OnCraftCompleted (eventCode, craftSkill, usingLLC)
 	
 		if (uespLog.LastCraftCompletedUsedLLC) then
 			uespLog.LastCraftCompletedUsedLLC = false
-			--uespLog.DebugMsg("Skip duplicate event")
+			uespLog.DebugExtraMsg("Skip duplicate event")
 			return
 		end
 		
@@ -7350,7 +7425,7 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 			uespLog.OnFishingReelInReady(0, itemLink, itemName, bagId, slotIndex)
 		end
 		
-	elseif (itemSoundCategory == ITEM_SOUND_CATEGORY_FOOTLOCKER and not isNewItem and stackAmountChange == 0) then
+	elseif (itemSoundCategory == ITEM_SOUND_CATEGORY_FOOTLOCKER and not isNewItem and stackAmountChange <= 0) then
 		
 		uespLog.OnOpenFootlocker(eventCode, bagId, slotIndex, lastLinkUsed, itemSoundCategory)
 		
@@ -8134,7 +8209,7 @@ end
     end
 	
 	if (numLinks > 0) then
-		uespLog.DebugExtraMsg("Logged "..tostring(numLinks).." item links from chat message.")
+		--uespLog.DebugExtraMsg("Logged "..tostring(numLinks).." item links from chat message.")
 	end
 	
  end
@@ -9263,14 +9338,6 @@ function uespLog.DumpSkillsProgression(note, classOnly)
 end
 
 
-uespLog.SkillDump_validAbilityCount = 0
-uespLog.SkillDump_startAbilityId = 0
-uespLog.SkillDump_countAbilityId = 5000
-uespLog.SkillDump_lastAbilityId = 200000
-uespLog.SkillDump_lastValidAbilityId = 0
-uespLog.SkillDump_delay = 2000
-
-
 function uespLog.DumpSkillsStart(note)
 	local abilityId
 	local logData = { }
@@ -9421,20 +9488,8 @@ function uespLog.DumpSkill(abilityId, extraData)
 	-- GetAbilityProgressionRankFromAbilityId(number abilityId) Returns: number:nilable rank
 	-- GetAbilityProgressionXPInfoFromAbilityId(number abilityId) Returns: boolean hasProgression, number progressionIndex, number lastRankXp, number nextRankXP, number currentXP, boolean atMorph
 	
-	logData.desc1 = tostring(GetAbilityDescription(abilityId, 1))
-	logData.desc2 = tostring(GetAbilityDescription(abilityId, 2))
-	logData.desc3 = tostring(GetAbilityDescription(abilityId, 3))
-	logData.desc4 = tostring(GetAbilityDescription(abilityId, 4))
-	
-	if (descHeader ~= "") then
-		logData.desc = "|cffffff" .. descHeader .."|r\n".. tostring(description)
-		logData.desc1 = "|cffffff" .. descHeader .."|r\n".. tostring(logData.desc1)
-		logData.desc2 = "|cffffff" .. descHeader .."|r\n".. tostring(logData.desc2)
-		logData.desc3 = "|cffffff" .. descHeader .."|r\n".. tostring(logData.desc3)
-		logData.desc4 = "|cffffff" .. descHeader .."|r\n".. tostring(logData.desc4)
-	else
-		logData.desc = tostring(description)
-	end
+	logData.descHeader = descHeader
+	logData.desc = tostring(description)
 	
 	if (upgradeLines and upgradeLines ~= "") then logData.upgradeLines = upgradeLines end
 	if (effectLines and effectLines ~= "") then logData.effectLines = effectLines end
@@ -9442,6 +9497,11 @@ function uespLog.DumpSkill(abilityId, extraData)
 	local rankData = uespLog.BASESKILL_RANKDATA[abilityId]
 	
 	if ((logData.skillType ~= nil or rankData ~= nil) and not isPassive) then
+		logData.desc1 = tostring(GetAbilityDescription(abilityId, 1))
+		logData.desc2 = tostring(GetAbilityDescription(abilityId, 2))
+		logData.desc3 = tostring(GetAbilityDescription(abilityId, 3))
+		logData.desc4 = tostring(GetAbilityDescription(abilityId, 4))
+	
 		logData.cost1 = GetAbilityCost(abilityId, 1)
 		logData.cost2 = GetAbilityCost(abilityId, 2)
 		logData.cost3 = GetAbilityCost(abilityId, 3)
@@ -9476,11 +9536,6 @@ function uespLog.DumpSkill(abilityId, extraData)
 		logData.costTime2, logData.mechanicTime2, logData.chargeFreqMS2 = GetAbilityCostOverTime(abilityId, 2)
 		logData.costTime3, logData.mechanicTime3, logData.chargeFreqMS3 = GetAbilityCostOverTime(abilityId, 3)
 		logData.costTime4, logData.mechanicTime4, logData.chargeFreqMS4 = GetAbilityCostOverTime(abilityId, 4)
-	else
-		logData.desc1 = nil
-		logData.desc2 = nil
-		logData.desc3 = nil
-		logData.desc4 = nil
 	end
 	
 	uespLog.AppendDataToLog("all", logData, extraData)
@@ -15092,9 +15147,9 @@ function uespLog.ActionButton_HandleRelease(self)
 		uespLog.OnQuickSlotUsed(slotNum)
 	end
 	
-		-- Ultimate activation, might bar swap
+		-- Ultimate activation, might cause a bar swap
 	if (slotType == 1 and slotNum == 8) then
-		uespLog.SaveActionBarForCharData()
+		uespLog.SaveAllActionBarData()
 		uespLog.SaveStatsForCharData()
 	end
 	
@@ -18964,6 +19019,8 @@ function uespLog.AutolootHirelingMailCheckDelete(mailId)
 	local sender = GetMailItemInfo(mailId)
 	
 	if (sender == nil or sender == "") then
+		local firstMailId = GetNextMailId(nil)
+		RequestReadMail(firstMailId)
 		return true
 	end
 	
@@ -19067,6 +19124,21 @@ function uespLog.OnMailOpenMailbox(event)
 	
 	if (type(firstMailId) == "string") then
 		return
+	end
+	
+		-- Try to open the system tab
+	if (uespLog.GetAutoLootHirelingMails()) then
+		if (MAIL_INBOX and MAIL_INBOX.navigationTree and MAIL_INBOX.navigationTree.rootNode and MAIL_INBOX.navigationTree.rootNode.children) then
+			local systemTab = MAIL_INBOX.navigationTree.rootNode.children[2]
+			
+			if (not systemTab.open and systemTab and systemTab.GetTree) then
+				local tree = systemTab:GetTree()
+				
+				if (tree) then
+					tree:ToggleNode(systemTab)
+				end
+			end
+		end
 	end
 	
 	RequestReadMail(firstMailId)
@@ -20028,7 +20100,7 @@ function uespLog.LogLocationData()
 	logData.zoneDesc = GetZoneDescription(logData.zoneIndex)
 	logData.zoneId = GetZoneId(logData.zoneIndex)
 	
-	uespLog.DebugExtraMsg("UESP LogLocationData: "..tostring(logData.zoneName)..":"..tostring(logData.subzoneName).." ("..tostring(logData.zoneIndex)..":"..tostring(logData.zoneId)..")")
+	--uespLog.DebugExtraMsg("UESP LogLocationData: "..tostring(logData.zoneName)..":"..tostring(logData.subzoneName).." ("..tostring(logData.zoneIndex)..":"..tostring(logData.zoneId)..")")
 	
 	logData.mapName = GetMapName()
 	logData.mapType = GetMapType()
@@ -20056,7 +20128,7 @@ function uespLog.LogLocationData()
 	logData.normX, logData.normZ, logData.poiPinType, logData.mapIcon, logData.isShown, _ = GetPOIMapInfo(logData.zoneIndex, logData.poiIndex)
 	logData.poiType = GetPOIType(logData.zoneIndex, logData.poiIndex)
 	
-	uespLog.DebugExtraMsg("UESP LogLocationData: POIs "..tostring(logData.numPOIs)..": "..tostring(logData.zoneIndex)..":"..tostring(logData.poiIndex)..":"..tostring(logData.poiType).."")
+	--uespLog.DebugExtraMsg("UESP LogLocationData: POIs "..tostring(logData.numPOIs)..": "..tostring(logData.zoneIndex)..":"..tostring(logData.poiIndex)..":"..tostring(logData.poiType).."")
 	
 	logData.objectiveName, logData.objectiveLevel, logData.startDesc, logData.endDesc = GetPOIInfo(logData.zoneIndex, logData.poiIndex)
 	

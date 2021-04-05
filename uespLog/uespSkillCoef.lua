@@ -43,6 +43,8 @@ uespLog.UESP_POWERTYPE_GRAVELORD = -70
 uespLog.UESP_POWERTYPE_SPELLDAMAGECAPPED = -71
 uespLog.UESP_POWERTYPE_MAGICKAWITHWD = -72
 uespLog.UESP_POWERTYPE_MAGICKACAPPED = -73
+uespLog.UESP_POWERTYPE_WEAPONPOWER = -74
+uespLog.UESP_POWERTYPE_CONSTANTVALUE = -75
 
 uespLog.SKILLCOEF_CHECK_ABILITYID = 28302
 uespLog.SKILLCOEF_CHECK_INDEX = 2
@@ -50,12 +52,20 @@ uespLog.SKILLCOEF_CHECK_VALUE = 300
 
 uespLog.SKILLCOEF_BADFIT_MINR2 = 0.99
 
+uespLog.SkillCoefAddAllValidCount = 0
+uespLog.SkillCoefAddAllNewCount = 0
+uespLog.SKILLCOEF_ADDALL_MAXABILITYID = uespLog.SkillDump_lastAbilityId
+uespLog.SKILLCOEF_ADDALL_MAXABILITYCOUNT = 1000
+uespLog.SkillCoefAddStartAbilityIndex = 1
+uespLog.SKILLCOEF_ADDALL_DELAY = 500
+
 
 uespLog.SKILLCOEF_MECHANIC_NAMES = {
 	[POWERTYPE_ULTIMATE] = "Ultimate",
 	[POWERTYPE_HEALTH] = "Health",
 	[POWERTYPE_MAGICKA] = "Magicka",
 	[POWERTYPE_STAMINA] = "Stamina",
+	[4] = "Spell + Weapon Damage",	-- Same as UESP_POWERTYPE_DAMAGE
 	[uespLog.UESP_POWERTYPE_SOULTETHER] = "Ultimate (ignore WD)",
 	[uespLog.UESP_POWERTYPE_LIGHTARMOR] = "Light Armor",
 	[uespLog.UESP_POWERTYPE_MEDIUMARMOR] = "Medium Armor",
@@ -80,6 +90,8 @@ uespLog.SKILLCOEF_MECHANIC_NAMES = {
 	[uespLog.UESP_POWERTYPE_SPELLDAMAGECAPPED] = "Spell Damage Capped",
 	[uespLog.UESP_POWERTYPE_MAGICKAWITHWD] = "Magicka and Weapon Damage",
 	[uespLog.UESP_POWERTYPE_MAGICKACAPPED] = "Magicka Capped",
+	[uespLog.UESP_POWERTYPE_WEAPONPOWER] = "Weapon Power",
+	[uespLog.UESP_POWERTYPE_CONSTANTVALUE] = "Constant Value",
 }
 
 
@@ -107,20 +119,21 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	
 	-- NightBlade Soul Shred/Soul Tether/Soul Siphon
 	-- The health stealing portion seems to always use Spell Damage
-	[25091] = { [3] = uespLog.UESP_POWERTYPE_SOULTETHER },
-	[36154] = { [3] = uespLog.UESP_POWERTYPE_SOULTETHER },
-	[36160] = { [3] = uespLog.UESP_POWERTYPE_SOULTETHER },
-	[36166] = { [3] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	-- Fixed sometime around update 29 or prior
+	--[25091] = { [3] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	--[36154] = { [3] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	--[36160] = { [3] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	--[36166] = { [3] = uespLog.UESP_POWERTYPE_SOULTETHER },
 	
-	[35508] = { [6] = uespLog.UESP_POWERTYPE_SOULTETHER },
-	[36172] = { [6] = uespLog.UESP_POWERTYPE_SOULTETHER },
-	[36179] = { [6] = uespLog.UESP_POWERTYPE_SOULTETHER },
-	[36186] = { [6] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	--[35508] = { [6] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	--[36172] = { [6] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	--[36179] = { [6] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	--[36186] = { [6] = uespLog.UESP_POWERTYPE_SOULTETHER },
 	
-	[35460] = { [5] = uespLog.UESP_POWERTYPE_SOULTETHER },
-	[36193] = { [5] = uespLog.UESP_POWERTYPE_SOULTETHER },
-	[36200] = { [5] = uespLog.UESP_POWERTYPE_SOULTETHER },
-	[36207] = { [5] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	--[35460] = { [5] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	--[36193] = { [5] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	--[36200] = { [5] = uespLog.UESP_POWERTYPE_SOULTETHER },
+	--[36207] = { [5] = uespLog.UESP_POWERTYPE_SOULTETHER },
 	
 	-- NightBlade Dark Cloak
 	[25377] = POWERTYPE_HEALTH,
@@ -1158,6 +1171,24 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	
 	-- Invigorating bash
 	[60407] = POWERTYPE_HEALTH,
+		
+	-- Attack/Weapon Power	
+	[15998] = uespLog.UESP_POWERTYPE_WEAPONPOWER,
+	[16353] = uespLog.UESP_POWERTYPE_WEAPONPOWER,
+	[16357] = uespLog.UESP_POWERTYPE_WEAPONPOWER,
+	[16368] = uespLog.UESP_POWERTYPE_WEAPONPOWER,
+	
+	[132249] = uespLog.UESP_POWERTYPE_WEAPONPOWER,
+	[132251] = uespLog.UESP_POWERTYPE_WEAPONPOWER,
+	[132322] = uespLog.UESP_POWERTYPE_WEAPONPOWER,
+	[132354] = uespLog.UESP_POWERTYPE_WEAPONPOWER,
+	[132372] = uespLog.UESP_POWERTYPE_WEAPONPOWER,
+	[133116] = uespLog.UESP_POWERTYPE_WEAPONPOWER,
+	[133119] = uespLog.UESP_POWERTYPE_WEAPONPOWER,
+	[133507] = uespLog.UESP_POWERTYPE_WEAPONPOWER,
+	
+	-- Damage
+	[75673] = uespLog.UESP_POWERTYPE_DAMAGE,
 		
 }
 
@@ -4095,6 +4126,41 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		uespLog.SkillCoefLoadSkillList()
 	elseif (cmd1 == "resetlist") then
 		uespLog.SkillCoefResetSkillList()
+	elseif (cmd1 == "resetdesc") then
+		uespLog.ResetSkillCoefDesc()
+	elseif (cmd1 == "savedesc" or cmd1 == "savebase") then
+		uespLog.SaveBaseSkillCoefDesc()
+	elseif (cmd1 == "checkdesc") then
+		local cmd2 = string.lower(cmds[2] or "")
+		
+		if (cmd2 == "hot") then
+			uespLog.StartCheckSkillCoefDesc("hot")
+		elseif (cmd2 == "dot") then
+			uespLog.StartCheckSkillCoefDesc("dot")
+		elseif (cmd2 == "aoedmg") then
+			uespLog.StartCheckSkillCoefDesc("aoedmg")
+		elseif (cmd2 == "aoeheal") then
+			uespLog.StartCheckSkillCoefDesc("aoeheal")
+		elseif (cmd2 == "stdmg") then
+			uespLog.StartCheckSkillCoefDesc("stdmg")
+		elseif (cmd2 == "stheal") then
+			uespLog.StartCheckSkillCoefDesc("stheal")
+		elseif (cmd2 == "heal") then
+			uespLog.StartCheckSkillCoefDesc("heal")
+		elseif (cmd2 == "ds") then
+			uespLog.StartCheckSkillCoefDesc("ds")
+		elseif (cmd2 == "flameaoe") then
+			uespLog.StartCheckSkillCoefDesc("flameaoe")
+		elseif (cmd2 == "elfbane") then
+			uespLog.StartCheckSkillCoefDuration("elfbane")
+		elseif (cmd2 == "misc") then
+			uespLog.StartCheckSkillCoefDesc("misc")
+		elseif (cmd2 == "miscdur") then
+			uespLog.StartCheckSkillCoefDuration("misc")
+		else
+			uespLog.Msg("Expecting check type as second parameter: aoedmg, aoeheal, dot, hot, stdmg, stheal, ds, heal, flameaoe, elfbane, misc. miscdur")
+		end
+		
 	else
 		uespLog.Msg("Saves and calculates coefficients for all skills the character knows. Note that the saved skill data is *not* saved when you /reloadui or logout.")
 		uespLog.Msg("To use use the 'save' command with at least 3 different sets of character stat (spell damage/magicka or weapon damage/stamina) and then use the 'calc' command.")
@@ -4117,6 +4183,8 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		uespLog.Msg(".     /usc addcharskills           Adds all character skills to track when saving")
 		uespLog.Msg(".     /usc addmissing              Adds all currently defined missing skills")
 		uespLog.Msg(".     /usc addlist [id] ...     Adds the listed skills")
+		uespLog.Msg(".     /usc savedesc              Saves skill descriptions for later checking")
+		uespLog.Msg(".     /usc checkdesc [type]      Checks skill descriptions for changes since save")
 	end
 
 end
@@ -4462,14 +4530,6 @@ function uespLog.InitPlayerSkill(abilityId)
 end
 
 
-uespLog.SkillCoefAddAllValidCount = 0
-uespLog.SkillCoefAddAllNewCount = 0
-uespLog.SKILLCOEF_ADDALL_MAXABILITYID = 200000
-uespLog.SKILLCOEF_ADDALL_MAXABILITYCOUNT = 1000
-uespLog.SkillCoefAddStartAbilityIndex = 1
-uespLog.SKILLCOEF_ADDALL_DELAY = 500
-
-
 function uespLog.SkillCoefAddAllSkills()
 		
 	if (uespLog.isSkillCoefSaving) then
@@ -4710,6 +4770,7 @@ function uespLog.SaveTempSkillCoef(name)
 	table.insert(headerData, "Health")
 	table.insert(headerData, "SpellDmg")
 	table.insert(headerData, "WeaponDmg")
+	table.insert(headerData, "WeaponPwr")
 	table.insert(headerData, "Light")
 	table.insert(headerData, "Medium")
 	table.insert(headerData, "Heavy")
@@ -4730,6 +4791,7 @@ function uespLog.SaveTempSkillCoef(name)
 		table.insert(rowData, data.hea)
 		table.insert(rowData, data.sd)
 		table.insert(rowData, data.wd)
+		table.insert(rowData, data.wp)
 		table.insert(rowData, data.la)
 		table.insert(rowData, data.ma)
 		table.insert(rowData, data.ha)
@@ -4780,6 +4842,7 @@ function uespLog.ShowDataSkillCoef(name)
 	table.insert(headerData, "Hea")
 	table.insert(headerData, "Spell")
 	table.insert(headerData, "Weap")
+	table.insert(headerData, "WP")
 	table.insert(headerData, "LA")
 	table.insert(headerData, "MA")
 	table.insert(headerData, "HA")
@@ -4794,6 +4857,7 @@ function uespLog.ShowDataSkillCoef(name)
 		table.insert(rowData, data.hea)
 		table.insert(rowData, data.sd)
 		table.insert(rowData, data.wd)
+		table.insert(rowData, data.wp)
 		table.insert(rowData, data.la)
 		table.insert(rowData, data.ma)
 		table.insert(rowData, data.ha)
@@ -5179,6 +5243,7 @@ function uespLog.SaveSkillCoefData(abilityId, rank)
 		["hea"]  = GetPlayerStat(STAT_HEALTH_MAX),
 		["sd"] 	 = GetPlayerStat(STAT_SPELL_POWER),
 		["wd"]   = GetPlayerStat(STAT_POWER),
+		["wp"]   = GetPlayerStat(STAT_WEAPON_POWER),
 		["la"]   = uespLog.SkillCoefArmorCountLA,
 		["ma"]   = uespLog.SkillCoefArmorCountMA,
 		["ha"]   = uespLog.SkillCoefArmorCountHA,
@@ -5427,6 +5492,7 @@ function uespLog.ComputeSkillCoefSkill(abilityId, skillsData)
 	local allInvalid = true
 	coefData.A = {}
 	coefData.Ainv = {}
+	coefData.Adet = {}
 	coefData.isValid = true
 	coefData.AisValid = { }
 	coefData.B = {}
@@ -5437,10 +5503,11 @@ function uespLog.ComputeSkillCoefSkill(abilityId, skillsData)
 	
 		if (calcData.numbersVary[i]) then
 			local A = uespLog.SkillCoefComputeAMatrix(skillsData, abilityData, i)
-			local Ainv, AisValid = uespLog.SkillCoefComputeAMatrixInv(A)
+			local Ainv, AisValid, Adet = uespLog.SkillCoefComputeAMatrixInv(A)
 			local B = uespLog.SkillCoefComputeBMatrix(skillsData, abilityData, i)
 			
 			table.insert(coefData.A, A)
+			table.insert(coefData.Adet, Adet)
 			table.insert(coefData.Ainv, Ainv)
 			table.insert(coefData.AisValid, AisValid)
 			table.insert(coefData.B, B)
@@ -5454,7 +5521,8 @@ function uespLog.ComputeSkillCoefSkill(abilityId, skillsData)
 				
 				if (not uespLog.isFinite(result.a) or not uespLog.isFinite(result.b) or not uespLog.isFinite(result.c) or not uespLog.isFinite(result.R2)) then
 					uespLog.SkillCoefNumBadCoefCount = uespLog.SkillCoefNumBadCoefCount + 1
-					table.insert(uespLog.SkillCoefBadData, { ['id'] = abilityId, ['numberIndex'] = i } )
+					table.insert(uespLog.SkillCoefBadData, { ['id'] = abilityId, ['numberIndex'] = i, 
+						['a'] = uespLog.isFinite(result.a), ['b'] =  uespLog.isFinite(result.b), ['c'] =  uespLog.isFinite(result.c), ['r2'] =  uespLog.isFinite(result.R2) } )
 				else
 					allInvalid = false
 					uespLog.SkillCoefNumValidCoefCount = uespLog.SkillCoefNumValidCoefCount + 1
@@ -5529,7 +5597,7 @@ function uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 	elseif (mechanic == uespLog.UESP_POWERTYPE_WEAPONDAGGER) then
 		x = skill.dagger
 		y = 0
-	elseif (mechanic == uespLog.UESP_POWERTYPE_DAMAGE) then
+	elseif (mechanic == uespLog.UESP_POWERTYPE_DAMAGE or mechanic == 4) then
 		x = skill.sd
 		y = skill.wd
 	elseif (mechanic == POWERTYPE_ULTIMATE) then
@@ -5559,6 +5627,9 @@ function uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 	elseif (mechanic == uespLog.UESP_POWERTYPE_MAGICKACAPPED) then
 		x = skill.mag
 		y = skill.sd
+	elseif (mechanic == uespLog.UESP_POWERTYPE_WEAPONPOWER) then
+		x = skill.wp
+		y = 0
 	elseif (mechanic == uespLog.UESP_POWERTYPE_MAGICKAWITHWD) then
 		x = skill.mag
 		y = skill.wd
@@ -5786,7 +5857,7 @@ function uespLog.SkillCoefComputeAMatrixInv(A)
 		Ainv[32] = 0
 		Ainv[33] = 0
 
-		return Ainv, false
+		return Ainv, false, 0
 	end
 	
 	if (A.size == 2) then
@@ -5812,7 +5883,7 @@ function uespLog.SkillCoefComputeAMatrixInv(A)
 	end
 	
 	Ainv['size'] = A['size']
-	return Ainv, true
+	return Ainv, true, Adet
 end	
 
 
@@ -5935,7 +6006,7 @@ uespLog.SkillDiff = {}
 
 function uespLog.FindSkillDiffSavePlayer()
 	local abilityId
-	local endId = 200000
+	local endId = uespLog.SkillDump_lastAbilityId
 	local validAbilityCount = 0
 	local newSkills = 0
 	
@@ -5973,7 +6044,7 @@ end
 
 function uespLog.FindSkillDiffCountDesc()
 	local abilityId
-	local endId = 200000
+	local endId = uespLog.SkillDump_lastAbilityId
 	local validAbilityCount = 0
 	local newSkills = 0
 	local data = uespLog.savedVars.tempData.data
@@ -5987,6 +6058,7 @@ function uespLog.FindSkillDiffCountDesc()
 			local desc = GetAbilityDescription(abilityId)
 			
 			if (desc ~= "") then
+				desc = desc:gsub("|c%x%x%x%x%x%x", "")
 				local matchResult = desc:match("%d")
 				
 				if (matchResult ~= nil) then
@@ -6005,7 +6077,7 @@ end
 
 function uespLog.FindSkillDiffSaveAll()
 	local abilityId
-	local endId = 200000
+	local endId = uespLog.SkillDump_lastAbilityId
 	local validAbilityCount = 0
 	local newSkills = 0
 	
@@ -6029,6 +6101,8 @@ function uespLog.FindSkillDiffSaveAll()
 				newDiff.duration = GetAbilityDuration(abilityId)
 				newDiff.minRange, newDiff.maxRange = GetAbilityRange(abilityId)
 				newDiff.numbers = {}
+				
+				desc = desc:gsub("|c%x%x%x%x%x%x", "")
 				
 				for number in desc:gmatch("%d+[.]?%d*") do
 					newDiff.numbers[index] = number
@@ -6074,6 +6148,8 @@ function uespLog.FindSkillDiff(note)
 			local number
 			local index = 0
 			
+			desc = desc:gsub("|c%x%x%x%x%x%x", "")
+			
 			for number in desc:gmatch("%d+[.]?%d*") do
 			
 				if (diffData.numbers[index] ~= number) then
@@ -6115,4 +6191,305 @@ function uespLog.FindSkillDiff(note)
 	end
 
 	uespLog.Msg("Found "..diffSkills.." changed skills!")
+end
+
+
+uespLog.SkillCoefBaseDesc = {}
+uespLog.SkillCoefBaseDescSize = 0
+uespLog.SkillCoefDescCheckType = ""
+
+
+function uespLog.ResetSkillCoefDesc()
+	uespLog.Msg("Resetting the skill coefficient descriptions...")
+	
+	local logData = {}
+	logData.event = "SkillCoef::Desc::Reset"
+	uespLog.AppendDataToLog("all", logData)
+end
+
+
+function uespLog.SaveBaseSkillCoefDesc()
+	local abilityId
+	local endId = uespLog.SkillDump_lastAbilityId
+	local validAbilityCount = 0
+	local newSkills = 0
+	local startSlotIndex, endSlotIndex = GetAssignableChampionBarStartAndEndSlots()
+	local slotIndex
+	
+	for slotIndex = startSlotIndex, endSlotIndex do
+		local skillId = GetSlotBoundId(slotIndex, HOTBAR_CATEGORY_CHAMPION)
+		
+		if (skillId > 0) then
+			uespLog.Msg("Warning: CP slots should generally be empty when saving the base skill coefficient descriptions!")
+			break
+		end
+	end
+	
+	uespLog.SkillCoefBaseDesc = {}
+	uespLog.SkillCoefBaseDescSize = 0
+	
+	for abilityId = 1, endId do
+		if (DoesAbilityExist(abilityId)) then
+			validAbilityCount = validAbilityCount + 1
+			local desc = GetAbilityDescription(abilityId)
+			
+			if (desc ~= "") then
+				local newDiff = {}
+				local index = 1
+				local number
+				
+				newDiff.desc = desc
+				newDiff.duration = GetAbilityDuration(abilityId)
+				newDiff.numbers = {}
+				
+				desc = desc:gsub("|c%x%x%x%x%x%x", "")
+				
+				for number in desc:gmatch("%d+[.]?%d*") do
+					newDiff.numbers[index] = number
+					index = index + 1
+				end
+
+				if (index > 1) then
+					uespLog.SkillCoefBaseDesc[abilityId] = newDiff
+					newSkills = newSkills + 1
+					uespLog.SkillCoefBaseDescSize = uespLog.SkillCoefBaseDescSize + 1
+				end
+			end
+
+		end
+	end
+
+	uespLog.DebugMsg("Added "..newSkills.." skills out of "..tostring(validAbilityCount).." possible skills to coefficient diff data!")
+end
+
+
+function uespLog.CheckSkillCoefDesc(note)
+	local abilityId
+	local diffSkills = 0
+	local data = uespLog.savedVars.tempData.data
+	local diffData
+	local logData
+	
+	if (note ~= nil) then
+		data[#data+1] = "Checking skill coefficients descriptions for change: " .. tostring(note)
+	end
+		
+	for abilityId, diffData in pairs(uespLog.SkillCoefBaseDesc) do
+		local desc = GetAbilityDescription(abilityId)
+		local origDesc = diffData.desc;
+					
+		if (desc ~= origDesc) then
+			local name = GetAbilityName(abilityId)
+			local buffer = tostring(note) .. ", " .. tostring(abilityId) .. ", \"" .. tostring(name) .. "\""
+			local number
+			local index = 1
+			
+			desc = desc:gsub("|c%x%x%x%x%x%x", "")
+			
+			for number in desc:gmatch("%d+[.]?%d*") do
+			
+				if (diffData.numbers[index] ~= number) then
+					buffer = buffer .. ", " .. index
+					
+					logData = {}
+					logData.event = "SkillCoef::Desc"
+					logData.index = index
+					logData.type = note
+					logData.abilityId = abilityId
+					uespLog.AppendDataToLog("all", logData)
+				end
+				
+				index = index + 1
+			end
+			
+			diffSkills = diffSkills + 1
+			data[#data+1] = buffer
+		end
+		
+	end
+
+	uespLog.DebugMsg("Found "..diffSkills.." changed skill descriptions in coefficient data!")
+end
+
+
+function uespLog.CheckSkillCoefDuration(note)
+	local abilityId
+	local diffSkills = 0
+	local data = uespLog.savedVars.tempData.data
+	local diffData
+	local logData
+	local durationSkills = {}
+	local i, row
+	
+	if (note ~= nil) then
+		data[#data+1] = "Checking skill coefficients durations for change: " .. tostring(note)
+	end
+		
+	for abilityId, diffData in pairs(uespLog.SkillCoefBaseDesc) do
+		local name = GetAbilityName(abilityId)
+		local desc = GetAbilityDescription(abilityId)
+		local duration = GetAbilityDuration(abilityId)
+		local origDesc = diffData.desc;
+		local isDiff = false
+					
+		if (desc ~= origDesc) then
+			local buffer = tostring(note) .. ", " .. tostring(abilityId) .. ", \"" .. tostring(name) .. "\""
+			local number
+			local index = 1
+			
+			desc = desc:gsub("|c%x%x%x%x%x%x", "")
+			
+			for number in desc:gmatch("%d+[.]?%d*") do
+			
+				if (diffData.numbers[index] ~= number) then
+					buffer = buffer .. ", " .. index
+					
+					logData = {}
+					logData.event = "SkillCoef::Desc"
+					logData.index = index
+					logData.type = note
+					logData.abilityId = abilityId
+					uespLog.AppendDataToLog("all", logData)
+				end
+				
+				index = index + 1
+			end
+			
+			diffSkills = diffSkills + 1
+			data[#data+1] = buffer
+		end
+		
+		if (duration ~= diffData.duration) then
+			local rankData = uespLog.BASESKILL_RANKDATA[abilityId]
+			
+			if (rankData) then
+			
+				for i = 1, 4 do
+					local rankId = rankData[i]
+					
+					logData = {}
+					logData.event = "SkillCoef::Duration"
+					logData.index = "duration"
+					logData.type = note
+					logData.rank = i
+					logData.abilityId = rankId
+					uespLog.AppendDataToLog("all", logData)
+				
+					data[#data+1] = tostring(note) .. ", " .. tostring(rankId) .. ", \"" .. tostring(name) .. " " .. i .. "\"" .. ", Duration"
+					durationSkills[#durationSkills + 1] = tostring(abilityId) .. " => 0,  // " .. tostring(name) .. " " .. i
+				end
+			else
+				logData = {}
+				logData.event = "SkillCoef::Duration"
+				logData.index = "duration"
+				logData.type = note
+				logData.abilityId = abilityId
+				uespLog.AppendDataToLog("all", logData)
+				
+				data[#data+1] = tostring(note) .. ", " .. tostring(abilityId) .. ", \"" .. tostring(name) .. "\"" .. ", Duration"
+				durationSkills[#durationSkills + 1] = tostring(abilityId) .. " => 0,  // " .. tostring(name)
+			end
+			
+			if (not isDiff) then
+				diffSkills = diffSkills + 1
+			end
+		end
+	end
+		
+	for i, row in ipairs(durationSkills) do
+		data[#data+1] = row
+	end
+	
+	uespLog.DebugMsg("Found "..diffSkills.." changed skill durations in coefficient data!")
+end
+
+
+uespLog.SKILLCOEF_CHECKDESC_TYPES = {
+	["dot"] = 27,
+	["aoedmg"] = 23,
+	["stdmg"] = 25,
+	["hot"] = 28,
+	["aoeheal"] = 24,
+	["stheal"] = 26,
+}
+
+
+function uespLog.StartCheckSkillCoefDesc(checkType)
+
+		-- Disable auto purchase/slotting of CPs...works but is awkward
+	uespLog.CheckSkillCoefDesc(checkType)
+		
+	if (true) then
+		return
+	end
+	
+	local cpSkillId = uespLog.SKILLCOEF_CHECKDESC_TYPES[checkType]
+	
+	if (cpSkillId == nil or cpSkillId <= 0) then
+		return
+	end
+	
+	if (uespLog.SkillCoefBaseDescSize == 0) then
+		uespLog.Msg("Save skill descriptions first with: /usc savedesc")
+		return
+	end
+	
+	uespLog.Msg("Starting check of skill coefficient descriptions for '"..tostring(checkType).."'...(wait until finished)")
+	uespLog.SkillCoefDescCheckType = checkType
+	
+	uespLog.SlotCPForCheckSkillCoefDesc(checkType)
+end
+
+
+function uespLog.StartCheckSkillCoefDuration(checkType)
+	uespLog.CheckSkillCoefDuration(checkType)
+end
+
+
+function uespLog.SlotCPForCheckSkillCoefDesc(checkType)
+	local cpSkillId = uespLog.SKILLCOEF_CHECKDESC_TYPES[checkType]
+	
+	if (cpSkillId == nil or cpSkillId <= 0) then
+		return
+	end
+	
+	uespLog.cpPurchaseErrorCallback = uespLog.CheckSkillCoefDescCPError
+	uespLog.cpPurchaseSuccessCallback = uespLog.CheckSkillCoefDescCPSuccess
+	uespLog.cpPurchaseCooldownCallback = uespLog.CheckSkillCoefDescCPCooldown
+	
+	PrepareChampionPurchaseRequest(false)
+	
+	for slotIndex = 1, 12 do
+		AddHotbarSlotToChampionPurchaseRequest(slotIndex, nil)
+	end
+	
+	AddHotbarSlotToChampionPurchaseRequest(5, cpSkillId)
+	SendChampionPurchaseRequest()
+end
+
+
+function uespLog.CheckSkillCoefDescCPError(result)
+
+	if (result == CHAMPION_PURCHASE_CHAMPION_BAR_ILLEGAL_SLOT) then
+		uespLog.Msg("Waiting for CP slot cooldown to end for skill coefficient description check...")
+	else
+		uespLog.Msg("Error: Received error "..tostring(result).." when trying to slot CP for skill coefficient description check!")
+	end
+end
+
+
+function uespLog.CheckSkillCoefDescCPSuccess()
+	uespLog.cpPurchaseErrorCallback = nil
+	uespLog.cpPurchaseSuccessCallback = nil
+	uespLog.cpPurchaseCooldownCallback = nil
+	
+	uespLog.Msg("Successfully slotted CP for skill coefficient description check '"..tostring(uespLog.SkillCoefDescCheckType).."'!")
+	uespLog.CheckSkillCoefDesc(uespLog.SkillCoefDescCheckType)
+	
+	uespLog.SkillCoefDescCheckType = ""
+end
+
+
+function uespLog.CheckSkillCoefDescCPCooldown()
+	uespLog.SlotCPForCheckSkillCoefDesc(uespLog.SkillCoefDescCheckType)
 end

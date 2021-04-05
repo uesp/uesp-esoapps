@@ -256,8 +256,11 @@ uespLog.charDataLogoutSave = false
 
 
 function uespLog.InitCharData()
-	uespLog.SaveActionBarForCharData()
+	uespLog.DebugExtraMsg("InitCharData")
+	
+	uespLog.SaveAllActionBarData()
 	uespLog.SaveStatsForCharData()
+	
 	--uespLog.SaveSkillsForCharData()
 end
 
@@ -545,9 +548,9 @@ end
 function uespLog.GetBuildDataActiveBarIndex()
 	local barIndex = GetActiveWeaponPairInfo()
 	
-	if (uespLog.IsInOverloadState()) then
-		barIndex = 3
-	elseif (IsWerewolf()) then
+	--if (uespLog.IsInOverloadState()) then barIndex = 3
+	
+	if (IsWerewolf()) then
 		barIndex = 4
 	end
 	
@@ -1660,7 +1663,7 @@ function uespLog.CreateCharDataActionBar()
 	local i
 	local j
 	
-	uespLog.SaveActionBarForCharData()
+	uespLog.SaveAllActionBarData()
 	
 	for j = 1, 4 do
 		if (uespLog.charData_ActionBarData[j] ~= nil) then
@@ -1691,81 +1694,104 @@ function uespLog.GetCombatMechanicText(id)
 end
 
 
-function uespLog.SaveActionBarForCharData()
-	local weaponPairIndex = 1
-	local timestamp = GetTimeStamp()
+function uespLog.CreateActionBarData(barIndex)
+	local barData = {}
 	
-	weaponPairIndex = uespLog.GetBuildDataActiveBarIndex()
+	--HOTBAR_CATEGORY_BACKUP = 1
+	--HOTBAR_CATEGORY_DAEDRIC_ARTIFACT
+	--HOTBAR_CATEGORY_OVERLOAD = 7
+	--HOTBAR_CATEGORY_PRIMARY = 0
+	--HOTBAR_CATEGORY_TEMPORARY
+	--HOTBAR_CATEGORY_WEREWOLF = 8
 	
-	if (weaponPairIndex < 1 or weaponPairIndex > 4) then
-		return false
-	end
-	
-	if (uespLog.LastSavedActionBar_WeaponPair == weaponPairIndex and timestamp - uespLog.LastSavedActionBar_TimeStamp >= uespLog.SAVEACTIONBAR_MINDELTATIME) then
-		return false
-	end
-	
-	uespLog.LastSavedActionBar_WeaponPair = weaponPairIndex
-	uespLog.LastSavedActionBar_TimeStamp = timestamp
-	
-	uespLog.charData_ActionBarData[weaponPairIndex] = { }
-	
+	-- GetActiveHotbarCategory()
+	-- GetEffectiveAbilityIdForAbilityOnHotbar(number abilityId, number HotBarCategory hotbarCategory)
+	-- GetSlotBoundId( actionSlotIndex,  hotbarCategory)
+
 	for i = 3, 8 do
-		local texture = GetSlotTexture(i)
-		local id = GetSlotBoundId(i)
-		local name = GetSlotName(i)
-		local description = GetAbilityDescription(id)
-		local descHeader = tostring(GetAbilityDescriptionHeader(id))
-		local channeled, castTime, channelTime = GetAbilityCastInfo(id)
-		local minRange, maxRange = GetAbilityRange(id)
-		local radius = GetAbilityRadius(id)
-		local angleDistance = GetAbilityAngleDistance(id)
-		local duration = GetAbilityDuration(id)
-		local cost, mechanic = GetAbilityCost(id)
-		local targetDesc = GetAbilityTargetDescription(id) or ''
-		local costStr = tostring(cost) .. ' ' .. uespLog.GetCombatMechanicText(mechanic)
-		local rangeStr = ""
-		local areaStr = ""
+		local id = GetSlotBoundId(i, barIndex)
 		
-		if (descHeader ~= "") then
-			description = descHeader .. "\n" .. description
-		end
-		
-		if (not channeled) then
-			channelTime = 0
-		end
-		
-		if (minRange > 0 and maxRange > 0) then
-			rangeStr = tostring(minRange/100) .. " - " .. tostring(maxRange/100) .. " meters"
-		elseif (minRange <= 0 and maxRange > 0) then
-			rangeStr = tostring(maxRange/100) .. " meters"
-		elseif (minRange > 0 and maxRange <= 0) then
-			rangeStr = "Under " .. tostring(minRange/100) .. " meters"
-		end
-		
-		if (angleDistance > 0) then
-			areaStr = tostring(radius/100) .. " x " .. tostring(angleDistance/50) .. " meters"
-		end
-		
-		uespLog.charData_ActionBarData[weaponPairIndex][i] = {
-				["name"] = name, 
-				["id"] = id, 
-				["icon"] = texture,
-				["desc"] = description,
-				["area"] = areaStr,
-				["cost"] = costStr,
-				["range"] = rangeStr,
-				["radius"] = radius,
-				["castTime"] = castTime,
-				["channelTime"] = channelTime,
-				["duration"] = duration,
-				["target"] = targetDesc,
+		if (id <= 0) then
+			barData[i] = {
+					["name"] = "", 
+					["id"] = id, 
+					["icon"] = "",
+					["desc"] = "",
+					["area"] = "",
+					["cost"] = "",
+					["range"] = "",
+					["radius"] = 0,
+					["castTime"] = 0,
+					["channelTime"] = 0,
+					["duration"] = 0,
+					["target"] = "",
 			}
-	end
+		else
+			local texture = GetAbilityIcon(id)
+			local name = GetAbilityName(id)
+			local description = GetAbilityDescription(id)
+			local descHeader = tostring(GetAbilityDescriptionHeader(id))
+			local channeled, castTime, channelTime = GetAbilityCastInfo(id)
+			local minRange, maxRange = GetAbilityRange(id)
+			local radius = GetAbilityRadius(id)
+			local angleDistance = GetAbilityAngleDistance(id)
+			local duration = GetAbilityDuration(id)
+			local cost, mechanic = GetAbilityCost(id)
+			local targetDesc = GetAbilityTargetDescription(id) or ''
+			local costStr = tostring(cost) .. ' ' .. uespLog.GetCombatMechanicText(mechanic)
+			local rangeStr = ""
+			local areaStr = ""
+			
+			if (descHeader ~= "") then
+				description = descHeader .. "\n" .. description
+			end
+			
+			if (not channeled) then
+				channelTime = 0
+			end
+			
+			if (minRange > 0 and maxRange > 0) then
+				rangeStr = tostring(minRange/100) .. " - " .. tostring(maxRange/100) .. " meters"
+			elseif (minRange <= 0 and maxRange > 0) then
+				rangeStr = tostring(maxRange/100) .. " meters"
+			elseif (minRange > 0 and maxRange <= 0) then
+				rangeStr = "Under " .. tostring(minRange/100) .. " meters"
+			end
+			
+			if (angleDistance > 0) then
+				areaStr = tostring(radius/100) .. " x " .. tostring(angleDistance/50) .. " meters"
+			end
+			
+			barData[i] = {
+					["name"] = name, 
+					["id"] = id, 
+					["icon"] = texture,
+					["desc"] = description,
+					["area"] = areaStr,
+					["cost"] = costStr,
+					["range"] = rangeStr,
+					["radius"] = radius,
+					["castTime"] = castTime,
+					["channelTime"] = channelTime,
+					["duration"] = duration,
+					["target"] = targetDesc,
+			}
+		end
+	end	
+	
+	return barData
+end
+
+
+function uespLog.SaveAllActionBarData()
+
+	uespLog.charData_ActionBarData[1] = uespLog.CreateActionBarData(HOTBAR_CATEGORY_PRIMARY)
+	uespLog.charData_ActionBarData[2] = uespLog.CreateActionBarData(HOTBAR_CATEGORY_BACKUP)
+	uespLog.charData_ActionBarData[4] = uespLog.CreateActionBarData(HOTBAR_CATEGORY_WEREWOLF)
 	
 	uespLog.savedVars.charInfo.data.actionBar = uespLog.charData_ActionBarData	
 	
-	uespLog.DebugExtraMsg("UESP: ***Current action bar saved*** barIndex "..weaponPairIndex)
+	uespLog.DebugExtraMsg("UESP: Saved all action bars!")
 end
 
 
@@ -1797,19 +1823,25 @@ end
 
 
 function uespLog.OnActionSlotsFullUpdate (eventCode, isHotbarSwap)
-	--uespLog.DebugMsg("OnActionSlotsFullUpdate "..tostring(isHotbarSwap))
+
+	--uespLog.DebugExtraMsg("OnActionSlotsFullUpdate "..tostring(isHotbarSwap))
 	
 	if (isHotbarSwap) then
-		--uespLog.SaveActionBarForCharData()
+		--uespLog.SaveAllActionBarData()
 	end
 	
 end
 
 
-function uespLog.OnActionSlotAbilitySlotted (eventCode, newAbilitySlotted)
-	--uespLog.DebugMsg("OnActionSlotAbilitySlotted "..tostring(newAbilitySlotted))
-	zo_callLater(uespLog.SaveActionBarForCharData, 200)
-	zo_callLater(uespLog.SaveStatsForCharData, 300)
+function uespLog.OnActiveBarUpdated (eventCode, didActiveHotbarChange, shouldUpdateAbilityAssignments, activeHotbarCategory)
+
+	uespLog.DebugExtraMsg("OnActiveBarUpdated "..tostring(activeHotbarCategory))
+	
+	if (didActiveHotbarChange or shouldUpdateAbilityAssignments) then
+		--zo_callLater(uespLog.SaveAllActionBarData, 200)
+		--zo_callLater(uespLog.SaveStatsForCharData, 300)
+	end
+	
 end
 
 
@@ -1832,14 +1864,15 @@ function uespLog.OnActionSlotUpdated (eventCode, slotNum)
 	--local timestamp = GetGameTimeMilliseconds()
 	--data[#data+1] = "EVENT_ACTION_SLOT_UPDATED "..tostring(slotNum).." "..tostring(timestamp)
 	
-	--uespLog.SaveActionBarForCharData()
+	--uespLog.SaveAllActionBarData()
 end
 
 
 function uespLog.OnActiveQuickSlotChanged (eventCode, slotId)
-	--uespLog.DebugMsg("OnActiveQuickSlotChanged "..tostring(slotId))
+
+	uespLog.DebugExtraMsg("OnActiveQuickSlotChanged "..tostring(slotId))
 	
-	zo_callLater(uespLog.SaveActionBarForCharData, 200)
+	zo_callLater(uespLog.SaveAllActionBarData, 200)
 	zo_callLater(uespLog.SaveStatsForCharData, 300)
 end
 
@@ -1847,7 +1880,7 @@ end
 function uespLog.OnActiveWeaponPairChanged (eventCode, activeWeaponPair, locked)
 	uespLog.DebugExtraMsg("OnActiveWeaponPairChanged "..tostring(activeWeaponPair))
 	
-	zo_callLater(uespLog.SaveActionBarForCharData, 400)
+	zo_callLater(uespLog.SaveAllActionBarData, 400)
 	zo_callLater(uespLog.SaveStatsForCharData, 500)
 	
 		-- Far too slow

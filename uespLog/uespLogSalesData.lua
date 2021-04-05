@@ -1945,15 +1945,15 @@ end
 -- Copied from /esoui/ingame/tradinghouse/tradinghouse_shared.lua
 function uespLog.ZO_TradingHouse_CreateListingItemData(index)
     --local icon, name, displayQuality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, itemUniqueId, purchasePricePerUnit = GetTradingHouseListingItemInfo(index)
-	local icon, name, displayQuality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, itemUniqueId, purchasePricePerUnit = uespLog.Old_GetTradingHouseListingItemInfo(index)
-	
+	local icon, name, displayQuality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, itemUniqueId, purchasePricePerUnit = uespLog.Old_MM_GetTradingHouseSearchResultItemInfo(index)
     local itemLink = GetTradingHouseListingItemLink(index)
     return ZO_TradingHouse_CreateItemData(index, icon, name, displayQuality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, itemLink, itemUniqueId, purchasePricePerUnit)
 end
 
+
 function uespLog.ZO_TradingHouse_CreateSearchResultItemData(index)
     --local icon, name, displayQuality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, itemUniqueId, purchasePricePerUnit = GetTradingHouseSearchResultItemInfo(index)
-	local icon, name, displayQuality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, itemUniqueId, purchasePricePerUnit = uespLog.Old_GetTradingHouseSearchResultItemInfo(index)
+	local icon, name, displayQuality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, itemUniqueId, purchasePricePerUnit = uespLog.Old_MM_GetTradingHouseSearchResultItemInfo(index)
     local itemLink = GetTradingHouseSearchResultItemLink(index)
     return ZO_TradingHouse_CreateItemData(index, icon, name, displayQuality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, itemLink, itemUniqueId, purchasePricePerUnit)
 end
@@ -1961,12 +1961,12 @@ end
 
 
 function uespLog.GetTradingHouseSearchResultItemInfo(index)
-	
+
 	if ((uespLog.GetSalesShowDealType() ~= "uesp" or not uespLog.IsSalesShowPrices()) and uespLog.Old_MM_GetTradingHouseSearchResultItemInfo ~= nil) then
 		return uespLog.Old_MM_GetTradingHouseSearchResultItemInfo(index)
 	end
 
-	local icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, uniqueId, unitPrice = uespLog.Old_GetTradingHouseSearchResultItemInfo(index)
+	local icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, uniqueId, unitPrice = uespLog.Old_MM_GetTradingHouseSearchResultItemInfo(index)
 	
 	if (index == nil) then
 		return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, uniqueId, unitPrice
@@ -2032,7 +2032,7 @@ function uespLog.GetTradingHouseListingItemInfo(index)
 		return uespLog.Old_MM_GetTradingHouseListingItemInfo(index)
 	end
 	
-	local icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, uniqueId, salePricePerUnit = uespLog.Old_GetTradingHouseListingItemInfo(index)
+	local icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, uniqueId, salePricePerUnit = uespLog.Old_MM_GetTradingHouseListingItemInfo(index)
 	
 	if (index == nil) then
 		return icon, name, quality, stackCount, sellerName, timeRemaining, purchasePrice, currencyType, uniqueId, unitPrice

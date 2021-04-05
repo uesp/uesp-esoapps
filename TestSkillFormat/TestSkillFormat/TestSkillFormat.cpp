@@ -9,6 +9,9 @@
 
 using namespace eso;
 
+const std::string BASE_PATH = "e:/esoexport/";
+std::string g_Version = "";
+
 	// The file extracted from ESO.MNF that contains the skill data
 //const std::string SKILLDATA_FILENAME = "e:/esoexport/esomnf-21pts/000/694374_Uncompressed.EsoFileData";
 
@@ -29,9 +32,12 @@ const std::string ALLHEALS_FILENAME = "e:/esoexport/goodimages-29pts1/HealingSpe
 //const std::string OUTPUT_FLAG_PATH = "e:/esoexport/goodimages-29pts/SkillData/";
 //const std::string OUTPUT_SKILL_PATH = "e:/esoexport/goodimages-29pts/SkillData/Skills/";
 
-const std::string OUTPUT_CSV_FILENAME = "e:/esoexport/goodimages-29pts1/SkillData/SummarySkills.csv";
+
+//const std::string OUTPUT_CSV_FILENAME = "e:/esoexport/goodimages-29pts1/SkillData/SummarySkills.csv";
 const std::string OUTPUT_FLAG_PATH = "e:/esoexport/goodimages-29pts1/SkillData/";
 const std::string OUTPUT_SKILL_PATH = "e:/esoexport/goodimages-29pts1/SkillData/Skills/";
+
+const std::string OUTPUT_CSV_FILENAME = "e:/esoexport/goodimages-29/SummarySkills.csv";
 
 const fpos_t SKILLDATA_RECORDSIZE_OFFSET = 32;
 
@@ -180,8 +186,8 @@ struct skilldata_t
 	dword unknown2;
 	dword abilityId1;			// Always the same as abilityId2
 	dword recordLength3;
-
 	dword abilityId2;
+
 	std::string name;
 
 	byte zero1;					// Always 0
@@ -562,6 +568,8 @@ void AnalyzeU2DataSkill(skilldata_t& skill)
 	value = (int)skill.u20b;
 	if (value < g_MinU2Values[U2SIZE + 1]) g_MinU2Values[U2SIZE + 1] = value;
 	if (value > g_MaxU2Values[U2SIZE + 1]) g_MaxU2Values[U2SIZE + 1] = value;
+
+	if (skill.u2[3] != skill.u2[4]) PrintError("\t%d: u2[3] / u2[4] mismatch (%d - %d)", skill.abilityId1, skill.u2[3], skill.u2[4]);
 }
 
 
@@ -1117,6 +1125,7 @@ void OutputSummaryCsv()
 	}
 
 	//File.Printf("size1, size2\n");
+	File.Printf("\n");
 
 	for (auto&& skill : g_Skills)
 	{
@@ -1271,6 +1280,118 @@ bool OutputSkill(skilldata_t& skill)
 	OutputSkillData(File, "U13", skill.u13, U13SIZE);
 
 	return true;
+}
+
+
+void CompareFlags(std::vector<dword> skillIds)
+{
+	int flagCompare[FLAGSIZE] = {};
+	int uniqueFlags[FLAGSIZE] = {};
+	int skillIndex = 0;
+	int numCompares = 0;
+	skilldata_t firstSkill;
+	std::unordered_map<dword, dword> CheckedIdMap;
+
+	printf("Comparing Flags from %zd Skills:\n", skillIds.size());
+	if (skillIds.size() <= 1) return;
+
+	for (auto&& id : skillIds)
+	{
+		CheckedIdMap[id] = 1;
+
+		if (g_ValidSkillIds.find(id) == g_ValidSkillIds.end()) continue;
+		size_t index = g_ValidSkillIds[id] - 1;
+
+		if (index >= g_Skills.size()) continue;
+		skilldata_t& skill = g_Skills[index];
+
+		if (skillIndex == 0)
+		{
+			firstSkill = skill;
+			++skillIndex;
+			continue;
+		}
+
+		++skillIndex;
+		++numCompares;
+
+		for (size_t j = 0; j < FLAGSIZE; ++j)
+		{
+			if (skill.flags[j] == firstSkill.flags[j]) ++flagCompare[j];
+		}
+	}
+
+	for (size_t j = 0; j < FLAGSIZE; ++j)
+	{
+		if (flagCompare[j] == numCompares)
+		{
+			printf("\t flags[%zu] = %d\n", j, firstSkill.flags[j]);
+		}
+	}
+
+	printf(" Flags: ");
+
+	for (size_t j = 0; j < FLAGSIZE; ++j)
+	{
+		if (flagCompare[j] == numCompares)
+		{
+			printf("%d", firstSkill.flags[j]);
+			uniqueFlags[j] = 1;
+		}
+		else
+		{
+			printf(" ");
+		}
+	}
+
+	printf("\n");
+	std::smatch m;
+	int numSkills = 0;
+
+	for (auto&& skill : g_Skills)
+	{
+		if (CheckedIdMap.find(skill.abilityId1) != CheckedIdMap.end()) continue;
+
+		auto desc = g_SkillDescriptions[skill.abilityId1];
+		if (desc == "") continue;
+		if (!std::regex_search(desc, m, std::regex("<<"))) continue;
+		++numSkills;
+
+		for (size_t j = 0; j < FLAGSIZE; ++j)
+		{
+			if (flagCompare[j] != numCompares) continue;
+			if (firstSkill.flags[j] == skill.flags[j]) uniqueFlags[j] = 0;
+		}
+	}
+
+	printf("Unique Flags (compared against %d skills):\n", numSkills);
+
+	for (size_t j = 0; j < FLAGSIZE; ++j)
+	{
+		if (uniqueFlags[j])
+		{
+			printf("\t flags[%zu] = %d\n", j, firstSkill.flags[j]);
+		}
+	}
+
+	for (auto&& id : skillIds)
+	{
+		if (g_ValidSkillIds.find(id) == g_ValidSkillIds.end()) continue;
+		size_t index = g_ValidSkillIds[id] - 1;
+
+		if (index >= g_Skills.size()) continue;
+		skilldata_t& skill = g_Skills[index];
+
+		printf("%06d: ", id);
+
+		for (int i = 0; i < FLAGSIZE; ++i)
+		{
+			printf("%1d", skill.flags[i]);
+		}
+
+		printf("\n");
+	}
+
 }
 
 
@@ -1523,6 +1644,8 @@ skilldata_t CompareSkills(std::vector<dword> skillIds)
 		else compare.flags[j] = 0;
 	}
 
+	CompareFlags(skillIds);
+	
 	for (size_t j = 0; j < U6SIZE; ++j) {
 		if (compare.u6[j] == numCompares) printf("\t u6[%zu] = %d\n", j, firstSkill.u6[j]);
 		else compare.u6[j] = 0;
@@ -1690,118 +1813,6 @@ skilldata_t CompareSkills(std::vector<dword> skillIds)
 }
 
 
-void CompareFlags(std::vector<dword> skillIds)
-{
-	int flagCompare[FLAGSIZE] = {};
-	int uniqueFlags[FLAGSIZE] = {};
-	int skillIndex = 0;
-	int numCompares = 0;
-	skilldata_t firstSkill;
-	std::unordered_map<dword, dword> CheckedIdMap;
-
-	printf("Comparing Flags from %d Skills:\n", skillIds.size());
-	if (skillIds.size() <= 1) return;
-
-	for (auto&& id : skillIds)
-	{
-		CheckedIdMap[id] = 1;
-
-		if (g_ValidSkillIds.find(id) == g_ValidSkillIds.end()) continue;
-		size_t index = g_ValidSkillIds[id] - 1;
-
-		if (index >= g_Skills.size()) continue;
-		skilldata_t& skill = g_Skills[index];
-
-		if (skillIndex == 0)
-		{
-			firstSkill = skill;
-			++skillIndex;
-			continue;
-		}
-
-		++skillIndex;
-		++numCompares;
-
-		for (size_t j = 0; j < FLAGSIZE; ++j) 
-		{
-			if (skill.flags[j] == firstSkill.flags[j]) ++flagCompare[j];
-		}
-	}
-
-	for (size_t j = 0; j < FLAGSIZE; ++j) 
-	{
-		if (flagCompare[j] == numCompares) 
-		{
-			printf("\t flags[%zu] = %d\n", j, firstSkill.flags[j]);
-		}
-	}
-
-	printf(" Flags: ");
-
-	for (size_t j = 0; j < FLAGSIZE; ++j) 
-	{
-		if (flagCompare[j] == numCompares)
-		{
-			printf("%d", firstSkill.flags[j]);
-			uniqueFlags[j] = 1;
-		}
-		else
-		{
-			printf(" ");
-		}
-	}
-
-	printf("\n");
-	std::smatch m;
-	int numSkills = 0;
-
-	for (auto&& skill : g_Skills)
-	{
-		if (CheckedIdMap.find(skill.abilityId1) != CheckedIdMap.end()) continue;
-
-		auto desc = g_SkillDescriptions[skill.abilityId1];
-		if (desc == "") continue;
-		if (!std::regex_search(desc, m, std::regex("<<"))) continue;
-		++numSkills;
-
-		for (size_t j = 0; j < FLAGSIZE; ++j)
-		{
-			if (flagCompare[j] != numCompares) continue;
-			if (firstSkill.flags[j] == skill.flags[j]) uniqueFlags[j] = 0;
-		}
-	}
-
-	printf("Unique Flags (compared against %d skills):\n", numSkills);
-
-	for (size_t j = 0; j < FLAGSIZE; ++j)
-	{
-		if (uniqueFlags[j])
-		{
-			printf("\t flags[%zu] = %d\n", j, firstSkill.flags[j]);
-		}
-	}
-	
-	for (auto&& id : skillIds)
-	{
-		if (g_ValidSkillIds.find(id) == g_ValidSkillIds.end()) continue;
-		size_t index = g_ValidSkillIds[id] - 1;
-
-		if (index >= g_Skills.size()) continue;
-		skilldata_t& skill = g_Skills[index];
-
-		printf("%06d: ", id);
-
-		for (int i = 0; i < FLAGSIZE; ++i)
-		{
-			printf("%1d", skill.flags[i]);
-		}
-
-		printf("\n");
-	}
-
-}
-
-
 void DiffValue (std::string name, dword value1, dword value2, int showDiff)
 {
 	if (showDiff == 1 && value1 != value2)
@@ -1957,7 +1968,8 @@ std::string UnescapeString(std::string value)
 {
 	//value = std::regex_replace(value, std::regex("\\\""), "\"");
 	//value = std::regex_replace(value, std::regex("\\n"), "\n");
-	value = ReplaceStrings(value, "\\\"", "\"");
+	value = ReplaceStrings(value, "\"\"", "\\\"");
+	//value = ReplaceStrings(value, "\\\"", "\"");
 	value = ReplaceStrings(value, "\\n", "\n");
 	return value;
 }
@@ -2058,20 +2070,20 @@ bool LoadSkillListCsv(std::string filename, std::vector<skilllist_t>& List)
 		List.push_back(entry);
 	}
 
-	printf("\tLoaded %d skill list entries!\n", List.size());
+	printf("\tLoaded %zd skill list entries!\n", List.size());
 	return true;
 }
 
 
-bool LoadSkillDescriptionCsv(std::string filename)
+bool LoadSkillDescriptionCsv(std::string Filename, const bool IsLangFile = false)
 {
-	printf("Loading skill description data...\n");
+	printf("Loading skill description data from %s...\n", Filename.c_str());
 
 	CFile File;
 	char Buffer[10100];
 	int lineCount = 0;
 
-	if (!File.Open(filename, "rb")) return false;
+	if (!File.Open(Filename, "rb")) return false;
 
 	while (!File.IsEOF())
 	{
@@ -2081,8 +2093,13 @@ bool LoadSkillDescriptionCsv(std::string filename)
 
 		if (pError == nullptr && ferror(File.GetFile()))
 		{
-			printf("Error: Failed to read line %d from file %s!\n", lineCount, filename.c_str());
+			printf("Error: Failed to read line %d from file %s!\n", lineCount, Filename.c_str());
 			return false;
+		}
+
+		if (IsLangFile)
+		{
+			if (strncmp(Buffer, "\"132143172\",", 12)) continue;
 		}
 
 		const char* pParse = Buffer;
@@ -2110,7 +2127,11 @@ bool LoadSkillDescriptionCsv(std::string filename)
 			}
 			else if (*pParse == '"')
 			{
-				if (isInQuote)
+				if (pParse[1] == '"')
+				{
+					++pParse;
+				}
+				else if (isInQuote)
 				{
 					isInQuote = false;
 					pColEnd = pParse - 1;
@@ -2149,7 +2170,7 @@ bool LoadSkillDescriptionCsv(std::string filename)
 		if (id > 0) g_SkillDescriptions[id] = colValues[4];
 	}
 
-	printf("\tLoaded %d skill descriptions!\n", g_SkillDescriptions.size());
+	printf("\tLoaded %zd skill descriptions!\n", g_SkillDescriptions.size());
 	return true;
 }
 
@@ -2335,7 +2356,7 @@ void AnalyzeU8()
 
 	for (int i = 0; i < U8SIZE; ++i)
 	{
-		printf("\t%d: %d - %d (%d values)\n", i, g_MinU8Values[i], g_MaxU8Values[i], g_U8Values[i].size());
+		printf("\t%d: %d - %d (%zd values)\n", i, g_MinU8Values[i], g_MaxU8Values[i], g_U8Values[i].size());
 
 		for (auto &&j : g_U8Values[i])
 		{
@@ -2354,8 +2375,8 @@ void AnalyzeList1()
 
 	for (auto&& skill : g_Skills)
 	{
-		if (minSize > skill.list1.size()) minSize = skill.list1.size();
-		if (maxSize < skill.list1.size()) maxSize = skill.list1.size();
+		if (minSize > (int)skill.list1.size()) minSize = (int)skill.list1.size();
+		if (maxSize < (int)skill.list1.size()) maxSize = (int)skill.list1.size();
 
 		for (int i = 0; i < skill.list1.size(); ++i)
 		{
@@ -2368,7 +2389,7 @@ void AnalyzeList1()
 
 	for (int i = 0; i < g_List1Values.size(); ++i)
 	{
-		printf("\t%d: %d values\n", i, g_List1Values[i].size());
+		printf("\t%d: %zd values\n", i, g_List1Values[i].size());
 
 		for (auto&& j : g_List1Values[i])
 		{
@@ -2386,8 +2407,8 @@ void AnalyzeList3()
 
 	for (auto&& skill : g_Skills)
 	{
-		if (minSize > skill.list3.size()) minSize = skill.list3.size();
-		if (maxSize < skill.list3.size()) maxSize = skill.list3.size();
+		if (minSize > (int)skill.list3.size()) minSize = (int)skill.list3.size();
+		if (maxSize < (int)skill.list3.size()) maxSize = (int)skill.list3.size();
 
 		for (int i = 0; i < skill.list3.size(); ++i)
 		{
@@ -2400,7 +2421,7 @@ void AnalyzeList3()
 
 	for (int i = 0; i < g_List3Values.size(); ++i)
 	{
-		printf("\t%d: %d values\n", i, g_List3Values[i].size());
+		printf("\t%d: %zd values\n", i, g_List3Values[i].size());
 
 		for (auto&& j : g_List3Values[i])
 		{
@@ -2485,7 +2506,7 @@ void CheckSkillCosts()
 
 	}
 
-	printf("Found %d unique U9[2] values:\n", U9_2Values.size());
+	printf("Found %zd unique U9[2] values:\n", U9_2Values.size());
 
 	for (auto&& i : U9_2Values)
 	{
@@ -2616,7 +2637,7 @@ void CheckTooltipTypes()
 
 	for (auto&& i : TypeValues)
 	{
-		printf("\t%d: x%d values\n", i.first, i.second.size());
+		printf("\t%d: x%zd values\n", i.first, i.second.size());
 
 		for (auto&& j : i.second)
 		{
@@ -2645,15 +2666,15 @@ void CheckTooltipTypes()
 	//DiffSkills(data1, data8, true);
 	//DiffSkills(data1, data9, true);
 
-	printf("Found %d magic damage tooltips.\n", MagicDamageIds.size());
-	printf("Found %d flame damage tooltips.\n", FlameDamageIds.size());
-	printf("Found %d frost damage tooltips.\n", FrostDamageIds.size());
-	printf("Found %d shock damage tooltips.\n", ShockDamageIds.size());
-	printf("Found %d physical damage tooltips.\n", PhysicalDamageIds.size());
-	printf("Found %d poison damage tooltips.\n", PoisonDamageIds.size());
-	printf("Found %d disease damage tooltips.\n", DiseaseDamageIds.size());
-	printf("Found %d bleed damage tooltips.\n", BleedDamageIds.size());
-	printf("Found %d generic damage tooltips.\n", GenericDamageIds.size());
+	printf("Found %zd magic damage tooltips.\n", MagicDamageIds.size());
+	printf("Found %zd flame damage tooltips.\n", FlameDamageIds.size());
+	printf("Found %zd frost damage tooltips.\n", FrostDamageIds.size());
+	printf("Found %zd shock damage tooltips.\n", ShockDamageIds.size());
+	printf("Found %zd physical damage tooltips.\n", PhysicalDamageIds.size());
+	printf("Found %zd poison damage tooltips.\n", PoisonDamageIds.size());
+	printf("Found %zd disease damage tooltips.\n", DiseaseDamageIds.size());
+	printf("Found %zd bleed damage tooltips.\n", BleedDamageIds.size());
+	printf("Found %zd generic damage tooltips.\n", GenericDamageIds.size());
 
 	//Compared 3638 tooltips, matched 3096 and 542 with no match.
 }
@@ -2664,7 +2685,7 @@ void CompareSkillList(std::string Name, std::vector<skilllist_t>& SkillList)
 	auto numberRegex = std::regex("[0-9]+(?:\\.[0-9]+)?");
 	std::vector<dword> CompareIds;
 
-	printf("Comparing %d %s Skills:\n", SkillList.size(), Name.c_str());
+	printf("Comparing %zd %s Skills:\n", SkillList.size(), Name.c_str());
 
 	for (auto&& entry : SkillList)
 	{
@@ -2786,7 +2807,7 @@ void CompareSkillList(std::string Name, std::vector<skilllist_t>& SkillList)
 
 			if (tooltipIndex - 1 >= skill.list4.size())
 			{
-				printf("\t\tError: TooltipIndex %d (from number index %d) is not valid!\n", tooltipIndex, numberIndex);
+				printf("\t\tError: TooltipIndex %zd (from number index %d) is not valid!\n", tooltipIndex, numberIndex);
 				continue;
 			}
 
@@ -2806,14 +2827,233 @@ void CompareSkillList(std::string Name, std::vector<skilllist_t>& SkillList)
 		}
 	}
 
-	printf("Found %d skills to compare\n", CompareIds.size());
+	printf("Found %zd skills to compare\n", CompareIds.size());
 	CompareSkills(CompareIds);
 	CompareFlags(CompareIds);
 }
 
 
-int main()
+bool ExportPhpData(std::string Filename)
 {
+	std::unordered_map<dword, dword> ExtraSkillIds;
+	auto numberRegex = std::regex("[0-9]+(?:\\.[0-9]+)?");
+	std::smatch m;
+
+	ReportError("Writing PHP data to '%s'...", Filename.c_str());
+
+	FILE* pFile = fopen(Filename.c_str(), "wb");
+	if (pFile == nullptr) return ReportError("Error: Failed to open file '%s' for output!", Filename.c_str()); 
+
+	fprintf(pFile, "<?php\n");
+	fprintf(pFile, "$ESO_RAWSKILL_DATA = array(\n");
+
+	for (auto&& skill : g_Skills)
+	{
+		auto abilityId = skill.abilityId1;
+		std::string skillDesc = "";
+
+		if (g_SkillDescriptions.find(abilityId) != g_SkillDescriptions.end()) skillDesc = g_SkillDescriptions[abilityId];
+		auto escSkillDesc = ReplaceStrings(skillDesc, "\"", "\\\"");
+		escSkillDesc = ReplaceStrings(skillDesc, "\n", "\\n");
+
+		if (escSkillDesc == "" && skill.u2[11] == 0 && skill.u2[13] == 0 && skill.u2[14] == 0 && skill.u2[3] == 0 && skill.u2[4] == 0 && skill.u6a[5] == 0) continue;
+
+		fprintf(pFile, "\t%d => array(\n", abilityId);
+		if (escSkillDesc != "") fprintf(pFile, "\t\t'desc' => \"%s\",\n", escSkillDesc.c_str());
+		if (skill.u2[3] != 0) fprintf(pFile, "\t\t'value1' => %d,\n", skill.u2[3]);
+		if (skill.u2[4] != 0) fprintf(pFile, "\t\t'value2' => %d,\n", skill.u2[4]);
+		if (skill.u2[11] != 0) fprintf(pFile, "\t\t'duration' => %d,\n", skill.u2[11]);
+		if (skill.u2[13] != 0) fprintf(pFile, "\t\t'tick' => %d,\n", skill.u2[13]);
+		if (skill.u2[14] != 0) fprintf(pFile, "\t\t'start' => %d,\n", skill.u2[14]);
+		if (skill.u6a[4] != 0) fprintf(pFile, "\t\t'mechanic' => %d,\n", skill.u6a[4]);
+		if (skill.u6a[5] != 0) fprintf(pFile, "\t\t'dmgtype' => %d,\n", skill.u6a[5]);
+
+		if (skillDesc == "" || !std::regex_search(skillDesc, m, std::regex("<<"))) 
+		{
+			fprintf(pFile, "\t),\n");
+			continue;
+		}
+		
+		fprintf(pFile, "\t\t'coef' => array(\n");
+
+		for (size_t i = 0; i < skill.list3.size() && i < skill.list4.size(); ++i)
+		{
+			dword tooltipType = skill.list3[i];
+			dword tooltipId   = skill.list4[i];
+
+			fprintf(pFile, "\t\t\t\t%zd => array(\n", i);
+			fprintf(pFile, "\t\t\t\t\t\t'type'=> %d,\n", tooltipType);
+			fprintf(pFile, "\t\t\t\t\t\t'id'=> %d,\n", tooltipId);
+
+			if (tooltipId != abilityId) ExtraSkillIds[tooltipId] = 1;
+
+			if (g_ValidSkillIds.find(tooltipId) == g_ValidSkillIds.end()) 
+			{
+				fprintf(pFile, "\t\t\t\t),\n");
+				continue;
+			}
+
+			auto skill1 = g_Skills[g_ValidSkillIds[tooltipId] - 1];
+			
+			dword type1 = skill1.u8[10];
+			float coef1 = ConvertDwordToFloat(skill1.u8[11]);
+			dword type2 = skill1.u8[12];
+			float coef2 = ConvertDwordToFloat(skill1.u8[13]);
+			dword type3 = skill1.u8[14];
+			float coef3 = ConvertDwordToFloat(skill1.u8[15]);
+			dword type4 = skill1.u8[16];
+			float coef4 = ConvertDwordToFloat(skill1.u8[17]);
+
+			//dword isRankMod = skill1.u11[7];
+			//if (isRankMod != 0) fprintf(pFile, "\t\t\t\t\t\t'rankMod' => %d,\n", isRankMod);
+
+			if (skill1.u2[3] != 0) fprintf(pFile, "\t\t\t\t\t\t'value1' => %d,\n", skill1.u2[3]);
+			if (skill1.u2[4] != 0) fprintf(pFile, "\t\t\t\t\t\t'value2' => %d,\n", skill1.u2[4]);
+			if (skill1.u2[11] != 0) fprintf(pFile, "\t\t\t\t\t\t'duration' => %d,\n", skill1.u2[11]);
+			if (skill1.u2[13] != 0) fprintf(pFile, "\t\t\t\t\t\t'tick' => %d,\n", skill1.u2[13]);
+			if (skill1.u2[14] != 0) fprintf(pFile, "\t\t\t\t\t\t'start' => %d,\n", skill1.u2[14]);
+
+			if (type1 != 0)
+			{
+				fprintf(pFile, "\t\t\t\t\t\t'type1' => %d,\n", type1);
+				fprintf(pFile, "\t\t\t\t\t\t'coef1' => %f,\n", coef1);
+			}
+			if (type2 != 0)
+			{
+				fprintf(pFile, "\t\t\t\t\t\t'type2' => %d,\n", type2);
+				fprintf(pFile, "\t\t\t\t\t\t'coef2' => %f,\n", coef2);
+			}
+			if (type3 != 0)
+			{
+				fprintf(pFile, "\t\t\t\t\t\t'type3' => %d,\n", type3);
+				fprintf(pFile, "\t\t\t\t\t\t'coef3' => %f,\n", coef3);
+			}
+			if (type4 != 0)
+			{
+				fprintf(pFile, "\t\t\t\t\t\t'type4' => %d,\n", type4);
+				fprintf(pFile, "\t\t\t\t\t\t'coef4' => %f,\n", coef4);
+			}
+
+			fprintf(pFile, "\t\t\t\t),\n");
+		}
+
+		fprintf(pFile, "\t\t),\n");
+		fprintf(pFile, "\t),\n");
+	}
+
+	fprintf(pFile, ");\n");
+	fclose(pFile);
+
+	return true;
+}
+
+
+std::string FindSkillDataFilename (std::string Path)
+{
+	std::string FileSpec = Path + "*_Uncompressed.EsoFileData";
+	HANDLE hFind;
+	WIN32_FIND_DATA FindData;
+	//BOOL hResult;
+
+	hFind = FindFirstFile(FileSpec.c_str(), &FindData);
+
+	if (hFind == INVALID_HANDLE_VALUE) 
+	{
+		PrintError("Error: Failed to find any files matching '%s'!", FileSpec.c_str());
+		return "";
+	}
+
+	//Assume its always the first EsoFileData?
+
+	FindClose(hFind);
+	return Path + FindData.cFileName;
+}
+
+
+std::vector<std::unordered_map<dword, dword>> g_U6aValues(U6ASIZE);
+
+
+void AnalyzeU6a()
+{
+	printf("Analyzing U6A Values...\n");
+	for (auto&& skill : g_Skills)
+	{
+		for (auto i = 0; i < U6ASIZE; ++i)
+		{
+			auto value = skill.u6a[i];
+			g_U6aValues[i][value]++;
+		}
+	}
+
+	printf("U6A Values:\n");
+
+	for (auto i = 0; i < U6ASIZE; ++i)
+	{
+		auto& map = g_U6aValues[i];
+
+		printf("\t%d) Has %d unique values\n", i, map.size());
+
+		for (auto&& j : map)
+		{
+			printf("\t\t%d = %d\n", j.first, j.second);
+		}
+	}
+
+}
+
+
+int main(int argc, char* argv[])
+{
+	if (argc > 1)
+	{
+		g_Version = argv[1];
+	}
+
+	if (g_Version == "")
+	{
+		PrintError("Error: Missing required version on command line!");
+		return -1;
+	}
+
+	std::string EsoPath = BASE_PATH + "esomnf-" + g_Version + "/";
+	std::string ExportPath = BASE_PATH + "goodimages-" + g_Version + "/";
+	std::string Eso000Path = EsoPath + "000/";
+	std::string LangFilename = ExportPath + "lang/en.lang.csv";
+	std::string PhpFilename = ExportPath + "esoRawSkillData.php";
+
+	std::string SkillDataFilename = FindSkillDataFilename(Eso000Path);
+
+	if (SkillDataFilename == "")
+	{
+		PrintError("Error: Failed to find the skill data file in %s!", Eso000Path.c_str());
+		return -2;
+	}
+
+	PrintError("Found skill data file %s!", SkillDataFilename.c_str());
+
+	if (!LoadSkillData(SkillDataFilename)) return ReportError("Error: Failed to load skill data file '%s'!", SkillDataFilename.c_str());
+
+	if (!LoadSkillDescriptionCsv(LangFilename, true)) return ReportError("Error: Failed to load skill descriptions from '%s'!", LangFilename.c_str());
+
+	if (!ExportPhpData(PhpFilename)) return ReportError("Error: Failed to write raw skill PHP to '%s'!", PhpFilename.c_str());
+
+	//OutputSummaryCsv();
+
+	//skilldata_t compare3 = CompareSkills({ 23239, 22331, 22318, 26286, 23667, 29809, 25255, 26158 });	//Rank Mod
+	//skilldata_t compare4 = CompareSkills({ 37732, 25260, 25863, 23428, 44013 });	//No Rank Mod
+
+	//skilldata_t compare3 = CompareSkills({ 86152, 88776 });		//Rank Mod
+	//skilldata_t compare4 = CompareSkills({ 90835, 130402 });	//No Rank Mod
+
+	//AnalyzeU6a();
+
+	DiffSkills(55606, 55607);
+	DiffSkills(55607, 55608);
+	DiffSkills(55606, 55608);
+
+	return 0;
+
+
 	//std::cmatch cm;
 	//bool m1 = std::regex_search("asdasd 1234 asd", cm, std::regex("[0-9]"));
 	//bool m2 = std::regex_search("asdasd 1234 asd", cm, std::regex("[0-9]+"));
@@ -2831,19 +3071,24 @@ int main()
 	LoadSkillListCsv(ALLHEALS_FILENAME, g_AllHealSkills);
 
 	LoadSkillDescriptionCsv(SKILLDATA_SKILLDESC_FILENAME);
-	LoadMinedSkillCsv(SKILLDATA_MINEDSKILLS_FILENAME);
+	//LoadMinedSkillCsv(SKILLDATA_MINEDSKILLS_FILENAME);
 
 	//CheckDescriptions();
 	//return 0;
 
 	if (!LoadSkillData(SKILLDATA_FILENAME)) return ReportError("Failed to load file!");
 
+	//ExportPhpData();
+
+	AnalyzeU2Data();
+	PrintU2Data();
+
 	//CompareSkillList("AOE Heals", g_AoeHealSkills);
 	//CompareSkillList("HOT Heals", g_HotHealSkills);
 	//CompareSkillList("SingleTarget Heals", g_StHealSkills);
-	CompareSkillList("All Heals", g_AllHealSkills);
+	//CompareSkillList("All Heals", g_AllHealSkills);
 
-	OutputFlagCsv();
+	//OutputFlagCsv();
 	//OutputSkills();
 	return 0;
 
@@ -2893,6 +3138,9 @@ int main()
 
 	skilldata_t compare1 = CompareSkills({ 31837, 36052, 23189 });	//AOE 
 	skilldata_t compare2 = CompareSkills({ 23806, 20657, 33386 });	//Single Target
+
+	
+		
 
 	//  DD Heals: 22250, 114196,
 	// AOE Heals: 22304, 115318, 28386

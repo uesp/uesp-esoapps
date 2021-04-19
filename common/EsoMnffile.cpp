@@ -813,12 +813,88 @@ namespace eso {
 
 		std::string OrigFile = pGrannyInfo->FromFileName ? pGrannyInfo->FromFileName : "";
 
-		GrannyFreeFile(pGrannyFile);
-
-		if (OrigFile == "")
+		// Use alternative reconstruction method if no filename is available or the filename is only numbers
+		if (OrigFile == "" || std::all_of(OrigFile.begin(), OrigFile.end(), ::isdigit))
 		{
-			return PrintError("\tWarning: No original file name found in Granny file data (file %03u\\%06u.gr2)!", (dword)FileEntry.ArchiveIndex, FileEntry.Index);
+			// Extract the name of the first model in the granny file
+			std::string ModelName = "";
+			if (pGrannyInfo->ModelCount)
+			{
+				ModelName = pGrannyInfo->Models[0]->Name;
+			}
+
+			// Extract the name of the first mesh in the granny file
+			std::string MeshName = "";
+			if (pGrannyInfo->MeshCount)
+			{
+				MeshName = pGrannyInfo->Meshes[0]->Name;
+			}
+
+			// Extract the name of the first animation in the granny file
+			std::string AnimationName = "";
+			if (pGrannyInfo->AnimationCount)
+			{
+				AnimationName = pGrannyInfo->Animations[0]->Name;
+			}
+
+			std::string OutputFilename = BasePath + "Granny\\Reconstructed\\";
+
+			// if we have a model name add it to the filename
+			if (ModelName != "")
+			{
+				OutputFilename += "Mdl_" + ModelName + "-";
+			}
+
+			// if we have a mesh name add it to the filename
+			if (MeshName != "")
+			{
+				OutputFilename += "Msh_" + MeshName + "-";
+			}
+
+			// if we have an animation name add it to the filename
+			if (AnimationName != "")
+			{
+				// Some AnimationNames contain the entire filepath of the animation,
+				// which can cause the path length to become to large for windows.
+				// Thus we only preserve the filename
+				size_t last_backslash = AnimationName.find_last_of("\\");
+				if (last_backslash != std::string::npos)
+				{
+					AnimationName.erase(0, last_backslash + 1);
+				}
+				OutputFilename += "Anm_" + AnimationName + "-";
+			}
+
+			// if we dont have a model, mesh or animation name we give up
+			if (OutputFilename == BasePath + "Granny\\Reconstructed\\")
+			{
+				return PrintError("\tWarning: No original file, model, mesh or animation name found in Granny file data (file %03u\\%06u.gr2)!", (dword)FileEntry.ArchiveIndex, FileEntry.Index);
+			}
+			// add the numbers from the original filename to differentiate files with same model, mesh and animation names
+			else if (OrigFile != "")
+			{
+				OutputFilename.pop_back();	// Remove last '-'
+				OutputFilename += "[" + OrigFile + "]";
+			}
+
+			// some names contain '|', which are invalid in filenames
+			std::replace(OutputFilename.begin(), OutputFilename.end(), '|', '_');
+
+			OutputFilename += ".gr2";
+
+			std::string OutputPath = RemoveFilename(OutputFilename);
+
+			if (!EnsurePathExists(OutputPath)) return false;
+
+			if (!File.Open(OutputFilename.c_str(), "wb")) return false;
+			if (!File.WriteBytes(DataInfo.pFileDataStart, DataInfo.FileDataSize)) return false;
+			File.Close();
+
+			return true;
+
 		}
+
+		GrannyFreeFile(pGrannyFile);
 		
 		size_t PathPos = OrigFile.find("\\", 0);
 		if (PathPos == std::string::npos) PathPos = -1;

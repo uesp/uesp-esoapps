@@ -1,9 +1,9 @@
 #!/bin/sh
 
-VERSION="29"
-ISPTS=""
-LASTVERSION="28"
-LASTPTSVERSION="29pts"
+VERSION="30pts2"
+ISPTS="1"
+LASTVERSION="29"
+LASTPTSVERSION="30pts"
 
 MAKEPTSDIFF="1"
 MAKEDIFF="1"
@@ -227,6 +227,12 @@ if [ $MAKEDIFF ]; then
 	makediff "./esomnf-$LASTVERSION/esoui/art/tutorial/" "./esomnf-$VERSION/esoui/art/tutorial/" "./goodimages-$VERSION/tutorial.diff.txt"  $LASTVERSION $VERSION
 	makediff "./gamemnf-$LASTVERSION/esoui/art/" "./gamemnf-$VERSION/esoui/art/" "./goodimages-$VERSION/gameuiart.diff.txt" $LASTVERSION $VERSION
 	makemapsdiff "./esomnf-$LASTVERSION/art/maps/" "./esomnf-$VERSION/art/maps/" "./goodimages-$VERSION/maps.diff.txt" $LASTVERSION $VERSION
+	
+	python "./export/CompareLangFiles.py" "$BASEPATH/" "$LASTVERSION" "$VERSION" "en"
+	python "./export/CompareLangFiles.py" "$BASEPATH/" "$LASTVERSION" "$VERSION" "de"
+	python "./export/CompareLangFiles.py" "$BASEPATH/" "$LASTVERSION" "$VERSION" "fr"
+	python "./export/CompareLangFiles.py" "$BASEPATH/" "$LASTVERSION" "$VERSION" "jp"
+	python "./export/CompareLangFiles.py" "$BASEPATH/" "$LASTVERSION" "$VERSION" "ru"
 fi
 
 if [ $MAKEPTSDIFF ]; then
@@ -241,6 +247,12 @@ if [ $MAKEPTSDIFF ]; then
 	makediff "./esomnf-$LASTPTSVERSION/esoui/art/tutorial/" "./esomnf-$VERSION/esoui/art/tutorial/" "./goodimages-$VERSION/tutorial.ptsdiff.txt"  $LASTPTSVERSION $VERSION
 	makediff "./gamemnf-$LASTPTSVERSION/esoui/art/" "./gamemnf-$VERSION/esoui/art/" "./goodimages-$VERSION/gameuiart.ptsdiff.txt" $LASTPTSVERSION $VERSION
 	makemapsdiff "./esomnf-$LASTPTSVERSION/art/maps/" "./esomnf-$VERSION/art/maps/" "./goodimages-$VERSION/maps.ptsdiff.txt" $LASTPTSVERSION $VERSION
+	
+	python "./export/CompareLangFiles.py" "$BASEPATH/" "$LASTPTSVERSION" "$VERSION" "en"
+	python "./export/CompareLangFiles.py" "$BASEPATH/" "$LASTPTSVERSION" "$VERSION" "de"
+	python "./export/CompareLangFiles.py" "$BASEPATH/" "$LASTPTSVERSION" "$VERSION" "fr"
+	python "./export/CompareLangFiles.py" "$BASEPATH/" "$LASTPTSVERSION" "$VERSION" "jp"
+	python "./export/CompareLangFiles.py" "$BASEPATH/" "$LASTPTSVERSION" "$VERSION" "ru"
 fi
 
 

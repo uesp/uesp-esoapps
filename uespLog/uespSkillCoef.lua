@@ -13,6 +13,9 @@ uespLog.SkillCoefNumBadCoefCount = 0
 uespLog.SkillCoefDataPointCount = 0
 uespLog.SkillCoefDataIsCalculated = false
 
+uespLog.SkillCoefTryRecalculateTypes = true
+uespLog.SKILLCOEF_RECALC_MINR2 = 0.99
+
 uespLog.SkillCoefArmorCountLA = 0
 uespLog.SkillCoefArmorCountMA = 0
 uespLog.SkillCoefArmorCountHA = 0
@@ -45,6 +48,8 @@ uespLog.UESP_POWERTYPE_MAGICKAWITHWD = -72
 uespLog.UESP_POWERTYPE_MAGICKACAPPED = -73
 uespLog.UESP_POWERTYPE_WEAPONPOWER = -74
 uespLog.UESP_POWERTYPE_CONSTANTVALUE = -75
+uespLog.UESP_POWERTYPE_HEALTHORSPELLDAMAGE = -76
+uespLog.UESP_POWERTYPE_RESISTANCE = -77
 
 uespLog.SKILLCOEF_CHECK_ABILITYID = 28302
 uespLog.SKILLCOEF_CHECK_INDEX = 2
@@ -92,6 +97,25 @@ uespLog.SKILLCOEF_MECHANIC_NAMES = {
 	[uespLog.UESP_POWERTYPE_MAGICKACAPPED] = "Magicka Capped",
 	[uespLog.UESP_POWERTYPE_WEAPONPOWER] = "Weapon Power",
 	[uespLog.UESP_POWERTYPE_CONSTANTVALUE] = "Constant Value",
+	[uespLog.UESP_POWERTYPE_HEALTHORSPELLDAMAGE] = "Health or Spell Damage",
+	[uespLog.UESP_POWERTYPE_RESISTANCE] = "Max Resistance",
+}
+
+
+uespLog.SKILLCOEF_RECALC_TYPES = {
+	POWERTYPE_ULTIMATE,
+	POWERTYPE_HEALTH,
+	POWERTYPE_MAGICKA,
+	POWERTYPE_STAMINA,
+	uespLog.UESP_POWERTYPE_SOULTETHER,
+	uespLog.UESP_POWERTYPE_LIGHTARMOR,
+	uespLog.UESP_POWERTYPE_MEDIUMARMOR,
+	uespLog.UESP_POWERTYPE_HEAVYARMOR,
+	uespLog.UESP_POWERTYPE_ARMORTYPE,
+	uespLog.UESP_POWERTYPE_DAMAGE,
+	uespLog.UESP_POWERTYPE_MAGICKAWITHWD,
+	uespLog.UESP_POWERTYPE_WEAPONPOWER,
+	uespLog.UESP_POWERTYPE_RESISTANCE,
 }
 
 
@@ -341,6 +365,12 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	[35803] = { [2] = uespLog.UESP_POWERTYPE_FIGHTERSGUILD },
 	[45595] = { [2] = uespLog.UESP_POWERTYPE_FIGHTERSGUILD },
 	[45596] = { [2] = uespLog.UESP_POWERTYPE_FIGHTERSGUILD },	
+	
+	-- Templar Living Dark
+	[22006] = uespLog.UESP_POWERTYPE_HEALTHORSPELLDAMAGE,
+	[27313] = uespLog.UESP_POWERTYPE_HEALTHORSPELLDAMAGE,
+	[27316] = uespLog.UESP_POWERTYPE_HEALTHORSPELLDAMAGE,
+	[27324] = uespLog.UESP_POWERTYPE_HEALTHORSPELLDAMAGE,
 	
 	-- Templar Repentance
 	[26821] = POWERTYPE_ULTIMATE,
@@ -4137,6 +4167,8 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 			uespLog.StartCheckSkillCoefDesc("hot")
 		elseif (cmd2 == "dot") then
 			uespLog.StartCheckSkillCoefDesc("dot")
+		elseif (cmd2 == "direct") then
+			uespLog.StartCheckSkillCoefDesc("direct")
 		elseif (cmd2 == "aoedmg") then
 			uespLog.StartCheckSkillCoefDesc("aoedmg")
 		elseif (cmd2 == "aoeheal") then
@@ -4149,16 +4181,19 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 			uespLog.StartCheckSkillCoefDesc("heal")
 		elseif (cmd2 == "ds") then
 			uespLog.StartCheckSkillCoefDesc("ds")
+			uespLog.StartCheckSkillCoefDuration("ds")
 		elseif (cmd2 == "flameaoe") then
 			uespLog.StartCheckSkillCoefDesc("flameaoe")
 		elseif (cmd2 == "elfbane") then
 			uespLog.StartCheckSkillCoefDuration("elfbane")
+		elseif (cmd2 == "melee") then
+			uespLog.StartCheckSkillCoefDesc("melee")
 		elseif (cmd2 == "misc") then
 			uespLog.StartCheckSkillCoefDesc("misc")
 		elseif (cmd2 == "miscdur") then
 			uespLog.StartCheckSkillCoefDuration("misc")
 		else
-			uespLog.Msg("Expecting check type as second parameter: aoedmg, aoeheal, dot, hot, stdmg, stheal, ds, heal, flameaoe, elfbane, misc. miscdur")
+			uespLog.Msg("Expecting check type as second parameter: aoedmg, aoeheal, dot, direct, hot, stdmg, stheal, ds, heal, flameaoe, melee, elfbane, misc, miscdur")
 		end
 		
 	else
@@ -5249,6 +5284,8 @@ function uespLog.SaveSkillCoefData(abilityId, rank)
 		["ha"]   = uespLog.SkillCoefArmorCountHA,
 		["dagger"] = uespLog.SkillCoefWeaponCountDagger,
 		["armortypes"] = uespLog.SkillCoefArmorTypeCount,
+		["sr"]  = GetPlayerStat(STAT_SPELL_RESIST),
+		["pr"]  = GetPlayerStat(STAT_PHYSICAL_RESIST),
 		["desc"] = description,
 	}
 	
@@ -5408,8 +5445,13 @@ function uespLog.ComputeSkillCoef()
 		
 	end
 	
+	if (uespLog.SkillCoefTryRecalculateTypes) then
+		uespLog.TryRecalcAllBadSkillCoefs()
+	end
+	
 	uespLog.ReplaceSkillDescriptions()
 	uespLog.LogSkillCoefData()
+	
 	uespLog.SkillCoefDataIsCalculated = true
 	return true
 end
@@ -5621,6 +5663,9 @@ function uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 	elseif (mechanic == uespLog.UESP_POWERTYPE_GRAVELORD) then
 		x = 0	-- TODO - Actually count skills
 		y = 0
+	elseif (mechanic == uespLog.UESP_POWERTYPE_SHADOW) then
+		x = 0	-- TODO - Actually count skills
+		y = 0
 	elseif (mechanic == uespLog.UESP_POWERTYPE_SPELLDAMAGECAPPED) then
 		x = skill.sd
 		y = 0
@@ -5630,12 +5675,15 @@ function uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 	elseif (mechanic == uespLog.UESP_POWERTYPE_WEAPONPOWER) then
 		x = skill.wp
 		y = 0
+	elseif (mechanic == uespLog.UESP_POWERTYPE_HEALTHORSPELLDAMAGE) then
+		x = skill.sd
+		y = skill.hea
+	elseif (mechanic == uespLog.UESP_POWERTYPE_RESISTANCE) then
+		x = math.max(skill.sr, skill.pr)
+		y = 0
 	elseif (mechanic == uespLog.UESP_POWERTYPE_MAGICKAWITHWD) then
 		x = skill.mag
 		y = skill.wd
-	elseif (mechanic == uespLog.UESP_POWERTYPE_SHADOW) then
-		x = 0	-- TODO - Actually count skills
-		y = 0
 	elseif (mechanic == uespLog.UESP_POWERTYPE_MAGICHEALTHCAP) then
 		x = skill.mag
 		y = 0
@@ -5645,7 +5693,7 @@ function uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 		if (capValue > 0 and z >= math.floor(skill.hea * capValue)) then
 			valid = false
 		end
-				
+		
 	end
 	
 	return x, y, valid
@@ -6204,7 +6252,7 @@ function uespLog.ResetSkillCoefDesc()
 	
 	local logData = {}
 	logData.event = "SkillCoef::Desc::Reset"
-	uespLog.AppendDataToLog("all", logData)
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 end
 
 
@@ -6269,6 +6317,7 @@ function uespLog.CheckSkillCoefDesc(note)
 	local data = uespLog.savedVars.tempData.data
 	local diffData
 	local logData
+	local timeData = uespLog.GetTimeData()
 	
 	if (note ~= nil) then
 		data[#data+1] = "Checking skill coefficients descriptions for change: " .. tostring(note)
@@ -6296,7 +6345,7 @@ function uespLog.CheckSkillCoefDesc(note)
 					logData.index = index
 					logData.type = note
 					logData.abilityId = abilityId
-					uespLog.AppendDataToLog("all", logData)
+					uespLog.AppendDataToLog("all", logData, timeData)
 				end
 				
 				index = index + 1
@@ -6320,6 +6369,7 @@ function uespLog.CheckSkillCoefDuration(note)
 	local logData
 	local durationSkills = {}
 	local i, row
+	local timeData = uespLog.GetTimeData()
 	
 	if (note ~= nil) then
 		data[#data+1] = "Checking skill coefficients durations for change: " .. tostring(note)
@@ -6349,7 +6399,7 @@ function uespLog.CheckSkillCoefDuration(note)
 					logData.index = index
 					logData.type = note
 					logData.abilityId = abilityId
-					uespLog.AppendDataToLog("all", logData)
+					uespLog.AppendDataToLog("all", logData, timeData)
 				end
 				
 				index = index + 1
@@ -6373,7 +6423,7 @@ function uespLog.CheckSkillCoefDuration(note)
 					logData.type = note
 					logData.rank = i
 					logData.abilityId = rankId
-					uespLog.AppendDataToLog("all", logData)
+					uespLog.AppendDataToLog("all", logData, timeData)
 				
 					data[#data+1] = tostring(note) .. ", " .. tostring(rankId) .. ", \"" .. tostring(name) .. " " .. i .. "\"" .. ", Duration"
 					durationSkills[#durationSkills + 1] = tostring(abilityId) .. " => 0,  // " .. tostring(name) .. " " .. i
@@ -6384,7 +6434,7 @@ function uespLog.CheckSkillCoefDuration(note)
 				logData.index = "duration"
 				logData.type = note
 				logData.abilityId = abilityId
-				uespLog.AppendDataToLog("all", logData)
+				uespLog.AppendDataToLog("all", logData, timeData)
 				
 				data[#data+1] = tostring(note) .. ", " .. tostring(abilityId) .. ", \"" .. tostring(name) .. "\"" .. ", Duration"
 				durationSkills[#durationSkills + 1] = tostring(abilityId) .. " => 0,  // " .. tostring(name)
@@ -6406,6 +6456,7 @@ end
 
 uespLog.SKILLCOEF_CHECKDESC_TYPES = {
 	["dot"] = 27,
+	-- ["direct"] = ?,
 	["aoedmg"] = 23,
 	["stdmg"] = 25,
 	["hot"] = 28,
@@ -6492,4 +6543,112 @@ end
 
 function uespLog.CheckSkillCoefDescCPCooldown()
 	uespLog.SlotCPForCheckSkillCoefDesc(uespLog.SkillCoefDescCheckType)
+end
+
+
+function uespLog.RecalcSkillCoef(abilityId, numberIndex, resultData)
+	local calcData = uespLog.SkillCoefCalcData[abilityId]
+	local abilityData = uespLog.SkillCoefAbilityData[abilityId]
+	local origCoefSpecialType = uespLog.SKILLCOEF_SPECIALTYPES[abilityId]
+	local origCoefType = uespLog.GetSkillCoefNumberMechanic(abilityData, numberIndex)
+	local skillsData = uespLog.SkillCoefData[abilityId]
+	local recalcResults = {}
+	local bestR2 = -1
+	local bestCoefType = -1
+	local bestResult = nil
+		
+	for j,coefType in pairs(uespLog.SKILLCOEF_RECALC_TYPES) do
+	
+		uespLog.SKILLCOEF_SPECIALTYPES[abilityId] = { [numberIndex] = coefType }
+	
+		local A = uespLog.SkillCoefComputeAMatrix(skillsData, abilityData, numberIndex)
+		local Ainv, AisValid, Adet = uespLog.SkillCoefComputeAMatrixInv(A)
+		local B = uespLog.SkillCoefComputeBMatrix(skillsData, abilityData, numberIndex)
+		
+		if (AisValid) then
+			local result = uespLog.SkillCoefComputeMatrixMultAB(Ainv, B)
+			result.R2 = uespLog.SkillCoefComputeR2(result, skillsData, abilityData, numberIndex)
+			result.min, result.max, result.avg = uespLog.SkillCoefComputeMinMaxAvgNumbers(skillsData, numberIndex)
+			result.type = coefType
+			result.origCoefType = origCoefType
+			result.id = abilityId
+			result.numberIndex = numberIndex
+						
+			if (not uespLog.isFinite(result.a) or not uespLog.isFinite(result.b) or not uespLog.isFinite(result.c) or not uespLog.isFinite(result.R2)) then
+				-- Do nothing....ignore
+			else
+				allInvalid = false
+				uespLog.SkillCoefNumValidCoefCount = uespLog.SkillCoefNumValidCoefCount + 1
+				
+				local mechanic = uespLog.GetSkillCoefNumberMechanic(abilityData, numberIndex)
+				
+				if (mechanic == uespLog.UESP_POWERTYPE_MAGICHEALTHCAP) then
+					result.b = uespLog.GetSkillCoefMagicHealthCapValue(abilityData)						
+				end
+				
+				recalcResults[coefType] = result
+				
+				if (result.R2 > bestR2) then
+					bestR2 = result.R2
+					bestCoefType = coefType
+					bestResult = result
+				end
+			end
+		else
+			-- Bad calc...ignore
+		end
+		
+	end
+	
+	uespLog.SKILLCOEF_SPECIALTYPES[abilityId] = origCoefSpecialType
+	
+	recalcResults.bestCoefType = bestCoefType
+	recalcResults.bestR2 = bestR2
+	recalcResults.origCoefType = origCoefType
+	
+	return recalcResults, bestResult, bestCoefType, bestR2, origCoefType
+end
+
+
+function uespLog.TryRecalcAllBadSkillCoefs()
+	local data = uespLog.savedVars.tempData.data
+	local totalCount = 0
+	local recalcCount = 0
+	local recalcSuccessCount = 0
+	
+	data[#data+1] = "Skill Coefficient Recalculation"
+	
+	uespLog.Msg("Trying to recalculate all bad skill coefficients...")
+	
+	uespLog.SkillCoefRecalcData = {}
+
+	for id,coefData in pairs(uespLog.SkillCoefAbilityData) do
+		local calcData = uespLog.SkillCoefCalcData[id]
+		local hasOutputName = false
+		
+		totalCount = totalCount + 1
+		
+		if (calcData ~= nil and calcData.isValid) then
+			uespLog.SkillCoefRecalcData[id] = {}
+		
+			for i,result in ipairs(calcData.result) do
+				local doesVary = calcData.numbersVary[i]
+								
+				if (doesVary and result.R2 < uespLog.SKILLCOEF_RECALC_MINR2) then
+					recalcCount = recalcCount + 1
+					local recalcResults, bestResult, bestCoefType, bestR2, origCoefType = uespLog.RecalcSkillCoef(id, i, result)
+					uespLog.SkillCoefRecalcData[id][i] = recalcResults
+					
+					if (bestR2 > result.R2) then
+						data[#data+1] = "Coefficient " .. tostring(id) .. ":" .. tostring(i) .. " had best result of " .. tostring(bestR2) .. " with coef type " .. tostring(bestCoefType) .. " (original " .. tostring(origCoefType) .. ")"
+						recalcSuccessCount = recalcSuccessCount + 1
+						
+						calcData.result[i] = bestResult
+					end
+				end
+			end
+		end
+	end
+	
+	uespLog.Msg("Tried to recalculate " .. recalcCount .. " out of " .. totalCount .. " coefficients with " .. recalcSuccessCount .. " better results!")
 end

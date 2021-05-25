@@ -1010,7 +1010,7 @@ function uespLog.SaveTradingHouseListingItem(itemIndex, currentTimestamp)
 	logData.guildId = guildId
 	logData.guild = guildName
 	logData.server = GetWorldName()
-	logData.icon, logData.item, logData.quality, logData.qnt, logData.seller, logData.timeRemaining, logData.price = GetTradingHouseListingItemInfo(itemIndex)
+	logData.icon, logData.item, logData.quality, logData.qnt, logData.seller, logData.timeRemaining, logData.price, _, logData.uniqueId = GetTradingHouseListingItemInfo(itemIndex)
 	logData.itemLink = GetTradingHouseListingItemLink(itemIndex)
 	logData.trait = GetItemLinkTraitInfo(logData.itemLink)
 	logData.quality = GetItemLinkDisplayQuality(logData.itemLink)

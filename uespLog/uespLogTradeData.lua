@@ -133,6 +133,14 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[111] 						 	 = "uespLog/images/nighthollow.dds",		-- Nighthollow, Umbral Droplet, 111, /esoui/art/icons/crafting_style_item_nighthollow.dds
 	[112] 						 	 = "uespLog/images/arkthzandarmory.dds",	-- Arkthzand Armory, Arkthzand Sprocket, 112, /esoui/art/icons/crafting_style_item_arkthzand_armory.dds
 	[113] 						 	 = "uespLog/images/waywardguardian.dds",	-- Wayward Guardian, Hawk Skull, 113, /esoui/art/icons/crafting_style_item_wayward_guardian.dds
+
+	--[115] 						 = "uespLog/images/deadlands.dds",			-- Deadlands Gladiator, -, 115, 
+	[116] 						 	 = "uespLog/images/truesworn.dds",			-- True-Sworn, Fulgid Epidote, 116, /esoui/art/icons/crafting_style_item_fulgid_epidote.dds
+	[117] 						 	 = "uespLog/images/wakingflame.dds",		-- Waking Flame, Chokeberry Extract, 117, /esoui/art/icons/crafting_style_item_chokeberry_extract.dds
+	--[118] 						 = "uespLog/images/dremorakynreeve.dds",	-- Dremora Kynreeve, -, 118, 
+	--[120] 						 = "uespLog/images/blackfinlegion.dds",		-- Black Fin Legion, -, 120, 
+	[121] 						 	 = "uespLog/images/ivorybrigade.dds",		-- Ivory Brigad, Ivory Bridage Clasp, 121, /esoui/art/icons/crafting_style_item_ivorybrigade.dds
+	--[122] 						 = "uespLog/images/sulxan.dds",				-- Sul-Xan, -, 122, 
 }
 
 
@@ -235,6 +243,9 @@ uespLog.STYLE_ICON_DATA = {
 	[111] 						 	 = "/esoui/art/icons/crafting_style_item_nighthollow.dds",
 	[112] 						 	 = "/esoui/art/icons/crafting_style_item_arkthzand_armory.dds",
 	[113] 						 	 = "/esoui/art/icons/crafting_style_item_wayward_guardian.dds",
+	[116] 						 	 = "/esoui/art/icons/crafting_style_item_fulgid_epidote.dds",
+	[117] 						 	 = "/esoui/art/icons/crafting_style_item_chokeberry_extract.dds",
+	[121] 						 	 = "/esoui/art/icons/crafting_style_item_ivorybrigade.dds",
 }
 
 
@@ -245,12 +256,12 @@ uespLog.PROVISION_ICONS = {
 	[4]   = "uespLog\\images\\newtrade4.dds",
 	[5]   = "uespLog\\images\\newtrade5.dds",
 	[6]   = "uespLog\\images\\newtrade6.dds",
-	[10]   = "uespLog\\images\\newtrade10.dds",
-	[11]   = "uespLog\\images\\newtrade11.dds",
-	[12]   = "uespLog\\images\\newtrade12.dds",
-	[20]   = "uespLog\\images\\newtrade20.dds",
-	[21]   = "uespLog\\images\\newtrade21.dds",
-	[22]   = "uespLog\\images\\newtrade22.dds",
+	[10]  = "uespLog\\images\\newtrade10.dds",
+	[11]  = "uespLog\\images\\newtrade11.dds",
+	[12]  = "uespLog\\images\\newtrade12.dds",
+	[20]  = "uespLog\\images\\newtrade20.dds",
+	[21]  = "uespLog\\images\\newtrade21.dds",
+	[22]  = "uespLog\\images\\newtrade22.dds",
 	[100] = "uespLog\\images\\newspecial1.dds",
 	[101] = "uespLog\\images\\newspecial2.dds",
 }
@@ -263,12 +274,12 @@ uespLog.PROVISION_COLORS = {
 	[4]   = uespLog.TRADE_NORMAL_COLOR,
 	[5]   = uespLog.TRADE_NORMAL_COLOR,
 	[6]   = uespLog.TRADE_NORMAL_COLOR,
-	[10]   = uespLog.TRADE_NORMAL_COLOR,
-	[11]   = uespLog.TRADE_NORMAL_COLOR,
-	[12]   = uespLog.TRADE_NORMAL_COLOR,
-	[20]   = uespLog.TRADE_NORMAL_COLOR,
-	[21]   = uespLog.TRADE_NORMAL_COLOR,
-	[22]   = uespLog.TRADE_NORMAL_COLOR,
+	[10]  = uespLog.TRADE_NORMAL_COLOR,
+	[11]  = uespLog.TRADE_NORMAL_COLOR,
+	[12]  = uespLog.TRADE_NORMAL_COLOR,
+	[20]  = uespLog.TRADE_NORMAL_COLOR,
+	[21]  = uespLog.TRADE_NORMAL_COLOR,
+	[22]  = uespLog.TRADE_NORMAL_COLOR,
 	[100] = uespLog.TRADE_SUPERIOR_COLOR,
 	[101] = uespLog.TRADE_EPIC_COLOR,
 }

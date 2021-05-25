@@ -8,10 +8,10 @@ import errno
 import csv
 import re
 
-USE_COMMAND_ARGS = True
+USE_COMMAND_ARGS = False
 
 if (not USE_COMMAND_ARGS):
-    BasePathIndex = "28pts"
+    BasePathIndex = "30pts2"
     BasePath = "e:/esoexport/"
 elif (len(sys.argv) < 3):
     print("Missing required command line arguments!")
@@ -28,7 +28,7 @@ OUTPUTPATH = BasePath + "goodimages-" + BasePathIndex + "/Maps/"
 DEFAULTNULLTILE = BasePath + "goodimages-" + BasePathIndex + "/Maps/blacknulltile.jpg"
 
 MAPEXTENSION = ".jpg"
-CREATEZOOMLEVEL = 11
+CREATEZOOMLEVEL = 12
 OUTPUTIMAGESIZE = 256
 
 ONLYDOMAP = ""
@@ -82,6 +82,7 @@ def SplitMap (RootPath, MapFilename):
     FullFilename = FullFilename.replace("\\", "/")
 
     OutputMapName = os.path.splitext(MapFilename)[0]
+    
     if (OutputMapName.endswith("_base")): OutputMapName = OutputMapName[:-5]
     if (OutputMapName.endswith(".base")): OutputMapName = OutputMapName[:-5]
 
@@ -96,12 +97,25 @@ def SplitMap (RootPath, MapFilename):
     OrigMapImage = Image.open(FullFilename)
     (width, height) = OrigMapImage.size
 
-    MapImage = OrigMapImage.resize((width*2,height*2), Image.BICUBIC)
+    MapImage = OrigMapImage.resize((width*4,height*4), Image.BICUBIC)
+    # MapImage = OrigMapImage.resize((width*4,height*4), Image.LANCZOS)
     (width, height) = MapImage.size    
     
     NumTilesX = int(math.ceil( float(width)  / OUTPUTIMAGESIZE))
     NumTilesY = int(math.ceil( float(height) / OUTPUTIMAGESIZE))
     ZoomLevel = CREATEZOOMLEVEL
+
+    OutputMapName = os.path.splitext(MapFilename)[0]
+    if (OutputMapName.endswith("_base")): OutputMapName = OutputMapName[:-5]
+    if (OutputMapName.endswith(".base")): OutputMapName = OutputMapName[:-5]
+
+    if (ONLYDOMAP != "" and OutputMapName != ONLYDOMAP):
+      print "\t\tSkipping map..."
+      return
+
+    if (ONLYDOMAPPATH != "" and not RootPath.endswith(ONLYDOMAPPATH)):
+      print "\t\tSkipping map..."
+      return
 
     OutputBasePath = os.path.join(OUTPUTPATH, OutputMapName)
     mkdir_p(OutputBasePath)

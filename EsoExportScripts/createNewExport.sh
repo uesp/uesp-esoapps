@@ -212,7 +212,7 @@ cd ../../
 BASEPATH=`realpath ./`
 python "$MAPSOURCEPATH/CombineEsoMaps.py" "$VERSION" "$BASEPATH/" 
 python "$MAPSOURCEPATH/CreateEsoMapTiles.py" "$VERSION" "$BASEPATH/" 
-python "$MAPSOURCEPATH/CreateEsoMapTileZoom11.py" "$VERSION" "$BASEPATH/" 
+# python "$MAPSOURCEPATH/CreateEsoMapTileZoom11.py" "$VERSION" "$BASEPATH/" # Zoom levels 11+12 created from large resized maps afterwards
 
 
 if [ $MAKEDIFF ]; then

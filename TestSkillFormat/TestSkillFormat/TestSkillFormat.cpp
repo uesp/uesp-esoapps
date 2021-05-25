@@ -22,6 +22,7 @@ std::string g_Version = "";
 const std::string SKILLDATA_FILENAME = "e:/esoexport/esomnf-29pts1/000/807785_Uncompressed.EsoFileData";
 const std::string SKILLDATA_MINEDSKILLS_FILENAME = "e:/esoexport/goodimages-29pts1/minedSkills29pts.csv";
 const std::string SKILLDATA_SKILLDESC_FILENAME = "e:/esoexport/goodimages-29pts1/skillDesc29pts.csv";
+
 const std::string AOEHEALS_FILENAME = "e:/esoexport/goodimages-29pts1/AoeHeals.csv";
 const std::string HOTHEALS_FILENAME = "e:/esoexport/goodimages-29pts1/HotHeals.csv";
 const std::string STHEALS_FILENAME = "e:/esoexport/goodimages-29pts1/SingleTargetHeals.csv";
@@ -30,9 +31,8 @@ const std::string ALLHEALS_FILENAME = "e:/esoexport/goodimages-29pts1/HealingSpe
 //const std::string OUTPUT_CSV_FILENAME = "e:/esoexport/goodimages-21pts/SummarySkills.csv";
 //const std::string OUTPUT_CSV_FILENAME = "e:/esoexport/goodimages-29pts/SkillData/SummarySkills.csv";
 //const std::string OUTPUT_FLAG_PATH = "e:/esoexport/goodimages-29pts/SkillData/";
+
 //const std::string OUTPUT_SKILL_PATH = "e:/esoexport/goodimages-29pts/SkillData/Skills/";
-
-
 //const std::string OUTPUT_CSV_FILENAME = "e:/esoexport/goodimages-29pts1/SkillData/SummarySkills.csv";
 const std::string OUTPUT_FLAG_PATH = "e:/esoexport/goodimages-29pts1/SkillData/";
 const std::string OUTPUT_SKILL_PATH = "e:/esoexport/goodimages-29pts1/SkillData/Skills/";
@@ -2913,25 +2913,82 @@ bool ExportPhpData(std::string Filename)
 			if (skill1.u2[13] != 0) fprintf(pFile, "\t\t\t\t\t\t'tick' => %d,\n", skill1.u2[13]);
 			if (skill1.u2[14] != 0) fprintf(pFile, "\t\t\t\t\t\t'start' => %d,\n", skill1.u2[14]);
 
+			int coefCount = 0;
+
 			if (type1 != 0)
 			{
 				fprintf(pFile, "\t\t\t\t\t\t'type1' => %d,\n", type1);
 				fprintf(pFile, "\t\t\t\t\t\t'coef1' => %f,\n", coef1);
+				++coefCount;
 			}
 			if (type2 != 0)
 			{
 				fprintf(pFile, "\t\t\t\t\t\t'type2' => %d,\n", type2);
 				fprintf(pFile, "\t\t\t\t\t\t'coef2' => %f,\n", coef2);
+				++coefCount;
 			}
 			if (type3 != 0)
 			{
 				fprintf(pFile, "\t\t\t\t\t\t'type3' => %d,\n", type3);
 				fprintf(pFile, "\t\t\t\t\t\t'coef3' => %f,\n", coef3);
+				++coefCount;
 			}
 			if (type4 != 0)
 			{
 				fprintf(pFile, "\t\t\t\t\t\t'type4' => %d,\n", type4);
 				fprintf(pFile, "\t\t\t\t\t\t'coef4' => %f,\n", coef4);
+				++coefCount;
+			}
+
+			if (coefCount == 0 && skill1.u12[7] > 0)
+			{
+				auto coefSkillId = skill1.u12[7];
+
+				if (g_ValidSkillIds.find(coefSkillId) != g_ValidSkillIds.end())
+				{
+					auto skill2 = g_Skills[g_ValidSkillIds[coefSkillId] - 1];
+
+					dword type1 = skill2.u8[10];
+					float coef1 = ConvertDwordToFloat(skill2.u8[11]);
+					dword type2 = skill2.u8[12];
+					float coef2 = ConvertDwordToFloat(skill2.u8[13]);
+					dword type3 = skill2.u8[14];
+					float coef3 = ConvertDwordToFloat(skill2.u8[15]);
+					dword type4 = skill2.u8[16];
+					float coef4 = ConvertDwordToFloat(skill2.u8[17]);
+
+					coefCount = 0;
+
+					if (type1 != 0)
+					{
+						fprintf(pFile, "\t\t\t\t\t\t'type1' => %d,\n", type1);
+						fprintf(pFile, "\t\t\t\t\t\t'coef1' => %f,\n", coef1);
+						++coefCount;
+					}
+					if (type2 != 0)
+					{
+						fprintf(pFile, "\t\t\t\t\t\t'type2' => %d,\n", type2);
+						fprintf(pFile, "\t\t\t\t\t\t'coef2' => %f,\n", coef2);
+						++coefCount;
+					}
+					if (type3 != 0)
+					{
+						fprintf(pFile, "\t\t\t\t\t\t'type3' => %d,\n", type3);
+						fprintf(pFile, "\t\t\t\t\t\t'coef3' => %f,\n", coef3);
+						++coefCount;
+					}
+					if (type4 != 0)
+					{
+						fprintf(pFile, "\t\t\t\t\t\t'type4' => %d,\n", type4);
+						fprintf(pFile, "\t\t\t\t\t\t'coef4' => %f,\n", coef4);
+						++coefCount;
+					}
+
+					if (coefCount > 0)
+					{
+						fprintf(pFile, "\t\t\t\t\t\t'coefSkillId' => %d,\n", coefSkillId);
+					}
+				}
 			}
 
 			fprintf(pFile, "\t\t\t\t),\n");
@@ -2991,7 +3048,7 @@ void AnalyzeU6a()
 	{
 		auto& map = g_U6aValues[i];
 
-		printf("\t%d) Has %d unique values\n", i, map.size());
+		printf("\t%d) Has %d unique values\n", i, (int) map.size());
 
 		for (auto&& j : map)
 		{
@@ -3047,9 +3104,9 @@ int main(int argc, char* argv[])
 
 	//AnalyzeU6a();
 
-	DiffSkills(55606, 55607);
-	DiffSkills(55607, 55608);
-	DiffSkills(55606, 55608);
+	//DiffSkills(55606, 55607);
+	//DiffSkills(55607, 55608);
+	//DiffSkills(55606, 55608);
 
 	return 0;
 

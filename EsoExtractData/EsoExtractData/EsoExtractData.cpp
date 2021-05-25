@@ -6,6 +6,9 @@
  *
  * Use "EsoExtractData -h" for basic help.
  *
+ * CONTRIBUTORS
+ *		- Kriskras99: Patch for reconstructing GR2 filenames from model info.
+ *
  * HISTORY
  *
  * v0.17 -- 7 November 2014
@@ -156,8 +159,9 @@
  *		- Added the --luastartindex option.
  *		- Added the -y/--fileext option.
  *
- * v0.42 -- ?
+ * v0.42 -- 30 April 2021
  *		- Removed extra "." in DDS files exported from XV4 files.
+ *		- Model/animation names from GR2 Granny files are used to output named files if possible.
  */
 
 #include "stdafx.h"
@@ -1669,12 +1673,8 @@ cmdparamdef_t g_Cmds[] =
 };
 
 const char g_AppDescription[] = "\
-ExportMnf v0.41 is a simple command line application to load and export files\n\
-from ESO's MNF and DAT files. Created by Daveh (dave@uesp.net).\n\
-\n\
-WARNING: This app is under constant development and is fragile. User discretion is\n\
-advised.\n\
-";
+ExportMnf v0.42 is a simple command line application to load and export files\n\
+from ESO's MNF and DAT files. Created by Daveh (dave@uesp.net).\n";
 
 
 int _tmain(int argc, _TCHAR* argv[])

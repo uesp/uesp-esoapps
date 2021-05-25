@@ -101,6 +101,7 @@ def SplitMap (RootPath, MapFilename):
 
     OutputMapName = os.path.splitext(MapFilename)[0]
     if (OutputMapName.endswith("_base")): OutputMapName = OutputMapName[:-5]
+	if (OutputMapName.endswith(".base")): OutputMapName = OutputMapName[:-5]
 
     if (ONLYDOMAP != "" and OutputMapName != ONLYDOMAP):
       print "\t\tSkipping map..."

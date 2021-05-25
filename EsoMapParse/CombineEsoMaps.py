@@ -25,7 +25,7 @@ OutputPath = BasePath + 'goodimages-' + BasePathIndex + '/CombinedMaps/'
 
 OutputMapList = OutputPath + 'maplist.txt'
 MapImageRE = re.compile('.*[0-9]+\.png')
-MapImageBaseRE = re.compile('.*_base_[0-9]+\.png')
+MapImageBaseRE = re.compile('.*[_.]base_[0-9]+\.png')
 MapGroupRE = re.compile('([/\\a-z]*)_.*_?([0-9]+)\.png')
 MapImageNumberRE = re.compile('.*_([0-9]+)\.png')
 MapNameCheckRE = re.compile('.*/')

@@ -335,7 +335,7 @@ namespace eso {
 
 		if (ExportOptions.ExtractFileExtension != "")
 		{
-			PrintError("Only outputing files with extension of '%s'...\n", ExportOptions.ExtractFileExtension.c_str());
+			PrintError("Only outputting files with extension of '%s'...\n", ExportOptions.ExtractFileExtension.c_str());
 		}
 
 		if (!LuaFile.Open(ExportOptions.LuaFileList.c_str(), "wb")) return false;
@@ -837,6 +837,8 @@ namespace eso {
 				AnimationName = pGrannyInfo->Animations[0]->Name;
 			}
 
+			GrannyFreeFile(pGrannyFile);
+
 			std::string OutputFilename = BasePath + "Granny\\Reconstructed\\";
 
 			// if we have a model name add it to the filename
@@ -891,7 +893,6 @@ namespace eso {
 			File.Close();
 
 			return true;
-
 		}
 
 		GrannyFreeFile(pGrannyFile);

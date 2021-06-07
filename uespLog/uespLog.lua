@@ -1144,6 +1144,9 @@
 --			- Ignored NPCs are now shown and logged without location data if their Health is greater than 1.
 --			- Cancelled or returned mail items are no longer counted in tracked loot.
 --			- Added new styles and motifs.
+--	
+--		-- v2.71 -- 
+--			- Player companions no longer have their position logged or show up as NPCs in messages.
 --
 --
 
@@ -7584,6 +7587,8 @@ function uespLog.OnTargetChange (eventCode)
 		--COMBAT_UNIT_TYPE_PLAYER = 1
 		--COMBAT_UNIT_TYPE_PLAYER_PET = 2
 		--COMBAT_UNIT_TYPE_TARGET_DUMMY - 4
+		
+		-- local localPlayerIsTarget = AreUnitsEqual("player", "reticleover")
 
     if (unitType == 2) then -- NPC, COMBAT_UNIT_TYPE_OTHER?
         local name = GetUnitName(unitTag)
@@ -7595,6 +7600,10 @@ function uespLog.OnTargetChange (eventCode)
         if (name == nil or name == "" or x <= 0 or y <= 0 or active) then
             return
         end
+		
+		if (name:find("'s Companion") ~= nil or name:find("'s companion") ~= nil) then
+			return
+		end
 		
 		--if (uespLog.lastTargetData.name ~= name) then
 			--uespLog.DebugExtraMsg("Target changed to "..tostring(name))
@@ -10205,6 +10214,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 	logData.type, logData.specialType = GetItemLinkItemType(itemLink)
 	logData.icon = GetItemLinkIcon(itemLink)
 	logData.itemStyle = GetItemLinkItemStyle(itemLink)
+	logData.actorCategory = GetItemLinkActorCategory(itemLink)
 	--logData.icon, _, _, _, logData.itemStyle = GetItemLinkInfo(itemLink)
 	
 	logData.equipType = GetItemLinkEquipType(itemLink)

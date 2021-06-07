@@ -173,8 +173,8 @@ def CreateDBOutput (OutputFilename):
         posTop = 1000000
         posRight = 1000000
 		
-		tilesX = int(mapInfo[NUMTILESX])
-		tilesY = int(mapInfo[NUMTILESY])
+        tilesX = int(mapInfo[NUMTILESX])
+        tilesY = int(mapInfo[NUMTILESY])
         
         # print "{1}: Length = {0}".format(len(row), i)
         SqlString = ""
@@ -183,9 +183,9 @@ def CreateDBOutput (OutputFilename):
         SqlString += "SET @revision_id = LAST_INSERT_ID();\n"
                 
         SqlString += "DELETE FROM uesp_gamemap.world WHERE id={0};\n".format(ID)
-        SqlString += "INSERT INTO uesp_gamemap.world(id, revisionId, parentId, name, displayName, minZoom, maxZoom, zoomOffset, posLeft, posTop, posRight, posBottom, enabled, tilesX, tilesY) VALUES({0}, @revision_id, {9}, \"{1}\", \"{8}\", {3}, {2}, {3}, {4}, {5}, {6}, {7}, 1);\n".format(ID, mapInfo[MAPNAME], MAX_ZOOM_VALUE, mapInfo[MINZOOM], posLeft, posTop, posRight, posBottom, mapDisplayName, mapParentID, tilesX, tilesY)
+        SqlString += "INSERT INTO uesp_gamemap.world(id, revisionId, parentId, name, displayName, minZoom, maxZoom, zoomOffset, posLeft, posTop, posRight, posBottom, enabled, tilesX, tilesY) VALUES({0}, @revision_id, {9}, \"{1}\", \"{8}\", {3}, {2}, {3}, {4}, {5}, {6}, {7}, 1, {10}, {11});\n".format(ID, mapInfo[MAPNAME], MAX_ZOOM_VALUE, mapInfo[MINZOOM], posLeft, posTop, posRight, posBottom, mapDisplayName, mapParentID, tilesX, tilesY)
 
-        SqlString += "INSERT INTO uesp_gamemap.world_history(worldId, parentId, revisionId, name, displayName, minZoom, maxZoom, zoomOffset, posLeft, posTop, posRight, posBottom, enabled, tilesX, tilesY) VALUES({0}, @revision_id, {9}, \"{1}\", \"{8}\", {3}, {2}, {3}, {4}, {5}, {6}, {7}, 1);\n".format(ID, mapInfo[MAPNAME], MAX_ZOOM_VALUE, mapInfo[MINZOOM], posLeft, posTop, posRight, posBottom, mapDisplayName, mapParentID, tilesX, tilesY)
+        SqlString += "INSERT INTO uesp_gamemap.world_history(worldId, parentId, revisionId, name, displayName, minZoom, maxZoom, zoomOffset, posLeft, posTop, posRight, posBottom, enabled, tilesX, tilesY) VALUES({0}, @revision_id, {9}, \"{1}\", \"{8}\", {3}, {2}, {3}, {4}, {5}, {6}, {7}, 1, {10}, {11});\n".format(ID, mapInfo[MAPNAME], MAX_ZOOM_VALUE, mapInfo[MINZOOM], posLeft, posTop, posRight, posBottom, mapDisplayName, mapParentID, tilesX, tilesY)
         SqlString += "SET @world_history_id = LAST_INSERT_ID();\n"
 
         SqlString += "UPDATE uesp_gamemap.revision SET worldHistoryId=@world_history_id WHERE id=@revision_id;\n"

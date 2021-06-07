@@ -55,7 +55,7 @@ const size_t U12SIZE = 23; //*/
 
 	/* Update 29 */
 const size_t U2SIZE = 22;
-const size_t FLAGSIZE = 189;	//188 in first 29pts version
+const size_t FLAGSIZE = 190;	//188 in first 29pts version, 189 prior to update 30
 const size_t U6SIZE = 6;
 const size_t U6ASIZE = 7;
 const size_t U7SIZE = 9;

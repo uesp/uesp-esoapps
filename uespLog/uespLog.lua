@@ -1147,6 +1147,7 @@
 --	
 --		-- v2.71 -- 
 --			- Player companions no longer have their position logged or show up as NPCs in messages.
+--			- Added the "/uespmineitems table quick" command option. This option only mines 1:1, 1:2, and 50:370 item data.
 --
 --
 
@@ -1331,6 +1332,9 @@ uespLog.PLAYER_PET_NAMES = {
 	["Betty Netch"] = 1,
 	["Blue Betty"] = 1,
 	["Bull Netch"] = 1,
+	
+	['Mirri Elendis'] = 1,
+	['Bastian Hallix'] = 1,
 }
 
 uespLog.ignoredNPCs = {
@@ -1703,6 +1707,11 @@ uespLog.MINEITEM_LEVELS_SAFE_PTS = {
 	{ 50, 50, 366, 370, "crafted" },
 }
 
+uespLog.MINEITEM_LEVELS_SAFE_QUICK = {
+	{  1,  1,   1,   2, "dropped" },
+	{ 50, 50, 370, 370, "crafted" },
+}
+
 
 uespLog.MINEITEM_LEVELS_SHORT = {
 	{  1, 50,   1,  11, "dropped" },
@@ -1835,11 +1844,12 @@ uespLog.MINEITEM_ONLYSUBTYPE = 366
 uespLog.MINEITEM_ONLYLEVEL = 50
 
 uespLog.mineItemBadCount = 0
+uespLog.mineItemCorruptCount = 0
 uespLog.mineItemCount = 0
 uespLog.mineUpdateItemCount = 0
 uespLog.mineNextItemId = 1
 uespLog.isAutoMiningItems = false
-uespLog.MINEITEMS_AUTODELAY = 1000 -- Delay in ms
+uespLog.MINEITEMS_AUTODELAY = 500 -- Delay in ms
 uespLog.MINEITEMS_AUTOLOOPCOUNT = 400
 uespLog.MINEITEMS_AUTOMAXLOOPCOUNT = 400
 uespLog.MINEITEM_AUTO_MAXITEMID = 200000
@@ -2259,7 +2269,7 @@ uespLog.ITEMCHANGE_IGNORE_FIELDS = {
 	['level'] = 1,  
 	['reqLevel'] = 1, 
 	['reqCP'] = 1, 
-	['quality'] = 1,
+	--['quality'] = 1,
 	['itemLink'] = 1,	
 }
 
@@ -4963,6 +4973,8 @@ function uespLog.UpdateMineItemTable()
 		uespLog.MINEITEM_TABLE = uespLog.MINEITEM_LEVELS_SAFE
 	elseif (uespLog.mineItemTable == "pts") then
 		uespLog.MINEITEM_TABLE = uespLog.MINEITEM_LEVELS_SAFE_PTS
+	elseif (uespLog.mineItemTable == "quick") then
+		uespLog.MINEITEM_TABLE = uespLog.MINEITEM_LEVELS_SAFE_QUICK
 	else
 		uespLog.MINEITEM_TABLE = uespLog.MINEITEM_LEVELS_SAFE
 	end
@@ -7605,6 +7617,10 @@ function uespLog.OnTargetChange (eventCode)
 			return
 		end
 		
+		if (name == 'Bastian Hallix' or name == 'Mirri Elendis') then
+			return
+		end
+		
 		--if (uespLog.lastTargetData.name ~= name) then
 			--uespLog.DebugExtraMsg("Target changed to "..tostring(name))
 		--end
@@ -7639,12 +7655,11 @@ function uespLog.OnTargetChange (eventCode)
 		
 		uespLog.UpdateTargetHealthData(name, unitTag, maxHp)
 		
-		if (uespLog.IsIgnoredNPC(name)) then
+		if (maxHp <= 1) then
+			return
+		end
 		
-			if (maxHp <= 1) then
-				return
-			end
-			
+		if (uespLog.IsIgnoredNPC(name)) then
 			includeLocData = false
 		end
 				
@@ -10061,6 +10076,97 @@ function uespLog.DoesItemChangeWithLevelQuality (itemId, outputDiff)
 end
 
 
+uespLog.DYNAMIC_ITEM_FIELDS = {
+	"useAbilityDesc",
+    "armorRating",
+    "description",
+	"enchantDesc",
+	"enchantName",
+	"icon",
+	"level",
+	"maxCharges",
+	"name",
+	"quality",
+	"setBonusDesc1",
+	"setBonusDesc2",
+	"setBonusDesc3",
+	"setBonusDesc4",
+	"setBonusDesc5",
+	"traitAbilityDesc",
+	"traitDesc",
+	"value",
+	"weaponPower",
+}
+
+
+function uespLog.IsDynamicItem (itemId)
+	local itemLink1 = uespLog.MakeItemLink(itemId, 1, 1)
+	local itemLink2 = uespLog.MakeItemLink(itemId, 50, 370)
+	
+	local quality1 = GetItemLinkQuality(itemLink1)
+	local quality2 = GetItemLinkQuality(itemLink2)
+	if (quality1 ~= quality2) then return true end
+	
+	local name1 = GetItemLinkName(name1)
+	local name2 = GetItemLinkName(name2)
+	if (name1 ~= name2) then return true end
+	
+	local armor1 = GetItemLinkArmorRating(itemLink1)
+	local armor2 = GetItemLinkArmorRating(itemLink2)
+	if (armor1 ~= armor2) then return true end
+	
+	local weapon1 = GetItemLinkWeaponPower(itemLink1)
+	local weapon2 = GetItemLinkWeaponPower(itemLink2)
+	if (weapon1 ~= weapon2) then return true end
+	
+	local value1 = GetItemLinkValue(itemLink1)
+	local value2 = GetItemLinkValue(itemLink2)
+	if (value1 ~= value2) then return true end
+	
+	local _, traitDesc1 = GetItemLinkTraitInfo(itemLink1)
+	local _, traitDesc2 = GetItemLinkTraitInfo(itemLink2)
+	if (traitDesc1 ~= traitDesc2) then return true end
+	
+	local hasSet, setName, numBonuses = GetItemLinkSetInfo(itemLink1)
+	
+	if (hasSet) then
+		for i = 1, numBonuses do
+			local _, setDesc1 = GetItemLinkSetBonusInfo(itemLink1, NOT_EQUIPPED, i)
+			local _, setDesc2 = GetItemLinkSetBonusInfo(itemLink2, NOT_EQUIPPED, i)
+			if (setDesc1 ~= setDesc2) then return true end
+		end
+	end
+	
+	local _, _, useDesc1 = GetItemLinkOnUseAbilityInfo(itemLink1)
+	local _, _, useDesc2 = GetItemLinkOnUseAbilityInfo(itemLink2)
+	if (useDesc1 ~= useDesc2) then return true end
+	
+	local _, enchantName1, enchantDesc1 = GetItemLinkEnchantInfo(itemLink1)
+	local _, enchantName2, enchantDesc2 = GetItemLinkEnchantInfo(itemLink2)
+	if (enchantName1 ~= enchantName2) then return true end
+	if (enchantDesc1 ~= enchantDesc2) then return true end
+	
+		-- Tested with enchantment name/description
+	--local glyphMinLevel1, glyphMinCP1 = GetItemLinkGlyphMinLevels(itemLink1)
+	--local glyphMinLevel2, glyphMinCP2 = GetItemLinkGlyphMinLevels(itemLink2)
+	--if (glyphMinLevel1 ~= glyphMinLevel2) then return true end
+	--if (glyphMinCP1 ~= glyphMinCP2) then return true end
+	
+	--local desc1 = GetItemLinkFlavorText(itemLink1)
+	--local desc2 = GetItemLinkFlavorText(itemLink2)
+	--if (desc1 ~= desc2) then return true end
+	
+	--local icon1 = GetItemLinkIcon(itemLink1)
+	--local icon2 = GetItemLinkIcon(itemLink2)
+	--if (icon1 ~= icon2) then return true end
+	
+		-- Only crafted potions seem to have this effect
+	--local hasTraitAbility, traitAbilityDescription, traitCooldown, hasScaling, minLevel, maxLevel, isCP = GetItemLinkTraitOnUseAbilityInfo(itemLink, i)
+	
+	return false
+end
+
+
 function uespLog.CompareItemLinks (itemLink1, itemLink2)
 	local itemLog1 = uespLog.CreateItemLinkLog(itemLink1)
 	local itemLog2 = uespLog.CreateItemLinkLog(itemLink2)
@@ -10189,6 +10295,72 @@ function uespLog.LoadBackupTraits()
 end
 
 
+
+function uespLog.CreateItemLinkLogShort (itemLink)
+	local logData = {}
+	
+	logData.itemLink = itemLink
+	logData.reqLevel = GetItemLinkRequiredLevel(itemLink)
+	logData.reqCP = GetItemLinkRequiredChampionPoints(itemLink)
+			
+	logData.quality = GetItemLinkQuality(itemLink)
+	if (logData.quality == 0) then logData.quality = nil end
+	
+	logData.name = GetItemLinkName(itemLink)
+			
+	logData.armorRating = GetItemLinkArmorRating(itemLink)
+	if (logData.armorRating == 0) then logData.armorRating = nil end
+		
+	logData.weaponPower = GetItemLinkWeaponPower(itemLink)
+	if (logData.weaponPower == 0) then logData.weaponPower = nil end
+		
+	logData.value = GetItemLinkValue(itemLink)
+	if (logData.value == 0) then logData.value = nil end
+	
+	local trait, traitDesc = GetItemLinkTraitInfo(itemLink)
+	if (trait > 0) then logData.traitDesc = traitDesc end	
+		
+	local hasSet, setName, numBonuses = GetItemLinkSetInfo(itemLink)
+	
+	if (hasSet) then
+	
+		for i = 1, numBonuses do
+			local setBonusRequired, setBonusDesc = GetItemLinkSetBonusInfo(itemLink, NOT_EQUIPPED, i)
+			logData["setDesc"..tostring(i)] = tostring(setBonusDesc)
+		end
+		
+	end
+	
+	local hasAbility, abilityHeader, useAbilityDesc = GetItemLinkOnUseAbilityInfo(itemLink)
+	if (hasAbility) then logData.useAbilityDesc = useAbilityDesc end	
+	
+	local hasEnchant, enchantName, enchantDesc = GetItemLinkEnchantInfo(itemLink)
+	
+	if (hasEnchant) then
+		logData.enchantName = enchantName
+		logData.enchantDesc = enchantDesc
+	end
+	
+	logData.flavourText = GetItemLinkFlavorText(itemLink)
+	if (logData.flavourText == "") then logData.flavourText = nil end
+		
+	logData.icon = GetItemLinkIcon(itemLink)
+	
+	local glyphMinLevel, glyphMinCP = GetItemLinkGlyphMinLevels(itemLink)
+		
+	if (glyphMinLevel ~= nil) then
+		logData.minGlyphLevel = glyphMinLevel
+	elseif (glyphMinCP ~= nil) then
+		logData.minGlyphLevel = 50 + math.floor(glyphMinCP/10)
+	end
+	
+		-- Only crafted potions seem to have this effect?
+	--local hasTraitAbility, traitAbilityDescription, traitCooldown, hasScaling, minLevel, maxLevel, isCP = GetItemLinkTraitOnUseAbilityInfo(itemLink, i)
+	
+	return logData
+end
+
+
 function uespLog.CreateItemLinkLog (itemLink)
 	local enchantName, enchantDesc
 	local useAbilityName, useAbilityDesc, cooldown
@@ -10204,7 +10376,8 @@ function uespLog.CreateItemLinkLog (itemLink)
 	local flavourText
 	local tmp1, tmp2, tmp3
 	local logData = { }
-	local _, _, itemId, internalLevel, _, _, _, internalSubType  = uespLog.ParseLinkID(itemLink)
+	local _, _, itemId, internalLevel, _, _, _, internalSubType = uespLog.ParseLinkID(itemLink)
+	local isSafeSubType = not (uespLog.MINEITEM_UNSAFE_SUBTYPES[internalSubType] or false)
 	
 	logData.itemLink = itemLink
 	
@@ -10213,20 +10386,38 @@ function uespLog.CreateItemLinkLog (itemLink)
 	
 	logData.type, logData.specialType = GetItemLinkItemType(itemLink)
 	logData.icon = GetItemLinkIcon(itemLink)
+	
 	logData.itemStyle = GetItemLinkItemStyle(itemLink)
-	logData.actorCategory = GetItemLinkActorCategory(itemLink)
+	if (logData.itemStyle == 0) then logData.itemStyle = nil end
 	--logData.icon, _, _, _, logData.itemStyle = GetItemLinkInfo(itemLink)
 	
 	logData.equipType = GetItemLinkEquipType(itemLink)
+	if (logData.equipType == 0) then logData.equipType = nil end
+	
 	logData.weaponType = GetItemLinkWeaponType(itemLink)
+	if (logData.weaponType == 0) then logData.weaponType = nil end
+	
 	logData.armorType = GetItemLinkArmorType(itemLink)
+	if (logData.armorType == 0) then logData.armorType = nil end
+	
 	logData.weaponPower = GetItemLinkWeaponPower(itemLink)
+	if (logData.weaponPower == 0) then logData.weaponPower = nil end
+	
 	logData.armorRating = GetItemLinkArmorRating(itemLink, false)
+	if (logData.armorRating == 0) then logData.armorRating = nil end
+	
 	logData.reqLevel = GetItemLinkRequiredLevel(itemLink)
 	logData.reqCP = GetItemLinkRequiredChampionPoints(itemLink)
+	
 	logData.value = GetItemLinkValue(itemLink, false)
+	if (logData.value == 0) then logData.value = nil end
+	
 	logData.condition = GetItemLinkCondition(itemLink)
+	if (logData.condition == 0) then logData.condition = nil end
+	
 	logData.useType = GetItemLinkItemUseType(itemLink)
+	if (logData.useType == 0) then logData.useType = nil end
+	
 	logData.recipeRank = -1
 
 	if (uespLog.MINEITEM_SHIELDARMORFACTOR ~= nil and uespLog.MINEITEM_SHIELDARMORFACTOR ~= 1 and logData.weaponType == 14) then
@@ -10234,10 +10425,11 @@ function uespLog.CreateItemLinkLog (itemLink)
 	end
 	
 	if (logData.type == ITEMTYPE_FURNISHING) then
-		logData.furnDataID = GetItemLinkFurnitureDataId(itemLink)
-		logData.furnCate, logData.furnSubCate = GetFurnitureDataCategoryInfo(logData.furnDataID)
+		logData.furnDataId = GetItemLinkFurnitureDataId(itemLink)
+		logData.furnCate, logData.furnSubCate = GetFurnitureDataCategoryInfo(logData.furnDataId)
 		logData.furnCateName = GetFurnitureCategoryName(logData.furnCate)
 		logData.furnSubCateName = GetFurnitureCategoryName(logData.furnSubCate)
+		logData.furnLimitType = GetItemLinkFurnishingLimitType(itemLink)
 	end
 	
 	hasArmorDecay = DoesItemLinkHaveArmorDecay(itemLink)
@@ -10318,9 +10510,8 @@ function uespLog.CreateItemLinkLog (itemLink)
 		uespLog.Msg("Error: Found bad trait: "..tostring(logData.traitDesc))
 	end
 	
-	if (logData.traitDesc == "") then
-		logData.traitDesc = nil
-	end
+	if (logData.traitDesc == "") then logData.traitDesc = nil end
+	if (logData.trait == 0) then logData.trait = nil end
 
 	local isSetItem, setName, numSetBonuses, numSetEquipped, maxSetEquipped, setId = GetItemLinkSetInfo(itemLink)
 			
@@ -10340,7 +10531,12 @@ function uespLog.CreateItemLinkLog (itemLink)
 
 	flavourText = GetItemLinkFlavorText(itemLink)
 	if (flavourText ~= "") then logData.flavourText = flavourText end
-
+	
+	local itemFilterTypes = { GetItemLinkFilterTypeInfo(itemLink) }
+		
+	logData.filterTypes = uespLog.implodeOrder(itemFilterTypes, ",")
+	if (logData.filterTypes == "") then logData.filterTypes = nil end
+	
 		-- Only works for actually crafted items and has crash issue
 	--isCrafted = IsItemLinkCrafted(itemLink)
 	--if (isCrafted) then flagString = flagString .. "Crafted " end
@@ -10356,6 +10552,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 	end
 
 	logData.quality = GetItemLinkDisplayQuality(itemLink)
+	if (logData.quality == 0) then logData.quality = nil end
 	
 	isUnique = IsItemLinkUnique(itemLink)
 	if (isUnique) then flagString = flagString .. "Unique " end
@@ -10365,6 +10562,9 @@ function uespLog.CreateItemLinkLog (itemLink)
 	
 	isConsumable = IsItemLinkConsumable(itemLink)
 	if (isConsumable) then flagString = flagString .. "Consumable " end
+	
+	--IsItemLinkContainer(string itemLink)
+	--IsItemLinkStackable(string itemLink)
 
 	runeKnown, logData.reagentTrait1 = GetItemLinkReagentTraitInfo(itemLink, 1)
 	runeKnown, logData.reagentTrait2 = GetItemLinkReagentTraitInfo(itemLink, 2)
@@ -10403,9 +10603,9 @@ function uespLog.CreateItemLinkLog (itemLink)
 		end
 	end
 	
-	if (logData.matLevelDesc == "") then
-		logData.matLevelDesc = nil
-	end
+	if (logData.craftSkill == 0) then logData.craftSkill = nil end
+	if (logData.matLevelDesc == "") then logData.matLevelDesc = nil end
+	if (logData.refinedMatLink == "") then logData.refinedMatLink = nil end
 
 	requiredQuality = GetItemLinkRecipeQualityRequirement(itemLink)
 	logData.recipeQuality = requiredQuality
@@ -10435,6 +10635,9 @@ function uespLog.CreateItemLinkLog (itemLink)
 	elseif (GetItemLinkRecipeRankRequirement ~= nil) then
 		logData.recipeRank = GetItemLinkRecipeRankRequirement(itemLink)
 	end
+	
+	if (logData.recipeRank <= 0) then logData.recipeRank = nil end
+	if (logData.recipeQuality <= 0) then logData.recipeQuality = nil end
 
 	resultItemLink = GetItemLinkRecipeResultItemLink(itemLink)
 	
@@ -10453,16 +10656,10 @@ function uespLog.CreateItemLinkLog (itemLink)
 		logData.resultMinLevel = resultMinLevel
 		logData.resultMaxLevel = resultMaxLevel
 	end
-	
-	refinedItemLink = GetItemLinkRefinedMaterialItemLink(itemLink)
-	
-	if (refinedItemLink ~= nil and refinedItemLink ~= "") then
-		logData.refinedItemLink = refinedItemLink
-	end
 
 	craftSkillRank = GetItemLinkRequiredCraftingSkillRank(itemLink)
 	
-	if (craftSkillRank ~= nil) then
+	if (craftSkillRank ~= nil and craftSkillRank > 0) then
 		logData.craftSkillRank = craftSkillRank
 	end
 
@@ -10483,11 +10680,12 @@ function uespLog.CreateItemLinkLog (itemLink)
 	end
 
 	logData.recipeIngredients = table.concat(ingrList, ", ")
+	if (logData.recipeIngredients == "") then logData.recipeIngredients = nil end
 		
-	--logData.isBound = IsItemLinkBound(itemLink)
 	logData.bindType = GetItemLinkBindType(itemLink)
+	if (logData.bindType == 0) then logData.bindType = nil end
 	
-	if (not isGunnySack and isSafeSubType) then
+	--if (not isGunnySack and isSafeSubType) then
 		local glyphMinLevel, glyphMinCP = GetItemLinkGlyphMinLevels(itemLink)
 		
 		if (glyphMinLevel ~= nil) then
@@ -10495,17 +10693,14 @@ function uespLog.CreateItemLinkLog (itemLink)
 		elseif (glyphMinCP ~= nil) then
 			logData.minGlyphLevel = 50 + math.floor(glyphMinCP/10)
 		end
-	end
+	--end
 
 	local traitAbilityCount = 0
 	local maxTraits = GetMaxTraits()
-	local isSafeSubType = not (uespLog.MINEITEM_UNSAFE_SUBTYPES[internalSubType] or false)
-	
-	if (isSafeSubType) then
-	
+		
+	--if (isSafeSubType) then
 		for i = 1, maxTraits  do
 			local hasTraitAbility, traitAbilityDescription, traitCooldown, hasScaling, minLevel, maxLevel, isCP = GetItemLinkTraitOnUseAbilityInfo(itemLink, i)
-			--local hasTraitAbility = false
 			
 			if (hasTraitAbility) then
 				traitAbilityCount = traitAbilityCount + 1
@@ -10513,17 +10708,13 @@ function uespLog.CreateItemLinkLog (itemLink)
 				logData["traitCooldown" .. tostring(traitAbilityCount) ] = traitCooldown
 			end
 		end
-		
-	end
+	--end
 		
 	bookTitle = GetItemLinkBookTitle(itemLink)
-	--logData.isBookKnown = IsItemLinkBookKnown(itemLink)
 	
 	if (bookTitle ~= "") then
 		logData.bookTitle = bookTitle
 	end
-	
-	--local known, name = GetItemLinkReagentTraitInfo(itemLink, traitIndex) 
 	
 	if (flagString ~= "") then
 		logData.flag = flagString
@@ -10536,6 +10727,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 	
 		for i = 1, tagCount do
 			local tagDesc = GetItemLinkItemTagDescription(itemLink, i)
+			--local tagDesc, tagCategory = GetItemLinkItemTagInfo(itemLink, i)
 			
 			if (i > 1) then
 				tagString = tagString .. ", "
@@ -10551,23 +10743,72 @@ function uespLog.CreateItemLinkLog (itemLink)
 	
 	logData.primaryDyeId, logData.secondaryDyeId, logData.accentDyeId = GetItemLinkDyeIds(itemLink)
 	logData.dyeStampId = GetItemLinkDyeStampId(itemLink)
+	if (logData.dyeStampId == 0) then logData.dyeStampId = nil end
 	
 	if (logData.primaryDyeId > 0) then
 		local r, g, b = GetDyeColorsById(logData.primaryDyeId)
 		logData.primaryDyeColor = string.format("%.2x%.2x%.2x", math.floor(r * 255), math.floor(g * 255), math.floor(b * 255))
 		logData.primaryDyeName = GetDyeInfoById(logData.primaryDyeId)
+	else
+		logData.primaryDyeId = nil
 	end
 	
 	if (logData.secondaryDyeId > 0) then
 		local r, g, b = GetDyeColorsById(logData.secondaryDyeId)
 		logData.secondaryDyeColor = string.format("%.2x%.2x%.2x", math.floor(r * 255), math.floor(g * 255), math.floor(b * 255))
 		logData.secondaryDyeName = GetDyeInfoById(logData.secondaryDyeId)
+	else
+		logData.secondaryDyeId = nil
 	end
 	
 	if (logData.accentDyeId > 0) then
 		local r, g, b = GetDyeColorsById(logData.accentDyeId)
 		logData.accentDyeColor = string.format("%.2x%.2x%.2x", math.floor(r * 255), math.floor(g * 255), math.floor(b * 255))
 		logData.accentDyeName = GetDyeInfoById(logData.accentDyeId)
+	else
+		logData.accentDyeId = nil
+	end
+	
+	logData.actorCategory = GetItemLinkActorCategory(itemLink)
+	if (logData.actorCategory == 0) then logData.actorCategory = nil end
+	
+	logData.useType = GetItemLinkItemUseType(itemLink)
+	if (logData.useType == 0) then logData.useType = nil end
+	
+	logData.sellInfo = GetItemLinkSellInformation(itemLink)
+	if (logData.sellInfo == 0) then logData.sellInfo = nil end
+	
+	logData.traitTypeCate = GetItemLinkTraitCategory(itemLink)
+	if (logData.traitTypeCate == 0) then logData.traitTypeCate = nil end
+		
+	logData.combDesc = GetItemLinkCombinationDescription(itemLink)
+	logData.combId = GetItemLinkCombinationId(itemLink)
+	if (logData.combDesc == "") then logData.combDesc = nil end
+	if (logData.combId == 0) then logData.combId = nil end
+	
+	logData.defaultEnchantId = GetItemLinkDefaultEnchantId(itemLink)
+	if (logData.defaultEnchantId == 0) then logData.defaultEnchantId = nil end
+	
+	logData.recipeListIndex, logData.recipeIndex = GetItemLinkGrantedRecipeIndices(itemLink)
+	
+	logData.contCollectId = GetItemLinkContainerCollectibleId(itemLink)
+	if (logData.contCollectId == 0) then logData.contCollectId = nil end
+	
+	local numSetIds = GetItemLinkNumContainerSetIds(itemLink)
+	
+	if (numSetIds > 0) then
+		local contHasSet, contSetName, contNumBonuses, contNumEquip, contMaxEquip, contSetId = GetItemLinkContainerSetInfo(itemLink, 1)
+		
+		if (numSetIds > 1) then
+			uespLog.DebugMsg("Warning: "..itemLink.." has "..tostring(numSetIds).." container sets!")
+		end
+		
+		if (contHasSet and contSetName ~= "") then
+			logData.contSetName = contSetName
+			logData.contSetId = contSetId
+		end
+		
+		--logData.contSetNumReq, logData.contSetBonusDesc = GetItemLinkContainerSetBonusInfo(itemLink, containerSetIndex, bonusIndex)
 	end
 
 	return logData
@@ -10594,7 +10835,7 @@ function uespLog.LogItemLinkShort (itemLink, event, extraData)
 	local enchantName, enchantDesc
 	local useAbilityName, useAbilityDesc, cooldown
 	local traitText
-	local setName, numSetBonuses
+	local setName, numSetBonuses, setId
 	local bookTitle
 	local logData = { }
 	local craftSkill
@@ -10603,7 +10844,7 @@ function uespLog.LogItemLinkShort (itemLink, event, extraData)
 	local isConsumable, isRune
 	local flagString = ""
 	local flavourText
-	
+		
 	logData.event = event
 	logData.itemLink = itemLink
 	
@@ -10633,9 +10874,12 @@ function uespLog.LogItemLinkShort (itemLink, event, extraData)
 		logData.useAbilityName = useAbilityName
 		logData.useAbilityDesc = useAbilityDesc
 		logData.useCooldown = cooldown
+		
+		if (logData.useAbilityName == "") then logData.useAbilityName = nil end
+		if (logData.useCooldown == 0) then logData.useCooldown = nil end
 	end
 	
-	isSetItem, setName, numSetBonuses = GetItemLinkSetInfo(itemLink)
+	isSetItem, setName, numSetBonuses, setId = GetItemLinkSetInfo(itemLink)
 	
 	if (logData.isSetItem) then
 		logData.setName = setName
@@ -11561,7 +11805,7 @@ function uespLog.MineItemIterateLevels (itemId)
 				end				
 				
 				if (uespLog.mineItemCount % uespLog.mineUpdateItemCount == 0) then
-					uespLog.MsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad...")
+					uespLog.MsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad, "..tostring(uespLog.mineItemCorruptCount).." corrupt...")
 				end
 			end
 		end
@@ -11577,6 +11821,7 @@ function uespLog.MineItemIterateLevelsShort (itemId)
 	local level, quality
 	local setCount = 0
 	local badItems = 0
+	local validCount = 0
 	local itemLink
 	local itemName
 	local extraData = { }
@@ -11592,7 +11837,6 @@ function uespLog.MineItemIterateLevelsShort (itemId)
 		local qualityStart = value[3]
 		local qualityEnd = value[4]
 		local comment = value[5]
-		isFirst = true
 		
 		for level = levelStart, levelEnd do
 		
@@ -11601,36 +11845,61 @@ function uespLog.MineItemIterateLevelsShort (itemId)
 				for quality = qualityStart, qualityEnd do
 				
 					if (uespLog.mineItemOnlySubType < 0 or quality == uespLog.mineItemOnlySubType) then
+						local redoMineItem = true
+						local redoIsFirst = isFirst
+						local redoAttemptCount = 0
+						
 						setCount = setCount + 1
+						validCount = validCount + 1
 						uespLog.mineItemCount = uespLog.mineItemCount + 1
 						
 						itemLink = uespLog.MakeItemLinkEx( { itemId = itemId, level = level, quality = quality, style = 0 } )
 						
-						if (true or uespLog.IsValidItemLink(itemLink)) then
+						while (redoMineItem and redoAttemptCount < 10) do
+							redoMineItem = false
 							
 							if (isFirst) then
 								isFirst = false
 								extraData.comment = comment
 								fullItemLog = uespLog.CreateItemLinkLog(itemLink)
-								fullItemLog.event = "mineitem"
+								fullItemLog.event = "mineitem2"
 								uespLog.AppendDataToLog("all", fullItemLog, extraData)
 								extraData.comment = nil
 								lastItemLog = fullItemLog
+								
+								baseSetName = fullItemLog.setName
+								baseEquipType = fullItemLog.equipType
+								baseArmorType = fullItemLog.armorType
+								baseWeaponType = fullItemLog.weaponType
 							else
-								newItemLog = uespLog.CreateItemLinkLog(itemLink)
+								newItemLog = uespLog.CreateItemLinkLogShort(itemLink)
+								--newItemLog = uespLog.CreateItemLinkLog(itemLink)
 								diffItemLog = uespLog.CompareItemLogs(lastItemLog, newItemLog)
-								diffItemLog.event = "mi"
+								diffItemLog.event = "mi2"
 								uespLog.AppendDataToLog("all", diffItemLog, extraData)
 								lastItemLog = newItemLog
+								
+								if (newItemLog.setName ~= nil and newItemLog.setName ~= baseSetName) then
+									uespLog.DebugMsg("Error: Mined items found possibly corrupt set name (" .. tostring(baseSetName).. " <> " .. tostring(newItemLog.setName) .. ") for item "..itemId..":"..level..":"..quality)
+									redoMineItem = true
+								elseif (newItemLog.equipType ~= nil and newItemLog.equipType ~= baseEquipType) then
+									uespLog.DebugMsg("Error: Mined items found possibly corrupt equip type (" .. tostring(baseEquipType).. " <> " .. tostring(newItemLog.equipType) .. ") for item "..itemId..":"..level..":"..quality)
+									redoMineItem = true
+								elseif (newItemLog.armorType ~= nil and newItemLog.armorType ~= baseArmorType) then
+									uespLog.DebugMsg("Error: Mined items found possibly corrupt armor type (" .. tostring(baseArmorType).. " <> " .. tostring(newItemLog.armorType) .. ") for item "..itemId..":"..level..":"..quality)
+									redoMineItem = true
+								elseif (newItemLog.weaponType ~= nil and newItemLog.weaponType ~= baseWeaponType) then
+									uespLog.DebugMsg("Error: Mined items found possibly corrupt weapon type (" .. tostring(baseWeaponType).. " <> " .. tostring(newItemLog.weaponType) .. ") for item "..itemId..":"..level..":"..quality)
+									redoMineItem = true
+								end
 							end
 							
-						else
-							badItems = badItems + 1
-							uespLog.mineItemBadCount = uespLog.mineItemBadCount + 1
-						end				
-						
-						if (uespLog.mineItemCount % uespLog.mineUpdateItemCount == 0) then
-							uespLog.MsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad...")
+							if (redoMineItem) then
+								uespLog.DebugMsg("Re-mining item due to possibly corrupt data (attempt #" .. redoAttemptCount .. "...")
+								isFirst = redoIsFirst
+								redoAttemptCount = redoAttemptCount + 1
+								uespLog.mineItemCorruptCount = uespLog.mineItemCorruptCount + 1
+							end
 						end
 					end
 				end
@@ -11714,7 +11983,125 @@ function uespLog.MineItemIterateLevelsShortSafe (itemId, listIndex)
 						end				
 						
 						if (uespLog.mineItemCount % uespLog.mineUpdateItemCount == 0) then
-							uespLog.MsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad...")
+							uespLog.MsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad, "..tostring(uespLog.mineItemCorruptCount).." corrupt...")
+						end
+					end
+				end
+			end
+		end
+		
+		if (validCount > uespLog.MINEITEM_AUTOLOOPSAFE_MAXCOUNT) then
+			--uespLog.Msg("Stopping at: "..itemId..":"..i+1)
+			return itemId, i + 1, true
+		end		
+		
+	end
+	
+	--uespLog.MsgColor(uespLog.mineColor, "UESP: Made "..tostring(setCount).." items with ID "..tostring(itemId)..", "..tostring(badItems).." bad")
+	return itemId + 1, 1, true
+end
+
+
+function uespLog.MineItemIterateLevelsShortSafe2 (itemId, listIndex)
+	local i, value
+	local level, quality
+	local setCount = 0
+	local badItems = 0
+	local itemLink
+	local itemName
+	local extraData = { }
+	local isFirst = true
+	local fullItemLog = { }
+	local newItemLog = { }
+	local lastItemLog = { }
+	local diffItemLog = { }
+	local validCount = 0
+	local baseSetName, baseEquipType, baseArmorType, baseWeaponType
+	
+	--uespLog.Msg("Starting at: "..itemId..":"..listIndex)
+
+	for i = listIndex, 10000 do
+		local value = uespLog.MINEITEM_TABLE[i]
+		
+		if (value == nil) then
+			return itemId + 1, 1, false
+		end
+		
+		local levelStart = value[1]
+		local levelEnd = value[2]
+		local qualityStart = value[3]
+		local qualityEnd = value[4]
+		local comment = value[5]
+		
+		isFirst = true
+		
+		for level = levelStart, levelEnd do
+		
+			if (uespLog.mineItemOnlyLevel < 0 or level == uespLog.mineItemOnlyLevel) then
+			
+				for quality = qualityStart, qualityEnd do
+				
+					if (uespLog.mineItemOnlySubType < 0 or quality == uespLog.mineItemOnlySubType) then
+						local redoMineItem = true
+						local redoIsFirst = isFirst
+						local redoAttemptCount = 0
+						
+						setCount = setCount + 1
+						validCount = validCount + 1
+						uespLog.mineItemCount = uespLog.mineItemCount + 1
+						
+						itemLink = uespLog.MakeItemLinkEx( { itemId = itemId, level = level, quality = quality, style = 0 } )
+						
+						while (redoMineItem and redoAttemptCount < 10) do
+							redoMineItem = false
+							
+							if (isFirst) then
+								isFirst = false
+								extraData.comment = comment
+								fullItemLog = uespLog.CreateItemLinkLog(itemLink)
+								fullItemLog.event = "mineitem2"
+								uespLog.AppendDataToLog("all", fullItemLog, extraData)
+								extraData.comment = nil
+								lastItemLog = fullItemLog
+								
+								baseSetName = fullItemLog.setName
+								baseEquipType = fullItemLog.equipType
+								baseArmorType = fullItemLog.armorType
+								baseWeaponType = fullItemLog.weaponType
+							else
+								newItemLog = uespLog.CreateItemLinkLogShort(itemLink)
+								--newItemLog = uespLog.CreateItemLinkLog(itemLink)
+								diffItemLog = uespLog.CompareItemLogs(lastItemLog, newItemLog)
+								diffItemLog.event = "mi2"
+								uespLog.AppendDataToLog("all", diffItemLog, extraData)
+								lastItemLog = newItemLog
+								
+								if (newItemLog.setName ~= nil and newItemLog.setName ~= baseSetName) then
+									uespLog.DebugMsg("Error: Mined items found possibly corrupt set name (" .. tostring(baseSetName).. " <> " .. tostring(newItemLog.setName) .. ") for item "..itemId..":"..level..":"..quality)
+									redoMineItem = true
+								elseif (newItemLog.equipType ~= nil and newItemLog.equipType ~= baseEquipType) then
+									uespLog.DebugMsg("Error: Mined items found possibly corrupt equip type (" .. tostring(baseEquipType).. " <> " .. tostring(newItemLog.equipType) .. ") for item "..itemId..":"..level..":"..quality)
+									redoMineItem = true
+								elseif (newItemLog.armorType ~= nil and newItemLog.armorType ~= baseArmorType) then
+									uespLog.DebugMsg("Error: Mined items found possibly corrupt armor type (" .. tostring(baseArmorType).. " <> " .. tostring(newItemLog.armorType) .. ") for item "..itemId..":"..level..":"..quality)
+									redoMineItem = true
+								elseif (newItemLog.weaponType ~= nil and newItemLog.weaponType ~= baseWeaponType) then
+									uespLog.DebugMsg("Error: Mined items found possibly corrupt weapon type (" .. tostring(baseWeaponType).. " <> " .. tostring(newItemLog.weaponType) .. ") for item "..itemId..":"..level..":"..quality)
+									redoMineItem = true
+								end
+							end
+							
+							if (redoMineItem) then
+								uespLog.DebugMsg("Re-mining item due to possibly corrupt data (attempt #" .. redoAttemptCount .. "...")
+								isFirst = redoIsFirst
+								redoAttemptCount = redoAttemptCount + 1
+								uespLog.mineItemCorruptCount = uespLog.mineItemCorruptCount + 1
+							end
+							
+						end
+						
+						if (uespLog.mineItemCount % uespLog.mineUpdateItemCount == 0) then
+							uespLog.MsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad, "..tostring(uespLog.mineItemCorruptCount).." corrupt...")
 						end
 					end
 				end
@@ -11741,7 +12128,7 @@ function uespLog.MineItemIterateOther (itemId)
 	uespLog.mineItemCount = uespLog.mineItemCount + 1
 	
 	if (uespLog.mineItemCount % uespLog.mineUpdateItemCount == 0) then
-		uespLog.MsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad...")
+		uespLog.MsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad, "..tostring(uespLog.mineItemCorruptCount).." corrupt...")
 	end
 	
 	if (uespLog.IsValidItemLink(itemLink)) then
@@ -11775,7 +12162,7 @@ function uespLog.MineItemIterateSafe (itemId, listIndex)
 	local changesWithLevel = uespLog.DoesItemChangeWithLevelQuality(itemId)
 	
 	if (changesWithLevel) then
-		return uespLog.MineItemIterateLevelsShortSafe(itemId, listIndex)
+		return uespLog.MineItemIterateLevelsShortSafe2(itemId, listIndex)
 	end
 	
 	uespLog.MineItemIterateOther(itemId)
@@ -12082,6 +12469,7 @@ function uespLog.MineItems (startId, endId)
 	local itemId
 	
 	uespLog.mineItemBadCount = 0
+	uespLog.mineItemCorruptCount = 0
 	uespLog.mineItemCount = 0
 	uespLog.MsgColor(uespLog.mineColor, "UESP: Mining items from IDs "..tostring(startId).." to "..tostring(endId))
 	
@@ -12115,7 +12503,7 @@ function uespLog.MineItems (startId, endId)
 	logData.event = "mineitem::End"
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
-	uespLog.MsgColor(uespLog.mineColor, ".    Finished Mining "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad")
+	uespLog.MsgColor(uespLog.mineColor, ".    Finished Mining "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad, "..tostring(uespLog.mineItemCorruptCount).." corrupt")
 end
 
 
@@ -12131,6 +12519,7 @@ function uespLog.MineSingleItemSafe (itemId)
 	
 	uespLog.mineItemBadCount = 0
 	uespLog.mineItemCount = 0
+	uespLog.mineItemCorruptCount = 0
 	uespLog.MsgColor(uespLog.mineColor, "UESP: Starting to mine item "..tostring(itemId).."...")
 	
 	if (uespLog.mineItemOnlyLevel >= 0) then
@@ -12155,7 +12544,7 @@ function uespLog.MineSingleItemSafe_Next (itemId, listIndex)
 
 	uespLog.MsgColor(uespLog.mineColor, "UESP: Mining data for item "..tostring(itemId).."...")
 	
-	local nextItemId, nextListIndex, mineSuccess = uespLog.MineItemIterateLevelsShortSafe(itemId, listIndex)
+	local nextItemId, nextListIndex, mineSuccess = uespLog.MineItemIterateLevelsShortSafe2(itemId, listIndex)
 		
 	if (nextItemId ~= itemId) then
 		uespLog.MsgColor(uespLog.mineColor, "UESP: Finished mining item "..tostring(itemId)..".")
@@ -12174,6 +12563,7 @@ end
 function uespLog.MineItemsAutoLoop()
 	local initItemCount = uespLog.mineItemCount
 	local initBadCount = uespLog.mineItemBadCount
+	local initCorruptCount = uespLog.mineItemCorruptCount
 	local initItemId = uespLog.mineItemsAutoNextItemId
 	local itemId
 	local reloadUI = true
@@ -12250,7 +12640,7 @@ function uespLog.MineItemsAutoLoop()
 	
 	if (initItemId < uespLog.mineItemsAutoNextItemId) then
 		uespLog.MsgColor(uespLog.mineColor, "Auto-mined "..tostring(uespLog.mineItemCount - initItemCount).." items, "..
-				tostring(uespLog.mineItemBadCount - initBadCount).." bad, IDs "..tostring(initItemId).."-"..tostring(itemId)..
+				tostring(uespLog.mineItemBadCount - initBadCount).." bad, "..tostring(uespLog.mineItemCorruptCount).." corrupt, IDs "..tostring(initItemId).."-"..tostring(itemId)..
 				" (total "..tostring(uespLog.mineItemCount - uespLog.mineItemBadCount).." items)")	
 	end
 end
@@ -12259,6 +12649,7 @@ end
 function uespLog.MineItemsAutoLoopSafe()
 	local initItemCount = uespLog.mineItemCount
 	local initBadCount = uespLog.mineItemBadCount
+	local initCorruptCount = uespLog.mineItemCorruptCount
 	local initItemId = uespLog.mineItemsAutoNextItemId
 	local itemId
 	local reloadUI = true
@@ -12333,7 +12724,7 @@ function uespLog.MineItemsAutoLoopSafe()
 	end
 	
 	uespLog.MsgColor(uespLog.mineColor, "Auto-mined "..tostring(uespLog.mineItemCount - initItemCount).." items, "..
-				tostring(uespLog.mineItemBadCount - initBadCount).." bad, IDs "..tostring(initItemId).."-"..tostring(itemId)..
+				tostring(uespLog.mineItemBadCount - initBadCount).." bad, "..tostring(uespLog.mineItemCorruptCount).." corrupt, IDs "..tostring(initItemId).."-"..tostring(itemId)..
 				" (total "..tostring(uespLog.mineItemCount - uespLog.mineItemBadCount).." items)")	
 end
 
@@ -12374,6 +12765,7 @@ function uespLog.MineItemsAutoStart ()
 	
 	uespLog.mineItemBadCount = 0
 	uespLog.mineItemCount = 0
+	uespLog.mineItemCorruptCount = 0
 	
 	uespLog.MineItemsOutputStartLog()
 		
@@ -12439,6 +12831,7 @@ function uespLog.MineItemsOutputEndLog ()
 	logData.itemId = uespLog.mineItemsAutoNextItemId
 	logData.itemCount = uespLog.mineItemCount
 	logData.badCount = uespLog.mineItemBadCount
+	logData.corruptCount = uespLog.mineItemCorruptCount
 	logData.event = "mineItem::End"
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 	
@@ -12471,7 +12864,7 @@ function uespLog.MineItemsAutoEnd ()
 		uespLog.MsgColor(uespLog.mineColor, "Stopped auto-mining items at ID "..tostring(uespLog.mineItemsAutoNextItemId))
 	end
 	
-	uespLog.MsgColor(uespLog.mineColor, "Total auto-mined "..tostring(uespLog.mineItemCount - uespLog.mineItemBadCount).." items, "..tostring(uespLog.mineItemBadCount).." bad")	
+	uespLog.MsgColor(uespLog.mineColor, "Total auto-mined "..tostring(uespLog.mineItemCount - uespLog.mineItemBadCount).." items, "..tostring(uespLog.mineItemBadCount).." bad, "..tostring(uespLog.mineItemCorruptCount).." corrupt")	
 end
 
 
@@ -12522,7 +12915,7 @@ function uespLog.MineItemsAutoStatus ()
 	
 	if (uespLog.isAutoMiningItems) then
 		uespLog.MsgColor(uespLog.mineColor, "Currently auto-mining items.")
-		uespLog.MsgColor(uespLog.mineColor, "Total auto-mined "..tostring(uespLog.mineItemCount - uespLog.mineItemBadCount).." items, "..tostring(uespLog.mineItemBadCount).." bad")	
+		uespLog.MsgColor(uespLog.mineColor, "Total auto-mined "..tostring(uespLog.mineItemCount - uespLog.mineItemBadCount).." items, "..tostring(uespLog.mineItemBadCount).." bad, "..tostring(uespLog.mineItemCorruptCount).." corrupt")
 		uespLog.MsgColor(uespLog.mineColor, "Auto-reload = "..tostring(uespLog.mineItemAutoReload)..",  auto-restart = "..tostring(uespLog.mineItemAutoRestart))	
 	else
 		uespLog.MsgColor(uespLog.mineColor, "Not currently auto-mining items.")
@@ -12553,6 +12946,8 @@ function uespLog.MineItemsAutoStatus ()
 		uespLog.MsgColor(uespLog.mineColor, "Using SAFE table for mining items.")
 	elseif (uespLog.mineItemTable == "pts") then
 		uespLog.MsgColor(uespLog.mineColor, "Using PTS table for mining items.")
+	elseif (uespLog.mineItemTable == "quick") then
+		uespLog.MsgColor(uespLog.mineColor, "Using QUICK table for mining items.")
 	end
 end
 
@@ -12867,6 +13262,11 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 			uespLog.savedVars.settings.data.mineItemTable = "pts"
 			uespLog.mineItemTable = "pts"
 			uespLog.MsgColor(uespLog.mineColor, "Now using PTS table for mining items.")
+			uespLog.UpdateMineItemTable()
+		elseif (tableName == "quick") then
+			uespLog.savedVars.settings.data.mineItemTable = "quick"
+			uespLog.mineItemTable = "quick"
+			uespLog.MsgColor(uespLog.mineColor, "Now using QUICK table for mining items.")
 			uespLog.UpdateMineItemTable()
 		else
 			uespLog.MsgColor(uespLog.mineColor, "Valid options for 'table' are: safe, pts")
@@ -16360,6 +16760,7 @@ function uespLog.MineCollectibleIDs(note)
 			logData.isPlaceholder = isPlaceholder
 			logData.zoneIndex = zoneCollectionIds[collectibleId]
 			logData.achieveIndex = achievementCollectionIds[collectibleId]
+			logData.refId = GetCollectibleReferenceId(collectibleId)
 			
 			logData.bgImage = GetCollectibleKeyboardBackgroundImage(collectibleId)
 			logData.gamepadBgImage = GetCollectibleGamepadBackgroundImage(collectibleId)
@@ -16683,7 +17084,7 @@ end
 
 
 function uespLog.CountItemLinkSetItemsWorn(itemLink)
-	local hasSet, setName, numBonuses, numEquipped, maxEquipped = GetItemLinkSetInfo(itemLink, false)
+	local hasSet, setName, numBonuses, numEquipped, maxEquipped, setId = GetItemLinkSetInfo(itemLink, false)
 	return numEquipped
 end
 
@@ -20537,4 +20938,85 @@ end
 
 
 --uespLog.MineSingleItemSafe_FinishCallback = uespLog.StartNextMineTest
+uespLog.doAutoTest = false
 
+function uespLog.AutoTestStart(numItems)
+	uespLog.doAutoTest = true
+	zo_callLater(function() uespLog.TestMine(numItems) end, 2000 )
+end
+
+
+function uespLog.TestMine(numItems)
+	local itemId = 176717
+
+	if (numItems == nil) then
+		numItems = 2000
+	end
+	
+	if (uespLog.doAutoTest) then
+		if (#uespLog.savedVars.all.data >= uespLog.MINEITEMS_AUTOSTOP_LOGCOUNT) then
+			uespLog.savedVars.all.data = {}
+			uespLog.Msg("TestAuto: Reset logged data...")
+		end
+	end
+	
+	local itemsMined = 0
+	local itemLink = uespLog.MakeItemLinkEx( { itemId = itemId, level = 1, quality = 1, style = 0 } )
+	local firstLog = uespLog.CreateItemLinkLog(itemLink) 
+	local mineTable = uespLog.MINEITEM_TABLE
+		
+	firstLog.event = "mineitem2"
+	uespLog.AppendDataToLog("all", firstLog, extraData)
+	
+	local lastItemLog = firstLog
+	local newItemLog = {}
+	local diffItemLog = {}
+	local tableIndex = 1
+		
+	while (itemsMined < numItems) do
+		local value = mineTable[tableIndex]
+		tableIndex = tableIndex + 1
+		
+		if (value == nil) then
+		
+			if (uespLog.doAutoTest) then
+				zo_callLater(function() uespLog.TestMine(numItems) end, 2000 )
+				uespLog.Msg("TestAuto: Mined " .. tostring(itemsMined) .. " items...")
+			end
+			
+			return itemsMined
+		end
+		
+		local levelStart = value[1]
+		local levelEnd = value[2]
+		local qualityStart = value[3]
+		local qualityEnd = value[4]
+		local comment = value[5]
+		
+		for level = levelStart, levelEnd do
+			for quality = qualityStart, qualityEnd do
+				itemLink = uespLog.MakeItemLinkEx( { itemId = itemId, level = level, quality = quality, style = 0 } )
+				
+				if (newItemLog.setName ~= nil) then
+					uespLog.Msg(tostring(level) .. ":" .. tostring(quality) .. ": Error in test set name!")
+				end
+		
+				newItemLog = uespLog.CreateItemLinkLogShort(itemLink)
+				diffItemLog = uespLog.CompareItemLogs(lastItemLog, newItemLog)
+				diffItemLog.event = "mi2"
+				uespLog.AppendDataToLog("all", diffItemLog, extraData)
+				lastItemLog = newItemLog
+				
+				itemsMined = itemsMined + 1
+			end
+		end
+		
+	end
+	
+	if (uespLog.doAutoTest) then
+		zo_callLater(function() uespLog.TestMine(numItems) end, 2000 )
+		uespLog.Msg("TestAuto: Mined " .. tostring(itemsMined) .. " items...")
+	end
+	
+	return itemsMined
+end

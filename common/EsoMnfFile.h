@@ -62,6 +62,7 @@ namespace eso {
 		bool UseLangText;
 		bool NoParseGR2;
 		bool OodleRawOutput;
+		bool NoRiffConvert;
 
 		mnf_exportoptions_t() :
 					MnfStartIndex(-1), 
@@ -76,7 +77,8 @@ namespace eso {
 					UseLangText(false),
 					ExtractSubFileDataType("none"),
 					NoParseGR2(false),
-					OodleRawOutput(false)
+					OodleRawOutput(false),
+					NoRiffConvert(false)
 		{
 		}
 
@@ -144,6 +146,8 @@ namespace eso {
 
 		bool				m_DecompressOodle;
 
+		std::string		m_Ww2OggPackedBinFilename;
+
 
 	protected:
 		std::string CreateDataFilename(const byte ArchiveIndex);
@@ -151,6 +155,10 @@ namespace eso {
 		bool CreateFileTable (void);
 		bool CreateFileMaps  (void);
 		bool CreateDuplicateMap (CZosftFile& ZosftFile);
+
+		bool ConvertRiffFile(mnf_filetable_t& FileEntry, const std::string OutputFilename, dat_subfileinfo_t& DataInfo);
+		bool ConvertRiffFileToOgg(mnf_filetable_t& FileEntry, const std::string OutputFilename, dat_subfileinfo_t& DataInfo);
+		bool ConvertRiffFileToWav(mnf_filetable_t& FileEntry, const std::string OutputFilename, dat_subfileinfo_t& DataInfo);
 
 		bool DumpFileTable (const char* pFilename, CMnfFileTableArray& FileTable);
 
@@ -165,7 +173,7 @@ namespace eso {
 		bool SaveSubFileZosft(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo);
 		bool SaveSubFileGR2(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo);
 		bool SaveSubFileXV4(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo);
-		bool SaveSubFile (mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS = false, CFile* pFile = nullptr, const std::string ExtractSubFileDataType = "none", const bool NoExtractGR2 = false, const std::string ExtractFileExtension = "");
+		bool SaveSubFile (mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS = false, CFile* pFile = nullptr, const std::string ExtractSubFileDataType = "none", const bool NoExtractGR2 = false, const std::string ExtractFileExtension = "", const bool NoConvertRiff = false);
 		bool ExtractSubFileDataCombined(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo);
 		bool ExtractSubFileDataSeperate(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo);
 

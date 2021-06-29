@@ -162,6 +162,9 @@
  * v0.42 -- 30 April 2021
  *		- Removed extra "." in DDS files exported from XV4 files.
  *		- Model/animation names from GR2 Granny files are used to output named files if possible.
+ *
+ * v0.50 -- 28 June 2021
+ *		- RIFF files are automatically converted to OGG/WAV files. Use the "--noriffconvert" command line option to disable.
  */
 
 #include "stdafx.h"
@@ -1669,11 +1672,12 @@ cmdparamdef_t g_Cmds[] =
 	{ "oodleoutput",	"",	 "oodleoutput",		"Output the raw/compressed Oodle files.",                           false, true,  0, 0, false, "" },
 	{ "luafilelist",	"",	 "luafilelist",		"Output filenames to a LUA formatted array.",					    false, true,  1, 0, false, "" },
 	{ "luastartindex",	"",	 "luastartindex",	"Start index for the --luafilelist option.",						false, true,  1, 0, false, "1" },
+	{ "noriffconvert",	"",	 "noriffconvert",	"Don't convert RIFF files to WAV/OGG.",								false, true,  0, 0, false, "" },
 	{ "",   "", "", "", false, false, false, false, "" }
 };
 
 const char g_AppDescription[] = "\
-ExportMnf v0.42 is a simple command line application to load and export files\n\
+ExportMnf v0.50 is a simple command line application to load and export files\n\
 from ESO's MNF and DAT files. Created by Daveh (dave@uesp.net).\n";
 
 
@@ -1744,6 +1748,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	ExportOptions.ExtractFileExtension = CmdParamHandler.GetParamValue("fileext");
 	ExportOptions.LuaFileList = CmdParamHandler.GetParamValue("luafilelist");
 	ExportOptions.LuaStartIndex = CmdParamHandler.GetParamValueAsInt("luastartindex");
+	ExportOptions.NoRiffConvert = CmdParamHandler.HasParamValue("noriffconvert");;
 
 	ExportOptions.ExtractSubFileDataType = CmdParamHandler.GetParamValue("extractsubfile");
 	std::transform(ExportOptions.ExtractSubFileDataType.begin(), ExportOptions.ExtractSubFileDataType.end(), ExportOptions.ExtractSubFileDataType.begin(), ::tolower);

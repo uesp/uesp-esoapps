@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\ww2ogg">
+      <UniqueIdentifier>{05536b06-bbb0-4710-8000-680eccd68521}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -110,6 +113,15 @@
     </ClCompile>
     <ClCompile Include="..\..\common\oodle\oodle.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\ww2ogg\src\codebook.cpp">
+      <Filter>Source Files\ww2ogg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\ww2ogg\src\crc.c">
+      <Filter>Source Files\ww2ogg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\ww2ogg\src\wwriff.cpp">
+      <Filter>Source Files\ww2ogg</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

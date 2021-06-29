@@ -8,6 +8,12 @@
 #include <exception>  
 #include <inttypes.h>
 #include "oodle/oodle.h"
+#include <iostream>
+#include <fstream>
+#include <cstring>
+#include "src/wwriff.h"
+#include "stdint.h"
+#include "errors.h"
 
 
 namespace eso {
@@ -27,6 +33,11 @@ namespace eso {
 		m_Header.FileCount = 0;
 		m_Header.Version   = 2;
 		m_Header.Type      = 1;
+
+		char path[MAX_PATH+4];
+		GetModuleFileName(NULL, path, MAX_PATH);
+
+		m_Ww2OggPackedBinFilename = ExtractPath(path) + "packed_codebooks_aoTuV_603.bin";
 	}
 
 
@@ -79,7 +90,7 @@ namespace eso {
 
 		for (size_t i = 0; i < m_Block3.GetHeader().RecordCount23; ++i) 
 		{
-			TableEntry.Index = i;
+			TableEntry.Index = (dword) i;
 
 			if (Offset1 + MNF_BLOCK1_RECORDSIZE <= pData1->UncompressedSize) 
 			{
@@ -549,7 +560,7 @@ namespace eso {
 
 		dword HeaderOffset2 = ParseBufferDword(pOutputBuffer + HeaderOffset1, true) + 4 + HeaderOffset1;
 
-		if (HeaderOffset2 >= BytesDecompressed) 
+		if (HeaderOffset2 >= (dword) BytesDecompressed) 
 		{
 			PrintLog("Header Offset #2 in V3 DAT file exceeds file size (0x%04X > 0x%08X)!", HeaderOffset2, BytesDecompressed);
 			return false;
@@ -941,7 +952,7 @@ namespace eso {
 	}
 
 
-	bool CMnfFile::SaveSubFile (mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, CFile* pFile, const std::string ExtractSubFileDataType, const bool NoExtractGR2, const std::string ExtractFileExtension)
+	bool CMnfFile::SaveSubFile (mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, CFile* pFile, const std::string ExtractSubFileDataType, const bool NoExtractGR2, const std::string ExtractFileExtension, const bool NoConvertRiff)
 	{
 		dat_subfileinfo_t DataInfo;
 		std::string OutputFilename;
@@ -999,6 +1010,134 @@ namespace eso {
 			ConvertDDStoPNG(DataInfo.pFileDataStart, DataInfo.FileDataSize, OutputFilename);
 		}
 
+		if (FileExtension == "riff" && !NoConvertRiff)
+		{
+			ConvertRiffFile(FileEntry, OutputFilename, DataInfo);
+		}
+
+		return true;
+	}
+
+
+	bool CMnfFile::ConvertRiffFile(mnf_filetable_t& FileEntry, const std::string OutputFilename, dat_subfileinfo_t& DataInfo)
+	{
+		eso::byte* pFileData = DataInfo.pFileDataStart;
+
+		if (DataInfo.FileDataSize > INT_MAX)
+		{
+			return PrintError("RIFF filesize of %lld bytes is too large to convert!", DataInfo.FileDataSize);
+		}
+
+		if (DataInfo.FileDataSize < 72)
+		{
+			return PrintError("RIFF filesize of %lld bytes is too small to convert!", DataInfo.FileDataSize);
+		}
+
+		if (memcmp(DataInfo.pFileDataStart, "RIFF", 4) != 0)
+		{
+			return PrintError("Missing 'RIFF' file header...file is probably not a RIFF file!");
+		}
+
+		if (memcmp(DataInfo.pFileDataStart + 8, "WAVE", 4) != 0)
+		{
+			return PrintError("Unknown RIFF type '%4.4s' found, expecting 'WAVE'!", DataInfo.pFileDataStart + 8);
+		}
+
+		if (memcmp(DataInfo.pFileDataStart + 12, "fmt ", 4) != 0)
+		{
+			return PrintError("Unknown RIFF chunk '%4.4s' found, expecting 'fmt '!", DataInfo.pFileDataStart + 12);
+		}
+
+		word formatType = *(word *)(DataInfo.pFileDataStart + 20);
+
+		if (formatType == 0xFFFF)
+			return ConvertRiffFileToOgg(FileEntry, OutputFilename, DataInfo);
+		else if (formatType == 0xFFFE)
+			return ConvertRiffFileToWav(FileEntry, OutputFilename, DataInfo);
+
+		return PrintError("Unknown RIFF format 0x%04X found, expecting 0xFFFE or 0xFFFF!", (dword) formatType);
+	}
+
+
+	bool CMnfFile::ConvertRiffFileToOgg(mnf_filetable_t& FileEntry, const std::string OutputFilename, dat_subfileinfo_t& DataInfo)
+	{
+		std::string OggFilename;
+
+		try
+		{		// This could be a little faster if we didn't reload the RIFF file for conversion
+
+			Wwise_RIFF_Vorbis ww(OutputFilename, m_Ww2OggPackedBinFilename, false, false, kNoForcePacketFormat);
+
+			//ww.print_info();
+			//cout << "Output: " << opt.get_out_filename() << endl;
+
+			OggFilename = OutputFilename + ".ogg";
+			ofstream of(OggFilename, ios::binary);
+			if (!of) throw File_open_error(OggFilename);
+
+			ww.generate_ogg(of);
+		}
+		catch (const File_open_error& fe)
+		{
+			cout << fe << endl;
+			return false;
+		}
+		catch (const Parse_error& pe)
+		{
+			cout << pe << endl;
+			return false;
+		}
+	
+		return true;
+	}
+
+
+	bool CMnfFile::ConvertRiffFileToWav(mnf_filetable_t& FileEntry, const std::string OutputFilename, dat_subfileinfo_t& DataInfo)
+	{
+		CFile File;
+		std::string WavFilename;
+		eso::byte* pFileData = DataInfo.pFileDataStart;
+		size_t NewFileSize = 0;
+		bool Result;
+
+		NewFileSize = (size_t)DataInfo.FileDataSize + 4;
+
+		eso::byte* pNewFileData = new eso::byte[NewFileSize + 100];
+
+		memcpy(pNewFileData, pFileData, 72);
+		//memcpy(pNewFileData + 72 + 4, pFileData + 72, (size_t)DataInfo.FileDataSize - 72);
+
+		eso::dword RiffSize = *(dword *)(pFileData + 4);
+		RiffSize += 4;
+		memcpy(pNewFileData + 4, &RiffSize, 4);
+
+		eso::dword FmtSize = *(dword *)(pFileData + 16);
+		//if (FmtSize != 24) PrintLog("\tFMT size of %d", FmtSize);
+		FmtSize += 0x10;
+		memcpy(pNewFileData + 16, &FmtSize, 4);
+
+		eso::word OldCbSize = *(word *)(pFileData + 36);
+		//if (CbSize != 6) PrintLog("\tCB size of %d", (int)CbSize);
+		eso::word CbSize = OldCbSize + 0x10;
+		memcpy(pNewFileData + 36, &CbSize, 2);
+
+		eso::word ValidBitsPerSample = *(word *)(pFileData + 38);
+		//if (ValidBitsPerSample != 0) PrintLog("\tValidBitsPerSample of %d", (int)ValidBitsPerSample);
+		ValidBitsPerSample += 0x10;
+		memcpy(pNewFileData + 38, &ValidBitsPerSample, 2);
+
+		memcpy(pNewFileData + 44, "\x01\x00\x00\x00\x00\x00\x10\x00\x80\x00\x00\xAA\x00\x38\x9B\x71", 16);
+
+		eso::dword oldChunkStart = 36 + 2 + OldCbSize;
+		eso::dword newChunkStart = 36 + 2 + CbSize;
+		memcpy(pNewFileData + newChunkStart, pFileData + oldChunkStart, (size_t)DataInfo.FileDataSize - oldChunkStart);
+
+		WavFilename = OutputFilename + ".wav";
+
+		if (!File.Open(WavFilename, "wb")) return false;
+		Result = File.WriteBytes(pNewFileData, NewFileSize);
+		if (!Result) return false;
+
 		return true;
 	}
 
@@ -1020,11 +1159,11 @@ namespace eso {
 
 	bool CMnfFile::SaveSubFile (const size_t FileIndex, const mnf_exportoptions_t ExportOptions)
 	{
-		if (m_FileIndexMap.find(FileIndex) == m_FileIndexMap.end())	return PrintError("Failed to find the file with index %d (0x%08X) in MNF file!", FileIndex, FileIndex);
+		if (m_FileIndexMap.find((dword) FileIndex) == m_FileIndexMap.end())	return PrintError("Failed to find the file with index %d (0x%08X) in MNF file!", FileIndex, FileIndex);
 
 		PrintError("Saving file index %d (0x%08X) from MNF file...", FileIndex, FileIndex);
 		PrintError("Saving data to '%s'...", ExportOptions.OutputPath.c_str());
-		return SaveSubFile(*m_FileIndexMap[FileIndex], ExportOptions.OutputPath, ExportOptions.ConvertDDS, nullptr, ExportOptions.ExtractSubFileDataType, ExportOptions.NoParseGR2, ExportOptions.ExtractFileExtension);
+		return SaveSubFile(*m_FileIndexMap[(dword)FileIndex], ExportOptions.OutputPath, ExportOptions.ConvertDDS, nullptr, ExportOptions.ExtractSubFileDataType, ExportOptions.NoParseGR2, ExportOptions.ExtractFileExtension, ExportOptions.NoRiffConvert);
 	}
 
 	
@@ -1134,7 +1273,7 @@ namespace eso {
 
 			if (SkipEmptyDat) continue;
 
-			Result = SaveSubFile(SortedTable[i], ExportOptions.OutputPath, ExportOptions.ConvertDDS, &InputFile, ExportOptions.ExtractSubFileDataType, ExportOptions.NoParseGR2, ExportOptions.ExtractFileExtension);
+			Result = SaveSubFile(SortedTable[i], ExportOptions.OutputPath, ExportOptions.ConvertDDS, &InputFile, ExportOptions.ExtractSubFileDataType, ExportOptions.NoParseGR2, ExportOptions.ExtractFileExtension, ExportOptions.NoRiffConvert);
 			if (Result) ++SuccessCount;
 			SaveResult &= Result;
 		}

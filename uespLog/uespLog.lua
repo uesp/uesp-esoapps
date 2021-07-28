@@ -1148,6 +1148,8 @@
 --		-- v2.71 -- 
 --			- Player companions no longer have their position logged or show up as NPCs in messages.
 --			- Added the "/uespmineitems table quick" command option. This option only mines 1:1, 1:2, and 50:370 item data.
+--			- Seperated the logic between logging an NPC and displaying the NPC message in the chat. This should ensure
+--			  that all NPCs are logged at least once.
 --
 --
 
@@ -1462,8 +1464,11 @@ uespLog.lastTargetData = {
 	itemLink = "",
 }
 
-uespLog.lastOnTargetChange = ""
-uespLog.lastOnTargetChangeGameTime = 0
+uespLog.lastTargetNameCounts = {}
+uespLog.lastTargetLogTime = 0
+uespLog.lastTargetLogName = ""
+uespLog.lastTargetMsgTime = 0
+uespLog.lastTargetMsgName = ""
 uespLog.lastMoneyChange = 0
 uespLog.lastMoneyGameTime = 0
 uespLog.lastItemLink = ""
@@ -7589,6 +7594,66 @@ function uespLog.OnInventorySlotUpdate (eventCode, bagId, slotIndex, isNewItem, 
 end
 
 
+function uespLog.ShouldLogTargetChange(name)
+	local gameTime = GetGameTimeMilliseconds()
+	local diffTime = gameTime - uespLog.lastTargetLogTime
+	
+	if (uespLog.lastTargetNameCounts[name] == nil) then
+		uespLog.lastTargetNameCounts[name] = 0
+		uespLog.lastTargetLogName = name
+		uespLog.lastTargetLogTime = gameTime
+		
+		uespLog.DebugExtraMsg("Logged unseen NPC: "..tostring(name))
+		return true
+	end
+	
+	if (name == uespLog.lastTargetLogName) then
+	
+		if (diffTime >= 10000) then
+			uespLog.lastTargetLogName = name
+			uespLog.lastTargetLogTime = gameTime
+			uespLog.lastTargetNameCounts[name] = uespLog.lastTargetNameCounts[name] + 1
+			
+			uespLog.DebugExtraMsg("Logging NPC after 10 sec: "..tostring(name))
+			return true
+		end
+		
+		return false
+	end
+	
+	if (diffTime < 1000) then
+		return false
+	end
+	
+	uespLog.lastTargetLogName = name
+	uespLog.lastTargetLogTime = gameTime
+	uespLog.lastTargetNameCounts[name] = uespLog.lastTargetNameCounts[name] + 1
+	
+	uespLog.DebugExtraMsg("Logging NPC: "..tostring(name))
+	return true
+end
+
+
+function uespLog.ShouldMsgTargetChange(name)
+
+	if (name == uespLog.lastTargetMsgName) then
+		return false
+	end
+	
+	local gameTime = GetGameTimeMilliseconds()
+	local diffTime = gameTime - uespLog.lastTargetMsgTime
+	
+	if (diffTime < 5000) then
+		return false
+	end
+	
+	uespLog.lastTargetMsgName = name
+	uespLog.lastTargetMsgTime = gameTime
+	
+	return true
+end
+
+
 function uespLog.OnTargetChange (eventCode)
     local unitTag = "reticleover"
     local unitType = GetUnitType(unitTag)
@@ -7606,7 +7671,6 @@ function uespLog.OnTargetChange (eventCode)
         local name = GetUnitName(unitTag)
         local x, y, z, zone = uespLog.GetUnitPosition(unitTag)
 		local gameTime = GetGameTimeMilliseconds()
-		local diffTime = gameTime - uespLog.lastOnTargetChangeGameTime
 		local active = IsPlayerInteractingWithObject()
 		
         if (name == nil or name == "" or x <= 0 or y <= 0 or active) then
@@ -7663,34 +7727,33 @@ function uespLog.OnTargetChange (eventCode)
 			includeLocData = false
 		end
 				
-		if (name == uespLog.lastOnTargetChange or diffTime < uespLog.MIN_TARGET_CHANGE_TIMEMS) then
-			return
+		if (uespLog.ShouldLogTargetChange(name)) then
+			local logData = { }
+			
+			logData.event = "TargetChange"
+			logData.name = name
+			logData.level = level
+			logData.gender = gender
+			logData.difficulty = difficulty
+			logData.maxHp = maxHp
+			logData.maxMg = maxMg
+			logData.maxSt = maxSt
+			logData.reaction = GetUnitReaction(unitTag)
+			
+			if (includeLocData) then
+				uespLog.AppendDataToLog("all", logData, uespLog.GetLastTargetData(), uespLog.GetTimeData())
+			else
+				uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+			end
 		end
 		
-		uespLog.lastOnTargetChange = name
-		uespLog.lastOnTargetChangeGameTime = gameTime
-		
-		local logData = { }
-		
-		logData.event = "TargetChange"
-		logData.name = name
-		logData.level = level
-		logData.gender = gender
-		logData.difficulty = difficulty
-		logData.maxHp = maxHp
-		logData.maxMg = maxMg
-		logData.maxSt = maxSt
-		logData.reaction = GetUnitReaction(unitTag)
-		
-		if (includeLocData) then
-			uespLog.AppendDataToLog("all", logData, uespLog.GetLastTargetData(), uespLog.GetTimeData())
-		else
-			uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+		if (uespLog.ShouldMsgTargetChange(name)) then
+			uespLog.MsgType(uespLog.MSG_NPC, "UESP: Found Npc "..name.." ("..maxHp.." HP)")
 		end
 		
-		uespLog.MsgType(uespLog.MSG_NPC, "UESP: Found Npc "..name.." ("..maxHp.." HP)")
 	elseif (unitType == COMBAT_UNIT_TYPE_PLAYER) then
-		uespLog.lastOnTargetChange = ""
+		uespLog.lastTargetLogName = ""
+		uespLog.lastTargetMsgName = ""
 	elseif (unitType ~= 0) then
 		--local name = GetUnitName(unitTag)
 		--uespLog.DebugMsg("Other Target: "..tostring(name))
@@ -7700,9 +7763,11 @@ function uespLog.OnTargetChange (eventCode)
 		uespLog.lastTargetData.race = ""
 		uespLog.lastTargetData.class = ""
 		uespLog.lastTargetData.type = unitType		
-		uespLog.lastOnTargetChange = ""
+		uespLog.lastTargetLogName = ""
+		uespLog.lastTargetMsgName = ""
 	else
-		uespLog.lastOnTargetChange = ""
+		uespLog.lastTargetLogName = ""
+		uespLog.lastTargetMsgName = ""
     end
 	
 end
@@ -21020,3 +21085,6 @@ function uespLog.TestMine(numItems)
 	
 	return itemsMined
 end
+
+
+

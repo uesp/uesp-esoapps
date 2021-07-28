@@ -1089,6 +1089,8 @@ function uespLog.OnZoneChanged(eventCode, zoneName, subZoneName, newSubzone, zon
 	uespLog.DebugExtraMsg("OnZoneChanged: "..tostring(newSubzone))
 	--uespLog.DebugMsg("UESP: OnZoneChanged "..tostring(zoneName)..", "..tostring(subZoneName)..", "..tostring(newSubzone)..", "..tostring(zoneId)..", "..tostring(subZoneId))
 	
+	uespLog.lastTargetNameCounts = {}
+	
 	local diffTime = GetTimeStamp() - uespLog.charDataLastSaveTimestamp
 	
 	if (uespLog.GetAutoSaveCharData() and uespLog.GetAutoSaveZoneCharData() and diffTime > uespLog.CHARDATA_MINTIMESTAMP_DIFF) then

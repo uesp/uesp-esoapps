@@ -50,6 +50,7 @@ uespLog.UESP_POWERTYPE_WEAPONPOWER = -74
 uespLog.UESP_POWERTYPE_CONSTANTVALUE = -75
 uespLog.UESP_POWERTYPE_HEALTHORSPELLDAMAGE = -76
 uespLog.UESP_POWERTYPE_RESISTANCE = -77
+uespLog.UESP_POWERTYPE_MAGICLIGHTARMOR = -78
 
 uespLog.SKILLCOEF_CHECK_ABILITYID = 28302
 uespLog.SKILLCOEF_CHECK_INDEX = 2
@@ -99,6 +100,7 @@ uespLog.SKILLCOEF_MECHANIC_NAMES = {
 	[uespLog.UESP_POWERTYPE_CONSTANTVALUE] = "Constant Value",
 	[uespLog.UESP_POWERTYPE_HEALTHORSPELLDAMAGE] = "Health or Spell Damage",
 	[uespLog.UESP_POWERTYPE_RESISTANCE] = "Max Resistance",
+	[uespLog.UESP_POWERTYPE_MAGICLIGHTARMOR] = "Magicka and Light Armor (Health Cap)",
 }
 
 
@@ -5681,6 +5683,9 @@ function uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 	elseif (mechanic == uespLog.UESP_POWERTYPE_RESISTANCE) then
 		x = math.max(skill.sr, skill.pr)
 		y = 0
+	elseif (mechanic == uespLog.UESP_POWERTYPE_MAGICLIGHTARMOR) then
+		x = skill.mag
+		y = skill.la
 	elseif (mechanic == uespLog.UESP_POWERTYPE_MAGICKAWITHWD) then
 		x = skill.mag
 		y = skill.wd

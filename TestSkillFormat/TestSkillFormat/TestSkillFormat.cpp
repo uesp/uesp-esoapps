@@ -54,8 +54,8 @@ const size_t U11SIZE = 16;
 const size_t U12SIZE = 23; //*/
 
 	/* Update 29 */
-const size_t U2SIZE = 22;
-const size_t FLAGSIZE = 190;	//188 in first 29pts version, 189 prior to update 30
+const size_t U2SIZE = 23;		// 22 Prior to update 31
+const size_t FLAGSIZE = 191;	// 188 in first 29pts version, 189 prior to update 30, 191 in update 31
 const size_t U6SIZE = 6;
 const size_t U6ASIZE = 7;
 const size_t U7SIZE = 9;
@@ -569,7 +569,7 @@ void AnalyzeU2DataSkill(skilldata_t& skill)
 	if (value < g_MinU2Values[U2SIZE + 1]) g_MinU2Values[U2SIZE + 1] = value;
 	if (value > g_MaxU2Values[U2SIZE + 1]) g_MaxU2Values[U2SIZE + 1] = value;
 
-	if (skill.u2[3] != skill.u2[4]) PrintError("\t%d: u2[3] / u2[4] mismatch (%d - %d)", skill.abilityId1, skill.u2[3], skill.u2[4]);
+	if (skill.u2[4] != skill.u2[5]) PrintError("\t%d: u2[4] / u2[5] mismatch (%d - %d)", skill.abilityId1, skill.u2[4], skill.u2[5]);
 }
 
 
@@ -2489,9 +2489,9 @@ void CheckSkillCosts()
 
 		U9_2Values[skill.u9[2]]++;
 
-		if (minedSkill.cost == skill.u2[14])
+		if (minedSkill.cost == skill.u2[15])
 			++u2_14_count;
-		else if (minedSkill.cost == skill.u2[15])
+		else if (minedSkill.cost == skill.u2[16])
 			++u2_15_count;
 		else if (minedSkill.cost > 0 && abs((int) (floor(ConvertDwordToFloat(skill.u9[1]) * 72)) - minedSkill.cost) <= 1)
 		{
@@ -2500,7 +2500,7 @@ void CheckSkillCosts()
 		}
 		else
 		{
-			printf("\tCost No Match: %d %s (%d: %d, %d, %.2f)\n", skill.abilityId1, skill.name.c_str(), minedSkill.cost, skill.u2[14], skill.u2[15], ConvertDwordToFloat(skill.u9[1]) * 72);
+			printf("\tCost No Match: %d %s (%d: %d, %d, %.2f)\n", skill.abilityId1, skill.name.c_str(), minedSkill.cost, skill.u2[15], skill.u2[16], ConvertDwordToFloat(skill.u9[1]) * 72);
 			++error_count;
 		}
 
@@ -2856,15 +2856,16 @@ bool ExportPhpData(std::string Filename)
 		auto escSkillDesc = ReplaceStrings(skillDesc, "\"", "\\\"");
 		escSkillDesc = ReplaceStrings(skillDesc, "\n", "\\n");
 
-		if (escSkillDesc == "" && skill.u2[11] == 0 && skill.u2[13] == 0 && skill.u2[14] == 0 && skill.u2[3] == 0 && skill.u2[4] == 0 && skill.u6a[5] == 0) continue;
+		if (escSkillDesc == "" && skill.u2[12] == 0 && skill.u2[14] == 0 && skill.u2[15] == 0 && skill.u2[3] == 0 && skill.u2[4] == 0 && skill.u2[5] == 0 && skill.u6a[5] == 0) continue;
 
 		fprintf(pFile, "\t%d => array(\n", abilityId);
 		if (escSkillDesc != "") fprintf(pFile, "\t\t'desc' => \"%s\",\n", escSkillDesc.c_str());
-		if (skill.u2[3] != 0) fprintf(pFile, "\t\t'value1' => %d,\n", skill.u2[3]);
-		if (skill.u2[4] != 0) fprintf(pFile, "\t\t'value2' => %d,\n", skill.u2[4]);
-		if (skill.u2[11] != 0) fprintf(pFile, "\t\t'duration' => %d,\n", skill.u2[11]);
-		if (skill.u2[13] != 0) fprintf(pFile, "\t\t'tick' => %d,\n", skill.u2[13]);
-		if (skill.u2[14] != 0) fprintf(pFile, "\t\t'start' => %d,\n", skill.u2[14]);
+		if (skill.u2[3] != 0) fprintf(pFile, "\t\t'cooldown' => %d,\n", skill.u2[3]);
+		if (skill.u2[4] != 0) fprintf(pFile, "\t\t'value1' => %d,\n", skill.u2[4]);
+		if (skill.u2[5] != 0) fprintf(pFile, "\t\t'value2' => %d,\n", skill.u2[5]);
+		if (skill.u2[12] != 0) fprintf(pFile, "\t\t'duration' => %d,\n", skill.u2[12]);
+		if (skill.u2[14] != 0) fprintf(pFile, "\t\t'tick' => %d,\n", skill.u2[14]);
+		if (skill.u2[15] != 0) fprintf(pFile, "\t\t'start' => %d,\n", skill.u2[15]);
 		if (skill.u6a[4] != 0) fprintf(pFile, "\t\t'mechanic' => %d,\n", skill.u6a[4]);
 		if (skill.u6a[5] != 0) fprintf(pFile, "\t\t'dmgtype' => %d,\n", skill.u6a[5]);
 
@@ -2907,11 +2908,18 @@ bool ExportPhpData(std::string Filename)
 			//dword isRankMod = skill1.u11[7];
 			//if (isRankMod != 0) fprintf(pFile, "\t\t\t\t\t\t'rankMod' => %d,\n", isRankMod);
 
-			if (skill1.u2[3] != 0) fprintf(pFile, "\t\t\t\t\t\t'value1' => %d,\n", skill1.u2[3]);
-			if (skill1.u2[4] != 0) fprintf(pFile, "\t\t\t\t\t\t'value2' => %d,\n", skill1.u2[4]);
-			if (skill1.u2[11] != 0) fprintf(pFile, "\t\t\t\t\t\t'duration' => %d,\n", skill1.u2[11]);
-			if (skill1.u2[13] != 0) fprintf(pFile, "\t\t\t\t\t\t'tick' => %d,\n", skill1.u2[13]);
-			if (skill1.u2[14] != 0) fprintf(pFile, "\t\t\t\t\t\t'start' => %d,\n", skill1.u2[14]);
+			if (skill1.u2[3] != 0) fprintf(pFile, "\t\t\t\t\t\t'cooldown' => %d,\n", skill1.u2[3]);
+			if (skill1.u2[4] != 0) fprintf(pFile, "\t\t\t\t\t\t'value1' => %d,\n", skill1.u2[4]);
+			if (skill1.u2[5] != 0) fprintf(pFile, "\t\t\t\t\t\t'value2' => %d,\n", skill1.u2[5]);
+			if (skill1.u2[12] != 0) fprintf(pFile, "\t\t\t\t\t\t'duration' => %d,\n", skill1.u2[12]);
+			if (skill1.u2[14] != 0) fprintf(pFile, "\t\t\t\t\t\t'tick' => %d,\n", skill1.u2[14]);
+			if (skill1.u2[15] != 0) fprintf(pFile, "\t\t\t\t\t\t'start' => %d,\n", skill1.u2[15]);
+
+			if (skill1.u6[5] != 0) 
+			{
+				fprintf(pFile, "\t\t\t\t\t\t'captype' => %d,\n", skill1.u6[4]);
+				fprintf(pFile, "\t\t\t\t\t\t'cap' => %d,\n", skill1.u6[5]);
+			}
 
 			int coefCount = 0;
 

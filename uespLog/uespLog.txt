@@ -1,6 +1,6 @@
-## Title: UESP Log v2.70
-## APIVersion: 100035
-## Version: 2.70
+## Title: UESP Log v2.80
+## APIVersion: 100036
+## Version: 2.80
 ## Author: Daveh from uesp.net (dave@uesp.net)
 ## Description: Logs game data for uesp.net and a few other useful crafting related functions.
 ## DependsOn: LibAddonMenu-2.0

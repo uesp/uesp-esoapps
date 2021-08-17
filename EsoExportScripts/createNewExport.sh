@@ -1,8 +1,8 @@
 #!/bin/sh
 
-VERSION="30"
-ISPTS=""
-LASTVERSION="29"
+VERSION="31pts"
+ISPTS="1"
+LASTVERSION="30"
 LASTPTSVERSION="30pts2"
 
 MAKEPTSDIFF="1"
@@ -119,6 +119,12 @@ makemapsdiff () {
 	sed -i "s#\.base.jpg##g" "$3.updatedmaps"
 	sed -i "s#.jpg##g" "$3.updatedmaps"
 	
+	grep ".jpg" "$3.list" > "$3.updatedmapsfull"
+	sed -i "s#.*/art/maps/##g" "$3.updatedmapsfull"
+	sed -i "s#_base.jpg##g" "$3.updatedmapsfull"
+	sed -i "s#\.base.jpg##g" "$3.updatedmapsfull"
+	sed -i "s#.jpg##g" "$3.updatedmapsfull"
+	
 		# Only in ./esomnf-18pts/art/maps/bangkorai: bangkoraigarrison_alt_base
 		# Only in ./esomnf-18pts/art/maps/housing: colossalaldmerigrotto_base
 		# Only in ./esomnf-18pts/art/maps/stormhaven: ui_map_fanglairext_base
@@ -228,6 +234,9 @@ if [ $MAKEDIFF ]; then
 	makediff "./gamemnf-$LASTVERSION/esoui/art/" "./gamemnf-$VERSION/esoui/art/" "./goodimages-$VERSION/gameuiart.diff.txt" $LASTVERSION $VERSION
 	makemapsdiff "./esomnf-$LASTVERSION/art/maps/" "./esomnf-$VERSION/art/maps/" "./goodimages-$VERSION/maps.diff.txt" $LASTVERSION $VERSION
 	
+	mkdir -f "./$OUTPUTPATH/CombinedMapsNew"
+	rsync -a "./$OUTPUTPATH/CombinedMaps/" --files-from="./$OUTPUTPATH/maps.diff.txt.updatedmapsfull" ./CombinedMapsNew/
+	
 	python "./export/CompareLangFiles.py" "$BASEPATH/" "$LASTVERSION" "$VERSION" "en"
 	python "./export/CompareLangFiles.py" "$BASEPATH/" "$LASTVERSION" "$VERSION" "de"
 	python "./export/CompareLangFiles.py" "$BASEPATH/" "$LASTVERSION" "$VERSION" "fr"
@@ -247,6 +256,9 @@ if [ $MAKEPTSDIFF ]; then
 	makediff "./esomnf-$LASTPTSVERSION/esoui/art/tutorial/" "./esomnf-$VERSION/esoui/art/tutorial/" "./goodimages-$VERSION/tutorial.ptsdiff.txt"  $LASTPTSVERSION $VERSION
 	makediff "./gamemnf-$LASTPTSVERSION/esoui/art/" "./gamemnf-$VERSION/esoui/art/" "./goodimages-$VERSION/gameuiart.ptsdiff.txt" $LASTPTSVERSION $VERSION
 	makemapsdiff "./esomnf-$LASTPTSVERSION/art/maps/" "./esomnf-$VERSION/art/maps/" "./goodimages-$VERSION/maps.ptsdiff.txt" $LASTPTSVERSION $VERSION
+	
+	mkdir -f "./$OUTPUTPATH/CombinedMapsPtsNew"
+	rsync -a "./$OUTPUTPATH/CombinedMaps/" --files-from="./$OUTPUTPATH/maps.ptsdiff.txt.updatedmapsfull" ./CombinedMapsPtsNew/
 	
 	python "./export/CompareLangFiles.py" "$BASEPATH/" "$LASTPTSVERSION" "$VERSION" "en"
 	python "./export/CompareLangFiles.py" "$BASEPATH/" "$LASTPTSVERSION" "$VERSION" "de"

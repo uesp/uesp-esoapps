@@ -1145,11 +1145,13 @@
 --			- Cancelled or returned mail items are no longer counted in tracked loot.
 --			- Added new styles and motifs.
 --	
---		-- v2.71 -- 
+--		-- v2.80 -- 31 August 2021 (Waking Flame Update 31)
 --			- Player companions no longer have their position logged or show up as NPCs in messages.
 --			- Added the "/uespmineitems table quick" command option. This option only mines 1:1, 1:2, and 50:370 item data.
 --			- Seperated the logic between logging an NPC and displaying the NPC message in the chat. This should ensure
 --			  that all NPCs are logged at least once.
+--			- Updated rune box data.
+--			- Added the Crimson Oath and Silver Rose styles. Updated motifs for Black Fin Legion and Sul-Xan styles.
 --
 --
 
@@ -1158,8 +1160,8 @@
 --	GLOBALS
 uespLog = uespLog or {}
 
-uespLog.version = "2.70"
-uespLog.releaseDate = "1 June 2021"
+uespLog.version = "2.80"
+uespLog.releaseDate = "31 August 2021"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -2304,6 +2306,33 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [138784] = 5019,        -- Arena Gladiator Helm
         [139464] = 4996,        -- Big-Eared Ginger Kitten
         [139465] = 5047,        -- Psijic Glowglobe
+        [141749] = 5656,        -- Swamp Jelly
+        [141750] = 5589,        -- Arena Gladiator
+        [141915] = 5590,        -- Apple-Bobbing Cauldron
+        [146041] = 5746,        -- Gladiator Taunt
+        [147286] = 6064,        -- Elinhir Arena Lion
+        [147499] = 6197,        -- Guar Stomp
+        [151931] = 6493,        -- Aldmeri Dominion Banner
+        [151932] = 6365,        -- Daggerfall Covenant Banner
+        [151933] = 6494,        -- Ebonheart Pact Banner
+        [151940] = 6438,        -- Siegemaster Close Helm
+        [153537] = 6665,        -- Siegemaster's Uniform
+        [156626] = 1338,        -- Hollowjack Spectre Mask
+        [166468] = 7595,        -- Reach-Mage Ceremonial Skullcap
+        [167305] = 8043,        -- Timbercrow Wanderer
+        [167937] = 439,         -- Pumpkin Spectre Mask
+        [167938] = 440,         -- Scarecrow Spectre Mask
+        [167939] = 1338,        -- Hollowjack Spectre Mask
+        [167940] = 1339,        -- Thicketman Spectre Mask
+        [171330] = 8221,        -- Snowball Buddy
+        [171471] = 8197,        -- Dominion Breton Terrier
+        [171472] = 8198,        -- Covenant Breton Terrier
+        [171473] = 8196,        -- Pact Breton Terrier
+        [171477] = 8125,        -- Slag Town Diver
+        [171478] = 8658,        -- Thetys Ramarys's Bait Kit
+        [171533] = 8655,        -- Rage of the Reach
+        -- [178695] = ?,        -- Marshmallow Toasty Treat Emote
+        -- [178696] = ?,        -- Witch's Bonfire Memento
         [140308] = 5454,        -- Molag Kena Mask
         [140309] = 5455,        -- Molag Kena's Shoulder
         [140310] = 5457,        -- Shadowrend's Shoulder
@@ -2374,9 +2403,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [140375] = 5449,        -- Horned Dragon Sabatons
         [140376] = 5450,        -- Horned Dragon Gauntlets
         [140377] = 5451,        -- Horned Dragon Girdle
-        [141749] = 5656,        -- Swamp Jelly
-        [141750] = 5589,        -- Arena Gladiator
-        [141915] = 5590,        -- Apple-Bobbing Cauldron
         [141977] = 5621,        -- Pit Daemon Cuirass
         [141978] = 5622,        -- Pit Daemon Helm
         [141979] = 5623,        -- Pit Daemon Greaves
@@ -2406,14 +2432,12 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [142015] = 5607,        -- Troll King Mask
         [146038] = 5924,        -- Bloodspawn Mask
         [146040] = 5925,        -- Bloodspawn's Shoulder
-        [146041] = 5746,        -- Gladiator Taunt
         [146043] = 5763,        -- Sellistrix Mask
         [146044] = 5764,        -- Sellistrix's Shoulder
         [146045] = 5926,        -- Swarm Mother Mask
         [146046] = 5927,        -- Swarm Mother's Shoulder
         [146074] = 6045,        -- Engine Guardian's Shoulder
         [146075] = 6044,        -- Engine Guardian Mask
-        [147286] = 6064,        -- Elinhir Arena Lion
         [147301] = 6141,        -- Prophet's Hood
         [147302] = 6143,        -- Prophet's Sandals
         [147303] = 6144,        -- Prophet's Wraps
@@ -2496,7 +2520,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [147485] = 6104,        -- Cadwell's "Shield"
         [147486] = 6105,        -- Cadwell's "Staff"
         [147487] = 6106,        -- Cadwell's "Sword"
-        [147499] = 6197,        -- Guar Stomp
         [147534] = 6229,        -- Pit Daemon Battle Axe
         [147535] = 6230,        -- Pit Daemon Maul
         [147536] = 6231,        -- Pit Daemon Greatsword
@@ -2575,10 +2598,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [151927] = 6590,        -- Second Legion Belt
         [151928] = 6591,        -- Second Legion Bracers
         [151929] = 6592,        -- Second Legion Boots
-        [151931] = 6493,        -- Aldmeri Dominion Banner
-        [151932] = 6365,        -- Daggerfall Covenant Banner
-        [151933] = 6494,        -- Ebonheart Pact Banner
-        [151940] = 6438,        -- Siegemaster Close Helm
         [152121] = 3720,        -- the Maelstrom's Battle Axe
         [152122] = 3721,        -- the Maelstrom's Maul
         [152123] = 3722,        -- the Maelstrom's Greatsword
@@ -2613,7 +2632,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [153498] = 6729,        -- Battleground Runner Helmet
         [153499] = 6744,        -- Chokethorn Mask
         [153500] = 6745,        -- Chokethorn's Shoulder
-        [153537] = 6665,        -- Siegemaster's Uniform
         [153564] = 6753,        -- Glenmoril Wyrd Battle Axe
         [153565] = 6754,        -- Glenmoril Wyrd Maul
         [153566] = 6755,        -- Glenmoril Wyrd Greatsword
@@ -2666,7 +2684,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [153886] = 6956,        -- Kra'gh Mask
         [154834] = 6964,        -- Sentinel of Rkugamz Shoulder
         [154835] = 6963,        -- Sentinel of Rkugamz Mask
-        [156626] = 1338,        -- Hollowjack Spectre Mask
         [156672] = 6786,        -- Battleground Runner Waster
         [156673] = 6785,        -- Battleground Runner Staff
         [156674] = 6783,        -- Battleground Runner Bow
@@ -2775,6 +2792,10 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [156839] = 7331,        -- Jephrine Paladin Cuirass
         [156840] = 7338,        -- Knight of the Circle Cuirass
         [156841] = 7339,        -- Knight of the Circle Helm
+        [158212] = 7511,        -- Mother Ciannait Mask
+        -- [158213] = ?,        -- Mother Ciannait Shoulder
+        [158271] = 7513,        -- Kjalnar's Nightmare Mask
+        [158272] = 7514,        -- Kjalnar's Nightmare Shoulder
         [159472] = 7332,        -- Jephrine Paladin Helm
         [159473] = 7333,        -- Jephrine Paladin Greaves
         [159474] = 7334,        -- Jephrine Paladin Pauldrons
@@ -2856,7 +2877,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [165969] = 8101,        -- Chitinous Shield
         [165970] = 8102,        -- Chitinous Staff
         [165971] = 8108,        -- Chitinous Sword
-        [166468] = 7595,        -- Reach-Mage Ceremonial Skullcap
         [166479] = 8148,        -- Maw of the Infernal's Shoulder
         [166480] = 8147,        -- Maw of the Infernal Mask
         [166962] = 8168,        -- Earthgore's Shoulder
@@ -2881,8 +2901,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [167032] = 8362,        -- Legion Zero Vigiles Belt
         [167033] = 8343,        -- Tools of Domination Battle Axe
         [167034] = 8343,        -- Tools of Domination Battle Axe
-        -- [167084] = ?,        -- Stone Husk Mask
-        -- [167085] = ?,        -- Stone Husk's Shoul
         [167093] = 8344,        -- Tools of Domination Bow
         [167094] = 8344,        -- Tools of Domination Bow
         [167095] = 8345,        -- Tools of Domination Shield
@@ -2901,8 +2919,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [167108] = 8351,        -- Tools of Domination Sword
         [167109] = 8352,        -- Tools of Domination Dagger
         [167110] = 8352,        -- Tools of Domination Dagger
-        -- [167160] = ?,        -- Lady Thorn's Mask
-        -- [167161] = ?,        -- Lady Thorn's Shoulder
         [167212] = 8367,        -- Sovngarde Stalwart Jack
         [167213] = 8368,        -- Sovngarde Stalwart Helmet
         [167214] = 8369,        -- Sovngarde Stalwart Guards
@@ -2937,11 +2953,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [167261] = 8333,        -- Grave Dancer Dagger
         [167262] = 8328,        -- Grave Dancer Axe
         [167263] = 8328,        -- Grave Dancer Axe
-        [167305] = 8043,        -- Timbercrow Wanderer
-        [167937] = 439,         -- Pumpkin Spectre Mask
-        [167938] = 440,         -- Scarecrow Spectre Mask
-        [167939] = 1338,        -- Hollowjack Spectre Mask
-        [167940] = 1339,        -- Thicketman Spectre Mask
         [169621] = 8689,        -- Vykosa Shoulder
         [169622] = 8688,        -- Vykosa Mask
         [170129] = 8696,        -- Thurvokun Shoulder
@@ -3044,7 +3055,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [171311] = 7757,        -- Opal Iceheart's Shoulder
         [171312] = 7771,        -- Opal Nightflame's Shoulder
         [171313] = 7809,        -- Opal Swarm Mother's Shoulder
-        [171330] = 8221,        -- Snowball Buddy
         [171439] = 8856,        -- Hungering Void Battle Axe
         [171440] = 8857,        -- Hungering Void Maul
         [171441] = 8858,        -- Hungering Void Greatsword
@@ -3055,12 +3065,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [171446] = 8863,        -- Hungering Void Staff
         [171447] = 8864,        -- Hungering Void Sword
         [171448] = 8865,        -- Hungering Void Dagger
-        [171471] = 8197,        -- Dominion Breton Terrier
-        [171472] = 8198,        -- Covenant Breton Terrier
-        [171473] = 8196,        -- Pact Breton Terrier
-        [171477] = 8125,        -- Slag Town Diver
-        [171478] = 8658,        -- Thetys Ramarys's Bait Kit
-        [171533] = 8655,        -- Rage of the Reach
         [171578] = 8959,        -- Symphony of Blades Shoulder
         [171579] = 8958,        -- Symphony of Blades Mask
         [171597] = 9002,        -- Stonekeeper Shoulder
@@ -3099,6 +3103,69 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [171750] = 9031,        -- Imperial Champion Staff
         [171751] = 9036,        -- Imperial Champion Sword
         [171752] = 9037,        -- Imperial Champion Dagger
+        [171876] = 9129,        -- Grundwulf Shoulder
+        [171877] = 9128,        -- Grundwulf Mask
+        [173573] = 9274,        -- Maarselok Shoulder
+        [173574] = 9273,        -- Maarselok Mask
+        [175537] = 9347,        -- Dominion Banner-Bearer Shield
+        [175538] = 9348,        -- Covenant Banner-Bearer Shield
+        [175539] = 9349,        -- Pact Banner-Bearer Shield
+        [175540] = 9350,        -- Dominion Banner-Bearer Staff
+        [175541] = 9351,        -- Covenant Banner-Bearer Staff
+        [175542] = 9352,        -- Pact Banner-Bearer Staff
+        [175557] = 9347,        -- Dominion Banner-Bearer Shield
+        [175558] = 9348,        -- Covenant Banner-Bearer Shield
+        [175559] = 9349,        -- Pact Banner-Bearer Shield
+        [175560] = 9350,        -- Dominion Banner-Bearer Staff
+        [175561] = 9351,        -- Covenant Banner-Bearer Staff
+        [175562] = 9352,        -- Pact Banner-Bearer Staff
+        [175564] = 9290,        -- Ja'zennji Siir Jack
+        [175565] = 9291,        -- Ja'zennji Siir Hood
+        [175566] = 9292,        -- Ja'zennji Siir Skirt
+        [175567] = 9293,        -- Ja'zennji Siir Arm Cops
+        [175568] = 9294,        -- Ja'zennji Siir Boots
+        [175569] = 9295,        -- Ja'zennji Siir Bracers
+        [175570] = 9296,        -- Ja'zennji Siir Belt
+        [175571] = 9290,        -- Ja'zennji Siir Jack
+        [175572] = 9291,        -- Ja'zennji Siir Hood
+        [175573] = 9292,        -- Ja'zennji Siir Skirt
+        [175574] = 9293,        -- Ja'zennji Siir Arm Cops
+        [175575] = 9294,        -- Ja'zennji Siir Boots
+        [175576] = 9295,        -- Ja'zennji Siir Bracers
+        [175577] = 9296,        -- Ja'zennji Siir Belt
+        [175775] = 9297,        -- Old Orsinium Battle Axe
+        [175776] = 9298,        -- Old Orsinium Bow
+        [175777] = 9299,        -- Old Orsinium Shield
+        [175778] = 9300,        -- Old Orsinium Staff
+        [175779] = 9301,        -- Old Orsinium Axe
+        [175780] = 9302,        -- Old Orsinium Maul
+        [175781] = 9303,        -- Old Orsinium Greatsword
+        [175782] = 9304,        -- Old Orsinium Mace
+        [175783] = 9305,        -- Old Orsinium Sword
+        [175784] = 9306,        -- Old Orsinium Dagger
+        [175785] = 9297,        -- Old Orsinium Battle Axe
+        [175786] = 9298,        -- Old Orsinium Bow
+        [175787] = 9299,        -- Old Orsinium Shield
+        [175788] = 9300,        -- Old Orsinium Staff
+        [175789] = 9301,        -- Old Orsinium Axe
+        [175790] = 9302,        -- Old Orsinium Maul
+        [175791] = 9303,        -- Old Orsinium Greatsword
+        [175792] = 9304,        -- Old Orsinium Mace
+        [175793] = 9305,        -- Old Orsinium Sword
+        [175794] = 9306,        -- Old Orsinium Dagger
+        [178452] = 9280,        -- Nibenese Court Wizard Jerkin
+        [178453] = 9281,        -- Nibenese Court Wizard Hood
+        [178454] = 9282,        -- Nibenese Court Wizard Skirt
+        [178455] = 9283,        -- Nibenese Court Wizard Epaulets
+        [178456] = 9284,        -- Nibenese Court Wizard Shoes
+        [178457] = 9285,        -- Nibenese Court Wizard Gloves
+        [178458] = 9286,        -- Nibenese Court Wizard Sash
+        [178479] = 9016,        -- Baron Zaudrus Shoulder
+        [178480] = 9015,        -- Baron Zaudrus Mask
+        [178526] = 9589,        -- Prior Thierric Shoulder
+        [178527] = 9588,        -- Prior Thierric Mask
+        [178545] = 9630,        -- Magma Incarnate Shoulder
+        [178546] = 9629,        -- Magma Incarnate Mask
 }
 
 function uespLog.BoolToOnOff(flag)
@@ -13998,6 +14065,15 @@ uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
 	['sul xan'] = 122,
 	['sul_xan'] = 122,
 	['sulxan'] = 122,
+	
+	-- Waking Flame
+	['crimson oath'] = 123,
+	['crimson_oath'] = 123,
+	['crimsonoath'] = 123,
+	['crimson'] = 123,
+	['silver rose'] = 124,
+	['silver_rose'] = 124,
+	['silverrose'] = 124,
 }
 
 
@@ -14275,6 +14351,15 @@ uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
 	['ivory brigade'] = { 171896, 171897, 171898, 171899, 171900, 171901, 171902, 171903, 171904, 171905, 171906, 171907, 171908, 171909 }, -- 171895, 171910
 	['ivory_brigade'] = { 171896, 171897, 171898, 171899, 171900, 171901, 171902, 171903, 171904, 171905, 171906, 171907, 171908, 171909 }, -- 171895, 171910
 	['ivorybrigade'] = { 171896, 171897, 171898, 171899, 171900, 171901, 171902, 171903, 171904, 171905, 171906, 171907, 171908, 171909 }, -- 171895, 171910
+	
+		-- Waking Flame
+	['black fin legion'] = { 171879, 171880, 171881, 171882, 171883, 171884, 171885, 171886, 171887, 171888, 171889, 171890, 171891, 171892 }, -- 171878, 171893
+	['black_fin_legion'] = { 171879, 171880, 171881, 171882, 171883, 171884, 171885, 171886, 171887, 171888, 171889, 171890, 171891, 171892 }, -- 171878, 171893
+	['blackfinlegion'] = { 171879, 171880, 171881, 171882, 171883, 171884, 171885, 171886, 171887, 171888, 171889, 171890, 171891, 171892 }, -- 171878, 171893
+	['sul-xan'] =  { 171913, 171914, 171915, 171916, 171917, 171918, 171919, 171920, 171921, 171922, 171923, 171924, 171925, 171926 }, -- 171912, 171927
+	['sul xan'] = { 171913, 171914, 171915, 171916, 171917, 171918, 171919, 171920, 171921, 171922, 171923, 171924, 171925, 171926 }, -- 171912, 171927
+	['sul_xan'] = { 171913, 171914, 171915, 171916, 171917, 171918, 171919, 171920, 171921, 171922, 171923, 171924, 171925, 171926 }, -- 171912, 171927
+	['sulxan'] = { 171913, 171914, 171915, 171916, 171917, 171918, 171919, 171920, 171921, 171922, 171923, 171924, 171925, 171926 }, -- 171912, 171927
 }
 
 

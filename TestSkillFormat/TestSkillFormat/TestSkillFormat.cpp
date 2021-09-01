@@ -2869,6 +2869,44 @@ bool ExportPhpData(std::string Filename)
 		if (skill.u6a[4] != 0) fprintf(pFile, "\t\t'mechanic' => %d,\n", skill.u6a[4]);
 		if (skill.u6a[5] != 0) fprintf(pFile, "\t\t'dmgtype' => %d,\n", skill.u6a[5]);
 
+		dword type1 = skill.u8[10];
+		float coef1 = ConvertDwordToFloat(skill.u8[11]);
+		dword type2 = skill.u8[12];
+		float coef2 = ConvertDwordToFloat(skill.u8[13]);
+		dword type3 = skill.u8[14];
+		float coef3 = ConvertDwordToFloat(skill.u8[15]);
+		dword type4 = skill.u8[16];
+		float coef4 = ConvertDwordToFloat(skill.u8[17]);
+		dword sumTypes = type1 + type2 + type3 + type4;
+
+		if (sumTypes > 0)
+		{
+			fprintf(pFile, "\t\t'baseCoef' => array(\n");
+
+			if (type1 != 0)
+			{
+				fprintf(pFile, "\t\t\t'type1' => %d,\n", type1);
+				fprintf(pFile, "\t\t\t'coef1' => %f,\n", coef1);
+			}
+			if (type2 != 0)
+			{
+				fprintf(pFile, "\t\t\t'type2' => %d,\n", type2);
+				fprintf(pFile, "\t\t\t'coef2' => %f,\n", coef2);
+			}
+			if (type3 != 0)
+			{
+				fprintf(pFile, "\t\t\t'type3' => %d,\n", type3);
+				fprintf(pFile, "\t\t\t'coef3' => %f,\n", coef3);
+			}
+			if (type4 != 0)
+			{
+				fprintf(pFile, "\t\t\t'type4' => %d,\n", type4);
+				fprintf(pFile, "\t\t\t'coef4' => %f,\n", coef4);
+			}
+
+			fprintf(pFile, "\t\t),\n");
+		}
+
 		if (skillDesc == "" || !std::regex_search(skillDesc, m, std::regex("<<"))) 
 		{
 			fprintf(pFile, "\t),\n");

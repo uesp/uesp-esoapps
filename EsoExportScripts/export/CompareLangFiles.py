@@ -28,9 +28,9 @@ else:
     print("\tUsing Version 2:" + Version2)
     print("\tUsing  Language:" + Language)
 
-LANGFILE1  = BasePath + "goodimages-" + Version1 + "/lang/" + Language + ".lang.csv"
-LANGFILE2  = BasePath + "goodimages-" + Version2 + "/lang/" + Language + ".lang.csv"
-OUTPUTFILE = BasePath + "goodimages-" + Version2 + "/lang/" + Language + ".diff.txt"
+LANGFILE1  = BasePath + "goodimages-" + Version1 + "/Lang/" + Language + ".lang.csv"
+LANGFILE2  = BasePath + "goodimages-" + Version2 + "/Lang/" + Language + ".lang.csv"
+OUTPUTFILE = BasePath + "goodimages-" + Version2 + "/Lang/" + Language + ".diff.txt"
 
 
 def LoadLangCsvFile (InputFilename):

@@ -1145,7 +1145,7 @@
 --			- Cancelled or returned mail items are no longer counted in tracked loot.
 --			- Added new styles and motifs.
 --	
---		-- v2.80 -- 31 August 2021 (Waking Flame Update 31)
+--		-- v2.80 -- 23 August 2021 (Waking Flame Update 31)
 --			- Player companions no longer have their position logged or show up as NPCs in messages.
 --			- Added the "/uespmineitems table quick" command option. This option only mines 1:1, 1:2, and 50:370 item data.
 --			- Seperated the logic between logging an NPC and displaying the NPC message in the chat. This should ensure
@@ -1161,7 +1161,7 @@
 uespLog = uespLog or {}
 
 uespLog.version = "2.80"
-uespLog.releaseDate = "31 August 2021"
+uespLog.releaseDate = "23 August 2021"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

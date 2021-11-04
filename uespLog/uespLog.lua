@@ -1153,6 +1153,8 @@
 --			- Updated rune box data.
 --			- Added the Crimson Oath and Silver Rose styles. Updated motifs for Black Fin Legion and Sul-Xan styles.
 --
+--		-- v2.90 -- 1 November 2021 (Deadlands)
+--			- Added House Hexos and Ancient Daedric styles.
 --
 
 
@@ -1160,8 +1162,8 @@
 --	GLOBALS
 uespLog = uespLog or {}
 
-uespLog.version = "2.80"
-uespLog.releaseDate = "23 August 2021"
+uespLog.version = "2.90"
+uespLog.releaseDate = "1 November 2021"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -10520,35 +10522,35 @@ function uespLog.CreateItemLinkLog (itemLink)
 	logData.icon = GetItemLinkIcon(itemLink)
 	
 	logData.itemStyle = GetItemLinkItemStyle(itemLink)
-	if (logData.itemStyle == 0) then logData.itemStyle = nil end
+	--if (logData.itemStyle == 0) then logData.itemStyle = nil end
 	--logData.icon, _, _, _, logData.itemStyle = GetItemLinkInfo(itemLink)
 	
 	logData.equipType = GetItemLinkEquipType(itemLink)
-	if (logData.equipType == 0) then logData.equipType = nil end
+	--if (logData.equipType == 0) then logData.equipType = nil end
 	
 	logData.weaponType = GetItemLinkWeaponType(itemLink)
-	if (logData.weaponType == 0) then logData.weaponType = nil end
+	--if (logData.weaponType == 0) then logData.weaponType = nil end
 	
 	logData.armorType = GetItemLinkArmorType(itemLink)
-	if (logData.armorType == 0) then logData.armorType = nil end
+	--if (logData.armorType == 0) then logData.armorType = nil end
 	
 	logData.weaponPower = GetItemLinkWeaponPower(itemLink)
-	if (logData.weaponPower == 0) then logData.weaponPower = nil end
+	--if (logData.weaponPower == 0) then logData.weaponPower = nil end
 	
 	logData.armorRating = GetItemLinkArmorRating(itemLink, false)
-	if (logData.armorRating == 0) then logData.armorRating = nil end
+	--if (logData.armorRating == 0) then logData.armorRating = nil end
 	
 	logData.reqLevel = GetItemLinkRequiredLevel(itemLink)
 	logData.reqCP = GetItemLinkRequiredChampionPoints(itemLink)
 	
 	logData.value = GetItemLinkValue(itemLink, false)
-	if (logData.value == 0) then logData.value = nil end
+	--if (logData.value == 0) then logData.value = nil end
 	
 	logData.condition = GetItemLinkCondition(itemLink)
 	if (logData.condition == 0) then logData.condition = nil end
 	
 	logData.useType = GetItemLinkItemUseType(itemLink)
-	if (logData.useType == 0) then logData.useType = nil end
+	--if (logData.useType == 0) then logData.useType = nil end
 	
 	logData.recipeRank = -1
 
@@ -14074,6 +14076,26 @@ uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
 	['silver rose'] = 124,
 	['silver_rose'] = 124,
 	['silverrose'] = 124,
+	
+	-- Gates of Oblivion
+	['house hexos'] = 114,
+	['house_hexos'] = 114,
+	['househexos'] = 114,
+	['ancient imperial'] = 114,
+	['ancient_imperial'] = 114,
+	['ancientimperial'] = 114,
+	['ancient daedric'] = 119,
+	['ancient_daedric'] = 119,
+	['ancientdaedric'] = 119,
+	['annihilarch\'s choosen'] = 125,
+	['annihilarchs choosen'] = 125,
+	['annihilarchs_choosen'] = 125,
+	['annihilarchschoosen'] = 125,
+	['annihilarch'] = 125,
+	['fargrave guardian'] = 126,
+	['fargrave_guardian'] = 126,
+	['fargraveguardian'] = 126,
+	['fargrave'] = 126,
 }
 
 
@@ -14360,6 +14382,17 @@ uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
 	['sul xan'] = { 171913, 171914, 171915, 171916, 171917, 171918, 171919, 171920, 171921, 171922, 171923, 171924, 171925, 171926 }, -- 171912, 171927
 	['sul_xan'] = { 171913, 171914, 171915, 171916, 171917, 171918, 171919, 171920, 171921, 171922, 171923, 171924, 171925, 171926 }, -- 171912, 171927
 	['sulxan'] = { 171913, 171914, 171915, 171916, 171917, 171918, 171919, 171920, 171921, 171922, 171923, 171924, 171925, 171926 }, -- 171912, 171927
+	
+		-- Gates of Oblivion
+	['house hexos'] = { 170132, 170133, 170134, 170135, 170136, 170137, 170138, 170139, 170140, 170141, 170142, 170143, 170144, 170145 }, -- 170131, 170146
+	['house_hexos'] = { 170132, 170133, 170134, 170135, 170136, 170137, 170138, 170139, 170140, 170141, 170142, 170143, 170144, 170145 }, -- 170131, 170146
+	['househexos'] = { 170132, 170133, 170134, 170135, 170136, 170137, 170138, 170139, 170140, 170141, 170142, 170143, 170144, 170145 }, -- 170131, 170146
+	['ancient imperial'] = { 170132, 170133, 170134, 170135, 170136, 170137, 170138, 170139, 170140, 170141, 170142, 170143, 170144, 170145 }, -- 170131, 170146
+	['ancient_imperial'] = { 170132, 170133, 170134, 170135, 170136, 170137, 170138, 170139, 170140, 170141, 170142, 170143, 170144, 170145 }, -- 170131, 170146
+	['ancientimperial'] = { 170132, 170133, 170134, 170135, 170136, 170137, 170138, 170139, 170140, 170141, 170142, 170143, 170144, 170145 }, -- 170131, 170146
+	['ancient daedric'] = { 171859, 171860, 171861, 171862, 171863, 171864, 171865, 171866, 171867, 171868, 171869, 171870, 171871, 171872 }, -- 171858, 171873
+	['ancient_daedric'] = { 171859, 171860, 171861, 171862, 171863, 171864, 171865, 171866, 171867, 171868, 171869, 171870, 171871, 171872 }, -- 171858, 171873
+	['ancientdaedric'] = { 171859, 171860, 171861, 171862, 171863, 171864, 171865, 171866, 171867, 171868, 171869, 171870, 171871, 171872 }, -- 171858, 171873
 }
 
 
@@ -21170,6 +21203,5 @@ function uespLog.TestMine(numItems)
 	
 	return itemsMined
 end
-
 
 

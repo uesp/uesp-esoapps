@@ -5,21 +5,33 @@ MAPPATH="./goodimages-$VERSION/Maps"
 NEWMAPPATH="./goodimages-$VERSION/NewMaps"
 NEWPTSMAPPATH="./goodimages-$VERSION/NewMapsPts"
 
-pushd "$NEWMAPPATH"
+if [ -d "$NEWMAPPATH" ] 
+then
+	pushd "$NEWMAPPATH"
 
-for d in *
-do
-	echo "$d"
-	[ -d "$d" ] && rsync -av "../Maps/$d" .
-done
+	for d in *
+	do
+		echo "$d"
+		[ -d "$d" ] && rsync -av "../Maps/$d" .
+	done
 
-popd
-pushd "$NEWPTSMAPPATH"
+	popd
+else
+	echo "Skipping $NEWMAPPATH..."
+fi
 
-for d in *
-do
-	echo "$d"
-	[ -d "$d" ] && rsync -av "../Maps/$d" .
-done
+if [ -d "$NEWPTSMAPPATH" ] 
+then
+	pushd "$NEWPTSMAPPATH"
 
-popd
+	for d in *
+	do
+		echo "$d"
+		[ -d "$d" ] && rsync -av "../Maps/$d" .
+	done
+	
+	popd
+else
+	echo "Skipping $NEWPTSMAPPATH..."
+fi
+

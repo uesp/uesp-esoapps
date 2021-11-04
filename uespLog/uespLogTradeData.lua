@@ -133,15 +133,19 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[111] 						 	 = "uespLog/images/nighthollow.dds",		-- Nighthollow, Umbral Droplet, 111, /esoui/art/icons/crafting_style_item_nighthollow.dds
 	[112] 						 	 = "uespLog/images/arkthzandarmory.dds",	-- Arkthzand Armory, Arkthzand Sprocket, 112, /esoui/art/icons/crafting_style_item_arkthzand_armory.dds
 	[113] 						 	 = "uespLog/images/waywardguardian.dds",	-- Wayward Guardian, Hawk Skull, 113, /esoui/art/icons/crafting_style_item_wayward_guardian.dds
+	[114] 							 = "uespLog/images/househexos.dds",			-- House Hexos, Etched Nikel, 114, /esoui/art/icons/style_item_ancientimperial.dds
 	--[115] 						 = "uespLog/images/deadlands.dds",			-- Deadlands Gladiator, -, 115, 
 	[116] 						 	 = "uespLog/images/truesworn.dds",			-- True-Sworn, Fulgid Epidote, 116, /esoui/art/icons/crafting_style_item_fulgid_epidote.dds
 	[117] 						 	 = "uespLog/images/wakingflame.dds",		-- Waking Flame, Chokeberry Extract, 117, /esoui/art/icons/crafting_style_item_chokeberry_extract.dds
 	--[118] 						 = "uespLog/images/dremorakynreeve.dds",	-- Dremora Kynreeve, -, 118, 
+	[119] 							 = "uespLog/images/ancientdaedric.dds",		-- Ancient Daedric, Pristine Daedric Heart, 119, /esoui/art/icons/style_item_ancientdaedric.dds
 	[120] 							 = "uespLog/images/blackfin.dds",			-- Black Fin Legion, Marsh Nettle Sprig, 120, /esoui/art/icons/style_item_blackfin.dds
 	[121] 						 	 = "uespLog/images/ivorybrigade.dds",		-- Ivory Brigad, Ivory Bridage Clasp, 121, /esoui/art/icons/crafting_style_item_ivorybrigade.dds
 	[122] 						 	 = "uespLog/images/sulxan.dds",				-- Sul-Xan, Death-Hopper Vocal Sac, 122, /esoui/art/icons/style_item_sul-xan.dds
 	--[123] 						 = "uespLog/images/crimsonoatth.dds",		-- Crimson Oath, -, 123,
 	--[124] 						 = "uespLog/images/silverrose.dds",			-- Silver Rose -, 124, 
+	--[125] 						 = "uespLog/images/annchosen.dds",			-- Annihilarch's Choosen -, 125, 
+	--[126] 						 = "uespLog/images/fargraveguardian.dds",	-- Fargrave Guardian -, 126, 
 }
 
 
@@ -244,8 +248,10 @@ uespLog.STYLE_ICON_DATA = {
 	[111] 						 	 = "/esoui/art/icons/crafting_style_item_nighthollow.dds",
 	[112] 						 	 = "/esoui/art/icons/crafting_style_item_arkthzand_armory.dds",
 	[113] 						 	 = "/esoui/art/icons/crafting_style_item_wayward_guardian.dds",
+	[114] 							 = "/esoui/art/icons/style_item_ancientimperial.dds",
 	[116] 						 	 = "/esoui/art/icons/crafting_style_item_fulgid_epidote.dds",
 	[117] 						 	 = "/esoui/art/icons/crafting_style_item_chokeberry_extract.dds",
+	[119] 							 = "/esoui/art/icons/style_item_ancientdaedric.dds",
 	[121] 						 	 = "/esoui/art/icons/crafting_style_item_ivorybrigade.dds",
 	[120] 							 = "/esoui/art/icons/style_item_blackfin.dds",
 	[122] 						 	 = "/esoui/art/icons/style_item_sul-xan.dds",

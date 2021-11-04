@@ -51,6 +51,12 @@ uespSalesHelper.savedVars = {}
 
 
 function uespSalesHelper.OnAddonLoaded(self, addOnName)
+
+	if ( addOnName ~= "uespSalesHelper" ) then 
+		return 
+	end
+	
+	--uespLog.DebugMsg("OnAddonLoaded")
 	
 	uespSalesHelper.savedVars = ZO_SavedVars:NewAccountWide("uespSalesHelperSavedVars", 3, nil, uespSalesHelper.DEFAULT_SAVED_VARS)
 	
@@ -64,6 +70,7 @@ function uespSalesHelper.OnAddonLoaded(self, addOnName)
 	EVENT_MANAGER:RegisterForEvent("uespSalesHelper", EVENT_TRADING_HOUSE_RESPONSE_RECEIVED, uespSalesHelper.OnTradingHouseResponseReceived)
 	EVENT_MANAGER:RegisterForEvent("uespSalesHelper", EVENT_CHATTER_END, uespSalesHelper.OnChatterEnd)
 	EVENT_MANAGER:RegisterForEvent("uespSalesHelper", EVENT_CHATTER_BEGIN, uespSalesHelper.OnChatterBegin)
+	-- EVENT_MANAGER:RegisterForEvent("uespSalesHelper", EVENT_TRADING_HOUSE_CONFIRM_ITEM_PURCHASE, uespSalesHelper.OnConfirmItemPurchase)
 	
 	INTERACT_WINDOW:RegisterCallback("Shown", uespSalesHelper.OnInteractWindowShown)
 	
@@ -79,10 +86,29 @@ function uespSalesHelper.OnAddonLoaded(self, addOnName)
 	if (SLASH_COMMANDS["/ush"] == nil) then
 		SLASH_COMMANDS["/ush"] = uespSalesHelper.SalesHelperCommand
 	end
+	
+	uespSalesHelper.Old_ZO_ConfirmPendingPurchase = TRADING_HOUSE.ConfirmPendingPurchase
+	TRADING_HOUSE.ConfirmPendingPurchase = uespSalesHelper.ConfirmPendingPurchase
+	TRADING_HOUSE.OldConfirmPendingPurchase = uespSalesHelper.Old_ZO_ConfirmPendingPurchase 
 end
 
 
 EVENT_MANAGER:RegisterForEvent("uespSalesHelper", EVENT_ADD_ON_LOADED, uespSalesHelper.OnAddonLoaded)
+
+
+function uespSalesHelper:ConfirmPendingPurchase(pendingIndex)
+	--uespLog.DebugMsg("ConfirmPendingPurchase: "..tostring(pendingIndex))
+
+	if (uespSalesHelper.autoScanStores) then
+		-- Do Nothing
+	else
+		TRADING_HOUSE:OldConfirmPendingPurchase(pendingIndex)
+	end
+end
+
+
+function uespSalesHelper.OnConfirmItemPurchase(event, purchaseIndex)
+end
 
 
 function uespSalesHelper.OnOpenTradingHouse()

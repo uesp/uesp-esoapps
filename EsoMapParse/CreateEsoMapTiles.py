@@ -11,7 +11,7 @@ import csv
 USE_COMMAND_ARGS = True
 
 if (not USE_COMMAND_ARGS):
-    BasePathIndex = "28pts"
+    BasePathIndex = "32pts"
     BasePath = "e:/esoexport/"
 elif (len(sys.argv) < 3):
     print("Missing required command line arguments!")
@@ -44,6 +44,7 @@ IGNORE_MAPS = [
     "housing/newmoonfortress2_base",
     "reach/u28_markarthmanor_base",
     "southernelsweyr/newmoonfortress1_base",
+    "temporarymaps/blackwood_base",
 ]
 
 MapNameCheckRE = re.compile('.*/')
@@ -85,7 +86,7 @@ def SplitMap (RootPath, MapFilename):
     if (fullMapName in IGNORE_MAPS):
         print("Skipping map {0}...".format(fullMapName))
         return
-    
+        
     print "\t{0} : {1}".format(MapFilename, fullMapName)
     g_MapFileCount += 1
 

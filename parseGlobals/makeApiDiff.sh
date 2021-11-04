@@ -1,7 +1,7 @@
 #!/bin/sh
 
-OLDAPI="100035"
-NEWAPI="100036"
+OLDAPI="101031"
+NEWAPI="101032"
 
 APIPATH="/cygdrive/e/esoexport/apidata"
 

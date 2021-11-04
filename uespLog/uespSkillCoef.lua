@@ -4162,6 +4162,8 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		uespLog.ResetSkillCoefDesc()
 	elseif (cmd1 == "savedesc" or cmd1 == "savebase") then
 		uespLog.SaveBaseSkillCoefDesc()
+	elseif (cmd1 == "checkcost") then
+		uespLog.CheckSkillCoefCost("misc")
 	elseif (cmd1 == "checkdesc") then
 		local cmd2 = string.lower(cmds[2] or "")
 		
@@ -4222,6 +4224,7 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		uespLog.Msg(".     /usc addlist [id] ...     Adds the listed skills")
 		uespLog.Msg(".     /usc savedesc              Saves skill descriptions for later checking")
 		uespLog.Msg(".     /usc checkdesc [type]      Checks skill descriptions for changes since save")
+		uespLog.Msg(".     /usc checkcost             Checks skill costs for changes since save")
 	end
 
 end
@@ -6293,6 +6296,7 @@ function uespLog.SaveBaseSkillCoefDesc()
 				
 				newDiff.desc = desc
 				newDiff.duration = GetAbilityDuration(abilityId)
+				newDiff.cost = GetAbilityCost(abilityId)
 				newDiff.numbers = {}
 				
 				desc = desc:gsub("|c%x%x%x%x%x%x", "")
@@ -6363,6 +6367,77 @@ function uespLog.CheckSkillCoefDesc(note)
 	end
 
 	uespLog.DebugMsg("Found "..diffSkills.." changed skill descriptions in coefficient data!")
+end
+
+
+function uespLog.CheckSkillCoefCost(note)
+	local abilityId
+	local diffSkills = 0
+	local data = uespLog.savedVars.tempData.data
+	local diffData
+	local logData
+	local costSkills = {}
+	local i, row
+	local timeData = uespLog.GetTimeData()
+	
+	if (note ~= nil) then
+		data[#data+1] = "Checking skill coefficients costs for change: " .. tostring(note)
+	end
+		
+	for abilityId, diffData in pairs(uespLog.SkillCoefBaseDesc) do
+		local name = GetAbilityName(abilityId)
+		local cost = GetAbilityCost(abilityId)
+		local origCost = diffData.cost;
+		local isDiff = false
+		local skillType = GetSpecificSkillAbilityKeysByAbilityId(abilityId)
+		
+			-- Skip non-player
+		if (skillType > 0) then
+			cost = origCost
+		end
+					
+		if (cost ~= origCost) then
+			local rankData = uespLog.BASESKILL_RANKDATA[abilityId]
+			
+			if (rankData) then
+			
+				for i = 1, 4 do
+					local rankId = rankData[i]
+					
+					logData = {}
+					logData.event = "SkillCoef::Duration"
+					logData.index = "duration"
+					logData.type = note
+					logData.rank = i
+					logData.abilityId = rankId
+					uespLog.AppendDataToLog("all", logData, timeData)
+				
+					data[#data+1] = tostring(note) .. ", " .. tostring(rankId) .. ", \"" .. tostring(name) .. " " .. i .. "\"" .. ", Duration"
+					costSkills[#costSkills + 1] = tostring(abilityId) .. " => 0,  // " .. tostring(name) .. " " .. i
+				end
+			else
+				logData = {}
+				logData.event = "SkillCoef::Duration"
+				logData.index = "duration"
+				logData.type = note
+				logData.abilityId = abilityId
+				uespLog.AppendDataToLog("all", logData, timeData)
+				
+				data[#data+1] = tostring(note) .. ", " .. tostring(abilityId) .. ", \"" .. tostring(name) .. "\"" .. ", Duration"
+				costSkills[#costSkills + 1] = tostring(abilityId) .. " => 0,  // " .. tostring(name)
+			end
+			
+			if (not isDiff) then
+				diffSkills = diffSkills + 1
+			end
+		end
+	end
+		
+	for i, row in ipairs(costSkills) do
+		data[#data+1] = row
+	end
+	
+	uespLog.DebugMsg("Found "..diffSkills.." changed skill costs in coefficient data!")
 end
 
 

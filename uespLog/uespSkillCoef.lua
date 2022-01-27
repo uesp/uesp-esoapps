@@ -6387,7 +6387,7 @@ function uespLog.CheckSkillCoefCost(note)
 	for abilityId, diffData in pairs(uespLog.SkillCoefBaseDesc) do
 		local name = GetAbilityName(abilityId)
 		local cost = GetAbilityCost(abilityId)
-		local origCost = diffData.cost;
+		local origCost = diffData.cost
 		local isDiff = false
 		local skillType = GetSpecificSkillAbilityKeysByAbilityId(abilityId)
 		
@@ -6405,25 +6405,25 @@ function uespLog.CheckSkillCoefCost(note)
 					local rankId = rankData[i]
 					
 					logData = {}
-					logData.event = "SkillCoef::Duration"
-					logData.index = "duration"
+					logData.event = "SkillCoef::Cost"
+					logData.index = "cost"
 					logData.type = note
 					logData.rank = i
 					logData.abilityId = rankId
 					uespLog.AppendDataToLog("all", logData, timeData)
 				
-					data[#data+1] = tostring(note) .. ", " .. tostring(rankId) .. ", \"" .. tostring(name) .. " " .. i .. "\"" .. ", Duration"
+					data[#data+1] = tostring(note) .. ", " .. tostring(rankId) .. ", \"" .. tostring(name) .. " " .. i .. "\"" .. ", Cost"
 					costSkills[#costSkills + 1] = tostring(abilityId) .. " => 0,  // " .. tostring(name) .. " " .. i
 				end
 			else
 				logData = {}
-				logData.event = "SkillCoef::Duration"
-				logData.index = "duration"
+				logData.event = "SkillCoef::Cost"
+				logData.index = "cost"
 				logData.type = note
 				logData.abilityId = abilityId
 				uespLog.AppendDataToLog("all", logData, timeData)
 				
-				data[#data+1] = tostring(note) .. ", " .. tostring(abilityId) .. ", \"" .. tostring(name) .. "\"" .. ", Duration"
+				data[#data+1] = tostring(note) .. ", " .. tostring(abilityId) .. ", \"" .. tostring(name) .. "\"" .. ", Cost"
 				costSkills[#costSkills + 1] = tostring(abilityId) .. " => 0,  // " .. tostring(name)
 			end
 			

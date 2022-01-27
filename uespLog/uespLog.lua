@@ -10128,8 +10128,9 @@ SLASH_COMMANDS["/uespcount"] = function(cmd)
 	local count8, size8 = uespLog.countSection("craftBagData")
 	local count9, size9 = uespLog.countSection("tempData")
 	local count10, size10 = uespLog.countSection("skillCoef")
-	local count = count1 + count2 + count4 + count5 + count6 + count7 + count8 + count9 + count10
-	local size = size1 + size2  + size4 + size5 + size6 + size7 + size8 + size9 + size10
+	local count11, size11 = uespLog.countSection("settings")
+	local count = count1 + count2 + count4 + count5 + count6 + count7 + count8 + count9 + count10 + count11
+	local size = size1 + size2  + size4 + size5 + size6 + size7 + size8 + size9 + size10 + size11
 	
 	uespLog.MsgColor(uespLog.countColor, "UESP: Total of " .. tostring(count) .. " records taking up " .. string.format("%.2f", size/1000000) .. " MB")
 end
@@ -12151,7 +12152,7 @@ function uespLog.MineItemIterateLevelsShortSafe2 (itemId, listIndex)
 	local diffItemLog = { }
 	local validCount = 0
 	local baseSetName, baseEquipType, baseArmorType, baseWeaponType
-	
+		
 	--uespLog.Msg("Starting at: "..itemId..":"..listIndex)
 
 	for i = listIndex, 10000 do
@@ -12166,7 +12167,7 @@ function uespLog.MineItemIterateLevelsShortSafe2 (itemId, listIndex)
 		local qualityStart = value[3]
 		local qualityEnd = value[4]
 		local comment = value[5]
-		
+				
 		isFirst = true
 		
 		for level = levelStart, levelEnd do
@@ -12176,9 +12177,7 @@ function uespLog.MineItemIterateLevelsShortSafe2 (itemId, listIndex)
 				for quality = qualityStart, qualityEnd do
 				
 					if (uespLog.mineItemOnlySubType < 0 or quality == uespLog.mineItemOnlySubType) then
-						local redoMineItem = true
-						local redoIsFirst = isFirst
-						local redoAttemptCount = 0
+						local skipItemLog = false
 						
 						setCount = setCount + 1
 						validCount = validCount + 1
@@ -12186,54 +12185,31 @@ function uespLog.MineItemIterateLevelsShortSafe2 (itemId, listIndex)
 						
 						itemLink = uespLog.MakeItemLinkEx( { itemId = itemId, level = level, quality = quality, style = 0 } )
 						
-						while (redoMineItem and redoAttemptCount < 10) do
-							redoMineItem = false
-							
-							if (isFirst) then
-								isFirst = false
-								extraData.comment = comment
-								fullItemLog = uespLog.CreateItemLinkLog(itemLink)
-								fullItemLog.event = "mineitem2"
-								uespLog.AppendDataToLog("all", fullItemLog, extraData)
-								extraData.comment = nil
-								lastItemLog = fullItemLog
-								
-								baseSetName = fullItemLog.setName
-								baseEquipType = fullItemLog.equipType
-								baseArmorType = fullItemLog.armorType
-								baseWeaponType = fullItemLog.weaponType
-							else
-								newItemLog = uespLog.CreateItemLinkLogShort(itemLink)
-								--newItemLog = uespLog.CreateItemLinkLog(itemLink)
-								diffItemLog = uespLog.CompareItemLogs(lastItemLog, newItemLog)
-								diffItemLog.event = "mi2"
-								uespLog.AppendDataToLog("all", diffItemLog, extraData)
-								lastItemLog = newItemLog
-								
-								if (newItemLog.setName ~= nil and newItemLog.setName ~= baseSetName) then
-									uespLog.DebugMsg("Error: Mined items found possibly corrupt set name (" .. tostring(baseSetName).. " <> " .. tostring(newItemLog.setName) .. ") for item "..itemId..":"..level..":"..quality)
-									redoMineItem = true
-								elseif (newItemLog.equipType ~= nil and newItemLog.equipType ~= baseEquipType) then
-									uespLog.DebugMsg("Error: Mined items found possibly corrupt equip type (" .. tostring(baseEquipType).. " <> " .. tostring(newItemLog.equipType) .. ") for item "..itemId..":"..level..":"..quality)
-									redoMineItem = true
-								elseif (newItemLog.armorType ~= nil and newItemLog.armorType ~= baseArmorType) then
-									uespLog.DebugMsg("Error: Mined items found possibly corrupt armor type (" .. tostring(baseArmorType).. " <> " .. tostring(newItemLog.armorType) .. ") for item "..itemId..":"..level..":"..quality)
-									redoMineItem = true
-								elseif (newItemLog.weaponType ~= nil and newItemLog.weaponType ~= baseWeaponType) then
-									uespLog.DebugMsg("Error: Mined items found possibly corrupt weapon type (" .. tostring(baseWeaponType).. " <> " .. tostring(newItemLog.weaponType) .. ") for item "..itemId..":"..level..":"..quality)
-									redoMineItem = true
-								end
-							end
-							
-							if (redoMineItem) then
-								uespLog.DebugMsg("Re-mining item due to possibly corrupt data (attempt #" .. redoAttemptCount .. "...")
-								isFirst = redoIsFirst
-								redoAttemptCount = redoAttemptCount + 1
-								uespLog.mineItemCorruptCount = uespLog.mineItemCorruptCount + 1
-							end
-							
-						end
+						extraData.comment = comment
+						fullItemLog = uespLog.CreateItemLinkLog(itemLink)
 						
+						if (not uespLog.CheckMineItemSummary_CheckMinedItem(fullItemLog, itemId, true)) then
+						
+							if (uespLog.MINEITEM_CHECKSUMMARY == 3) then
+								uespLog.mineItemAutoReload = false
+								uespLog.mineItemAutoRestart = false
+								uespLog.savedVars.settings.data.mineItemAutoReload = false
+								uespLog.savedVars.settings.data.mineItemAutoRestart = false
+								uespLog.isAutoMiningItems = false
+								uespLog.savedVars.settings.data.isAutoMiningItems = false
+								return itemId + 1, 1, true
+							else
+								skipItemLog = true
+							end
+						end
+
+						if (not skipItemLog) then
+							fullItemLog.event = "mineitem2"
+							uespLog.AppendDataToLog("all", fullItemLog, extraData)
+							extraData.comment = nil
+							lastItemLog = fullItemLog
+						end
+								
 						if (uespLog.mineItemCount % uespLog.mineUpdateItemCount == 0) then
 							uespLog.MsgColor(uespLog.mineColor, ".     Mined "..tostring(uespLog.mineItemCount).." items, "..tostring(uespLog.mineItemBadCount).." bad, "..tostring(uespLog.mineItemCorruptCount).." corrupt...")
 						end
@@ -12257,6 +12233,7 @@ end
 function uespLog.MineItemIterateOther (itemId)
 	local itemLink
 	local extraData = uespLog.GetTimeData()
+	local skipItemLog = false
 	
 	itemLink = uespLog.MakeItemLinkEx( { itemId = itemId, level = 1, quality = 1, style = 0 } )
 	uespLog.mineItemCount = uespLog.mineItemCount + 1
@@ -12266,8 +12243,40 @@ function uespLog.MineItemIterateOther (itemId)
 	end
 	
 	if (uespLog.IsValidItemLink(itemLink)) then
-		uespLog.LogItemLink(itemLink, "mineitem", extraData)
+		local fullItemLog = uespLog.CreateItemLinkLog(itemLink)
+								
+		if (not uespLog.CheckMineItemSummary_CheckMinedItem(fullItemLog, itemId, false)) then
+		
+			if (uespLog.MINEITEM_CHECKSUMMARY == 3) then
+				uespLog.mineItemAutoReload = false
+				uespLog.mineItemAutoRestart = false
+				uespLog.savedVars.settings.data.mineItemAutoReload = false
+				uespLog.savedVars.settings.data.mineItemAutoRestart = false
+				uespLog.isAutoMiningItems = false
+				uespLog.savedVars.settings.data.isAutoMiningItems = false
+				return 0, 0
+			else
+				skipItemLog = true
+			end
+		end
+	
+		if (not skipItemLog) then
+			fullItemLog.event = "mineitem"
+			uespLog.AppendDataToLog("all", fullItemLog, extraData)
+			--uespLog.LogItemLink(itemLink, "mineitem", extraData)
+		end
 	else
+	
+		if (not uespLog.CheckMineItemSummary_CheckBadMinedItem(itemId, false)) then
+			uespLog.mineItemAutoReload = false
+			uespLog.mineItemAutoRestart = false
+			uespLog.savedVars.settings.data.mineItemAutoReload = false
+			uespLog.savedVars.settings.data.mineItemAutoRestart = false
+			uespLog.isAutoMiningItems = false
+			uespLog.savedVars.settings.data.isAutoMiningItems = false
+			return 0, 0
+		end
+		
 		uespLog.mineItemBadCount = uespLog.mineItemBadCount + 1
 		return 1, 1
 	end
@@ -12279,6 +12288,11 @@ end
 function uespLog.MineItemIterateSafe (itemId, listIndex)
 	
 	if (not uespLog.IsValidItemId(itemId)) then
+	
+		if (not uespLog.CheckMineItemSummary_CheckBadMinedItem(itemId, false)) then
+			return itemId + 1, 1, false
+		end
+		
 		uespLog.mineItemCount = uespLog.mineItemCount + 1
 		uespLog.mineItemBadCount = uespLog.mineItemBadCount + 1
 		return itemId + 1, 1, false
@@ -12699,7 +12713,7 @@ function uespLog.MineItemsAutoLoop()
 	local initBadCount = uespLog.mineItemBadCount
 	local initCorruptCount = uespLog.mineItemCorruptCount
 	local initItemId = uespLog.mineItemsAutoNextItemId
-	local itemId
+	local itemId = initItemId
 	local reloadUI = true
 	local i	
 	
@@ -21031,6 +21045,285 @@ function uespLog.LogLocationData()
 	logData.objectiveName, logData.objectiveLevel, logData.startDesc, logData.endDesc = GetPOIInfo(logData.zoneIndex, logData.poiIndex)
 	
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+end
+
+
+uespLog.MINEITEM_CREATESUMMARY_COUNT = 5000
+uespLog.mineItemCreateSummary_NextItemId = 1
+uespLog.mineItemCreateSummary_IsWorking = false
+uespLog.mineItemCreateSummary_Count = 0
+uespLog.mineItemCreateSummary_Error = 0
+
+-- Type of item data verification to do
+-- 	0 = No checking
+--  1 = Check with item summary data and display warning if mismatch found
+--	2 = Check with item summary and don't log that item if mismatch found
+--  3 = Check with item summary and stop item mining if mismatch found
+uespLog.MINEITEM_CHECKSUMMARY = 2
+
+
+function uespLog.ClearMineItemSummary()
+	uespLog.savedVars.settings.data.mineItemSummary = {}
+	uespLog.Msg("Cleared mined item summary data!")
+end
+
+
+function uespLog.CheckMineItemSummary()
+
+	if (uespLog.savedVars.settings.data.mineItemSummary == nil) then
+		uespLog.Msg("No mined item summary data exists (create it first before checking)!")
+		return false
+	end
+	
+	uespLog.mineItemCreateSummary_NextItemId = 1
+	uespLog.mineItemCreateSummary_IsWorking = true
+	uespLog.mineItemCreateSummary_Count = 0
+	uespLog.mineItemCreateSummary_Error = 0
+	
+	uespLog.CheckMineItemSummary_Next()
+end
+
+
+function uespLog.CheckMineItemSummary_Next()
+	local i = 0
+	local badItems = 0
+	local startId = uespLog.mineItemCreateSummary_NextItemId
+
+	for i = 1, uespLog.MINEITEM_CREATESUMMARY_COUNT do
+	
+		if (uespLog.mineItemCreateSummary_NextItemId >= uespLog.MINEITEM_AUTO_MAXITEMID) then
+			uespLog.mineItemCreateSummary_IsWorking = false
+			uespLog.Msg("Finished checking mined item summary data. Found " .. tostring(uespLog.mineItemCreateSummary_Count) .. " valid items and " .. tostring(uespLog.mineItemCreateSummary_Error) .. " bad items!")
+			return
+		end
+		
+		local checkResult = uespLog.CheckMineItemSummary_Item(uespLog.mineItemCreateSummary_NextItemId)
+		
+		if (not checkResult) then
+			badItems = badItems + 1
+			uespLog.mineItemCreateSummary_Error = uespLog.mineItemCreateSummary_Error + 1
+		elseif (uespLog.savedVars.settings.data.mineItemSummary[itemId] ~= nil) then
+			uespLog.mineItemCreateSummary_Count = uespLog.mineItemCreateSummary_Count + 1
+		end
+		
+		uespLog.mineItemCreateSummary_NextItemId = uespLog.mineItemCreateSummary_NextItemId + 1
+	end
+	
+	uespLog.Msg("Checked " .. tostring(uespLog.MINEITEM_CREATESUMMARY_COUNT) .. " item summaries (" .. startId .. "-"..uespLog.mineItemCreateSummary_NextItemId..", " .. tostring(badItems) .. " bad items).")
+	zo_callLater(uespLog.CheckMineItemSummary_Next, 1000)
+end
+
+
+function uespLog.CheckMineItemSummary_Item(itemId)
+	local itemLink = uespLog.MakeItemLink(itemId, 1, 1)
+	local isValid = uespLog.IsValidItemLink(itemLink)
+	
+	if (not isValid) then
+	
+		if (uespLog.savedVars.settings.data.mineItemSummary[itemId] ~= nil) then
+			uespLog.DebugMsg("" .. tostring(itemId)..": Found item data where there shouldn't be!")
+			return false
+		end
+		
+		return true
+	end
+	
+	local summaryData = uespLog.savedVars.settings.data.mineItemSummary[itemId]
+	
+	if (summaryData == nil) then
+		uespLog.DebugMsg("" .. tostring(itemId)..": Missing item data!")
+		return false
+	end
+	
+	local changesWithLevel = uespLog.DoesItemChangeWithLevelQuality(itemId)
+	local isSet, setName = GetItemLinkSetInfo(itemLink)
+	local trait = GetItemLinkTraitInfo(itemLink)
+	local itemType = GetItemLinkItemType(itemLink)
+	local equipType = GetItemLinkEquipType(itemLink)
+	--local enchantName = GetItemLinkEnchantName(itemLink)
+	
+	if (changesWithLevel ~= summaryData.changesWithLevel) then
+		uespLog.DebugMsg("" .. tostring(itemId)..": Incorrect changesWithLevel item data ("..tostring(changesWithLevel)..":"..tostring(summaryData.changesWithLevel)..")!")
+		return false
+	elseif (setName ~= summaryData.setName) then
+		uespLog.DebugMsg("" .. tostring(itemId)..": Incorrect setName item data ("..tostring(setName)..":"..tostring(summaryData.setName)..")!")
+		return false
+	elseif (trait ~= summaryData.trait) then
+		uespLog.DebugMsg("" .. tostring(itemId)..": Incorrect trait item data ("..tostring(trait)..":"..tostring(summaryData.trait)..")!")
+		return false
+	elseif (itemType ~= summaryData.itemType) then
+		uespLog.DebugMsg("" .. tostring(itemId)..": Incorrect itemType item data ("..tostring(itemType)..":"..tostring(summaryData.itemType)..")!")
+		return false
+	elseif (equipType ~= summaryData.equipType) then
+		uespLog.DebugMsg("" .. tostring(itemId)..": Incorrect equipType item data ("..tostring(equipType)..":"..tostring(summaryData.equipType)..")!")
+		return false
+	end
+	
+	return true
+end
+
+
+function uespLog.CheckMineItemSummary_CheckBadMinedItem(itemId)
+
+	if (uespLog.MINEITEM_CHECKSUMMARY <= 0) then
+		return true
+	end
+
+	if (uespLog.savedVars.settings.data.mineItemSummary == nil) then
+		uespLog.Msg(""..tostring(itemId)..": Item summary data has not been created!")
+		
+		if (uespLog.MINEITEM_CHECKSUMMARY == 3) then
+			return false
+		end
+	end
+	
+	if (uespLog.savedVars.settings.data.mineItemSummary[itemId] ~= nil) then
+		uespLog.Msg(""..tostring(itemId)..": Missing item where there should be one!")
+	
+		if (uespLog.MINEITEM_CHECKSUMMARY == 3) then
+			return false
+		end
+	end
+		
+	return true
+end
+
+
+function uespLog.CheckMineItemSummary_CheckMinedItem(itemData, itemId, changesWithLevel)
+
+	if (uespLog.MINEITEM_CHECKSUMMARY <= 0) then
+		return true
+	end
+	
+	if (uespLog.savedVars.settings.data.mineItemSummary == nil) then
+		uespLog.Msg(""..tostring(itemId)..": Item summary data has not been created!")
+		
+		if (uespLog.MINEITEM_CHECKSUMMARY >= 2) then
+			return false
+		end
+	end
+	
+	local summaryData = uespLog.savedVars.settings.data.mineItemSummary[itemId]
+	
+	if (summaryData == nil) then
+		uespLog.Msg(""..tostring(itemId)..": Found item where there shouldn't be one!")
+	
+		if (uespLog.MINEITEM_CHECKSUMMARY >= 2) then
+			return false
+		end
+	end
+	
+	--local itemLink = uespLog.MakeItemLink(itemId, 1, 1)
+	--local isSet, setName = GetItemLinkSetInfo(itemLink)
+	--local trait = GetItemLinkTraitInfo(itemLink)
+	--local itemType = GetItemLinkItemType(itemLink)
+	--local equipType = GetItemLinkEquipType(itemLink)
+	local itemLink = itemData.itemLink
+	local setName = itemData.setName
+	local trait = itemData.trait
+	local itemType = itemData.type
+	local equipType = itemData.equipType
+	
+	if (setName == nil) then setName = "" end
+	if (trait == nil) then trait = 0 end
+	
+	if (changesWithLevel ~= summaryData.changesWithLevel) then
+		uespLog.DebugMsg("" .. tostring(itemId)..": Incorrect changesWithLevel item data ("..tostring(changesWithLevel)..":"..tostring(summaryData.changesWithLevel)..")!")
+		if (uespLog.MINEITEM_CHECKSUMMARY >= 2) then
+			return false
+		end
+	elseif (setName ~= summaryData.setName) then
+		uespLog.DebugMsg("" .. tostring(itemId)..": Incorrect setName item data ("..tostring(setName)..":"..tostring(summaryData.setName)..")!")
+		if (uespLog.MINEITEM_CHECKSUMMARY >= 2) then
+			return false
+		end
+	elseif (trait ~= summaryData.trait) then
+		uespLog.DebugMsg("" .. tostring(itemId)..": Incorrect trait item data ("..tostring(trait)..":"..tostring(summaryData.trait)..")!")
+		if (uespLog.MINEITEM_CHECKSUMMARY >= 2) then
+			return false
+		end
+	elseif (itemType ~= summaryData.itemType) then
+		uespLog.DebugMsg("" .. tostring(itemId)..": Incorrect itemType item data ("..tostring(itemType)..":"..tostring(summaryData.itemType)..")!")
+		if (uespLog.MINEITEM_CHECKSUMMARY >= 2) then
+			return false
+		end
+	elseif (equipType ~= summaryData.equipType) then
+		uespLog.DebugMsg("" .. tostring(itemId)..": Incorrect equipType item data ("..tostring(equipType)..":"..tostring(summaryData.equipType)..")!")
+		if (uespLog.MINEITEM_CHECKSUMMARY >= 2) then
+			return false
+		end
+	end
+	
+	return true
+end
+
+
+function uespLog.CreateMineItemSummary()
+	uespLog.savedVars.settings.data.mineItemSummary = {}
+	uespLog.mineItemCreateSummary_NextItemId = 1
+	uespLog.mineItemCreateSummary_IsWorking = true
+	uespLog.mineItemCreateSummary_Count = 0
+	
+	uespLog.Msg("Starting mined item summary creation...")
+	
+	uespLog.CreateMineItemSummary_Next()
+end
+
+
+function uespLog.CreateMineItemSummary_Next()
+	local i = 0
+	local validItems = 0
+	local startId = uespLog.mineItemCreateSummary_NextItemId
+
+	for i = 1, uespLog.MINEITEM_CREATESUMMARY_COUNT do
+	
+		if (uespLog.mineItemCreateSummary_NextItemId >= uespLog.MINEITEM_AUTO_MAXITEMID) then
+			uespLog.mineItemCreateSummary_IsWorking = false
+			uespLog.Msg("Finished mined item summary creation. Found " .. tostring(uespLog.mineItemCreateSummary_Count) .. " valid items!")
+			return
+		end
+		
+		local itemResult = uespLog.CreateMineItemSummary_Item(uespLog.mineItemCreateSummary_NextItemId)
+		
+		if (itemResult) then
+			validItems = validItems + 1
+			uespLog.mineItemCreateSummary_Count = uespLog.mineItemCreateSummary_Count + 1
+		end
+
+		uespLog.mineItemCreateSummary_NextItemId = uespLog.mineItemCreateSummary_NextItemId + 1
+	end
+	
+	uespLog.Msg("Finished " .. tostring(uespLog.MINEITEM_CREATESUMMARY_COUNT) .. " item summaries (" .. startId .. "-"..uespLog.mineItemCreateSummary_NextItemId..", " .. tostring(validItems) .. " valid items).")
+	zo_callLater(uespLog.CreateMineItemSummary_Next, 1000)
+end
+
+
+function uespLog.CreateMineItemSummary_Item(itemId)
+	local itemLink = uespLog.MakeItemLink(itemId, 1, 1)
+	local isValid = uespLog.IsValidItemLink(itemLink)
+	
+	if (not isValid) then
+		return false
+	end
+	
+	local changesWithLevel = uespLog.DoesItemChangeWithLevelQuality(itemId)
+	local isSet, setName = GetItemLinkSetInfo(itemLink)
+	local trait = GetItemLinkTraitInfo(itemLink)
+	local itemType = GetItemLinkItemType(itemLink)
+	local equipType = GetItemLinkEquipType(itemLink)
+	--local enchantName = GetItemLinkEnchantName(itemLink)
+	
+	local summaryData = {
+		["changesWithLevel"] = changesWithLevel,
+		["setName"] = setName,
+		["trait"] = trait,
+		["itemType"] = itemType,
+		["equipType"] = equipType,
+	}
+	
+	uespLog.savedVars.settings.data.mineItemSummary[itemId] = summaryData
+
+	return true
 end
 
 

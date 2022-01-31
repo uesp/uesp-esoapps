@@ -13382,6 +13382,15 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		end
 		
 		return
+	elseif (command == "createsummary") then
+		uespLog.CreateMineItemSummary()
+		return
+	elseif (command == "clearsummary") then
+		uespLog.ClearMineItemSummary()
+		return
+	elseif (command == "checksummary") then
+		uespLog.CheckMineItemSummary()
+		return
 	elseif (command == "end" or command == "stop") then
 		uespLog.MineItemsAutoEnd()
 		return
@@ -13483,6 +13492,9 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems subtype [#]")
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems itemtype [#] [#] ...")
 		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems table [safe/pts]")
+		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems createsummary")
+		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems checksummary")
+		uespLog.MsgColor(uespLog.mineColor, ".              /uespmineitems clearsummary")
 		
 		return
 	end
@@ -21063,6 +21075,12 @@ uespLog.MINEITEM_CHECKSUMMARY = 2
 
 
 function uespLog.ClearMineItemSummary()
+
+	if (uespLog.mineItemCreateSummary_IsWorking) then
+		uespLog.Msg("Already in the process of creating item summary (wait until it's finished)!")
+		return
+	end
+	
 	uespLog.savedVars.settings.data.mineItemSummary = {}
 	uespLog.Msg("Cleared mined item summary data!")
 end
@@ -21073,6 +21091,11 @@ function uespLog.CheckMineItemSummary()
 	if (uespLog.savedVars.settings.data.mineItemSummary == nil) then
 		uespLog.Msg("No mined item summary data exists (create it first before checking)!")
 		return false
+	end
+	
+	if (uespLog.mineItemCreateSummary_IsWorking) then
+		uespLog.Msg("Already in the process of checking item summary (wait until it's finished)!")
+		return
 	end
 	
 	uespLog.mineItemCreateSummary_NextItemId = 1
@@ -21102,7 +21125,7 @@ function uespLog.CheckMineItemSummary_Next()
 		if (not checkResult) then
 			badItems = badItems + 1
 			uespLog.mineItemCreateSummary_Error = uespLog.mineItemCreateSummary_Error + 1
-		elseif (uespLog.savedVars.settings.data.mineItemSummary[itemId] ~= nil) then
+		elseif (uespLog.savedVars.settings.data.mineItemSummary[uespLog.mineItemCreateSummary_NextItemId] ~= nil) then
 			uespLog.mineItemCreateSummary_Count = uespLog.mineItemCreateSummary_Count + 1
 		end
 		
@@ -21259,6 +21282,12 @@ end
 
 
 function uespLog.CreateMineItemSummary()
+
+	if (uespLog.mineItemCreateSummary_IsWorking) then
+		uespLog.Msg("Already in the process of creating item summary (wait until it's finished)!")
+		return
+	end
+	
 	uespLog.savedVars.settings.data.mineItemSummary = {}
 	uespLog.mineItemCreateSummary_NextItemId = 1
 	uespLog.mineItemCreateSummary_IsWorking = true

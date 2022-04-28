@@ -165,6 +165,10 @@
  *
  * v0.50 -- 28 June 2021
  *		- RIFF files are automatically converted to OGG/WAV files. Use the "--noriffconvert" command line option to disable.
+ *
+ * v0.51 -- 28 April 2022
+ *		- Added the --matchfilename option for only outputting files that contain the given sub-string.
+ *		- Added the --baselangfile option that uses the given LANG file as for base/missing entries when creating a new LANG file.
  */
 
 #include "stdafx.h"
@@ -1673,11 +1677,13 @@ cmdparamdef_t g_Cmds[] =
 	{ "luafilelist",	"",	 "luafilelist",		"Output filenames to a LUA formatted array.",					    false, true,  1, 0, false, "" },
 	{ "luastartindex",	"",	 "luastartindex",	"Start index for the --luafilelist option.",						false, true,  1, 0, false, "1" },
 	{ "noriffconvert",	"",	 "noriffconvert",	"Don't convert RIFF files to WAV/OGG.",								false, true,  0, 0, false, "" },
+	{ "matchfilename",	"",	 "matchfilename",	"Only extract files containing the given substring.",				false, true,  1, 0, false, "" },
+	{ "baselangfile",	"",	 "baselangfile",	"Use the specified LANG file for missing entries.",					false, true,  1, 0, false, "" },
 	{ "",   "", "", "", false, false, false, false, "" }
 };
 
 const char g_AppDescription[] = "\
-ExportMnf v0.50 is a simple command line application to load and export files\n\
+ExportMnf v0.51 is a simple command line application to load and export files\n\
 from ESO's MNF and DAT files. Created by Daveh (dave@uesp.net).\n";
 
 
@@ -1748,7 +1754,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	ExportOptions.ExtractFileExtension = CmdParamHandler.GetParamValue("fileext");
 	ExportOptions.LuaFileList = CmdParamHandler.GetParamValue("luafilelist");
 	ExportOptions.LuaStartIndex = CmdParamHandler.GetParamValueAsInt("luastartindex");
-	ExportOptions.NoRiffConvert = CmdParamHandler.HasParamValue("noriffconvert");;
+	ExportOptions.NoRiffConvert = CmdParamHandler.HasParamValue("noriffconvert");
+	ExportOptions.MatchFilename = CmdParamHandler.GetParamValue("matchfilename");
+	ExportOptions.BaseLangFilename = CmdParamHandler.GetParamValue("baselangfile");
 
 	ExportOptions.ExtractSubFileDataType = CmdParamHandler.GetParamValue("extractsubfile");
 	std::transform(ExportOptions.ExtractSubFileDataType.begin(), ExportOptions.ExtractSubFileDataType.end(), ExportOptions.ExtractSubFileDataType.begin(), ::tolower);
@@ -1811,6 +1819,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	if (!ExportOptions.CreateLangFilename.empty())
 	{
 		CEsoLangFile LangFile;
+		CEsoLangFile BaseLangFile;
 		CCsvFile     CsvFile(!ExportOptions.UseLangText);
 		CSimpleTextFile IdFile;
 		CSimpleTextFile TextFile;
@@ -1821,6 +1830,17 @@ int _tmain(int argc, _TCHAR* argv[])
 		if (!ExportOptions.OutputFilename.empty()) OutputLangFilename = ExportOptions.OutputFilename;
 
 		PrintError("Converting %s file '%s' to LANG '%s'...", InputType.c_str(), ExportOptions.CreateLangFilename.c_str(), OutputLangFilename.c_str());
+
+		if (!ExportOptions.BaseLangFilename.empty())
+		{
+			if (!BaseLangFile.Load(ExportOptions.BaseLangFilename))
+			{
+				PrintError("Error: Failed to load the base LANG file '%s'!", ExportOptions.BaseLangFilename.c_str());
+				return -20;
+			}
+
+			PrintError("Using LANG file '%s' for the base language entries....", ExportOptions.BaseLangFilename.c_str());
+		}
 
 		if (ExportOptions.UseLangText)
 		{
@@ -1854,6 +1874,12 @@ int _tmain(int argc, _TCHAR* argv[])
 
 			PrintError("Created the LANG file from the input TEXT data...");
 
+			if (!ExportOptions.BaseLangFilename.empty())
+			{
+				int numEntries = LangFile.FillMissingEntries(BaseLangFile);
+				PrintError("Filled in %d missing entries from the BASE lang file.", numEntries);
+			}
+
 			if (LangFile.Save(OutputLangFilename))
 				PrintError("Saved the LANG file to '%s'!", OutputLangFilename.c_str());
 			else
@@ -1872,6 +1898,12 @@ int _tmain(int argc, _TCHAR* argv[])
 				}
 
 				PrintError("Created the LANG file from the input CSV data...");
+
+				if (!ExportOptions.BaseLangFilename.empty())
+				{
+					int numEntries = LangFile.FillMissingEntries(BaseLangFile);
+					PrintError("Filled in %d missing entries from the BASE lang file.", numEntries);
+				}
 
 				if (LangFile.Save(OutputLangFilename))
 					PrintError("Saved the LANG file to '%s'!", OutputLangFilename.c_str());

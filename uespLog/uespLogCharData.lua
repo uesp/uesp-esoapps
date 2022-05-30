@@ -278,6 +278,8 @@ function uespLog.SaveCharData (note)
 	
 	uespLog.DebugMsg("UESP: Saved character data...")
 	
+	uespLog.CheckAutoPVPLogging(true)
+	
 	uespLog.charDataLastSaveTimestamp = GetTimeStamp()
 	return true
 end
@@ -494,7 +496,7 @@ end
 
 uespLog.PLATFORM_STRINGS = {
 	[0] = "XBox",
-	[1] = "PS4",
+	[1] = "PS",
 	[2] = "PC",
 }
 
@@ -511,6 +513,17 @@ function uespLog.GetUIPlatformString (platform)
 	end
 	
 	return uespLog.PLATFORM_STRINGS[value]
+end
+
+
+function uespLog.GetServerPlatformString()
+	local serverName = GetUniqueNameForCharacter():sub(1, 2)	-- Assumes "XX Megaserver -" format
+	
+	if (serverName == "PT") then
+		return "PTS"
+	end
+	
+	return uespLog.GetUIPlatformString() .. " - " .. serverName
 end
 
 
@@ -1451,7 +1464,7 @@ function uespLog.CreateCharDataSkills()
 					local radius = GetAbilityRadius(abilityId)
 					local angleDistance = GetAbilityAngleDistance(abilityId)
 					local duration = GetAbilityDuration(abilityId)
-					local cost, mechanic = GetAbilityCost(abilityId)
+					local cost, mechanic = uespLog.GetAbilityCost(abilityId)
 					local targetDesc = GetAbilityTargetDescription(abilityId) or ''
 					local costStr = tostring(cost) .. ' ' .. uespLog.GetCombatMechanicText(mechanic)
 					local rangeStr = ""
@@ -1738,7 +1751,7 @@ function uespLog.CreateActionBarData(barIndex)
 			local radius = GetAbilityRadius(id)
 			local angleDistance = GetAbilityAngleDistance(id)
 			local duration = GetAbilityDuration(id)
-			local cost, mechanic = GetAbilityCost(id)
+			local cost, mechanic = uespLog.GetAbilityCost(id)
 			local targetDesc = GetAbilityTargetDescription(id) or ''
 			local costStr = tostring(cost) .. ' ' .. uespLog.GetCombatMechanicText(mechanic)
 			local rangeStr = ""

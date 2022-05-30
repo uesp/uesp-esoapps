@@ -51,6 +51,7 @@ uespLog.UESP_POWERTYPE_CONSTANTVALUE = -75
 uespLog.UESP_POWERTYPE_HEALTHORSPELLDAMAGE = -76
 uespLog.UESP_POWERTYPE_RESISTANCE = -77
 uespLog.UESP_POWERTYPE_MAGICLIGHTARMOR = -78
+uespLog.UESP_POWERTYPE_HEALTHORDAMAGE = -79
 
 uespLog.SKILLCOEF_CHECK_ABILITYID = 28302
 uespLog.SKILLCOEF_CHECK_INDEX = 2
@@ -5179,11 +5180,11 @@ function uespLog.GetSkillCoefAbilityCost(abilityId, rank)
 	local baseRankData = uespLog.SKILL_RANKDATA[abilityId]
 	
 	if (abilityId > 20000000) then
-		cost, mechanic = GetAbilityCost(abilityId % 10000000, rank)
+		cost, mechanic = uespLog.GetAbilityCost(abilityId % 10000000, rank)
 	elseif (baseRankData ~= nil) then
-		cost, mechanic = GetAbilityCost(baseRankData[1], rank)
+		cost, mechanic = uespLog.GetAbilityCost(baseRankData[1], rank)
 	else
-		cost, mechanic = GetAbilityCost(abilityId, rank)
+		cost, mechanic = uespLog.GetAbilityCost(abilityId, rank)
 	end	
 
 	return cost, mechanic
@@ -6083,7 +6084,7 @@ function uespLog.FindSkillDiffSavePlayer()
 				if (desc ~= "") then
 					local newDiff = {}
 					newDiff.desc = desc;
-					newDiff.cost = GetAbilityCost(abilityId)
+					newDiff.cost = uespLog.GetAbilityCost(abilityId)
 					newDiff.duration = GetAbilityDuration(abilityId)
 					newDiff.minRange, newDiff.maxRange = GetAbilityRange(abilityId)
 					uespLog.SkillDiff[abilityId] = newDiff;
@@ -6153,7 +6154,7 @@ function uespLog.FindSkillDiffSaveAll()
 				local number
 				
 				newDiff.desc = desc;
-				newDiff.cost = GetAbilityCost(abilityId)
+				newDiff.cost = uespLog.GetAbilityCost(abilityId)
 				newDiff.duration = GetAbilityDuration(abilityId)
 				newDiff.minRange, newDiff.maxRange = GetAbilityRange(abilityId)
 				newDiff.numbers = {}
@@ -6192,7 +6193,7 @@ function uespLog.FindSkillDiff(note)
 		
 	for abilityId, diffData in pairs(uespLog.SkillDiff) do
 		local desc = GetAbilityDescription(abilityId)
-		local cost = GetAbilityCost(abilityId)
+		local cost = uespLog.GetAbilityCost(abilityId)
 		local duration = GetAbilityDuration(abilityId)
 		local minRange, maxRange = GetAbilityRange(abilityId)
 		
@@ -6296,7 +6297,7 @@ function uespLog.SaveBaseSkillCoefDesc()
 				
 				newDiff.desc = desc
 				newDiff.duration = GetAbilityDuration(abilityId)
-				newDiff.cost = GetAbilityCost(abilityId)
+				newDiff.cost = uespLog.GetAbilityCost(abilityId)
 				newDiff.numbers = {}
 				
 				desc = desc:gsub("|c%x%x%x%x%x%x", "")
@@ -6386,7 +6387,7 @@ function uespLog.CheckSkillCoefCost(note)
 		
 	for abilityId, diffData in pairs(uespLog.SkillCoefBaseDesc) do
 		local name = GetAbilityName(abilityId)
-		local cost = GetAbilityCost(abilityId)
+		local cost = uespLog.GetAbilityCost(abilityId)
 		local origCost = diffData.cost
 		local isDiff = false
 		local skillType = GetSpecificSkillAbilityKeysByAbilityId(abilityId)

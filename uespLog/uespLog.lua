@@ -1156,14 +1156,19 @@
 --		-- v2.90 -- 1 November 2021 (Deadlands)
 --			- Added House Hexos and Ancient Daedric styles.
 --
+--		-- v2.91 -- 6 June 2022 (High Isle)
+--			- Collectible mined data now includes the furniture limit type.
+--			- Fixed custom stats setting not displaying correctly in the settings menu.
+--			- Fixed intermittent NPC lip animation issues in gamepad mode.
+--
 
 
 
 --	GLOBALS
 uespLog = uespLog or {}
 
-uespLog.version = "2.90"
-uespLog.releaseDate = "1 November 2021"
+uespLog.version = "2.91"
+uespLog.releaseDate = "6 June 2022"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -1964,6 +1969,7 @@ uespLog.DEFAULT_SETTINGS =
 		["debug"] = false,
 		["debugExtra"] = false,
 		["logData"] = false,
+		["logNpcChat"] = true,
 		["color"] = true,
 		["totalInspiration"] = 0,
 		["craft"] = true,
@@ -1990,6 +1996,7 @@ uespLog.DEFAULT_SETTINGS =
 		["showCursorMapCoords"] = true,
 		["isAutoMiningItems"] = false,
 		["pvpUpdate"] = false,
+		["pvpAutoLog"] = false,
 		["enabledTreasureTimers"] = false,
 		["TREASURE_TIMER_DURATIONS"] = {
 			["chest"] = 120,
@@ -3176,6 +3183,30 @@ function uespLog.BoolToOnOff(flag)
 end
 
 
+function uespLog.GetLogNpcChat()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	if (uespLog.savedVars.settings.data.logNpcChat == nil) then
+		uespLog.savedVars.settings.data.logNpcChat = uespLog.DEFAULT_SETTINGS.logNpcChat
+	end
+	
+	return uespLog.savedVars.settings.data.logNpcChat
+end
+
+
+function uespLog.SetLogNpcChat(flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	uespLog.savedVars.settings.data.logNpcChat = flag
+end
+
+
 function uespLog.GetMessageDisplay(msgType)
 
 	if (uespLog.savedVars.settings == nil) then
@@ -3857,7 +3888,28 @@ function uespLog.IsPvpUpdate()
 end
 
 
+function uespLog.IsPvpAutoLog()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	return uespLog.savedVars.settings.data.pvpAutoLog
+end
+
+
+function uespLog.SetPvpAutoLog(flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	uespLog.savedVars.settings.data.pvpAutoLog = flag
+end
+
+
 function uespLog.SetDebug(flag)
+
 	if (uespLog.savedVars.settings == nil) then
 		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
 	end
@@ -4501,6 +4553,10 @@ function uespLog.Initialize( self, addOnName )
 	if (uespLog.savedVars.charInfo.data.lastFoodEaten ~= nil) then
 		uespLog.charDataLastFoodEaten = uespLog.savedVars.charInfo.data.lastFoodEaten 
 	end
+	
+	if (uespLog.savedVars.settings.data.pvpAutoLog == nil) then
+		uespLog.savedVars.settings.data.pvpAutoLog = uespLog.DEFAULT_SETTINGS.data.pvpAutoLog
+	end
 		
 	if (uespLog.savedVars.charInfo.data.actionBar ~= nil) then
 		uespLog.charData_ActionBarData = uespLog.savedVars.charInfo.data.actionBar 
@@ -4673,14 +4729,18 @@ function uespLog.Initialize( self, addOnName )
 	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_UNIT_CREATED, uespLog.OnUnitCreated)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_PLAYER_COMBAT_STATE, uespLog.OnPlayerCombatState)
 	 	
-	ZO_InteractWindow:UnregisterForEvent(EVENT_CHATTER_BEGIN)
-	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CONVERSATION_UPDATED, uespLog.OnConversationUpdated)
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_QUEST_OFFERED, uespLog.OnQuestOffered)
-	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CHATTER_BEGIN, uespLog.OnChatterBegin)
-    EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CHATTER_END, uespLog.OnChatterEnd)
 	
-	uespLog.Old_HandleChatterOptionClicked = ZO_InteractionManager.HandleChatterOptionClicked
-	ZO_InteractionManager.HandleChatterOptionClicked = uespLog.HandleChatterOptionClicked
+		-- Manual fix attempt for NPC lip animation issue
+	if (uespLog.GetLogNpcChat()) then
+		--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CONVERSATION_UPDATED, uespLog.OnConversationUpdated)
+		--ZO_InteractWindow:UnregisterForEvent(EVENT_CHATTER_BEGIN)
+		EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CHATTER_BEGIN, uespLog.OnChatterBegin)
+		--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CHATTER_END, uespLog.OnChatterEnd)
+		
+		uespLog.Old_HandleChatterOptionClicked = ZO_InteractionManager.HandleChatterOptionClicked
+		ZO_InteractionManager.HandleChatterOptionClicked = uespLog.HandleChatterOptionClicked
+	end
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_RECIPE_LEARNED, uespLog.OnRecipeLearned)
 	
@@ -4721,6 +4781,7 @@ function uespLog.Initialize( self, addOnName )
 	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_ASSIGNED_CAMPAIGN_CHANGED, uespLog.OnAssignedCampaignChanged)		 
 	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CAMPAIGN_STATE_INITIALIZED, uespLog.OnAssignedCampaignChanged)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CURRENT_CAMPAIGN_CHANGED, uespLog.OnAssignedCampaignChanged)	 
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CAMPAIGN_LEADERBOARD_DATA_CHANGED, uespLog.OnCampaignLeaderboardDataChanged)
 		
 	uespLog.InstallItemTooltip()
 	
@@ -4766,7 +4827,7 @@ function uespLog.Initialize( self, addOnName )
 	uespLog.Old_DoCommand = DoCommand
 	DoCommand = uespLog.DoCommand
 	CHAT_SYSTEM.commandPrefixes[47] = uespLog.DoCommand
-
+	
 	--uespLog.Old_ZO_Alert = ZO_Alert
 	--ZO_Alert = uespLog.ZO_Alert
 		
@@ -4876,6 +4937,7 @@ function uespLog.Initialize( self, addOnName )
 	zo_callLater(uespLog.InitCrafting, 500)
 	
 	QueryCampaignSelectionData()
+	QueryCampaignLeaderboardData()
 	
 	if (uespLog.savedVars.settings.data.mineTestIndex ~= nil and uespLog.savedVars.settings.data.mineTestIndex > 0) then
 		zo_callLater(uespLog.ResumeMineTest, 5000)	
@@ -5776,6 +5838,13 @@ end
 
 
 function uespLog.OnQuestOffered (eventCode)
+
+		-- Prevent possible animation issues
+	zo_callLater(function() uespLog.OnQuestOffered_Private(eventCode) end, 10)
+end
+
+
+function uespLog.OnQuestOffered_Private (eventCode)
     local dialog, response = GetOfferedQuestInfo()
     local _, farewell = GetChatterFarewell()
 	local logData = { }
@@ -5852,11 +5921,19 @@ end
 
 
 function uespLog.OnChatterBegin (eventCode, optionCount)
+	
+		-- If you call this in the main thread you'll get NPC lip animations de-syncing when calling GetChatterGreeting() or GetChatterData()
+	zo_callLater(function() uespLog.OnChatterBegin_Private(eventCode, optionCount) end, 10)
+end
+
+
+function uespLog.OnChatterBegin_Private (eventCode, optionCount)
 	local x, y, heading, zone = uespLog.GetUnitPosition("interact")
     local npcLevel = GetUnitLevel("interact")
 	local npcName = GetUnitName("interact")
 	local logData = { }
 	local ChatterGreeting = GetChatterGreeting()
+	local ChatterGreeting = "";
 	
 	uespLog.lastConversationOption.Text = ""
 	uespLog.lastConversationOption.Type = ""
@@ -5885,7 +5962,7 @@ function uespLog.OnChatterBegin (eventCode, optionCount)
 	logData.event = "ChatterBegin"
 	logData.bodyText = ChatterGreeting
 	logData.optionCount = optionCount
-	--logData.chatText, logData.numOptions, logData.atGreeting = GetChatterData()   -- Has an issue with facial animations not showing up in the initial dialog.
+	-- logData.chatText, logData.numOptions, logData.atGreeting = GetChatterData() 	-- Can't call this at all without having lip animation issues
 		
 	uespLog.AppendDataToLog("all", logData, uespLog.currentConversationData, uespLog.GetTimeData())
 	
@@ -9046,15 +9123,32 @@ end
 
 
 SLASH_COMMANDS["/uesplog"] = function (cmd)
-
-	if (cmd == "on") then
+	local cmds, firstCmd = uespLog.SplitCommands(cmd)
+	
+	if (firstCmd == "on") then
 		uespLog.SetLogData(true)
 		uespLog.Msg("Turned UESP data logging on.")
-	elseif (cmd == "off") then
+	elseif (firstCmd == "off") then
 		uespLog.SetLogData(false)
 		uespLog.Msg("Turned UESP data logging off.")
-	elseif (cmd == "") then
-		uespLog.Msg("UESP data logging is currently " .. uespLog.BoolToOnOff(uespLog.IsLogData()) .. ". Use 'on' or 'off' to set!")
+	elseif (firstCmd == "npcchat") then
+		local cmd2 = cmds[2]
+		
+		if (cmd2 == "on") then
+			uespLog.SetLogNpcChat(true)
+			uespLog.Msg("UESP NPC chat logging is now ON. You need to /reloadui to update.")
+		elseif (cmd2 == "off") then
+			uespLog.SetLogNpcChat(false)
+			uespLog.Msg("UESP NPC chat logging is now OFF. You need to /reloadui to update.")
+		else
+			uespLog.Msg("UESP NPC chat logging is currently " .. uespLog.BoolToOnOff(uespLog.GetLogNpcChat()) .. ".")
+		end
+		
+	elseif (firstCmd == "") then
+		uespLog.Msg("UESP data logging is currently " .. uespLog.BoolToOnOff(uespLog.IsLogData()) .. ".")
+		--uespLog.Msg("UESP NPC chat logging is currently " .. uespLog.BoolToOnOff(uespLog.GetLogNpcChat()) .. ".")
+		uespLog.Msg(".    /uesplog [on/off]      Toggle logging of everything.")
+		--uespLog.Msg(".    /uesplog npcchat [on/off]   Toggle logging of NPC chat text.")
 	end
 	
 end
@@ -9652,6 +9746,94 @@ function uespLog.DumpSkillsEnd()
 end
 
 
+-- New for update 34
+function uespLog.GetAbilityCost (abilityId, mechanicFlag, rank)
+
+	if (GetNextAbilityMechanicFlag == nil) then
+		return GetAbilityCost(abilityId, rank), nil, nil
+	end
+	
+	if (mechanicFlag == nil) then
+		mechanicFlag = GetNextAbilityMechanicFlag(abilityId)
+	end
+	
+	local cost = GetAbilityCost(abilityId, mechanicFlag, rank), mechanicFlag
+	local nextMechanicFlag = GetNextAbilityMechanicFlag(abilityId, mechanicFlag, rank)
+	
+	return cost, mechanicFlag, nextMechanicFlag
+end
+
+
+function uespLog.GetAbilityCostOverTime (abilityId, mechanicFlag, rank)
+
+	if (GetNextAbilityMechanicFlag == nil) then
+		local cost, freq = GetAbilityCostOverTime(abilityId, rank)
+		return cost, freq, nil, nil
+	end
+	
+	if (mechanicFlag == nil) then
+		mechanicFlag = GetNextAbilityMechanicFlag(abilityId)
+	end
+	
+	local cost, freq = GetAbilityCostOverTime(abilityId, mechanicFlag, rank), mechanicFlag
+	local nextMechanicFlag = GetNextAbilityMechanicFlag(abilityId, mechanicFlag, rank)
+	
+	return cost, freq, mechanicFlag, nextMechanicFlag
+end
+
+
+function uespLog.DumpSkillCost (abilityId, rank)
+	local mechanicFlag = nil
+	local nextMechanicFlag = nil
+	local cost = {}
+	local mechanic = {}
+	local mechanicCount = 0
+	
+	repeat 
+		local thisCost, mechanicFlag, nextMechanicFlag = uespLog.GetAbilityCost(abilityId, mechanicFlag, rank)
+		
+		cost[#cost + 1] = thisCost
+		mechanic[#mechanic + 1] = mechanicFlag
+		
+		mechanicCount = mechanicCount + 1
+		mechanicFlag = nextMechanicFlag
+	until (mechanicFlag == nil) 
+	
+	if (mechanicCount > 1) then
+		uespLog.DebugMsg("Warning: Ability "..tostring(abilityId).." has "..tostring(mechanicCount).." mechanics!")
+	end
+	
+	return uespLog.implodeOrder(cost, ","), uespLog.implodeOrder(mechanic, ",")
+end
+
+
+function uespLog.DumpSkillCostOverTime (abilityId, rank)
+	local mechanicFlag = nil
+	local nextMechanicFlag = nil
+	local cost = {}
+	local costFreq = {}
+	local mechanic = {}
+	local mechanicCount = 0
+	
+	repeat
+		local thisCost, thisFreq, mechanicFlag, nextMechanicFlag = GetAbilityCostOverTime(abilityId, mechanicFlag, rank)
+		
+		cost[#cost + 1] = thisCost
+		costFreq[#costFreq + 1] = thisFreq
+		mechanic[#mechanic + 1] = mechanicFlag
+		
+		mechanicFlag = nextMechanicFlag
+		mechanicCount = mechanicCount + 1
+	until (mechanicFlag == nil)
+	
+	if (mechanicCount > 1) then
+		uespLog.DebugMsg("Warning: Ability "..tostring(abilityId).." has "..tostring(mechanicCount).." mechanics!")
+	end
+	
+	return uespLog.implodeOrder(cost, ","), uespLog.implodeOrder(costFreq, ","), uespLog.implodeOrder(mechanic, ",")
+end
+
+
 function uespLog.DumpSkill(abilityId, extraData)
 	local name = GetAbilityName(abilityId)
 	local isPassive = IsAbilityPassive(abilityId)
@@ -9661,7 +9843,6 @@ function uespLog.DumpSkill(abilityId, extraData)
 	local radius = GetAbilityRadius(abilityId)
 	local angleDistance = GetAbilityAngleDistance(abilityId)
 	local duration = GetAbilityDuration(abilityId)
-	local cost, mechanic = GetAbilityCost(abilityId)
 	local descHeader = tostring(GetAbilityDescriptionHeader(abilityId))
 	local description = GetAbilityDescription(abilityId)
 	local upgradeLines = uespLog.FormatSkillUpgradeLines(GetAbilityUpgradeLines(abilityId))
@@ -9675,6 +9856,9 @@ function uespLog.DumpSkill(abilityId, extraData)
 	if (GetAbilityBuffType ~= nil) then
 		logData.buffType = GetAbilityBuffType(abilityId)
 	end
+	
+	logData.cost, logData.mechanic = uespLog.DumpSkillCost(abilityId)
+	logData.costTime, logData.chargeFreqMS, logData.mechanicTime = uespLog.DumpSkillCostOverTime(abilityId)
 	
 	logData.event = "skill"
 	logData.id = abilityId
@@ -9691,10 +9875,7 @@ function uespLog.DumpSkill(abilityId, extraData)
 	logData.duration = duration
 	logData.cost = cost
 	logData.isToggle = isToggle
-	logData.costTime = costTime
-	logData.mechanicTime = mechanicTime
-	logData.chargeFreqMS = chargeFreqMS
-	logData.mechanic = mechanic
+	
 	logData.icon = GetAbilityIcon(abilityId)
 	logData.perm = IsAbilityPermanent(abilityId)
 	
@@ -9753,10 +9934,10 @@ function uespLog.DumpSkill(abilityId, extraData)
 		logData.desc3 = tostring(GetAbilityDescription(abilityId, 3))
 		logData.desc4 = tostring(GetAbilityDescription(abilityId, 4))
 	
-		logData.cost1 = GetAbilityCost(abilityId, 1)
-		logData.cost2 = GetAbilityCost(abilityId, 2)
-		logData.cost3 = GetAbilityCost(abilityId, 3)
-		logData.cost4 = GetAbilityCost(abilityId, 4)
+		logData.cost1 = uespLog.DumpSkillCost(abilityId, 1)
+		logData.cost2 = uespLog.DumpSkillCost(abilityId, 2)
+		logData.cost3 = uespLog.DumpSkillCost(abilityId, 3)
+		logData.cost4 = uespLog.DumpSkillCost(abilityId, 4)
 		
 		logData.duration1 = GetAbilityDuration(abilityId, 1)
 		logData.duration2 = GetAbilityDuration(abilityId, 2)
@@ -9783,10 +9964,10 @@ function uespLog.DumpSkill(abilityId, extraData)
 		logData.target3 = tostring(GetAbilityTargetDescription(abilityId, 3))
 		logData.target4 = tostring(GetAbilityTargetDescription(abilityId, 4))
 		
-		logData.costTime1, logData.mechanicTime1, logData.chargeFreqMS1 = GetAbilityCostOverTime(abilityId, 1)
-		logData.costTime2, logData.mechanicTime2, logData.chargeFreqMS2 = GetAbilityCostOverTime(abilityId, 2)
-		logData.costTime3, logData.mechanicTime3, logData.chargeFreqMS3 = GetAbilityCostOverTime(abilityId, 3)
-		logData.costTime4, logData.mechanicTime4, logData.chargeFreqMS4 = GetAbilityCostOverTime(abilityId, 4)
+		logData.costTime1, logData.chargeFreqMS1, logData.mechanicTime1 = uespLog.DumpSkillCostOverTime (abilityId, 1)
+		logData.costTime2, logData.chargeFreqMS2, logData.mechanicTime2 = uespLog.DumpSkillCostOverTime (abilityId, 2)
+		logData.costTime3, logData.chargeFreqMS3, logData.mechanicTime3 = uespLog.DumpSkillCostOverTime (abilityId, 3)
+		logData.costTime4, logData.chargeFreqMS4, logData.mechanicTime4 = uespLog.DumpSkillCostOverTime (abilityId, 4)
 	end
 	
 	uespLog.AppendDataToLog("all", logData, extraData)
@@ -10808,7 +10989,7 @@ function uespLog.CreateItemLinkLog (itemLink)
 		logData["ingrQnt"..tostring(i)] = numReq
 		
 		if (numReq <= 1) then
-			ingrList[#ingrList + 1] = tostring(ingredientName)
+			ingrList[#ingrList + 1] = tostring(ingredientName).." ("..tostring(numReq)..")"	-- Not good for items with commas like "Ivory, Polished"
 		else
 			ingrList[#ingrList + 1] = tostring(ingredientName).." ("..tostring(numReq)..")"
 		end
@@ -11903,8 +12084,11 @@ function uespLog.IsValidItemLink (itemLink)
 	--local name = GetItemLinkName(itemLink)
 	--return not (name == nil or name == "")
 	
-	local itemId = GetItemLinkItemId(itemLink)
-	return not (itemId == nil or itemId <= 0)
+	--local itemId = GetItemLinkItemId(itemLink)
+	--return not (itemId == nil or itemId <= 0)
+	
+	local icon, sellPrice, usage, equipType = GetItemLinkInfo(itemLink)
+	return not (icon == "" and equipType == 0)
 end
 
 
@@ -12683,8 +12867,16 @@ function uespLog.MineSingleItemSafe (itemId)
 	if (text ~= "") then
 		uespLog.MsgColor(uespLog.mineColor, ".     Only mining items with item types of "..text)
 	end
-
-	uespLog.MineSingleItemSafe_Next(itemId, 1)
+	
+	local changesWithLevel = uespLog.DoesItemChangeWithLevelQuality(itemId)
+	
+	if (changesWithLevel) then
+		uespLog.MineSingleItemSafe_Next(itemId, 1)
+		return true
+	end
+	
+	uespLog.MineItemIterateOther(itemId)
+	return true
 end
 
 
@@ -12704,7 +12896,7 @@ function uespLog.MineSingleItemSafe_Next (itemId, listIndex)
 		return
 	end
 		
-	zo_callLater(function() uespLog.MineSingleItemSafe_Next(itemId, nextListIndex) end, 2000)
+	zo_callLater(function() uespLog.MineSingleItemSafe_Next(itemId, nextListIndex) end, 500)
 end
 
 
@@ -13564,7 +13756,11 @@ SLASH_COMMANDS["/uespreset"] = function (cmd)
 		uespLog.ClearCharData()
 		uespLog.InitializeTrackLootData(true)
 		uespLog.SkillCoefResetSkillList()
+		uespLog.ClearMineItemSummary()
 		uespLog.Msg("Reset all logged data")
+	elseif (cmd == "itemsummary" or cmd == "summary" ) then
+		uespLog.ClearMineItemSummary()
+		uespLog.Msg("Cleared the mined item summary data")
 	elseif (cmd == "builddata" or cmd == "build" ) then
 		uespLog.ClearBuildData()
 	elseif (cmd == "chardata" or cmd == "char") then
@@ -13598,6 +13794,7 @@ SLASH_COMMANDS["/uespreset"] = function (cmd)
 		uespLog.Msg(".       /uespreset inspiration             Set crafting inspiration to 0")
 		uespLog.Msg(".       /uespreset skillcoef             Clear all skill coefficient data")
 		uespLog.Msg(".       /uespreset loot                    Clear all loot tracking data")
+		uespLog.Msg(".       /uespreset itemsummary              Clear the mined item summary data")
 		uespLog.Msg(".       /uespreset all                          All saved data")		
 	end
 
@@ -15351,8 +15548,11 @@ uespLog.PrevKeepAlliance = {}
 
 
 function uespLog.OnAssignedCampaignChanged(eventCode, newCampaignId)
-	--uespLog.DebugMsg("Campaign changed!")
+	uespLog.DebugMsg("Campaign changed! " .. tostring(newCampaignId))
 	uespLog.PrevKeepAlliance = {}
+	
+	QueryCampaignSelectionData()
+	QueryCampaignLeaderboardData()
 end
 
 
@@ -15432,7 +15632,8 @@ end
 
 
 SLASH_COMMANDS["/uesppvp"] = function (cmd)
-	cmd = string.lower(cmd)
+	local cmds = uespLog.SplitCommands(cmd)
+	cmd = string.lower(cmds[1] or "")
 
 	if (cmd == "on") then
 		uespLog.SetPvpUpdate(true)
@@ -15440,11 +15641,26 @@ SLASH_COMMANDS["/uesppvp"] = function (cmd)
 	elseif (cmd == "off") then
 		uespLog.SetPvpUpdate(false)
 		uespLog.Msg("PVP update is now OFF!")
-	elseif (cmd == "showfights") then
+	elseif (cmd == "showfights" or cmd == "showbattles") then
 		uespLog.ShowPvpFights()
+	elseif (cmd == "autolog") then
+		local cmd2 = string.lower(cmds[2] or "")
+		
+		if (cmd2 == "on") then
+			uespLog.SetPvpAutoLog(true)
+			uespLog.Msg("PVP auto logging is not ON")
+		elseif (cmd2 == "off") then
+			uespLog.SetPvpAutoLog(false)
+			uespLog.Msg("PVP auto logging is now OFF")
+		else
+			uespLog.Msg("PVP auto logging is currently "..uespLog.BoolToOnOff(uespLog.IsPvpAutoLog()))
+		end
 	else
 		uespLog.Msg("PVP update is currently "..uespLog.BoolToOnOff(uespLog.IsPvpUpdate()))
-		uespLog.Msg("    Use /uesppvp on/off to change setting")
+		uespLog.Msg("PVP auto logging is currently "..uespLog.BoolToOnOff(uespLog.IsPvpAutoLog()))
+		uespLog.Msg("    /uesppvp on/off   Turn all update messages on or off.")
+		uespLog.Msg("    /uesppvp showfights   List PVP fights in the area.")
+		uespLog.Msg("    /uesppvp autolog on/off    Turns auto leaderboard logging on/off.")
 	end
 	
 end
@@ -15650,7 +15866,7 @@ end
 
 
 SLASH_COMMANDS["/uespchardata"] = function (cmd)
-	cmds = uespLog.SplitCommands(cmd)
+	local cmds = uespLog.SplitCommands(cmd)
 	cmd = string.lower(cmds[1] or "")
 		
 	if (cmd == 'on') then
@@ -17000,9 +17216,28 @@ function uespLog.MineCollectibleIDs(note)
 			logData.furnId = GetCollectibleFurnitureDataId(collectibleId)
 			
 			if (logData.furnId) then
-				logData.furnCateId, logData.furnSubcateId, logData.furnTheme = GetFurnitureDataInfo(logData.furnId)
+				logData.furnCateId, logData.furnSubcateId, logData.furnTheme, logData.furnLimitType = GetFurnitureDataInfo(logData.furnId)
 				logData.furnCateName = GetFurnitureCategoryName(logData.furnCateId)
 				logData.furnSubcateName = GetFurnitureCategoryName(logData.furnSubcateId)
+				--logData.furnLimitType = GetCollectibleFurnishingLimitType(collectibleId)
+			end
+			
+			logData.numTags = GetNumCollectibleTags(collectibleId)
+			
+			if (logData.numTags > 0) then
+				logData.tags = ""
+
+				for i = 1, logData.numTags do
+					local tagDescription, tagCategory = GetCollectibleTagInfo(collectibleId, i)
+					
+					if tagDescription ~= "" then
+						if (i > 1) then
+							logData.tags = logData.tags .. ", "
+						end
+				
+						logData.tags = logData.tags .. tagDescription
+					end
+				end
 			end
 
 			uespLog.AppendDataToLog("all", logData)
@@ -21251,27 +21486,27 @@ function uespLog.CheckMineItemSummary_CheckMinedItem(itemData, itemId, changesWi
 	if (trait == nil) then trait = 0 end
 	
 	if (changesWithLevel ~= summaryData.changesWithLevel) then
-		uespLog.DebugMsg("" .. tostring(itemId)..": Incorrect changesWithLevel item data ("..tostring(changesWithLevel)..":"..tostring(summaryData.changesWithLevel)..")!")
+		uespLog.DebugMsg("" .. tostring(itemId)..": Incorrect changesWithLevel item data ("..tostring(changesWithLevel)..":"..tostring(summaryData.changesWithLevel)..")! "..tostring(itemLink))
 		if (uespLog.MINEITEM_CHECKSUMMARY >= 2) then
 			return false
 		end
 	elseif (setName ~= summaryData.setName) then
-		uespLog.DebugMsg("" .. tostring(itemId)..": Incorrect setName item data ("..tostring(setName)..":"..tostring(summaryData.setName)..")!")
+		uespLog.DebugMsg("" .. tostring(itemId)..": Incorrect setName item data ("..tostring(setName)..":"..tostring(summaryData.setName)..")! "..tostring(itemLink))
 		if (uespLog.MINEITEM_CHECKSUMMARY >= 2) then
 			return false
 		end
 	elseif (trait ~= summaryData.trait) then
-		uespLog.DebugMsg("" .. tostring(itemId)..": Incorrect trait item data ("..tostring(trait)..":"..tostring(summaryData.trait)..")!")
+		uespLog.DebugMsg("" .. tostring(itemId)..": Incorrect trait item data ("..tostring(trait)..":"..tostring(summaryData.trait)..")! "..tostring(itemLink))
 		if (uespLog.MINEITEM_CHECKSUMMARY >= 2) then
 			return false
 		end
 	elseif (itemType ~= summaryData.itemType) then
-		uespLog.DebugMsg("" .. tostring(itemId)..": Incorrect itemType item data ("..tostring(itemType)..":"..tostring(summaryData.itemType)..")!")
+		uespLog.DebugMsg("" .. tostring(itemId)..": Incorrect itemType item data ("..tostring(itemType)..":"..tostring(summaryData.itemType)..")! "..tostring(itemLink))
 		if (uespLog.MINEITEM_CHECKSUMMARY >= 2) then
 			return false
 		end
 	elseif (equipType ~= summaryData.equipType) then
-		uespLog.DebugMsg("" .. tostring(itemId)..": Incorrect equipType item data ("..tostring(equipType)..":"..tostring(summaryData.equipType)..")!")
+		uespLog.DebugMsg("" .. tostring(itemId)..": Incorrect equipType item data ("..tostring(equipType)..":"..tostring(summaryData.equipType)..")! "..tostring(itemLink))
 		if (uespLog.MINEITEM_CHECKSUMMARY >= 2) then
 			return false
 		end
@@ -21355,6 +21590,167 @@ function uespLog.CreateMineItemSummary_Item(itemId)
 	return true
 end
 
+
+function uespLog.MineTributePatrons()
+	local numPatrons = GetNumTributePatrons()
+	local logData = {}
+	local cardIds = {}
+	
+	logData.event = "tributepatron::start"
+	logData.numPatrons = numPatrons
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
+	uespLog.Msg("Dumping "..tostring(numPatrons).." tribute patrons to log...")
+
+	for i = 1, numPatrons do
+		local patronId = GetTributePatronIdAtIndex(i)
+		
+		logData = {}
+		logData.event = "tributepatron"
+		logData.patronId = patronId
+
+		logData.actionTexture, logData.actionGlow = GetTributePatronSuitAtlas(patronId, TRIBUTE_CARD_TYPE_ACTION)
+		logData.agentTexture, logData.agentGlow = GetTributePatronSuitAtlas(patronId, TRIBUTE_CARD_TYPE_AGENT)
+
+		logData.collectId = GetTributePatronCollectibleId(patronId)
+		logData.suitIcon = GetTributePatronSuitIcon(patronId)
+		logData.smallIcon = GetTributePatronSmallIcon(patronId)
+		logData.largeIcon = GetTributePatronLargeIcon(patronId)
+		logData.largeRingIcon = GetTributePatronLargeRingIcon(patronId)
+	
+		logData.name = GetTributePatronName(patronId)
+		logData.rarity = GetTributePatronRarity(patronId)
+		logData.isNeutral = IsTributePatronNeutral(patronId)
+		logData.skipNeutral = DoesTributePatronSkipNeutralFavorState(patronId)
+		logData.categoryId = GetTributePatronCategoryId(patronId)
+		logData.category = GetTributePatronCategoryName(logData.categoryId)
+		
+		logData.loreDesc = GetTributePatronLoreDescription(patronId)
+		logData.playDesc = GetTributePatronPlayStyleDescription(patronId)
+		logData.acquireHint = GetTributePatronAcquireHint(patronId)
+		
+		logData.numStartCards = GetTributePatronNumStarterCards(patronId)
+		cardIds = {}
+		
+		for j = 1, logData.numStartCards do
+			cardIds[#cardIds + 1] = GetTributePatronStarterCardIdByIndex(patronId, j)
+		end
+		
+		logData.startCards = uespLog.implodeOrder(cardIds, ",")
+		logData.numDockCards = GetTributePatronNumDockCards(patronId)
+		cardIds = {}
+		
+		for j = 1, logData.numStartCards do
+			cardIds[#cardIds + 1] = GetTributePatronDockCardInfoByIndex(patronId, j)		-- ** _Returns:_ *integer* _baseCardId_, *integer* _upgradeCardId_, *integer* _quantity_
+		end
+		
+		logData.dockCards = uespLog.implodeOrder(cardIds, ",")
+		
+		logData.favorRequireOppo = GetNumTributePatronRequirementsForFavorState(patronId, TRIBUTE_PATRON_PERSPECTIVE_FAVOR_STATE_FAVORS_OPPONENT)
+		logData.favorRequirePlay = GetNumTributePatronRequirementsForFavorState(patronId, TRIBUTE_PATRON_PERSPECTIVE_FAVOR_STATE_FAVORS_PLAYER)
+		logData.favorRequireNeut = GetNumTributePatronRequirementsForFavorState(patronId, TRIBUTE_PATRON_PERSPECTIVE_FAVOR_STATE_NEUTRAL)
+
+		-- GetTributePatronRequirementInfo(*integer* _patronId_, *[TributePatronPerspectiveFavorState|#TributePatronPerspectiveFavorState]* _favorState_, *luaindex* _requirementIndex_)
+		-- _Returns:_ *[TributePatronRequirement|#TributePatronRequirement]* _requirementType_, *integer* _quantity_, *integer* _param1_, *integer* _param2_
+		-- GetTributePatronRequirementText(*integer* _patronId_, *[TributePatronPerspectiveFavorState|#TributePatronPerspectiveFavorState]* _favorState_, *luaindex* _requirementIndex_)
+		-- _Returns:_ *string* _requirementText_
+		-- GetTributePatronRequirementsText(*integer* _patronId_, *[TributePatronPerspectiveFavorState|#TributePatronPerspectiveFavorState]* _favorState_)
+		-- _Returns:_ *string* _requirementsText_
+		-- GetNumTributePatronMechanicsForFavorState(*integer* _patronId_, *[TributePatronPerspectiveFavorState|#TributePatronPerspectiveFavorState]* _favorState_)
+		-- ** _Returns:_ *integer* _numMechanics_
+		-- * GetTributePatronMechanicText(*integer* _patronId_, *[TributePatronPerspectiveFavorState|#TributePatronPerspectiveFavorState]* _favorState_, *luaindex* _mechanicIndex_, *bool* _prependIcon_)
+		-- * _Returns:_ *string* _mechanicText_
+		-- * GetTributePatronMechanicsText(*integer* _patronId_, *[TributePatronPerspectiveFavorState|#TributePatronPerspectiveFavorState]* _favorState_)
+		-- * _Returns:_ *string* _mechanicsText_
+	
+		uespLog.AppendDataToLog("all", logData)
+	end
+	
+	logData.event = "tributepatron::end"
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+end
+
+
+uespLog.MINE_TRIBUTE_CARDID_START = 1
+uespLog.MINE_TRIBUTE_CARDID_END = 1000
+
+
+function uespLog.MineTributeCard(cardId)
+	local logData = {}
+	
+	logData.event = "tributecard"
+	logData.cardId = cardId
+	logData.name = GetTributeCardName(cardId)
+	
+	if (logData.name == nil or logData.name == "") then
+		return false
+	end
+	
+	logData.texture, logData.glowTexture = GetTributeCardPortrait(cardId)
+	logData.cardType = GetTributeCardType(cardId)
+	logData.resource, logData.qnt = GetTributeCardAcquireCost(cardId)
+	logData.defResource, logData.defQnt = GetTributeCardDefeatCost(cardId)
+	logData.taunts = DoesTributeCardTaunt(cardId)
+	logData.isContract = IsTributeCardContract(cardId)
+	logData.oneMechanic = DoesTributeCardChooseOneMechanic(cardId)
+	logData.flavorText = GetTributeCardFlavorText(cardId)
+	logData.rarity = GetTributeCardRarity(cardId)
+		
+	logData.numMechAct = GetNumTributeCardMechanics(cardId, TRIBUTE_MECHANIC_TRIGGER_ACTIVATION)
+	logData.numMechCombo = GetNumTributeCardMechanics(cardId, TRIBUTE_MECHANIC_TRIGGER_COMBO)
+
+	for i = 1, logData.numMechAct do
+		local mechanic, qnt, combo, param1, param2, param3 = GetTributeCardMechanicInfo(cardId, TRIBUTE_MECHANIC_TRIGGER_ACTIVATION, i)
+		local text = GetTributeCardMechanicText(cardId, TRIBUTE_MECHANIC_TRIGGER_ACTIVATION_, i, false)
+		logData['actmech' .. i] = mechanic
+		logData['actqnt' .. i] = qnt
+		logData['actcombo' .. i] = combo
+		logData['acttext' .. i] = text
+		logData['actparam1_' .. i] = param1
+		logData['actparam2_' .. i] = param2
+		logData['actparam3_' .. i] = param3
+	end
+	
+	for i = 1, logData.numMechCombo do
+		local mechanic, qnt, combo, param1, param2, param3 = GetTributeCardMechanicInfo(cardId, TRIBUTE_MECHANIC_TRIGGER_COMBO, i)
+		local text = GetTributeCardMechanicText(cardId, TRIBUTE_MECHANIC_TRIGGER_COMBO, i, false)
+		logData['commech' .. i] = mechanic
+		logData['comqnt' .. i] = qnt
+		logData['comcombo' .. i] = combo
+		logData['comtext' .. i] = text
+		logData['comparam1_' .. i] = param1
+		logData['comparam2_' .. i] = param2
+		logData['comparam3_' .. i] = param3
+	end
+
+	uespLog.AppendDataToLog("all", logData)
+	return true
+end
+
+
+function uespLog.MineTributeCards()
+	local numPatrons = GetNumTributePatrons()
+	local logData = {}
+	local cardIds = {}
+	local foundCardCount = 0
+	
+	logData.event = "tributecard::start"
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
+	uespLog.Msg("Mining all tribute cards to log...")
+
+	for i = uespLog.MINE_TRIBUTE_CARDID_START, uespLog.MINE_TRIBUTE_CARDID_END do 
+		if (uespLog.MineTributeCard(i)) then
+			foundCardCount = foundCardCount + 1
+		end
+	end
+	
+	logData.event = "tributecard::end"
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
+	uespLog.Msg("Found and logged "..tostring(foundCardCount).." tribute cards!")
+end
+	
 
 uespLog.MINETEST_RELOAD_COUNT = 150
 uespLog.mineTestCount = 0

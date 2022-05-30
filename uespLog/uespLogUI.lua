@@ -128,7 +128,7 @@ function uespLog.InitOptionControlsData()
 		
 		getFunc = 	function() 
 						if (uespLog.GetInventoryStatsConfig() == "custom") then return "custom" end
-						return uespLog.GetCustomStatDisplay()
+						return uespLog.BoolToOnOff(uespLog.GetCustomStatDisplay())
 					end,
 		setFunc = 	function(choice) 
 						if (choice == "custom") then 

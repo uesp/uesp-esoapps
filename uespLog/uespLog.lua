@@ -1156,18 +1156,20 @@
 --		-- v2.90 -- 1 November 2021 (Deadlands)
 --			- Added House Hexos and Ancient Daedric styles.
 --
---		-- v2.91 -- 6 June 2022 (High Isle)
+--		-- v3.00 -- 6 June 2022 (High Isle)
 --			- Collectible mined data now includes the furniture limit type.
 --			- Fixed custom stats setting not displaying correctly in the settings menu.
 --			- Fixed intermittent NPC lip animation issues in gamepad mode.
---
+--			- Logs PVP leaderboards (currently manual for testing).
+--			- Logs daily/weekly endeavors (currently manual for testing.
+--			- Logs Golden Vendor items (automatically when you activate the golden vendor).
 
 
 
 --	GLOBALS
 uespLog = uespLog or {}
 
-uespLog.version = "2.91"
+uespLog.version = "3.00"
 uespLog.releaseDate = "6 June 2022"
 uespLog.DATA_VERSION = 3
 
@@ -4782,6 +4784,12 @@ function uespLog.Initialize( self, addOnName )
 	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CAMPAIGN_STATE_INITIALIZED, uespLog.OnAssignedCampaignChanged)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CURRENT_CAMPAIGN_CHANGED, uespLog.OnAssignedCampaignChanged)	 
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CAMPAIGN_LEADERBOARD_DATA_CHANGED, uespLog.OnCampaignLeaderboardDataChanged)
+	
+	EVENT_MANAGER:RegisterForEvent( "uespLog", EVENT_TIMED_ACTIVITY_SYSTEM_STATUS_UPDATED, uespLog.OnEndeavorReset)
+	--EVENT_MANAGER:RegisterForEvent( "uespLog", EVENT_TIMED_ACTIVITY_PROGRESS_UPDATED, uespLog.OnEndeavorProgressUpdated)
+	EVENT_MANAGER:RegisterForEvent( "uespLog", EVENT_TIMED_ACTIVITIES_UPDATED, uespLog.OnEndeavorUpdated)
+	
+	EVENT_MANAGER:RegisterForEvent( "uespLog", EVENT_OPEN_STORE, uespLog.OnOpenStore)
 		
 	uespLog.InstallItemTooltip()
 	
@@ -5933,7 +5941,7 @@ function uespLog.OnChatterBegin_Private (eventCode, optionCount)
 	local npcName = GetUnitName("interact")
 	local logData = { }
 	local ChatterGreeting = GetChatterGreeting()
-	local ChatterGreeting = "";
+	local ChatterGreeting = ""
 	
 	uespLog.lastConversationOption.Text = ""
 	uespLog.lastConversationOption.Type = ""
@@ -16173,6 +16181,8 @@ function uespLog.Quit()
 	uespLog.OnLogoutAutoSaveCharData()
 	uespLog.UpdateTrackLootTime()
 	
+	uespLog.LogAllEndeavors()
+	
 	return uespLog.Old_Quit()
 end
 
@@ -16181,6 +16191,8 @@ function uespLog.Logout()
 	uespLog.OnLogoutAutoSaveCharData()
 	uespLog.UpdateTrackLootTime()
 	
+	uespLog.LogAllEndeavors()
+	
 	return uespLog.Old_Logout()
 end
 
@@ -16188,6 +16200,8 @@ end
 function uespLog.ReloadUI(guiName)
 	uespLog.OnLogoutAutoSaveCharData()
 	uespLog.UpdateTrackLootTime()
+	
+	uespLog.LogAllEndeavors()
 	
 	return uespLog.Old_ReloadUI(guiName)
 end
@@ -21591,6 +21605,119 @@ function uespLog.CreateMineItemSummary_Item(itemId)
 end
 
 
+uespLog.hasLoggedGoldenVendor = false
+
+
+function uespLog.OnOpenStore(eventCode)
+	uespLog.DebugExtraMsg("OnOpenStore")
+	
+	if (uespLog.currentTargetData and uespLog.currentTargetData.name == "Adhazabi Aba-daro" and not uespLog.hasLoggedGoldenVendor) then
+	--if (uespLog.currentTargetData and uespLog.currentTargetData.name == "Gerielle Gidric" and not uespLog.hasLoggedGoldenVendor) then
+		uespLog.hasLoggedGoldenVendor = true
+		uespLog.LogAllVendorItems()
+	end
+	
+end
+
+
+function uespLog.LogAllVendorItems()
+	local numItems = GetNumStoreItems()
+	local logData = {}
+	local i
+	
+	uespLog.DebugExtraMsg("Logging all vendor items...."..tostring(uespLog.currentTargetData.name)..", "..tostring(numItems))
+	
+	if (numItems == 0) then
+		return 0
+	end
+	
+	logData.event = "vendor::start"
+	logData.name = uespLog.currentTargetData.name
+	logData.numItems = numItems
+	
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData(), uespLog.GetCurrentTargetData())
+	
+	for i = 1, numItems do
+		logData = {}
+		logData.event = "vendor::item"
+		logData.link = GetStoreItemLink(i)
+		_, logData.name, _, logData.price, _, _, _, _, _, logData.currType1, logData.currQnt1, logData.currType2, logData.currQnt2 = GetStoreEntryInfo(i)
+		logData.trait = GetItemLinkTraitInfo(logData.link)
+		logData.quality = GetItemLinkQuality(logData.link)
+		logData.bindType = GetItemLinkBindType(logData.link) 
+		
+		uespLog.AppendDataToLog("all", logData)
+	end
+		
+	logData.event = "vendor::end"
+	logData.numItems = numItems
+	logData.name = uespLog.currentTargetData.name
+	
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData(), uespLog.GetCurrentTargetData())
+	
+	return numItems
+end
+
+
+function uespLog.OnEndeavorReset(eventCode)
+	uespLog.DebugExtraMsg("OnEndeavorReset")
+	uespLog.LogAllEndeavors()
+end
+
+
+function uespLog.OnEndeavorUpdated(eventCode)
+	uespLog.DebugExtraMsg("OnEndeavorUpdated")
+	uespLog.LogAllEndeavors()
+end
+
+
+function uespLog.LogAllEndeavors()
+	local numAct = GetNumTimedActivities()
+	local i
+	
+	for i = 1, numAct do
+		uespLog.LogEndeavor(i)
+	end
+	
+end
+
+
+function uespLog.LogEndeavor(i)
+	local logData = {}
+	local rewardIndex
+	
+	logData.event = "endeavor"
+	logData.actIndex = i
+	logData.type = GetTimedActivityType(i)
+	logData.timeRemain = GetTimedActivityTimeRemainingSeconds(i)
+	logData.maxProgress = GetTimedActivityMaxProgress(i)
+	logData.name = GetTimedActivityName(i)
+	logData.desc = GetTimedActivityDescription(i)
+	logData.numRewards = GetNumTimedActivityRewards(i)
+	logData.limit = GetTimedActivityTypeLimit(logData.type)
+	
+	for rewardIndex = 1, logData.numRewards do
+		local rewardId, quantity = GetTimedActivityRewardInfo(i, rewardIndex)
+		local rewardType = GetRewardType(rewardId)
+		local rewardText = ""
+		local currencyType = GetAddCurrencyRewardInfo(rewardId)
+		--local currencyIcon = GetCurrencyLootKeyboardIcon(currencyType)
+		
+		if (rewardType == REWARD_ENTRY_TYPE_ADD_CURRENCY) then
+			rewardText = string.format("%d(%d:%d)", rewardType, quantity, currencyType)
+		elseif (rewardType == REWARD_ENTRY_TYPE_EXPERIENCE) then
+			rewardText = string.format("%d(%d:0)", rewardType, quantity)
+		else
+			rewardText = string.format("%d(%d:0)", rewardType, quantity)
+		end
+		
+		logData['reward' .. rewardIndex] = rewardText
+	end
+	
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+end
+
+
 function uespLog.MineTributePatrons()
 	local numPatrons = GetNumTributePatrons()
 	local logData = {}
@@ -21752,7 +21879,7 @@ function uespLog.MineTributeCards()
 end
 	
 
-uespLog.MINETEST_RELOAD_COUNT = 150
+uespLog.MINETEST_RELOAD_COUNT = 100
 uespLog.mineTestCount = 0
 uespLog.mineTestStop = false
 uespLog.MINETEST_AUTOSTARTNEXT = false
@@ -21922,4 +22049,8 @@ function uespLog.TestMine(numItems)
 	return itemsMined
 end
 
+
+function uespLog.EndMineTestFunction()
+	zo_callLater(uespLog.DoNextMineTest, 2000)
+end
 

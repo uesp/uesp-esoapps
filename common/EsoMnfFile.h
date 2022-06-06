@@ -49,6 +49,8 @@ namespace eso {
 		std::string ExtractFilename;
 		std::string ExtractFileExtension;
 		std::string LuaFileList;
+		std::string MatchFilename;
+		std::string BaseLangFilename;
 		int MnfStartIndex;
 		int MnfEndIndex;
 		int ArchiveIndex;
@@ -173,7 +175,7 @@ namespace eso {
 		bool SaveSubFileZosft(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo);
 		bool SaveSubFileGR2(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo);
 		bool SaveSubFileXV4(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo);
-		bool SaveSubFile (mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS = false, CFile* pFile = nullptr, const std::string ExtractSubFileDataType = "none", const bool NoExtractGR2 = false, const std::string ExtractFileExtension = "", const bool NoConvertRiff = false);
+		bool SaveSubFile (mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS = false, CFile* pFile = nullptr, const std::string ExtractSubFileDataType = "none", const bool NoExtractGR2 = false, const std::string ExtractFileExtension = "", const bool NoConvertRiff = false, const std::string MatchFilename = "");
 		bool ExtractSubFileDataCombined(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo);
 		bool ExtractSubFileDataSeperate(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo);
 

@@ -34,6 +34,7 @@ struct lang_record_t
 
 
 typedef std::vector<lang_record_t> CEsoLangRecords;
+typedef std::unordered_map<std::string, lang_record_t*> CEsoLangIndexMap;
 
 
 class CEsoLangFile 
@@ -69,6 +70,8 @@ public:
 	bool DumpText (const std::string Filename, const bool UsePOFormat = false);
 	static bool DumpTextFile (eso::CFile& File, lang_record_t& Record);
 	bool DumpTextId (const std::string Filename);
+
+	int FillMissingEntries(CEsoLangFile& BaseLang);
 
 	eso::dword GetNumRecords () const { return m_RecordCount; }
 	lang_record_t& GetRecord(eso::dword i) { return m_Records[i]; }

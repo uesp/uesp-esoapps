@@ -331,6 +331,44 @@ bool CEsoLangFile::DumpTextFile (CFile& File, lang_record_t& Record)
 }
 
 
+int CEsoLangFile::FillMissingEntries(CEsoLangFile& BaseLang)
+{
+	int entriesFilled = 0;
+	CEsoLangIndexMap index;
+
+		/* Create ID map of existng entries */
+	for (size_t i = 0; i < m_RecordCount; ++i)
+	{
+		lang_record_t& Record = m_Records[i];
+		char buffer[256];
+
+		snprintf(buffer, 250, "%ud-%ud-%ud", Record.Id, Record.Unknown, Record.Index);
+		index[buffer] = &m_Records[i];
+	}
+
+	PrintError("\tCreated index with %d entries from a total of %d!", index.size(), m_RecordCount);
+	PrintError("\tMerging in a possible %d entries...", BaseLang.m_RecordCount);
+
+		/* Add all entries from BaseLang that don't already exist */
+	for (size_t i = 0; i < BaseLang.m_RecordCount; ++i)
+	{
+		lang_record_t& Record = BaseLang.m_Records[i];
+		char buffer[256];
+
+		snprintf(buffer, 250, "%ud-%ud-%ud", Record.Id, Record.Unknown, Record.Index);
+
+		if (index.find(buffer) == index.end())
+		{
+			++m_RecordCount;
+			++entriesFilled;
+			m_Records.push_back(Record);
+		}
+	}
+
+	return entriesFilled;
+}
+
+
 bool CEsoLangFile::Load (const std::string Filename)
 {
 	CFile File;

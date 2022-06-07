@@ -129,6 +129,8 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[105] 						 	 = "uespLog/images/ancestralorc.dds",		-- Ancestral Orc, Etched Manganese, 105, /esoui/art/icons/crafting_style_item_antiquities_orc.dds
 	[106] 						 	 = "uespLog/images/thornlegion.dds",		-- Thorn Legion, Thorn Sigil, 106, /esoui/art/icons/item_u27_greyhost_sigil.dds
 	[107] 						 	 = "uespLog/images/hazardousalchemy.dds",	-- Hazardous Alchemy, Viridian Phial, 107, /esoui/art/icons/crafting_style_item_hazardous_academy.dds
+	[108]							 = "uespLog/images/ancestralakaviri.dds",	-- Ancestral Akaviri, Burnished Goldscale, 108, /esoui/art/icons/crafting_style_item_burnishedgoldscale.dds
+	[109]							 = "uespLog/images/ancestralbreton.dds",	-- Ancestral Breton, Etched Molybdenum, 109, /esoui/art/icons/crafting_style_item_ancestral_breton.dds
 	[110] 						 	 = "uespLog/images/ancestralreach.dds",		-- Ancestral Reach, Etched Bronze, 110, /esoui/art/icons/crafting_style_item_ancestral_reach.dds
 	[111] 						 	 = "uespLog/images/nighthollow.dds",		-- Nighthollow, Umbral Droplet, 111, /esoui/art/icons/crafting_style_item_nighthollow.dds
 	[112] 						 	 = "uespLog/images/arkthzandarmory.dds",	-- Arkthzand Armory, Arkthzand Sprocket, 112, /esoui/art/icons/crafting_style_item_arkthzand_armory.dds
@@ -142,10 +144,15 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[120] 							 = "uespLog/images/blackfin.dds",			-- Black Fin Legion, Marsh Nettle Sprig, 120, /esoui/art/icons/style_item_blackfin.dds
 	[121] 						 	 = "uespLog/images/ivorybrigade.dds",		-- Ivory Brigad, Ivory Bridage Clasp, 121, /esoui/art/icons/crafting_style_item_ivorybrigade.dds
 	[122] 						 	 = "uespLog/images/sulxan.dds",				-- Sul-Xan, Death-Hopper Vocal Sac, 122, /esoui/art/icons/style_item_sul-xan.dds
-	--[123] 						 = "uespLog/images/crimsonoatth.dds",		-- Crimson Oath, -, 123,
-	--[124] 						 = "uespLog/images/silverrose.dds",			-- Silver Rose -, 124, 
-	--[125] 						 = "uespLog/images/annchosen.dds",			-- Annihilarch's Choosen -, 125, 
-	--[126] 						 = "uespLog/images/fargraveguardian.dds",	-- Fargrave Guardian -, 126, 
+	[123] 							 = "uespLog/images/crimsonoath.dds",		-- Crimson Oath, Filed Barbs, 123, /esoui/art/icons/style_item_blackiron.dds
+	[124] 						 	 = "uespLog/images/silverrose.dds",			-- Silver Rose, Rose Engraving, 124, /esoui/art/icons/style_item_silverrose.dds
+	[125] 						 	 = "uespLog/images/annchosen.dds",			-- Annihilarch's Choosen, Black-Veined Prism, 125, /esoui/art/icons/styleitem_motif_annihlarch_chosen.dds
+	[126] 							 = "uespLog/images/fargraveguardian.dds",	-- Fargrave Guardian, Indigo Lucent, 126, /esoui/art/icons/styleitem_motif_fargrave_gaurdian.dds
+	[128]							 = "uespLog/images/dreadsails.dds",			-- Dreadsails, Squid Ink, 128, /esoui/art/icons/style_item_dreadsail.dds
+	[129]							 = "uespLog/images/ascendantorder.dds",		-- Ascendant Order, Bone Pyre Ash, 129, /esoui/art/icons/style_item_ascendantorder.dds
+	[130]							 = "uespLog/images/syrabanicmarine.dds",	-- Syrabanic Marine, Scalloped Frog-Metal, 130, /esoui/art/icons/u34_crafting_style_item_sybranic_marine.dds
+	[131]							 = "uespLog/images/steadfastsociety.dds",	-- Steadfast Society, Stendarr Stamp, 131, /esoui/art/icons/u34_crafting_style_item_steadfast_society.dds
+	--[132]							 = "uespLog/images/systresguardian.dds",	-- Systres Guardian, ?, 132, /esoui/art/icons/?.dds
 }
 
 
@@ -244,6 +251,8 @@ uespLog.STYLE_ICON_DATA = {
 	[105] 						 	 = "/esoui/art/icons/crafting_style_item_antiquities_orc.dds",
 	[106] 						 	 = "/esoui/art/icons/item_u27_greyhost_sigil.dds",
 	[107] 						 	 = "/esoui/art/icons/crafting_style_item_hazardous_academy.dds",
+	[108]							 = "/esoui/art/icons/crafting_style_item_burnishedgoldscale.dds",
+	[109]							 = "/esoui/art/icons/crafting_style_item_ancestral_breton.dds",
 	[110] 						 	 = "/esoui/art/icons/crafting_style_item_ancestral_reach.dds",
 	[111] 						 	 = "/esoui/art/icons/crafting_style_item_nighthollow.dds",
 	[112] 						 	 = "/esoui/art/icons/crafting_style_item_arkthzand_armory.dds",
@@ -255,6 +264,14 @@ uespLog.STYLE_ICON_DATA = {
 	[121] 						 	 = "/esoui/art/icons/crafting_style_item_ivorybrigade.dds",
 	[120] 							 = "/esoui/art/icons/style_item_blackfin.dds",
 	[122] 						 	 = "/esoui/art/icons/style_item_sul-xan.dds",
+	[123] 						 	 = "/esoui/art/icons/style_item_blackiron.dds",
+	[124] 						 	 = "/esoui/art/icons/style_item_silverrose.dds",
+	[125] 						 	 = "/esoui/art/icons/styleitem_motif_annihlarch_chosen.dds",
+	[126] 							 = "/esoui/art/icons/styleitem_motif_fargrave_gaurdian.dds",		-- Note: misspelled in-game as of update 34
+	[128]							 = "/esoui/art/icons/style_item_deadsail.dds",
+	[129]							 = "/esoui/art/icons/style_item_ascendantorder.dds",
+	[130]							 = "/esoui/art/icons/u34_crafting_style_item_sybranic_marine.dds",	-- Note: misspelled in-game as of update 34
+	[131]							 = "/esoui/art/icons/u34_crafting_style_item_steadfast_society.dds",
 }
 
 

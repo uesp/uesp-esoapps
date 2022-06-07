@@ -1,6 +1,6 @@
-## Title: UESP Log v3.00
+## Title: UESP Log v3.01
 ## APIVersion: 101034
-## Version: 3.00
+## Version: 3.01
 ## Author: Daveh from uesp.net (dave@uesp.net)
 ## Description: Logs game data for uesp.net and a few other useful crafting related functions.
 ## DependsOn: LibAddonMenu-2.0

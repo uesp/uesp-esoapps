@@ -1163,14 +1163,21 @@
 --			- Logs PVP leaderboards (currently manual for testing).
 --			- Logs daily/weekly endeavors (currently manual for testing.
 --			- Logs Golden Vendor items (automatically when you activate the golden vendor).
+--
+--		-- v3.01 -- 7 June 2022
+--			- Updated runebox collectible IDs.
+--			- Fixed missing initial dialogue text when talking to NPCs.
+--			- Updated style icons and motif IDs.
+--
+--
 
 
 
 --	GLOBALS
 uespLog = uespLog or {}
 
-uespLog.version = "3.00"
-uespLog.releaseDate = "6 June 2022"
+uespLog.version = "3.01"
+uespLog.releaseDate = "7 June 2022"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -2302,9 +2309,9 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [96392] = 597,  		-- Sword-Swallower's Blade
         [96393] = 598,  		-- Juggler's Knives
         [96395] = 600,  		-- Fire-Breather's Torches
-        [96951] = 753,  		-- Nordic Bather's Towel
-        [96952] = 755,  		-- Colovian Fur Hood
-        [96953] = 754,  		-- Colovian Filigreed Hood
+        [96951] = 753, 			-- Nordic Bather's Towel
+        [96952] = 755, 			-- Colovian Fur Hood
+        [96953] = 754, 			-- Colovian Filigreed Hood
         [119692] = 1108,        -- Cherry Blossom Branch
         [124658] = 1232,        -- Dwarven Theodolite
         [124659] = 1230,        -- Sixth House Robe
@@ -2317,33 +2324,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [138784] = 5019,        -- Arena Gladiator Helm
         [139464] = 4996,        -- Big-Eared Ginger Kitten
         [139465] = 5047,        -- Psijic Glowglobe
-        [141749] = 5656,        -- Swamp Jelly
-        [141750] = 5589,        -- Arena Gladiator
-        [141915] = 5590,        -- Apple-Bobbing Cauldron
-        [146041] = 5746,        -- Gladiator Taunt
-        [147286] = 6064,        -- Elinhir Arena Lion
-        [147499] = 6197,        -- Guar Stomp
-        [151931] = 6493,        -- Aldmeri Dominion Banner
-        [151932] = 6365,        -- Daggerfall Covenant Banner
-        [151933] = 6494,        -- Ebonheart Pact Banner
-        [151940] = 6438,        -- Siegemaster Close Helm
-        [153537] = 6665,        -- Siegemaster's Uniform
-        [156626] = 1338,        -- Hollowjack Spectre Mask
-        [166468] = 7595,        -- Reach-Mage Ceremonial Skullcap
-        [167305] = 8043,        -- Timbercrow Wanderer
-        [167937] = 439,         -- Pumpkin Spectre Mask
-        [167938] = 440,         -- Scarecrow Spectre Mask
-        [167939] = 1338,        -- Hollowjack Spectre Mask
-        [167940] = 1339,        -- Thicketman Spectre Mask
-        [171330] = 8221,        -- Snowball Buddy
-        [171471] = 8197,        -- Dominion Breton Terrier
-        [171472] = 8198,        -- Covenant Breton Terrier
-        [171473] = 8196,        -- Pact Breton Terrier
-        [171477] = 8125,        -- Slag Town Diver
-        [171478] = 8658,        -- Thetys Ramarys's Bait Kit
-        [171533] = 8655,        -- Rage of the Reach
-        -- [178695] = ?,        -- Marshmallow Toasty Treat Emote
-        -- [178696] = ?,        -- Witch's Bonfire Memento
         [140308] = 5454,        -- Molag Kena Mask
         [140309] = 5455,        -- Molag Kena's Shoulder
         [140310] = 5457,        -- Shadowrend's Shoulder
@@ -2414,6 +2394,9 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [140375] = 5449,        -- Horned Dragon Sabatons
         [140376] = 5450,        -- Horned Dragon Gauntlets
         [140377] = 5451,        -- Horned Dragon Girdle
+        [141749] = 5656,        -- Swamp Jelly
+        [141750] = 5589,        -- Arena Gladiator
+        [141915] = 5590,        -- Apple-Bobbing Cauldron
         [141977] = 5621,        -- Pit Daemon Cuirass
         [141978] = 5622,        -- Pit Daemon Helm
         [141979] = 5623,        -- Pit Daemon Greaves
@@ -2443,12 +2426,14 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [142015] = 5607,        -- Troll King Mask
         [146038] = 5924,        -- Bloodspawn Mask
         [146040] = 5925,        -- Bloodspawn's Shoulder
+        [146041] = 5746,        -- Gladiator Taunt
         [146043] = 5763,        -- Sellistrix Mask
         [146044] = 5764,        -- Sellistrix's Shoulder
         [146045] = 5926,        -- Swarm Mother Mask
         [146046] = 5927,        -- Swarm Mother's Shoulder
         [146074] = 6045,        -- Engine Guardian's Shoulder
         [146075] = 6044,        -- Engine Guardian Mask
+        [147286] = 6064,        -- Elinhir Arena Lion
         [147301] = 6141,        -- Prophet's Hood
         [147302] = 6143,        -- Prophet's Sandals
         [147303] = 6144,        -- Prophet's Wraps
@@ -2531,6 +2516,7 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [147485] = 6104,        -- Cadwell's "Shield"
         [147486] = 6105,        -- Cadwell's "Staff"
         [147487] = 6106,        -- Cadwell's "Sword"
+        [147499] = 6197,        -- Guar Stomp
         [147534] = 6229,        -- Pit Daemon Battle Axe
         [147535] = 6230,        -- Pit Daemon Maul
         [147536] = 6231,        -- Pit Daemon Greatsword
@@ -2609,26 +2595,30 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [151927] = 6590,        -- Second Legion Belt
         [151928] = 6591,        -- Second Legion Bracers
         [151929] = 6592,        -- Second Legion Boots
-        [152121] = 3720,        -- the Maelstrom's Battle Axe
-        [152122] = 3721,        -- the Maelstrom's Maul
-        [152123] = 3722,        -- the Maelstrom's Greatsword
-        [152124] = 3723,        -- the Maelstrom's Axe
-        [152125] = 3724,        -- the Maelstrom's Bow
-        [152126] = 3725,        -- the Maelstrom's Mace
-        [152127] = 3726,        -- the Maelstrom's Shield
-        [152128] = 3727,        -- the Maelstrom's Staff
-        [152129] = 3728,        -- the Maelstrom's Sword
-        [152130] = 4892,        -- the Maelstrom's Dagger
-        [152131] = 3720,        -- the Maelstrom's Battle Axe
-        [152132] = 3721,        -- the Maelstrom's Maul
-        [152133] = 3722,        -- the Maelstrom's Greatsword
-        [152134] = 3723,        -- the Maelstrom's Axe
-        [152135] = 3724,        -- the Maelstrom's Bow
-        [152136] = 3725,        -- the Maelstrom's Mace
-        [152137] = 3726,        -- the Maelstrom's Shield
-        [152138] = 3727,        -- the Maelstrom's Staff
-        [152139] = 3728,        -- the Maelstrom's Sword
-        [152140] = 4892,        -- the Maelstrom's Dagger
+        [151931] = 6493,        -- Aldmeri Dominion Banner
+        [151932] = 6365,        -- Daggerfall Covenant Banner
+        [151933] = 6494,        -- Ebonheart Pact Banner
+        [151940] = 6438,        -- Siegemaster Close Helm
+        [152121] = 3720,        -- The Maelstrom's Battle Axe
+        [152122] = 3721,        -- The Maelstrom's Maul
+        [152123] = 3722,        -- The Maelstrom's Greatsword
+        [152124] = 3723,        -- The Maelstrom's Axe
+        [152125] = 3724,        -- The Maelstrom's Bow
+        [152126] = 3725,        -- The Maelstrom's Mace
+        [152127] = 3726,        -- The Maelstrom's Shield
+        [152128] = 3727,        -- The Maelstrom's Staff
+        [152129] = 3728,        -- The Maelstrom's Sword
+        [152130] = 4892,        -- The Maelstrom's Dagger
+        [152131] = 3720,        -- The Maelstrom's Battle Axe
+        [152132] = 3721,        -- The Maelstrom's Maul
+        [152133] = 3722,        -- The Maelstrom's Greatsword
+        [152134] = 3723,        -- The Maelstrom's Axe
+        [152135] = 3724,        -- The Maelstrom's Bow
+        [152136] = 3725,        -- The Maelstrom's Mace
+        [152137] = 3726,        -- The Maelstrom's Shield
+        [152138] = 3727,        -- The Maelstrom's Staff
+        [152139] = 3728,        -- The Maelstrom's Sword
+        [152140] = 4892,        -- The Maelstrom's Dagger
         [152252] = 6690,        -- Mighty Chudan Mask
         [152253] = 6691,        -- Mighty Chudan's Shoulder
         [152254] = 6693,        -- Velidreth's Shoulder
@@ -2643,6 +2633,7 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [153498] = 6729,        -- Battleground Runner Helmet
         [153499] = 6744,        -- Chokethorn Mask
         [153500] = 6745,        -- Chokethorn's Shoulder
+        [153537] = 6665,        -- Siegemaster's Uniform
         [153564] = 6753,        -- Glenmoril Wyrd Battle Axe
         [153565] = 6754,        -- Glenmoril Wyrd Maul
         [153566] = 6755,        -- Glenmoril Wyrd Greatsword
@@ -2695,6 +2686,7 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [153886] = 6956,        -- Kra'gh Mask
         [154834] = 6964,        -- Sentinel of Rkugamz Shoulder
         [154835] = 6963,        -- Sentinel of Rkugamz Mask
+        [156626] = 1338,        -- Hollowjack Spectre Mask
         [156672] = 6786,        -- Battleground Runner Waster
         [156673] = 6785,        -- Battleground Runner Staff
         [156674] = 6783,        -- Battleground Runner Bow
@@ -2804,7 +2796,7 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [156840] = 7338,        -- Knight of the Circle Cuirass
         [156841] = 7339,        -- Knight of the Circle Helm
         [158212] = 7511,        -- Mother Ciannait Mask
-        -- [158213] = ?,        -- Mother Ciannait Shoulder
+        [158213] = 7512,        -- Mother Ciannait's Shoulder
         [158271] = 7513,        -- Kjalnar's Nightmare Mask
         [158272] = 7514,        -- Kjalnar's Nightmare Shoulder
         [159472] = 7332,        -- Jephrine Paladin Helm
@@ -2888,6 +2880,7 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [165969] = 8101,        -- Chitinous Shield
         [165970] = 8102,        -- Chitinous Staff
         [165971] = 8108,        -- Chitinous Sword
+        [166468] = 7595,        -- Reach-Mage Ceremonial Skullcap
         [166479] = 8148,        -- Maw of the Infernal's Shoulder
         [166480] = 8147,        -- Maw of the Infernal Mask
         [166962] = 8168,        -- Earthgore's Shoulder
@@ -2964,6 +2957,11 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [167261] = 8333,        -- Grave Dancer Dagger
         [167262] = 8328,        -- Grave Dancer Axe
         [167263] = 8328,        -- Grave Dancer Axe
+        [167305] = 8043,        -- Timbercrow Wanderer
+        [167937] = 439,         -- Pumpkin Spectre Mask
+        [167938] = 440,         -- Scarecrow Spectre Mask
+        [167939] = 1338,        -- Hollowjack Spectre Mask
+        [167940] = 1339,        -- Thicketman Spectre Mask
         [169621] = 8689,        -- Vykosa Shoulder
         [169622] = 8688,        -- Vykosa Mask
         [170129] = 8696,        -- Thurvokun Shoulder
@@ -3066,6 +3064,7 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [171311] = 7757,        -- Opal Iceheart's Shoulder
         [171312] = 7771,        -- Opal Nightflame's Shoulder
         [171313] = 7809,        -- Opal Swarm Mother's Shoulder
+        [171330] = 8221,        -- Snowball Buddy
         [171439] = 8856,        -- Hungering Void Battle Axe
         [171440] = 8857,        -- Hungering Void Maul
         [171441] = 8858,        -- Hungering Void Greatsword
@@ -3076,6 +3075,12 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [171446] = 8863,        -- Hungering Void Staff
         [171447] = 8864,        -- Hungering Void Sword
         [171448] = 8865,        -- Hungering Void Dagger
+        [171471] = 8197,        -- Dominion Breton Terrier
+        [171472] = 8198,        -- Covenant Breton Terrier
+        [171473] = 8196,        -- Pact Breton Terrier
+        [171477] = 8125,        -- Slag Town Diver
+        [171478] = 8658,        -- Thetys Ramarys's Bait Kit
+        [171533] = 8655,        -- Rage of the Reach
         [171578] = 8959,        -- Symphony of Blades Shoulder
         [171579] = 8958,        -- Symphony of Blades Mask
         [171597] = 9002,        -- Stonekeeper Shoulder
@@ -3177,6 +3182,150 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [178527] = 9588,        -- Prior Thierric Mask
         [178545] = 9630,        -- Magma Incarnate Shoulder
         [178546] = 9629,        -- Magma Incarnate Mask
+        [178695] = 8654,        -- Marshmallow Toasty Treat
+        [178696] = 9530,        -- Witch's Bonfire Dust
+        [181623] = 9813,        -- Opal Chokethorn Shoulder
+        [181624] = 9812,        -- Opal Chokethorn Mask
+        [181696] = 10023,       -- Lady Thorn Shoulder
+        [181697] = 10022,       -- Lady Thorn Mask
+        [181698] = 10036,       -- Kargaeda Shoulder
+        [181699] = 10035,       -- Kargaeda Mask
+        [181700] = 10043,       -- Nazaray Shoulder
+        [181701] = 10042,       -- Nazaray Mask
+        [182319] = 9813,        -- Opal Chokethorn Shoulder
+        [182320] = 9812,        -- Opal Chokethorn Mask
+        [182321] = 9807,        -- Opal Chokethorn Greatsword
+        [182322] = 9808,        -- Opal Chokethorn Bow
+        [182323] = 9809,        -- Opal Chokethorn Shield
+        [182324] = 9810,        -- Opal Chokethorn Staff
+        [182325] = 9811,        -- Opal Chokethorn Axe
+        [182327] = 9813,        -- Opal Chokethorn Shoulder
+        [182328] = 9812,        -- Opal Chokethorn Mask
+        [182329] = 9807,        -- Opal Chokethorn Greatsword
+        [182330] = 9808,        -- Opal Chokethorn Bow
+        [182331] = 9809,        -- Opal Chokethorn Shield
+        [182332] = 9810,        -- Opal Chokethorn Staff
+        [182333] = 9811,        -- Opal Chokethorn Axe
+        [182457] = 9798,        -- Nord Carved Cuirass
+        [182461] = 9799,        -- Nord Carved Helm
+        [182464] = 9800,        -- Nord Carved Greaves
+        [182466] = 9801,        -- Nord Carved Pauldrons
+        [182467] = 9802,        -- Nord Carved Sabatons
+        [182469] = 9803,        -- Nord Carved Gauntlets
+        [182470] = 9804,        -- Nord Carved Girdle
+        [182473] = 9798,        -- Nord Carved Cuirass
+        [182474] = 9799,        -- Nord Carved Helm
+        [182475] = 9800,        -- Nord Carved Greaves
+        [182476] = 9801,        -- Nord Carved Pauldrons
+        [182477] = 9802,        -- Nord Carved Sabatons
+        [182478] = 9803,        -- Nord Carved Gauntlets
+        [182479] = 9804,        -- Nord Carved Girdle
+        [182487] = 8541,        -- Powderwhite Coney
+        [182502] = 9746,        -- Black Drake Clanwrap Jerkin
+        [182503] = 9747,        -- Black Drake Clanwrap Hat
+        [182504] = 9748,        -- Black Drake Clanwrap Breeches
+        [182505] = 9749,        -- Black Drake Clanwrap Epaulets
+        [182506] = 9750,        -- Black Drake Clanwrap Shoes
+        [182507] = 9751,        -- Black Drake Clanwrap Gloves
+        [182508] = 9752,        -- Black Drake Clanwrap Sash
+        [182509] = 9746,        -- Black Drake Clanwrap Jerkin
+        [182510] = 9747,        -- Black Drake Clanwrap Hat
+        [182511] = 9748,        -- Black Drake Clanwrap Breeches
+        [182512] = 9749,        -- Black Drake Clanwrap Epaulets
+        [182513] = 9750,        -- Black Drake Clanwrap Shoes
+        [182514] = 9751,        -- Black Drake Clanwrap Gloves
+        [182515] = 9752,        -- Black Drake Clanwrap Sash
+        [182517] = 9402,        -- The Black Drake's Face Warpaint
+        [182518] = 9403,        -- The Black Drake's Body Warpaint
+        [182571] = 9753,        -- Evergloam Champion Battle Axe
+        [182572] = 9754,        -- Evergloam Champion Bow
+        [182573] = 9755,        -- Evergloam Champion Shield
+        [182574] = 9756,        -- Evergloam Champion Staff
+        [182575] = 9757,        -- Evergloam Champion Axe
+        [182576] = 9758,        -- Evergloam Champion Maul
+        [182577] = 9759,        -- Evergloam Champion Greatsword
+        [182578] = 9760,        -- Evergloam Champion Mace
+        [182579] = 9761,        -- Evergloam Champion Sword
+        [182580] = 9762,        -- Evergloam Champion Dagger
+        [182581] = 9753,        -- Evergloam Champion Battle Axe
+        [182582] = 9754,        -- Evergloam Champion Bow
+        [182583] = 9755,        -- Evergloam Champion Shield
+        [182584] = 9756,        -- Evergloam Champion Staff
+        [182585] = 9757,        -- Evergloam Champion Axe
+        [182586] = 9758,        -- Evergloam Champion Maul
+        [182587] = 9759,        -- Evergloam Champion Greatsword
+        [182588] = 9760,        -- Evergloam Champion Mace
+        [182589] = 9761,        -- Evergloam Champion Sword
+        [182590] = 9762,        -- Evergloam Champion Dagger
+        [182591] = 9401,        -- Gloam Gryphon Fledgling
+        [183195] = 9718,        -- Siegestomper
+        [183857] = 10000,       -- Second Seed Raiment Jerkin
+        [183858] = 10001,       -- Second Seed Raiment Hat
+        [183859] = 10002,       -- Second Seed Raiment Breeches
+        [183860] = 10003,       -- Second Seed Raiment Epaulets
+        [183861] = 10004,       -- Second Seed Raiment Shoes
+        [183862] = 10005,       -- Second Seed Raiment Gloves
+        [183863] = 10006,       -- Second Seed Raiment Sash
+        [183864] = 10000,       -- Second Seed Raiment Jerkin
+        [183865] = 10001,       -- Second Seed Raiment Hat
+        [183866] = 10002,       -- Second Seed Raiment Breeches
+        [183867] = 10003,       -- Second Seed Raiment Epaulets
+        [183868] = 10004,       -- Second Seed Raiment Shoes
+        [183869] = 10005,       -- Second Seed Raiment Gloves
+        [183870] = 10006,       -- Second Seed Raiment Sash
+        [183876] = 9846,        -- Saberkeel Panoply Cuirass
+        [183877] = 9847,        -- Saberkeel Panoply Helm
+        [183878] = 9848,        -- Saberkeel Panoply Greaves
+        [183879] = 9849,        -- Saberkeel Panoply Pauldrons
+        [183880] = 9850,        -- Saberkeel Panoply Sabatons
+        [183881] = 9851,        -- Saberkeel Panoply Gauntlets
+        [183882] = 9852,        -- Saberkeel Panoply Girdle
+        [183883] = 9846,        -- Saberkeel Panoply Cuirass
+        [183884] = 9847,        -- Saberkeel Panoply Helm
+        [183885] = 9848,        -- Saberkeel Panoply Greaves
+        [183886] = 9849,        -- Saberkeel Panoply Pauldrons
+        [183887] = 9850,        -- Saberkeel Panoply Sabatons
+        [183888] = 9851,        -- Saberkeel Panoply Gauntlets
+        [183889] = 9852,        -- Saberkeel Panoply Girdle
+        [184119] = 9853,        -- Dragonguard Berserker Jack
+        [184120] = 9854,        -- Dragonguard Berserker Helmet
+        [184121] = 9855,        -- Dragonguard Berserker Guards
+        [184122] = 9856,        -- Dragonguard Berserker Arm Cops
+        [184123] = 9857,        -- Dragonguard Berserker Boots
+        [184124] = 9858,        -- Dragonguard Berserker Bracers
+        [184125] = 9859,        -- Dragonguard Berserker Belt
+        [187679] = 9877,        -- Battle-Scarred Visage
+        [187680] = 9878,        -- Battle-Scarred Body
+        [187683] = 10279,       -- House Dufort Banneret Cuirass
+        [187684] = 10280,       -- House Dufort Banneret Helm
+        [187685] = 10281,       -- House Dufort Banneret Greaves
+        [187686] = 10282,       -- House Dufort Banneret Pauldrons
+        [187687] = 10283,       -- House Dufort Banneret Sabatons
+        [187688] = 10284,       -- House Dufort Banneret Gauntlets
+        [187689] = 10285,       -- House Dufort Banneret Girdle
+        [187690] = 10279,       -- House Dufort Banneret Cuirass
+        [187691] = 10280,       -- House Dufort Banneret Helm
+        [187692] = 10281,       -- House Dufort Banneret Greaves
+        [187693] = 10282,       -- House Dufort Banneret Pauldrons
+        [187694] = 10283,       -- House Dufort Banneret Sabatons
+        [187695] = 10284,       -- House Dufort Banneret Gauntlets
+        [187696] = 10285,       -- House Dufort Banneret Girdle
+        [187702] = 10292,       -- High Rock Spellsword Jerkin
+        [187703] = 10293,       -- High Rock Spellsword Hat
+        [187704] = 10294,       -- High Rock Spellsword Breeches
+        [187705] = 10295,       -- High Rock Spellsword Epaulets
+        [187706] = 10296,       -- High Rock Spellsword Shoes
+        [187707] = 10297,       -- High Rock Spellsword Gloves
+        [187708] = 10298,       -- High Rock Spellsword Sash
+        [187709] = 10292,       -- High Rock Spellsword Jerkin
+        [187710] = 10293,       -- High Rock Spellsword Hat
+        [187711] = 10294,       -- High Rock Spellsword Breeches
+        [187712] = 10295,       -- High Rock Spellsword Epaulets
+        [187713] = 10296,       -- High Rock Spellsword Shoes
+        [187714] = 10297,       -- High Rock Spellsword Gloves
+        [187715] = 10298,       -- High Rock Spellsword Sash
+        [187716] = 10299,       -- High Rock Spellsword Robe
+        [187717] = 10299,       -- High Rock Spellsword Robe
 }
 
 function uespLog.BoolToOnOff(flag)
@@ -4798,6 +4947,14 @@ function uespLog.Initialize( self, addOnName )
 	--ZO_PreHookHandler(ItemTooltip, 'OnUpdate', function() uespLog.AddStatsItemTooltip() end)
 	--ZO_PreHookHandler(ItemTooltip, 'OnHide', function() uespLog.RemoveStatsItemTooltip() end)
 	
+	--uespLog.origGetChatterGreeting = GetChatterGreeting
+	--uespLog.origGetChatterData = GetChatterData
+	--uespLog.origGetOfferedQuestInfo = GetOfferedQuestInfo
+	
+	--GetChatterGreeting = uespLog.GetChatterGreeting
+	--GetChatterData = uespLog.GetChatterData
+	--GetOfferedQuestInfo = uespLog.GetOfferedQuestInfo
+	
 	uespLog.Old_ZO_CharacterWindowStats_ShowComparisonValues = ZO_CharacterWindowStats_ShowComparisonValues
 	uespLog.Old_ZO_CharacterWindowStats_HideComparisonValues = ZO_CharacterWindowStats_HideComparisonValues
 	uespLog.Old_ZO_StatEntry_Keyboard_ShowComparisonValue = ZO_StatEntry_Keyboard.ShowComparisonValue
@@ -5853,7 +6010,7 @@ end
 
 
 function uespLog.OnQuestOffered_Private (eventCode)
-    local dialog, response = GetOfferedQuestInfo()
+	local dialog, response = GetOfferedQuestInfo()
     local _, farewell = GetChatterFarewell()
 	local logData = { }
 	
@@ -5928,6 +6085,36 @@ function uespLog.OnChatterEnd (eventCode)
 end
 
 
+uespLog.lastGetChatterGreeting = {}
+uespLog.lastGetChatterData = {}
+uespLog.lastGetOfferedQuestInfo = {}
+
+
+function uespLog.GetChatterGreeting()
+	uespLog.DebugExtraMsg("GetChatterGreeting")
+	
+	uespLog.lastGetChatterGreeting = { uespLog.origGetChatterGreeting() }
+	return unpack(uespLog.lastGetChatterGreeting)
+end
+
+
+function uespLog.GetChatterData()
+	uespLog.DebugExtraMsg("GetChatterData")
+	
+	uespLog.lastGetChatterData = { uespLog.origGetChatterData() }
+	return unpack(uespLog.lastGetChatterData)
+end
+
+
+function uespLog.GetOfferedQuestInfo()
+	uespLog.DebugExtraMsg("GetOfferedQuestInfo")
+	
+	uespLog.lastOfferedQuestInfo = { uespLog.origGetOfferedQuestInfo() }
+	return unpack(uespLog.lastOfferedQuestInfo)
+end
+
+
+
 function uespLog.OnChatterBegin (eventCode, optionCount)
 	
 		-- If you call this in the main thread you'll get NPC lip animations de-syncing when calling GetChatterGreeting() or GetChatterData()
@@ -5936,12 +6123,15 @@ end
 
 
 function uespLog.OnChatterBegin_Private (eventCode, optionCount)
+	
+	uespLog.DebugExtraMsg("OnChatterBegin")
+	
 	local x, y, heading, zone = uespLog.GetUnitPosition("interact")
     local npcLevel = GetUnitLevel("interact")
 	local npcName = GetUnitName("interact")
 	local logData = { }
 	local ChatterGreeting = GetChatterGreeting()
-	local ChatterGreeting = ""
+	--local ChatterGreeting = ""
 	
 	uespLog.lastConversationOption.Text = ""
 	uespLog.lastConversationOption.Type = ""
@@ -5970,7 +6160,7 @@ function uespLog.OnChatterBegin_Private (eventCode, optionCount)
 	logData.event = "ChatterBegin"
 	logData.bodyText = ChatterGreeting
 	logData.optionCount = optionCount
-	-- logData.chatText, logData.numOptions, logData.atGreeting = GetChatterData() 	-- Can't call this at all without having lip animation issues
+	--logData.chatText, logData.numOptions, logData.atGreeting = GetChatterData() 	-- Can't call this at all without having lip animation issues
 		
 	uespLog.AppendDataToLog("all", logData, uespLog.currentConversationData, uespLog.GetTimeData())
 	
@@ -5982,14 +6172,6 @@ function uespLog.OnChatterBegin_Private (eventCode, optionCount)
 		
 		uespLog.AppendDataToLog("all", logData)
 	end
-	
-	--uespLog.DebugExtraMsg("UESP: Chatter begin...")
-	
-		-- Manually call the original function to update the chat window.
-		-- If you don't call these the NPC dialog window doesn't show up.
-	INTERACTION:InitializeInteractWindow(ChatterGreeting)
-	INTERACTION:UpdateChatterOptions(optionCount, false)
-	--INTERACTION.optionCount, INTERACTION.importantOptions = INTERACTION:PopulateChatterOptions(optionCount, false)
 	        
 end
 
@@ -14327,6 +14509,24 @@ uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
 	['fargrave_guardian'] = 126,
 	['fargraveguardian'] = 126,
 	['fargrave'] = 126,
+	
+	-- High Isle
+	['ancestral akaviri'] = 108,
+	['ancestralakaviri'] = 108,
+	['ancestral breton'] = 109,
+	['ancestralbreton'] = 109,
+	['dreadsails'] = 128,
+	['ascendant order'] = 129,
+	['ascendantorder'] = 129,
+	['syrabanic marine'] = 130,
+	['syrabanicmarine'] = 130,
+	['syrabanic'] = 130,
+	['steadfast society'] = 131,
+	['steadfastsociety'] = 131,
+	['steadfast'] = 131,
+	['systres guardian'] = 132,
+	['systresguardian'] = 132,
+	['systres'] = 132,
 }
 
 
@@ -14613,6 +14813,13 @@ uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
 	['sul xan'] = { 171913, 171914, 171915, 171916, 171917, 171918, 171919, 171920, 171921, 171922, 171923, 171924, 171925, 171926 }, -- 171912, 171927
 	['sul_xan'] = { 171913, 171914, 171915, 171916, 171917, 171918, 171919, 171920, 171921, 171922, 171923, 171924, 171925, 171926 }, -- 171912, 171927
 	['sulxan'] = { 171913, 171914, 171915, 171916, 171917, 171918, 171919, 171920, 171921, 171922, 171923, 171924, 171925, 171926 }, -- 171912, 171927
+	['crimson oath'] = { 176058, 176059, 176060, 176061, 176062, 176063, 176064, 176065, 176066, 176067, 176068, 176069, 176070, 176071 }, -- 176057, 176072
+	['crimson_oath'] = { 176058, 176059, 176060, 176061, 176062, 176063, 176064, 176065, 176066, 176067, 176068, 176069, 176070, 176071 }, -- 176057, 176072
+	['crimsonoath'] = { 176058, 176059, 176060, 176061, 176062, 176063, 176064, 176065, 176066, 176067, 176068, 176069, 176070, 176071 }, -- 176057, 176072
+	['crimson'] = { 176058, 176059, 176060, 176061, 176062, 176063, 176064, 176065, 176066, 176067, 176068, 176069, 176070, 176071 }, -- 176057, 176072
+	['silver rose'] = { 178505, 178506, 178507, 178508, 178509, 178510, 178511, 178512, 178513, 178514, 178515, 178516, 178517, 178518 }, -- 178504, 178519
+	['silver_rose'] = { 178505, 178506, 178507, 178508, 178509, 178510, 178511, 178512, 178513, 178514, 178515, 178516, 178517, 178518 }, -- 178504, 178519
+	['silverrose'] = { 178505, 178506, 178507, 178508, 178509, 178510, 178511, 178512, 178513, 178514, 178515, 178516, 178517, 178518 }, -- 178504, 178519
 	
 		-- Gates of Oblivion
 	['house hexos'] = { 170132, 170133, 170134, 170135, 170136, 170137, 170138, 170139, 170140, 170141, 170142, 170143, 170144, 170145 }, -- 170131, 170146
@@ -14624,6 +14831,33 @@ uespLog.CRAFTSTYLENAME_TO_MOTIFID = {
 	['ancient daedric'] = { 171859, 171860, 171861, 171862, 171863, 171864, 171865, 171866, 171867, 171868, 171869, 171870, 171871, 171872 }, -- 171858, 171873
 	['ancient_daedric'] = { 171859, 171860, 171861, 171862, 171863, 171864, 171865, 171866, 171867, 171868, 171869, 171870, 171871, 171872 }, -- 171858, 171873
 	['ancientdaedric'] = { 171859, 171860, 171861, 171862, 171863, 171864, 171865, 171866, 171867, 171868, 171869, 171870, 171871, 171872 }, -- 171858, 171873
+	['annihilarch\'s choosen'] = { 178529, 178530, 178531, 178532, 178533, 178534, 178535, 178536, 178537, 178538, 178539, 178540, 178541, 178542 }, -- 178528, 178543
+	['annihilarchs choosen'] = { 178529, 178530, 178531, 178532, 178533, 178534, 178535, 178536, 178537, 178538, 178539, 178540, 178541, 178542 }, -- 178528, 178543
+	['annihilarchs_choosen'] = { 178529, 178530, 178531, 178532, 178533, 178534, 178535, 178536, 178537, 178538, 178539, 178540, 178541, 178542 }, -- 178528, 178543
+	['annihilarchschoosen'] = { 178529, 178530, 178531, 178532, 178533, 178534, 178535, 178536, 178537, 178538, 178539, 178540, 178541, 178542 }, -- 178528, 178543
+	['annihilarch'] = { 178529, 178530, 178531, 178532, 178533, 178534, 178535, 178536, 178537, 178538, 178539, 178540, 178541, 178542 }, -- 178528, 178543
+	['fargrave guardian'] = { 178707, 178708, 178709, 178710, 178711, 178712, 178713, 178714, 178715, 178716, 178717, 178718, 178719, 178720 }, -- 178706, 178721
+	['fargrave_guardian'] = { 178707, 178708, 178709, 178710, 178711, 178712, 178713, 178714, 178715, 178716, 178717, 178718, 178719, 178720 }, -- 178706, 178721
+	['fargraveguardian'] = { 178707, 178708, 178709, 178710, 178711, 178712, 178713, 178714, 178715, 178716, 178717, 178718, 178719, 178720 }, -- 178706, 178721
+	['fargrave'] = { 178707, 178708, 178709, 178710, 178711, 178712, 178713, 178714, 178715, 178716, 178717, 178718, 178719, 178720 }, -- 178706, 178721
+	
+		-- High Isle
+	['ancestral akaviri'] = { 167174, 167175, 167176, 167177, 167178, 167179, 167180, 167181, 167182, 167183, 167184, 167185, 167186, 167187 }, -- 167173, 
+	['ancestralakaviri'] = { 167174, 167175, 167176, 167177, 167178, 167179, 167180, 167181, 167182, 167183, 167184, 167185, 167186, 167187 }, -- 167173, 
+	['ancestral breton'] = { 167191, 167192, 167193, 167194, 167195, 167196, 167197, 167198, 167199, 167200, 167201, 167202, 167203, 167204 }, -- 167190, 167205
+	['ancestralbreton'] = { 167191, 167192, 167193, 167194, 167195, 167196, 167197, 167198, 167199, 167200, 167201, 167202, 167203, 167204 }, -- 167190, 167205
+	['dreadsails'] = { 181662, 181663, 181664, 181665, 181666, 181667, 181668, 181669, 181670, 181671, 181672, 181673, 181674, 181675 }, -- 181661, 181676
+	['ascendant order'] = { 181679, 181680, 181681, 181682, 181683, 181684, 181685, 181686, 181687, 181688, 181689, 181690, 181691, 181692 }, -- 181678, 181693
+	['ascendantorder'] = { 181679, 181680, 181681, 181682, 181683, 181684, 181685, 181686, 181687, 181688, 181689, 181690, 181691, 181692 }, -- 181678, 181693
+	['syrabanic marine'] = { 182521, 182522, 182523, 182524, 182525, 182526, 182527, 182528, 182529, 182530, 182531, 182532, 182533, 182534 }, -- 182520, 182535
+	['syrabanicmarine'] = { 182521, 182522, 182523, 182524, 182525, 182526, 182527, 182528, 182529, 182530, 182531, 182532, 182533, 182534 }, -- 182520, 182535
+	['syrabanic'] = { 182521, 182522, 182523, 182524, 182525, 182526, 182527, 182528, 182529, 182530, 182531, 182532, 182533, 182534 }, -- 182520, 182535
+	['steadfast society'] = { 182538, 182539, 182540, 182541, 182542, 182543, 182544, 182545, 182546, 182547, 182548, 182549, 182550, 182551 }, -- 182537, 182552
+	['steadfastsociety'] = { 182538, 182539, 182540, 182541, 182542, 182543, 182544, 182545, 182546, 182547, 182548, 182549, 182550, 182551 }, -- 182537, 182552
+	['steadfast'] = { 182538, 182539, 182540, 182541, 182542, 182543, 182544, 182545, 182546, 182547, 182548, 182549, 182550, 182551 }, -- 182537, 182552
+	['systres guardian'] = { 182555, 182556, 182557, 182558, 182559, 182560, 182561, 182562, 182563, 182564, 182565, 182566, 182567, 182568 }, -- 182554, 182569
+	['systresguardian'] = { 182555, 182556, 182557, 182558, 182559, 182560, 182561, 182562, 182563, 182564, 182565, 182566, 182567, 182568 }, -- 182554, 182569
+	['systres'] = { 182555, 182556, 182557, 182558, 182559, 182560, 182561, 182562, 182563, 182564, 182565, 182566, 182567, 182568 }, -- 182554, 182569
 }
 
 

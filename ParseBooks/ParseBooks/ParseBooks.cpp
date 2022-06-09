@@ -15,7 +15,7 @@ using namespace std;
 using namespace eso;
 
 	/* Now defined by command line arguments */
-string VERSION = "18pts";
+string VERSION = "34";
 string BASEPATH = "e:\\esoexport\\";
 
 string INPUT_PATH_PREFIX;
@@ -332,6 +332,7 @@ bool ParseQuestData(const std::string QuestDataFilename)
 {
 	CFile QuestFile;
 	dword NumRecords = 0;
+	int iVersion = atoi(VERSION.c_str());
 
 	printf("Parsing quest data from raw file '%s'..\n", QuestDataFilename.c_str());
 
@@ -345,6 +346,7 @@ bool ParseQuestData(const std::string QuestDataFilename)
 	for (dword RecordIndex = 1; RecordIndex <= NumRecords; ++RecordIndex)
 	{
 		fpos_t StartOffset = QuestFile.Tell();
+
 		fpos_t EndOffset;
 		dword FullRecordSize;
 		dword RecordSize;
@@ -361,20 +363,38 @@ bool ParseQuestData(const std::string QuestDataFilename)
 
 		if (!QuestFile.Seek(8, SEEK_CUR)) return ReportError("Failed to find record size in quest data file!\n");
 		if (!QuestFile.ReadDword(RecordSize, false)) return ReportError("Failed to read record size in quest data file!\n");
-		if (!QuestFile.Seek(8, SEEK_CUR)) return ReportError("Failed to find quest Id in quest data file!\n");
+
+			// Update 27 reverses the first ID field with the previous unknown field
+		//if (!QuestFile.Seek(8, SEEK_CUR)) return ReportError("Failed to find quest Id in quest data file!\n");	
+
+		if (!QuestFile.Seek(20, SEEK_CUR)) return ReportError("Failed to find quest Id in quest data file!\n");
 		if (!QuestFile.ReadDword(QuestId, false)) return ReportError("Failed to read quest Id in quest data file!\n");
-		if (!QuestFile.Seek(12, SEEK_CUR)) return ReportError("Failed to find name size in quest data file!\n");
+
+		//if (!QuestFile.Seek(12, SEEK_CUR)) return ReportError("Failed to find name size in quest data file!\n");
 		if (!QuestFile.ReadWord(NameSize, false)) return ReportError("Failed to read name size in quest data file!\n");
 
 		FullRecordSize = RecordSize + 32;
 		EndOffset = StartOffset + FullRecordSize;
+
+		//ReportError("%d: 0x%lX - 0x%lX\n", QuestId, (int) StartOffset, (int)EndOffset);
 		
 		char* pBuffer = new char[NameSize + 4];
 		if (!QuestFile.ReadBytes((eso::byte *) pBuffer, NameSize + 1)) return ReportError("Failed to read quest name in quest data file!\n");
 		Name = pBuffer;
 		delete[] pBuffer;
 
-		if (!QuestFile.Seek(22, SEEK_CUR)) return ReportError("Failed to find record1 count in quest data file!\n");
+			// Version 20-25: 22
+			// Version 26: 23
+			// Version 27: 22
+		if (iVersion == 26 || iVersion >= 30)
+		{
+			if (!QuestFile.Seek(23, SEEK_CUR)) return ReportError("Failed to find record1 count in quest data file!\n");
+		}
+		else
+		{
+			if (!QuestFile.Seek(22, SEEK_CUR)) return ReportError("Failed to find record1 count in quest data file!\n");
+		}
+		
 		if (!QuestFile.ReadWord(RecordCount1, false)) return ReportError("Failed to read record1 count in quest data file!\n");
 
 		fpos_t MiddleOffset = QuestFile.Tell();
@@ -399,7 +419,7 @@ bool ParseQuestData(const std::string QuestDataFilename)
 		MiddleOffset += DeltaOffset + 4;
 
 		DeltaOffset = 4 * RecordCount4;
-		if (MiddleOffset + DeltaOffset > EndOffset) return ReportError("Data overflow in record4 field!\n");
+		if (MiddleOffset + DeltaOffset > EndOffset) return ReportError("Data overflow in record4 field (0x%08lX, 0x%lX, 0x%lX, 0x%lX)!\n",(int) MiddleOffset, (int)RecordCount4, (int)DeltaOffset, (int)EndOffset);
 		if (!QuestFile.Seek(DeltaOffset, SEEK_CUR)) return ReportError("Failed to find end of record4 data in quest data file!\n");
 
 		//if (!QuestFile.Seek(StartOffset + RecordSize + 32 - 68, SEEK_SET)) return ReportError("Failed to find quest type field in quest data file!\n");
@@ -413,10 +433,22 @@ bool ParseQuestData(const std::string QuestDataFilename)
 			if (!QuestFile.ReadDword(Type, false)) return ReportError("Failed to read quest type field in quest data file!\n");
 		}*/
 
-		if (!QuestFile.Seek(StartOffset + RecordSize + 32 - 32, SEEK_SET)) return ReportError("Failed to find zone field in quest data file!\n");
+		// Update 20-25 = -4
+		// Update 27-? = -12
+
+		int zoneOffset = 4;
+		if (iVersion >= 27) zoneOffset = 12;
+		if (iVersion >= 30) zoneOffset = 12 + 16;
+		if (iVersion >= 34) zoneOffset = 12 + 16 + 4;
+		
+		if (!QuestFile.Seek(StartOffset + RecordSize - zoneOffset, SEEK_SET)) return ReportError("Failed to find zone field in quest data file!\n");
+		//ReportError("%d: ZoneId: 0x%lX\n", QuestId, (int) (StartOffset + RecordSize - zoneOffset));
 		if (!QuestFile.ReadDword(ZoneId, false)) return ReportError("Failed to read zone field in quest data file!\n");
 
-		if (Type < 0 || Type > 13) return ReportError("Invalid type value of %d found at 0x%08X!\n", Type, QuestFile.Tell());
+		// Update 20-25: 0-13
+		// Update 26: 0-15
+
+		if (Type < 0 || Type > 20) return ReportError("Invalid type value of %d found at 0x%08X!\n", Type, QuestFile.Tell());
 
 		printf("\t%d) %s (%d) = %d / %d\n", RecordIndex, Name.c_str(), QuestId, Type, ZoneId);
 

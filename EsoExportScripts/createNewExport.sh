@@ -1,9 +1,9 @@
 #!/bin/sh
 
-VERSION="32"
+VERSION="34"
 ISPTS=""
-LASTVERSION="31"
-LASTPTSVERSION="32pts"
+LASTVERSION="33"
+LASTPTSVERSION="34pts"
 
 MAKEPTSDIFF="1"
 MAKEDIFF="1"
@@ -194,6 +194,9 @@ rsync -a --exclude "*.dds" "$ESOINPUTPATH/esoui/art/treeicons" "$OUTPUTPATH/More
 echo "Copying Tutorial Images..."
 rsync -a --exclude "*.dds" "$ESOINPUTPATH/esoui/art/tutorial" "$OUTPUTPATH/MoreImages/"
 
+echo "Copying Tribute Images..."
+rsync -a --exclude "*.dds" "$ESOINPUTPATH/esoui/art/tribute" "$OUTPUTPATH/MoreImages/"
+
 echo "Copying Language files..."
 rsync -a --exclude "*.dds" "$ESOINPUTPATH/gamedata/lang/" "$OUTPUTPATH/Lang/"
 rsync -a --exclude "*.dds" "$ESOINPUTPATH/esoui/lang/" "$OUTPUTPATH/Lang/client/"
@@ -231,6 +234,7 @@ if [ $MAKEDIFF ]; then
 	makediff "./esomnf-$LASTVERSION/esoui/art/store/" "./esomnf-$VERSION/esoui/art/store/" "./goodimages-$VERSION/store.diff.txt" $LASTVERSION $VERSION
 	makediff "./esomnf-$LASTVERSION/esoui/art/treeicons/" "./esomnf-$VERSION/esoui/art/treeicons/" "./goodimages-$VERSION/treeicons.diff.txt" $LASTVERSION $VERSION 
 	makediff "./esomnf-$LASTVERSION/esoui/art/tutorial/" "./esomnf-$VERSION/esoui/art/tutorial/" "./goodimages-$VERSION/tutorial.diff.txt"  $LASTVERSION $VERSION
+	makediff "./esomnf-$LASTVERSION/esoui/art/tribute/" "./esomnf-$VERSION/esoui/art/tribute/" "./goodimages-$VERSION/tribute.diff.txt" $LASTVERSION $VERSION
 	makediff "./gamemnf-$LASTVERSION/esoui/art/" "./gamemnf-$VERSION/esoui/art/" "./goodimages-$VERSION/gameuiart.diff.txt" $LASTVERSION $VERSION
 	makemapsdiff "./esomnf-$LASTVERSION/art/maps/" "./esomnf-$VERSION/art/maps/" "./goodimages-$VERSION/maps.diff.txt" $LASTVERSION $VERSION
 	
@@ -254,6 +258,7 @@ if [ $MAKEPTSDIFF ]; then
 	makediff "./esomnf-$LASTPTSVERSION/esoui/art/store/" "./esomnf-$VERSION/esoui/art/store/" "./goodimages-$VERSION/store.ptsdiff.txt" $LASTPTSVERSION $VERSION
 	makediff "./esomnf-$LASTPTSVERSION/esoui/art/treeicons/" "./esomnf-$VERSION/esoui/art/treeicons/" "./goodimages-$VERSION/treeicons.ptsdiff.txt" $LASTPTSVERSION $VERSION 
 	makediff "./esomnf-$LASTPTSVERSION/esoui/art/tutorial/" "./esomnf-$VERSION/esoui/art/tutorial/" "./goodimages-$VERSION/tutorial.ptsdiff.txt"  $LASTPTSVERSION $VERSION
+	makediff "./esomnf-$LASTPTSVERSION/esoui/art/tribute/" "./esomnf-$VERSION/esoui/art/tribute/" "./goodimages-$VERSION/tribute.ptsdiff.txt"  $LASTPTSVERSION $VERSION
 	makediff "./gamemnf-$LASTPTSVERSION/esoui/art/" "./gamemnf-$VERSION/esoui/art/" "./goodimages-$VERSION/gameuiart.ptsdiff.txt" $LASTPTSVERSION $VERSION
 	makemapsdiff "./esomnf-$LASTPTSVERSION/art/maps/" "./esomnf-$VERSION/art/maps/" "./goodimages-$VERSION/maps.ptsdiff.txt" $LASTPTSVERSION $VERSION
 	
@@ -364,6 +369,13 @@ cd ../../
 zip -urq "tutorial.zip" tutorial.ptsdiff.txt tutorial.diff.txt
 popd
 
+echo "Compressing Tribute Images..."
+pushd "$OUTPUTPATH/MoreImages/tribute/"
+zip -rq "../../Tribute.zip" *
+cd ../../
+zip -urq "Tribute.zip" Tribute.ptsdiff.txt Tribute.diff.txt
+popd
+
 echo "Compressing Maps..."
 pushd "$OUTPUTPATH/CombinedMaps/"
 zip -rq "../maps.zip" * maplist.txt
@@ -392,6 +404,7 @@ makezipdiff "crowncrates.diff.zip" "$OUTPUTPATH/MoreImages/crowncrates/" "crownc
 makezipdiff "collectibles.diff.zip" "$OUTPUTPATH/MoreImages/collectibles/" "collectibles.diff.txt.list"
 makezipdiff "store.diff.zip" "$OUTPUTPATH/MoreImages/store/" "store.diff.txt.list"
 makezipdiff "tutorial.diff.zip" "$OUTPUTPATH/MoreImages/tutorial/" "tutorial.diff.txt.list"
+makezipdiff "tribute.diff.zip" "$OUTPUTPATH/MoreImages/tribute/" "tribute.diff.txt.list"
 makezipdiff "gameuiart.diff.zip" "$OUTPUTPATH/GameUIArt/" "gameuiart.diff.txt.list"
 makezipdiff "maps.diff.zip" "$OUTPUTPATH/CombinedMaps/" "maps.diff.txt.list"
 
@@ -403,6 +416,7 @@ if [ "$MAKEPTSDIFF" ]; then
 	makezipdiff "collectibles.ptsdiff.zip" "$OUTPUTPATH/MoreImages/collectibles/" "collectibles.ptsdiff.txt.list"
 	makezipdiff "store.ptsdiff.zip" "$OUTPUTPATH/MoreImages/store/" "store.ptsdiff.txt.list"
 	makezipdiff "tutorial.ptsdiff.zip" "$OUTPUTPATH/MoreImages/tutorial/" "tutorial.ptsdiff.txt.list"
+	makezipdiff "tribute.ptsdiff.zip" "$OUTPUTPATH/MoreImages/tribute/" "tribute.ptsdiff.txt.list"
 	makezipdiff "gameuiart.ptsdiff.zip" "$OUTPUTPATH/GameUIArt/" "gameuiart.ptsdiff.txt.list"
 	makezipdiff "maps.ptsdiff.zip" "$OUTPUTPATH/CombinedMaps/" "maps.ptsdiff.txt.list"
 fi

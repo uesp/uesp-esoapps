@@ -6,7 +6,7 @@
 				uespSalesHelper.OnUpdate()
 			</OnUpdate>
 		</TopLevelControl>
-		<TopLevelControl name="uespSalesHelperUI" mouseEnabled="false" alpha="1.0" movable="true" clampedToScreen="true" resizeHandleSize="0" >
+		<TopLevelControl name="uespSalesHelperUI" mouseEnabled="false" alpha="1.0" movable="true" clampedToScreen="true" resizeHandleSize="0" layer="OVERLAY" tier="HIGH">
 			<Dimensions x="250" y="100" />
 			<Anchor point="TOPLEFT" offsetX="10" offsetY="200" />
 			<Controls>

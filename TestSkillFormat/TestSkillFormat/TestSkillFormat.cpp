@@ -3935,7 +3935,7 @@ bool ExportPhpData(std::string Filename)
 		escSkillName = ReplaceStrings(escSkillName, "\n", "\\n");
 
 		//if (escSkillDesc == "" && skill.u2[12] == 0 && skill.u2[14] == 0 && skill.u2[15] == 0 && skill.u2[3] == 0 && skill.u2[4] == 0 && skill.u2[5] == 0 && skill.u4[7] == 0) continue;
-		if (escSkillDesc == "" && skill.baseData.duration == 0 && skill.baseData.tick == 0 && skill.baseData.startTick == 0 && skill.baseData.coolDown == 0 && skill.baseData.value1 == 0 && skill.baseData.value2 == 0 && skill.u4[7] == 0) continue;
+		if (escSkillDesc == "" && skill.baseData.duration == 0 && skill.baseData.tick == 0 && skill.baseData.startTick == 0 && skill.baseData.coolDown == 0 && skill.baseData.value1 == 0 && skill.baseData.value2 == 0 && skill.u4[3] == 0) continue;
 
 		fprintf(pFile, "\t%d => array(\n", abilityId);
 		if (escSkillName != "") fprintf(pFile, "\t\t'name' => \"%s\",\n", escSkillName.c_str());
@@ -4034,6 +4034,7 @@ bool ExportPhpData(std::string Filename)
 			if (skill1.baseData.tick != 0) fprintf(pFile, "\t\t\t\t\t\t'tick' => %d,\n", skill1.baseData.tick);
 			if (skill1.baseData.startTick != 0) fprintf(pFile, "\t\t\t\t\t\t'start' => %d,\n", skill1.baseData.startTick);
 			if (skill1.baseData.radius != 0) fprintf(pFile, "\t\t\t\t\t\t'radius' => %d,\n", skill1.baseData.radius);
+			if (skill1.u4[3] != 0) fprintf(pFile, "\t\t\t\t\t\t'dmgtype' => %d,\n", skill1.u4[3]);
 
 			if (skill1.u2[4] != 0) 
 			{

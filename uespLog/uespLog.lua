@@ -21859,7 +21859,7 @@ function uespLog.LogAllVendorItems()
 	local logData = {}
 	local i
 	
-	uespLog.DebugExtraMsg("Logging all vendor items...."..tostring(uespLog.currentTargetData.name)..", "..tostring(numItems))
+	uespLog.DebugMsg("Logging all vendor items...."..tostring(uespLog.currentTargetData.name)..", "..tostring(numItems))
 	
 	if (numItems == 0) then
 		return 0
@@ -21895,17 +21895,26 @@ end
 
 function uespLog.OnEndeavorReset(eventCode)
 	uespLog.DebugExtraMsg("OnEndeavorReset")
+	uespLog.hasLoggedEndeavors = false
 	uespLog.LogAllEndeavors()
 end
 
 
 function uespLog.OnEndeavorUpdated(eventCode)
 	uespLog.DebugExtraMsg("OnEndeavorUpdated")
+	uespLog.hasLoggedEndeavors = false
 	uespLog.LogAllEndeavors()
 end
 
 
+uespLog.hasLoggedEndeavors = false
+
 function uespLog.LogAllEndeavors()
+
+	if (uespLog.hasLoggedEndeavors) then
+		return
+	end
+	
 	local numAct = GetNumTimedActivities()
 	local i
 	
@@ -21913,6 +21922,7 @@ function uespLog.LogAllEndeavors()
 		uespLog.LogEndeavor(i)
 	end
 	
+	uespLog.hasLoggedEndeavors = true
 end
 
 

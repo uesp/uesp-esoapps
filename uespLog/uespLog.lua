@@ -1169,6 +1169,10 @@
 --			- Fixed missing initial dialogue text when talking to NPCs.
 --			- Updated style icons and motif IDs.
 --
+--		-- v3.10 -- 
+--			- Increased the value of uespLog.MAXCAMPAIGN to 200 so newer campaigns will be shown with /uesppvpqueue .
+--			- Updated runebox collectible IDs.
+--
 --
 
 
@@ -1523,6 +1527,8 @@ uespLog.trackStatUltColor = "FFFFFF"
 uespLog.LastKeepChatOpen = false
 
 uespLog.MARKET_HIDE_TIME = 30	-- Seconds
+
+uespLog.GETABILITYCOST_MAX_MECHANICCOUNT = 10	-- To prevent infinite loops if something goes wrong
 
 uespLog.LastLoreBookTitle = ""
 uespLog.LastLoreBookTime = 0
@@ -2006,6 +2012,7 @@ uespLog.DEFAULT_SETTINGS =
 		["isAutoMiningItems"] = false,
 		["pvpUpdate"] = false,
 		["pvpAutoLog"] = false,
+		["pvpAutoJoin"] = false,
 		["enabledTreasureTimers"] = false,
 		["TREASURE_TIMER_DURATIONS"] = {
 			["chest"] = 120,
@@ -2300,15 +2307,15 @@ uespLog.ITEMCHANGE_IGNORE_FIELDS = {
 
 
 uespLog.RUNEBOX_COLLECTIBLE_IDS = {
-        [79329] = 148,  		-- Xivkyn Dreadguard
-        [79330] = 147,  		-- Xivkyn Tormentor
-        [79331] = 146,  		-- Xivkyn Augur
-        [83516] = 439,  		-- Pumpkin Spectre Mask
-        [83517] = 440,  		-- Scarecrow Spectre Mask
-        [96391] = 601,  		-- Mud Ball Pouch
-        [96392] = 597,  		-- Sword-Swallower's Blade
-        [96393] = 598,  		-- Juggler's Knives
-        [96395] = 600,  		-- Fire-Breather's Torches
+		[79329] = 148, 			-- Xivkyn Dreadguard
+        [79330] = 147, 			-- Xivkyn Tormentor
+        [79331] = 146, 			-- Xivkyn Augur
+        [83516] = 439, 			-- Pumpkin Spectre Mask
+        [83517] = 440, 			-- Scarecrow Spectre Mask
+        [96391] = 601, 			-- Mud Ball Pouch
+        [96392] = 597, 			-- Sword-Swallower's Blade
+        [96393] = 598, 			-- Juggler's Knives
+        [96395] = 600, 			-- Fire-Breather's Torches
         [96951] = 753, 			-- Nordic Bather's Towel
         [96952] = 755, 			-- Colovian Fur Hood
         [96953] = 754, 			-- Colovian Filigreed Hood
@@ -2324,6 +2331,41 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [138784] = 5019,        -- Arena Gladiator Helm
         [139464] = 4996,        -- Big-Eared Ginger Kitten
         [139465] = 5047,        -- Psijic Glowglobe
+        [141749] = 5656,        -- Swamp Jelly
+        [141750] = 5589,        -- Arena Gladiator
+        [141915] = 5590,        -- Apple-Bobbing Cauldron
+        [146041] = 5746,        -- Gladiator Taunt
+        [147286] = 6064,        -- Elinhir Arena Lion
+        [147499] = 6197,        -- Guar Stomp
+        [151931] = 6493,        -- Aldmeri Dominion Banner
+        [151932] = 6365,        -- Daggerfall Covenant Banner
+        [151933] = 6494,        -- Ebonheart Pact Banner
+        [151940] = 6438,        -- Siegemaster Close Helm
+        [153537] = 6665,        -- Siegemaster's Uniform
+        [156626] = 1338,        -- Hollowjack Spectre Mask
+        [166468] = 7595,        -- Reach-Mage Ceremonial Skullcap
+        [167305] = 8043,        -- Timbercrow Wanderer
+        [167937] = 439,         -- Pumpkin Spectre Mask
+        [167938] = 440,         -- Scarecrow Spectre Mask
+        [167939] = 1338,        -- Hollowjack Spectre Mask
+        [167940] = 1339,        -- Thicketman Spectre Mask
+        [171330] = 8221,        -- Snowball Buddy
+        [171471] = 8197,        -- Dominion Breton Terrier
+        [171472] = 8198,        -- Covenant Breton Terrier
+        [171473] = 8196,        -- Pact Breton Terrier
+        [171477] = 8125,        -- Slag Town Diver
+        [171478] = 8658,        -- Thetys Ramarys's Bait Kit
+        [171533] = 8655,        -- Rage of the Reach
+        [178695] = 8654,        -- Marshmallow Toasty Treat
+        [178696] = 9530,        -- Witch's Bonfire Dust
+        [182487] = 8541,        -- Powderwhite Coney
+        [182517] = 9402,        -- The Black Drake's Face Warpaint
+        [182518] = 9403,        -- The Black Drake's Body Warpaint
+        [182591] = 9401,        -- Gloam Gryphon Fledgling
+        [183195] = 9718,        -- Siegestomper
+        [187679] = 9877,        -- Battle-Scarred Visage
+        [187680] = 9878,        -- Battle-Scarred Body
+        [190035] = 10850,       -- Ghastly Visitation
         [140308] = 5454,        -- Molag Kena Mask
         [140309] = 5455,        -- Molag Kena's Shoulder
         [140310] = 5457,        -- Shadowrend's Shoulder
@@ -2394,9 +2436,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [140375] = 5449,        -- Horned Dragon Sabatons
         [140376] = 5450,        -- Horned Dragon Gauntlets
         [140377] = 5451,        -- Horned Dragon Girdle
-        [141749] = 5656,        -- Swamp Jelly
-        [141750] = 5589,        -- Arena Gladiator
-        [141915] = 5590,        -- Apple-Bobbing Cauldron
         [141977] = 5621,        -- Pit Daemon Cuirass
         [141978] = 5622,        -- Pit Daemon Helm
         [141979] = 5623,        -- Pit Daemon Greaves
@@ -2426,14 +2465,12 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [142015] = 5607,        -- Troll King Mask
         [146038] = 5924,        -- Bloodspawn Mask
         [146040] = 5925,        -- Bloodspawn's Shoulder
-        [146041] = 5746,        -- Gladiator Taunt
         [146043] = 5763,        -- Sellistrix Mask
         [146044] = 5764,        -- Sellistrix's Shoulder
         [146045] = 5926,        -- Swarm Mother Mask
         [146046] = 5927,        -- Swarm Mother's Shoulder
         [146074] = 6045,        -- Engine Guardian's Shoulder
         [146075] = 6044,        -- Engine Guardian Mask
-        [147286] = 6064,        -- Elinhir Arena Lion
         [147301] = 6141,        -- Prophet's Hood
         [147302] = 6143,        -- Prophet's Sandals
         [147303] = 6144,        -- Prophet's Wraps
@@ -2516,7 +2553,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [147485] = 6104,        -- Cadwell's "Shield"
         [147486] = 6105,        -- Cadwell's "Staff"
         [147487] = 6106,        -- Cadwell's "Sword"
-        [147499] = 6197,        -- Guar Stomp
         [147534] = 6229,        -- Pit Daemon Battle Axe
         [147535] = 6230,        -- Pit Daemon Maul
         [147536] = 6231,        -- Pit Daemon Greatsword
@@ -2595,10 +2631,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [151927] = 6590,        -- Second Legion Belt
         [151928] = 6591,        -- Second Legion Bracers
         [151929] = 6592,        -- Second Legion Boots
-        [151931] = 6493,        -- Aldmeri Dominion Banner
-        [151932] = 6365,        -- Daggerfall Covenant Banner
-        [151933] = 6494,        -- Ebonheart Pact Banner
-        [151940] = 6438,        -- Siegemaster Close Helm
         [152121] = 3720,        -- The Maelstrom's Battle Axe
         [152122] = 3721,        -- The Maelstrom's Maul
         [152123] = 3722,        -- The Maelstrom's Greatsword
@@ -2633,7 +2665,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [153498] = 6729,        -- Battleground Runner Helmet
         [153499] = 6744,        -- Chokethorn Mask
         [153500] = 6745,        -- Chokethorn's Shoulder
-        [153537] = 6665,        -- Siegemaster's Uniform
         [153564] = 6753,        -- Glenmoril Wyrd Battle Axe
         [153565] = 6754,        -- Glenmoril Wyrd Maul
         [153566] = 6755,        -- Glenmoril Wyrd Greatsword
@@ -2686,7 +2717,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [153886] = 6956,        -- Kra'gh Mask
         [154834] = 6964,        -- Sentinel of Rkugamz Shoulder
         [154835] = 6963,        -- Sentinel of Rkugamz Mask
-        [156626] = 1338,        -- Hollowjack Spectre Mask
         [156672] = 6786,        -- Battleground Runner Waster
         [156673] = 6785,        -- Battleground Runner Staff
         [156674] = 6783,        -- Battleground Runner Bow
@@ -2880,7 +2910,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [165969] = 8101,        -- Chitinous Shield
         [165970] = 8102,        -- Chitinous Staff
         [165971] = 8108,        -- Chitinous Sword
-        [166468] = 7595,        -- Reach-Mage Ceremonial Skullcap
         [166479] = 8148,        -- Maw of the Infernal's Shoulder
         [166480] = 8147,        -- Maw of the Infernal Mask
         [166962] = 8168,        -- Earthgore's Shoulder
@@ -2957,11 +2986,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [167261] = 8333,        -- Grave Dancer Dagger
         [167262] = 8328,        -- Grave Dancer Axe
         [167263] = 8328,        -- Grave Dancer Axe
-        [167305] = 8043,        -- Timbercrow Wanderer
-        [167937] = 439,         -- Pumpkin Spectre Mask
-        [167938] = 440,         -- Scarecrow Spectre Mask
-        [167939] = 1338,        -- Hollowjack Spectre Mask
-        [167940] = 1339,        -- Thicketman Spectre Mask
         [169621] = 8689,        -- Vykosa Shoulder
         [169622] = 8688,        -- Vykosa Mask
         [170129] = 8696,        -- Thurvokun Shoulder
@@ -3064,7 +3088,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [171311] = 7757,        -- Opal Iceheart's Shoulder
         [171312] = 7771,        -- Opal Nightflame's Shoulder
         [171313] = 7809,        -- Opal Swarm Mother's Shoulder
-        [171330] = 8221,        -- Snowball Buddy
         [171439] = 8856,        -- Hungering Void Battle Axe
         [171440] = 8857,        -- Hungering Void Maul
         [171441] = 8858,        -- Hungering Void Greatsword
@@ -3075,12 +3098,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [171446] = 8863,        -- Hungering Void Staff
         [171447] = 8864,        -- Hungering Void Sword
         [171448] = 8865,        -- Hungering Void Dagger
-        [171471] = 8197,        -- Dominion Breton Terrier
-        [171472] = 8198,        -- Covenant Breton Terrier
-        [171473] = 8196,        -- Pact Breton Terrier
-        [171477] = 8125,        -- Slag Town Diver
-        [171478] = 8658,        -- Thetys Ramarys's Bait Kit
-        [171533] = 8655,        -- Rage of the Reach
         [171578] = 8959,        -- Symphony of Blades Shoulder
         [171579] = 8958,        -- Symphony of Blades Mask
         [171597] = 9002,        -- Stonekeeper Shoulder
@@ -3182,10 +3199,7 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [178527] = 9588,        -- Prior Thierric Mask
         [178545] = 9630,        -- Magma Incarnate Shoulder
         [178546] = 9629,        -- Magma Incarnate Mask
-        [178695] = 8654,        -- Marshmallow Toasty Treat
-        [178696] = 9530,        -- Witch's Bonfire Dust
         [181623] = 9813,        -- Opal Chokethorn Shoulder
-        [181624] = 9812,        -- Opal Chokethorn Mask
         [181696] = 10023,       -- Lady Thorn Shoulder
         [181697] = 10022,       -- Lady Thorn Mask
         [181698] = 10036,       -- Kargaeda Shoulder
@@ -3220,7 +3234,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [182477] = 9802,        -- Nord Carved Sabatons
         [182478] = 9803,        -- Nord Carved Gauntlets
         [182479] = 9804,        -- Nord Carved Girdle
-        [182487] = 8541,        -- Powderwhite Coney
         [182502] = 9746,        -- Black Drake Clanwrap Jerkin
         [182503] = 9747,        -- Black Drake Clanwrap Hat
         [182504] = 9748,        -- Black Drake Clanwrap Breeches
@@ -3235,8 +3248,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [182513] = 9750,        -- Black Drake Clanwrap Shoes
         [182514] = 9751,        -- Black Drake Clanwrap Gloves
         [182515] = 9752,        -- Black Drake Clanwrap Sash
-        [182517] = 9402,        -- The Black Drake's Face Warpaint
-        [182518] = 9403,        -- The Black Drake's Body Warpaint
         [182571] = 9753,        -- Evergloam Champion Battle Axe
         [182572] = 9754,        -- Evergloam Champion Bow
         [182573] = 9755,        -- Evergloam Champion Shield
@@ -3257,8 +3268,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [182588] = 9760,        -- Evergloam Champion Mace
         [182589] = 9761,        -- Evergloam Champion Sword
         [182590] = 9762,        -- Evergloam Champion Dagger
-        [182591] = 9401,        -- Gloam Gryphon Fledgling
-        [183195] = 9718,        -- Siegestomper
         [183857] = 10000,       -- Second Seed Raiment Jerkin
         [183858] = 10001,       -- Second Seed Raiment Hat
         [183859] = 10002,       -- Second Seed Raiment Breeches
@@ -3294,8 +3303,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [184123] = 9857,        -- Dragonguard Berserker Boots
         [184124] = 9858,        -- Dragonguard Berserker Bracers
         [184125] = 9859,        -- Dragonguard Berserker Belt
-        [187679] = 9877,        -- Battle-Scarred Visage
-        [187680] = 9878,        -- Battle-Scarred Body
         [187683] = 10279,       -- House Dufort Banneret Cuirass
         [187684] = 10280,       -- House Dufort Banneret Helm
         [187685] = 10281,       -- House Dufort Banneret Greaves
@@ -3326,6 +3333,52 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [187715] = 10298,       -- High Rock Spellsword Sash
         [187716] = 10299,       -- High Rock Spellsword Robe
         [187717] = 10299,       -- High Rock Spellsword Robe
+        [187915] = 10564,       -- Euphotic Gatekeeper Shoulder
+        [187916] = 10563,       -- Euphotic Gatekeeper Mask
+        [187917] = 10566,       -- Archdruid Devyric Shoulder
+        [187918] = 10565,       -- Archdruid Devyric Mask
+        [190020] = 10360,       -- Witchmother's Servant Jerkin
+        [190021] = 10361,       -- Witchmother's Servant Hat
+        [190022] = 10362,       -- Witchmother's Servant Breeches
+        [190023] = 10363,       -- Witchmother's Servant Epaulets
+        [190024] = 10364,       -- Witchmother's Servant Shoes
+        [190025] = 10365,       -- Witchmother's Servant Gloves
+        [190026] = 10366,       -- Witchmother's Servant Sash
+        [190027] = 10360,       -- Witchmother's Servant Jerkin
+        [190028] = 10361,       -- Witchmother's Servant Hat
+        [190029] = 10362,       -- Witchmother's Servant Breeches
+        [190030] = 10363,       -- Witchmother's Servant Epaulets
+        [190031] = 10364,       -- Witchmother's Servant Shoes
+        [190032] = 10365,       -- Witchmother's Servant Gloves
+        [190033] = 10366,       -- Witchmother's Servant Sash
+        [190060] = 10514,       -- Oaken Order Jack
+        [190061] = 10515,       -- Oaken Order Helmet
+        [190062] = 10516,       -- Oaken Order Guards
+        [190063] = 10517,       -- Oaken Order Arm Cops
+        [190064] = 10518,       -- Oaken Order Boots
+        [190065] = 10519,       -- Oaken Order Bracers
+        [190066] = 10520,       -- Oaken Order Belt
+        [190067] = 10514,       -- Oaken Order Jack
+        [190068] = 10515,       -- Oaken Order Helmet
+        [190069] = 10516,       -- Oaken Order Guards
+        [190070] = 10517,       -- Oaken Order Arm Cops
+        [190071] = 10518,       -- Oaken Order Boots
+        [190072] = 10519,       -- Oaken Order Bracers
+        [190073] = 10520,       -- Oaken Order Belt
+        [190102] = 10562,       -- Opal Velidreth Shoulder
+        [190103] = 10561,       -- Opal Velidreth Mask
+        [190104] = 10556,       -- Opal Velidreth Maul
+        [190105] = 10557,       -- Opal Velidreth Bow
+        [190106] = 10558,       -- Opal Velidreth Shield
+        [190107] = 10559,       -- Opal Velidreth Staff
+        [190108] = 10560,       -- Opal Velidreth Sword
+        [190109] = 10562,       -- Opal Velidreth Shoulder
+        [190110] = 10561,       -- Opal Velidreth Mask
+        [190111] = 10556,       -- Opal Velidreth Maul
+        [190112] = 10557,       -- Opal Velidreth Bow
+        [190113] = 10558,       -- Opal Velidreth Shield
+        [190114] = 10559,       -- Opal Velidreth Staff
+        [190115] = 10560,       -- Opal Velidreth Sword
 }
 
 function uespLog.BoolToOnOff(flag)
@@ -4059,6 +4112,26 @@ function uespLog.SetPvpAutoLog(flag)
 end
 
 
+function uespLog.SetPvpAutoJoin(flag)
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	uespLog.savedVars.settings.data.pvpAutoJoin = flag
+end
+
+
+function uespLog.IsPvpAutoJoin()
+
+	if (uespLog.savedVars.settings == nil) then
+		uespLog.savedVars.settings = uespLog.DEFAULT_SETTINGS
+	end
+	
+	return uespLog.savedVars.settings.data.pvpAutoJoin
+end
+
+
 function uespLog.SetDebug(flag)
 
 	if (uespLog.savedVars.settings == nil) then
@@ -4708,6 +4781,10 @@ function uespLog.Initialize( self, addOnName )
 	if (uespLog.savedVars.settings.data.pvpAutoLog == nil) then
 		uespLog.savedVars.settings.data.pvpAutoLog = uespLog.DEFAULT_SETTINGS.data.pvpAutoLog
 	end
+	
+	if (uespLog.savedVars.settings.data.pvpAutoJoin == nil) then
+		uespLog.savedVars.settings.data.pvpAutoJoin = uespLog.DEFAULT_SETTINGS.data.pvpAutoJoin
+	end
 		
 	if (uespLog.savedVars.charInfo.data.actionBar ~= nil) then
 		uespLog.charData_ActionBarData = uespLog.savedVars.charInfo.data.actionBar 
@@ -4933,6 +5010,8 @@ function uespLog.Initialize( self, addOnName )
 	--EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CAMPAIGN_STATE_INITIALIZED, uespLog.OnAssignedCampaignChanged)	
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CURRENT_CAMPAIGN_CHANGED, uespLog.OnAssignedCampaignChanged)	 
 	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CAMPAIGN_LEADERBOARD_DATA_CHANGED, uespLog.OnCampaignLeaderboardDataChanged)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_QUEUE_FOR_CAMPAIGN_RESPONSE, uespLog.OnQueueForCampaignResponse)
+	EVENT_MANAGER:RegisterForEvent( "uespLog" , EVENT_CAMPAIGN_QUEUE_STATE_CHANGED, uespLog.OnCampaignQueueStateChanged)
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog", EVENT_TIMED_ACTIVITY_SYSTEM_STATUS_UPDATED, uespLog.OnEndeavorReset)
 	--EVENT_MANAGER:RegisterForEvent( "uespLog", EVENT_TIMED_ACTIVITY_PROGRESS_UPDATED, uespLog.OnEndeavorProgressUpdated)
@@ -9944,10 +10023,10 @@ function uespLog.GetAbilityCost (abilityId, mechanicFlag, rank)
 	end
 	
 	if (mechanicFlag == nil) then
-		mechanicFlag = GetNextAbilityMechanicFlag(abilityId)
+		mechanicFlag = GetNextAbilityMechanicFlag(abilityId, nil, rank)
 	end
 	
-	local cost = GetAbilityCost(abilityId, mechanicFlag, rank), mechanicFlag
+	local cost = GetAbilityCost(abilityId, mechanicFlag, rank)
 	local nextMechanicFlag = GetNextAbilityMechanicFlag(abilityId, mechanicFlag, rank)
 	
 	return cost, mechanicFlag, nextMechanicFlag
@@ -9965,29 +10044,30 @@ function uespLog.GetAbilityCostOverTime (abilityId, mechanicFlag, rank)
 		mechanicFlag = GetNextAbilityMechanicFlag(abilityId)
 	end
 	
-	local cost, freq = GetAbilityCostOverTime(abilityId, mechanicFlag, rank), mechanicFlag
+	local cost, freq = GetAbilityCostOverTime(abilityId, mechanicFlag, rank)
 	local nextMechanicFlag = GetNextAbilityMechanicFlag(abilityId, mechanicFlag, rank)
 	
 	return cost, freq, mechanicFlag, nextMechanicFlag
 end
 
 
-function uespLog.DumpSkillCost (abilityId, rank)
+function uespLog.DumpSkillCost(abilityId, rank)
 	local mechanicFlag = nil
 	local nextMechanicFlag = nil
+	local thisCost = 0
 	local cost = {}
 	local mechanic = {}
 	local mechanicCount = 0
 	
 	repeat 
-		local thisCost, mechanicFlag, nextMechanicFlag = uespLog.GetAbilityCost(abilityId, mechanicFlag, rank)
+		thisCost, mechanicFlag, nextMechanicFlag = uespLog.GetAbilityCost(abilityId, mechanicFlag, rank)
 		
 		cost[#cost + 1] = thisCost
 		mechanic[#mechanic + 1] = mechanicFlag
 		
 		mechanicCount = mechanicCount + 1
 		mechanicFlag = nextMechanicFlag
-	until (mechanicFlag == nil) 
+	until (mechanicFlag == nil or mechanicCount > uespLog.GETABILITYCOST_MAX_MECHANICCOUNT) 
 	
 	if (mechanicCount > 1) then
 		uespLog.DebugMsg("Warning: Ability "..tostring(abilityId).." has "..tostring(mechanicCount).." mechanics!")
@@ -9997,16 +10077,18 @@ function uespLog.DumpSkillCost (abilityId, rank)
 end
 
 
-function uespLog.DumpSkillCostOverTime (abilityId, rank)
+function uespLog.DumpSkillCostOverTime(abilityId, rank)
 	local mechanicFlag = nil
 	local nextMechanicFlag = nil
+	local thisCost = 0
+	local thisFreq = 0
 	local cost = {}
 	local costFreq = {}
 	local mechanic = {}
 	local mechanicCount = 0
 	
 	repeat
-		local thisCost, thisFreq, mechanicFlag, nextMechanicFlag = GetAbilityCostOverTime(abilityId, mechanicFlag, rank)
+		thisCost, thisFreq, mechanicFlag, nextMechanicFlag = uespLog.GetAbilityCostOverTime(abilityId, mechanicFlag, rank)
 		
 		cost[#cost + 1] = thisCost
 		costFreq[#costFreq + 1] = thisFreq
@@ -10014,7 +10096,7 @@ function uespLog.DumpSkillCostOverTime (abilityId, rank)
 		
 		mechanicFlag = nextMechanicFlag
 		mechanicCount = mechanicCount + 1
-	until (mechanicFlag == nil)
+	until (mechanicFlag == nil or mechanicCount > uespLog.GETABILITYCOST_MAX_MECHANICCOUNT)
 	
 	if (mechanicCount > 1) then
 		uespLog.DebugMsg("Warning: Ability "..tostring(abilityId).." has "..tostring(mechanicCount).." mechanics!")
@@ -10040,7 +10122,7 @@ function uespLog.DumpSkill(abilityId, extraData)
 	local isToggle = IsAbilityDurationToggled(abilityId)
 	local costTime, mechanicTime, chargeFreqMS = GetAbilityCostOverTime(abilityId)
 	local logData = { }
-		
+	
 	extraData = extraData or {}
 	
 	if (GetAbilityBuffType ~= nil) then
@@ -10070,7 +10152,7 @@ function uespLog.DumpSkill(abilityId, extraData)
 	logData.perm = IsAbilityPermanent(abilityId)
 	
 	logData.skillType, logData.skillIndex, logData.abilityIndex, logData.morph, logData.tempRank = GetSpecificSkillAbilityKeysByAbilityId(abilityId)
-	
+		
 	if (logData.skillType <= 0 or uespLog.EndsWith(name, "Dummy")) then
 		logData.skillType = nil
 		logData.skillIndex = nil
@@ -10154,10 +10236,10 @@ function uespLog.DumpSkill(abilityId, extraData)
 		logData.target3 = tostring(GetAbilityTargetDescription(abilityId, 3))
 		logData.target4 = tostring(GetAbilityTargetDescription(abilityId, 4))
 		
-		logData.costTime1, logData.chargeFreqMS1, logData.mechanicTime1 = uespLog.DumpSkillCostOverTime (abilityId, 1)
-		logData.costTime2, logData.chargeFreqMS2, logData.mechanicTime2 = uespLog.DumpSkillCostOverTime (abilityId, 2)
-		logData.costTime3, logData.chargeFreqMS3, logData.mechanicTime3 = uespLog.DumpSkillCostOverTime (abilityId, 3)
-		logData.costTime4, logData.chargeFreqMS4, logData.mechanicTime4 = uespLog.DumpSkillCostOverTime (abilityId, 4)
+		logData.costTime1, logData.chargeFreqMS1, logData.mechanicTime1 = uespLog.DumpSkillCostOverTime(abilityId, 1)
+		logData.costTime2, logData.chargeFreqMS2, logData.mechanicTime2 = uespLog.DumpSkillCostOverTime(abilityId, 2)
+		logData.costTime3, logData.chargeFreqMS3, logData.mechanicTime3 = uespLog.DumpSkillCostOverTime(abilityId, 3)
+		logData.costTime4, logData.chargeFreqMS4, logData.mechanicTime4 = uespLog.DumpSkillCostOverTime(abilityId, 4)
 	end
 	
 	uespLog.AppendDataToLog("all", logData, extraData)
@@ -20479,7 +20561,7 @@ function uespLog.GetCharQuestUniqueIds()
 end
 
 	-- TODO: Is there an API/constant for this?
-uespLog.MAXCAMPAIGN = 100
+uespLog.MAXCAMPAIGN = 200
 
 
 function uespLog.FindCampaignId(name)
@@ -20591,6 +20673,20 @@ function uespLog.ChangePVPCampaignCommand(cmd)
 		
 		uespLog.Msg("Queuing for the "..campaignName.." (guest) campaign...")		
 		QueueForCampaign(campaignId)
+		
+		return
+	elseif (firstCmd == "autojoin") then
+		local cmd2 = cmds[2]
+		
+		if (cmd2 == "on") then
+			uespLog.SetPvpAutoJoin(true)
+			uespLog.Msg("PVP Auto Join is now ON!")
+		elseif (cmd2 == "off") then
+			uespLog.SetPvpAutoJoin(false)
+			uespLog.Msg("PVP Auto Join is now OFF!")
+		else
+			uespLog.Msg("PVP Auto Join is "..uespLog.BoolToOnOff(uespLog.IsPvpAutoJoin()).."!")
+		end
 		
 		return
 	elseif (campaignName ~= "") then
@@ -22121,7 +22217,96 @@ function uespLog.MineTributeCards()
 	
 	uespLog.Msg("Found and logged "..tostring(foundCardCount).." tribute cards!")
 end
+
+
+function uespLog.RemoveTextFormats(text)
+	text = text:gsub("|c[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]", "")
+	text = text:gsub("|r", "")
 	
+	return text
+end
+
+
+function uespLog.MinePotionRatios()
+	local i
+
+	uespLog.Msg("Starting potion ratio test for "..tostring(uespLog.MINEITEM_POTION_MAXEFFECTINDEX).." potion indices...")
+
+	for i = 1, uespLog.MINEITEM_POTION_MAXEFFECTINDEX do
+		uespLog.MinePotionRatioForIndex(i)
+	end
+	
+end
+
+
+function uespLog.MinePotionRatioForIndex(potionIndex)
+	local itemLink1 = uespLog.MakeItemLinkEx( { itemId = 76827, level = 50, quality = 308, potionEffect = potionIndex } )
+	local i
+	local durations1 = {}
+	local durations2 = {}
+	local durations3 = {}
+	
+	--uespLog.Msg(tostring(potionIndex) .. ": Starting Potion Index parsing...")
+	
+	local hasAbility1, desc1, traitCooldown1 = GetItemLinkTraitOnUseAbilityInfo(itemLink1, 3)
+	desc1 = uespLog.RemoveTextFormats(desc1)
+	local duration1 = desc1:match("for ([0-9.]+) second")
+	
+	if (duration1 == nil) then
+		uespLog.Msg(tostring(potionIndex) .. ": Failed to find duration in text1: " .. tostring(desc1))
+		return false
+	end
+	
+	for i = 1, uespLog.MINEITEM_POTION_MAXEFFECTINDEX do
+		local itemLink2 = uespLog.MakeItemLinkEx( { itemId = 76827, level = 50, quality = 308, potionEffect = potionIndex + 256*i } )
+		local itemLink3 = uespLog.MakeItemLinkEx( { itemId = 76827, level = 50, quality = 308, potionEffect = potionIndex + 256*i + 256*256*i } )
+		
+		local hasAbility2, desc2, traitCooldown2 = GetItemLinkTraitOnUseAbilityInfo(itemLink2, 3)
+		local hasAbility3, desc3, traitCooldown3 = GetItemLinkTraitOnUseAbilityInfo(itemLink3, 3)
+		
+		desc2 = uespLog.RemoveTextFormats(desc2)
+		desc3 = uespLog.RemoveTextFormats(desc3)
+		
+		local duration2 = desc2:match("for ([0-9.]+) second")
+		local duration3 = desc3:match("for ([0-9.]+) second")
+		
+		if (duration2 == nil) then
+			duration2 = 'nil'
+		elseif (duration3 == nil) then
+			duration3 = 'nil'
+		end
+		
+		if (durations2[duration2] == nil) then
+			durations2[duration2] = 0
+		end
+		
+		if (durations3[duration3] == nil) then
+			durations3[duration3] = 0
+		end
+		
+		durations2[duration2] = durations2[duration2] + 1
+		durations3[duration3] = durations3[duration3] + 1
+	end
+	
+	local duration2 = uespLog.implodeKeys(durations2, ",")
+	local duration3 = uespLog.implodeKeys(durations3, ",")
+	
+	local factor2 = tonumber(duration2) / tonumber(duration1)
+	local factor3 = tonumber(duration3) / tonumber(duration1)
+	
+	local tempData = uespLog.savedVars.tempData.data
+	
+	tempData[#tempData + 1] = ""..tostring(potionIndex).." => array("
+	tempData[#tempData + 1] = "\"factor1\" => 1.0,"
+	tempData[#tempData + 1] = "\"factor2\" => "..tostring(factor2)..","
+	tempData[#tempData + 1] = "\"factor3\" => "..tostring(factor3)..","
+	tempData[#tempData + 1] = "),"
+	
+	uespLog.Msg(tostring(potionIndex) .. ": Durations found: "..tostring(duration1)..", "..tostring(duration2)..", "..tostring(duration3).." ("..tostring(factor2)..", "..tostring(factor3)..")")
+		
+	return true
+end
+
 
 uespLog.MINETEST_RELOAD_COUNT = 100
 uespLog.mineTestCount = 0

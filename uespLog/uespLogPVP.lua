@@ -200,7 +200,22 @@ end
 
 
 function uespLog.OnCampaignLeaderboardDataChanged(event)
-	uespLog.DebugMsg("OnCampaignLeaderboardDataChanged")
+	uespLog.DebugExtraMsg("OnCampaignLeaderboardDataChanged")
 	
 	uespLog.CheckAutoPVPLogging()
+end
+
+
+function uespLog.OnQueueForCampaignResponse(event, response)
+	uespLog.DebugExtraMsg("OnCampaignLeaderboardDataChanged")
+end
+
+
+function uespLog.OnCampaignQueueStateChanged(event, campaignId, isGroup, state)
+	uespLog.DebugExtraMsg("OnCampaignLeaderboardDataChanged "..tostring(campaignId)..":"..tostring(state))
+	
+	if (state == CAMPAIGN_QUEUE_REQUEST_STATE_CONFIRMING and uespLog.IsPvpAutoJoin()) then
+		uespLog.DebugExtraMsg("Trying to auto join campaign...")
+		 ConfirmCampaignEntry(campaignId, isGroup, true)
+	end
 end

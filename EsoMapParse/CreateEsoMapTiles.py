@@ -32,6 +32,16 @@ MAXZOOMLEVEL = 10
 MAXZOOM_OUTPUT = 11
 OUTPUTIMAGESIZE = 256
 
+#   Manual tiles for AccurateWorldMap
+# BasePathIndex = ""
+# BasePath = "e:/AccurateWorldMap/"
+# INPUTPATH = BasePath + "worlds/"
+# OUTPUTPATH = BasePath + "maptiles/"
+# DEFAULTNULLTILE = BasePath + "worlds/blacknulltile.jpg"
+# MAXZOOMLEVEL = 12
+# MAXZOOM_OUTPUT = 12
+
+
 ONLYDOMAP = ""
 ONLYDOMAPPATH = ""
 

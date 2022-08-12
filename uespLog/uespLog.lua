@@ -1169,7 +1169,7 @@
 --			- Fixed missing initial dialogue text when talking to NPCs.
 --			- Updated style icons and motif IDs.
 --
---		-- v3.10 -- 
+--		-- v3.10 -- 22 August 2022 (Lost Depths)
 --			- Increased the value of uespLog.MAXCAMPAIGN to 200 so newer campaigns will be shown with /uesppvpqueue .
 --			- Updated runebox collectible IDs.
 --
@@ -1180,8 +1180,8 @@
 --	GLOBALS
 uespLog = uespLog or {}
 
-uespLog.version = "3.01"
-uespLog.releaseDate = "7 June 2022"
+uespLog.version = "3.10"
+uespLog.releaseDate = "22 August 2022"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

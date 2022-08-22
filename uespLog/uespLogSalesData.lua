@@ -1203,7 +1203,11 @@ function uespLog.StartGuildSearchSalesScan(startPage)
 			diffTime = tostring(diff) .. " secs"
 		end
 		
-		uespLog.Msg("Starting guild listing scan for "..tostring(guildName).." (new items in last "..diffTime..")...do not leave trader until it is finished.")
+		if (days > 30) then
+			uespLog.Msg("Starting guild listing scan for "..tostring(guildName).." (all items)...do not leave trader until it is finished.")
+		else
+			uespLog.Msg("Starting guild listing scan for "..tostring(guildName).." (new items in the last "..diffTime..")...do not leave trader until it is finished.")
+		end
 	end
 		
 	uespLog.SalesGuildSearchScanListTimestamp = GetTimeStamp()

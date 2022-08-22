@@ -22389,7 +22389,7 @@ function uespLog.DoNextMineTest()
 	end
 	
 	if (uespLog.MINETEST_AUTOSTARTNEXT) then
-		zo_callLater(uespLog.DoNextMineTest, 2000)
+		zo_callLater(uespLog.DoNextMineTest, 5000)
 	end
 end
 
@@ -22482,4 +22482,7 @@ end
 function uespLog.EndMineTestFunction()
 	zo_callLater(uespLog.DoNextMineTest, 2000)
 end
+
+
+
 

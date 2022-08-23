@@ -1881,7 +1881,7 @@ uespLog.isAutoMiningItems = false
 uespLog.MINEITEMS_AUTODELAY = 500 -- Delay in ms
 uespLog.MINEITEMS_AUTOLOOPCOUNT = 400
 uespLog.MINEITEMS_AUTOMAXLOOPCOUNT = 400
-uespLog.MINEITEM_AUTO_MAXITEMID = 200000
+uespLog.MINEITEM_AUTO_MAXITEMID = 220000
 uespLog.mineItemsAutoNextItemId = 1
 uespLog.mineItemsAutoNextListIndex = 1
 uespLog.mineItemsAutoLastItemId = uespLog.MINEITEM_AUTO_MAXITEMID
@@ -1918,7 +1918,7 @@ uespLog.MINEITEM_ENCHANT_ENCHANTID = 26841
 uespLog.SkillDump_validAbilityCount = 0
 uespLog.SkillDump_startAbilityId = 0
 uespLog.SkillDump_countAbilityId = 1000
-uespLog.SkillDump_lastAbilityId = 200000
+uespLog.SkillDump_lastAbilityId = 220000
 uespLog.SkillDump_lastValidAbilityId = 0
 uespLog.SkillDump_delay = 1000
 
@@ -19721,7 +19721,7 @@ SLASH_COMMANDS["/uespnirnsound"] = uespLog.NirnSoundCommand
 uespLog.FindNameChangeItemId = 1
 uespLog.FindNameChangeIsScanning = false
 uespLog.FindNameChangeScanIds = 2000
-uespLog.FindNameChangeScanEndId = 200000
+uespLog.FindNameChangeScanEndId = 220000
 uespLog.FindNameChangeScanDelayMS = 1000
 uespLog.FindNameChangeItemCount = 0
 

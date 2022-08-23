@@ -71,7 +71,7 @@ namespace eso
 
 		bool Parse(byte* pData, const size_t Size, size_t& Pos)
 		{
-			if (Pos >= Size || Size - Pos < 12) return PrintError("Not enough data for subfile data header!");
+			if (Pos >= Size || Size - Pos < 12) return PrintError("\t\tNot enough data for subfile data header!");
 
 			pData += Pos;
 
@@ -79,8 +79,8 @@ namespace eso
 			m_UncompressedSize2 = ConvertMotorolaBytesToDword(pData + 4);
 			m_CompressedSize = ConvertMotorolaBytesToDword(pData + 8);
 
-			if (m_CompressedSize + 12 > Size) return PrintError("Not enough data for uncompressed subfile data!");
-			if (m_UncompressedSize1 == 0 || m_CompressedSize == 0) return PrintError("Empty compressed file found (skipping rest of empty data)!");
+			if (m_CompressedSize + 12 > Size) return PrintError("\t\tNot enough data for uncompressed subfile data!");
+			if (m_UncompressedSize1 == 0 || m_CompressedSize == 0) return PrintError("\t\tEmpty compressed file found (skipping rest of empty data)!");
 
 			m_pCompressedData = new byte[m_CompressedSize + 4];
 			memcpy(m_pCompressedData, pData + 12, m_CompressedSize);
@@ -112,7 +112,7 @@ namespace eso
 			if (m_pUncompressedData == nullptr || m_UncompressedSize == 0) return false;
 
 			FILE* pFile = fopen(Filename.c_str(), "wb");
-			if (pFile == nullptr) return PrintError("Failed to open file '%s' for writing!", Filename.c_str());
+			if (pFile == nullptr) return PrintError("\t\tFailed to open file '%s' for writing!", Filename.c_str());
 
 			bool Result = true;
 			if (fwrite(m_pUncompressedData, 1, m_UncompressedSize, pFile) != m_UncompressedSize) Result = false;
@@ -197,7 +197,7 @@ namespace eso
 		bool Load(const std::string Filename)
 		{
 			FILE* pFile = fopen(Filename.c_str(), "rb");
-			if (pFile == nullptr) return PrintError("Failed to open ESOSubFile data file for reading!");
+			if (pFile == nullptr) return PrintError("\t\tFailed to open ESOSubFile data file for reading!");
 
 			fseek(pFile, 0, SEEK_END);
 			long FileSize = ftell(pFile);
@@ -212,7 +212,7 @@ namespace eso
 			if (BytesRead != FileSize)
 			{
 				delete[] pFileData;
-				return PrintError("Failed to read ESOSubFile data file!");
+				return PrintError("\t\tFailed to read ESOSubFile data file!");
 			}
 
 			bool Result = Parse(pFileData, (size_t)FileSize);
@@ -224,7 +224,7 @@ namespace eso
 
 		bool ParseHeader(byte* pData, const size_t Size)
 		{
-			if (Size < 16) return PrintError("Not enough data for subfile header (%08X)!", Size);
+			if (Size < 16) return PrintError("\t\tNot enough data for subfile header (%08X)!", Size);
 
 			m_MagicBytes = ConvertMotorolaBytesToDword(pData);
 			m_Unknown1 = ConvertMotorolaBytesToDword(pData + 4);
@@ -238,7 +238,7 @@ namespace eso
 
 		bool ParseFileData(byte* pData, const size_t Size, size_t& Pos)
 		{
-			if (Pos >= Size || Size - Pos < 12) return PrintError("Not enough data for record header (%08X / %08X)!", Pos, Size);
+			if (Pos >= Size || Size - Pos < 12) return PrintError("\t\tNot enough data for record header (%08X / %08X)!", Pos, Size);
 			//PrintError("Parsing subfile at %u (%u)...", Pos, Size);
 
 			CEsoSubFileDataRecord* pRecord = new CEsoSubFileDataRecord();
@@ -268,7 +268,7 @@ namespace eso
 				if (!ParseFileData(pData, Size, Pos)) return false;
 			}
 
-			if (Pos < Size) PrintError("Warning: %u extra bytes left over at end of data subfile!", Size - Pos);
+			if (Pos < Size) PrintError("\t\tWarning: %u extra bytes left over at end of data subfile!", Size - Pos);
 
 			return true;
 		}
@@ -278,7 +278,7 @@ namespace eso
 		{
 			int Index = 0;
 
-			PrintError("Saving uncompressed record data to seperate files in '%s'...", Path.c_str());
+			PrintError("\t\tSaving uncompressed record data to seperate files in '%s'...", Path.c_str());
 
 			for (auto &pRecord : m_Records)
 			{
@@ -286,7 +286,7 @@ namespace eso
 
 				if (Index % 1000 == 0)
 				{
-					PrintError("Saved %d of %d files...", Index, m_Records.size());
+					PrintError("\t\tSaved %d of %d files...", Index, m_Records.size());
 				}
 
 				char Buffer[16];
@@ -306,9 +306,9 @@ namespace eso
 		bool SaveCombinedFile(const std::string Filename)
 		{
 			FILE* pFile = fopen(Filename.c_str(), "wb");
-			if (pFile == nullptr) return PrintError("Failed to open file '%s' for writing!", Filename.c_str());
+			if (pFile == nullptr) return PrintError("\t\tFailed to open file '%s' for writing!", Filename.c_str());
 
-			PrintError("Saving uncompressed record data to combined file '%s'...", Filename.c_str());
+			PrintDebug("\t\tSaving uncompressed record data to combined file '%s'...", Filename.c_str());
 
 			int Index = 0;
 
@@ -353,6 +353,7 @@ namespace eso
 		dword m_Unknown3;
 		dword m_Unknown4;
 		dword m_Unknown5;
+		dword m_Unknown6;
 		dword m_NumRecords;
 
 		std::vector<eso_indexsubfile_data_t> m_Records;
@@ -366,6 +367,7 @@ namespace eso
 			m_Unknown3(0x00000011),
 			m_Unknown4(0),
 			m_Unknown5(0),
+			m_Unknown6(0),
 			m_NumRecords(0)
 		{
 		}
@@ -393,7 +395,7 @@ namespace eso
 		bool Load(const std::string Filename)
 		{
 			FILE* pFile = fopen(Filename.c_str(), "rb");
-			if (pFile == nullptr) return PrintError("Failed to open ESOSubFile index file for reading!");
+			if (pFile == nullptr) return PrintError("\t\tFailed to open ESOSubFile index file for reading!");
 
 			fseek(pFile, 0, SEEK_END);
 			long FileSize = ftell(pFile);
@@ -408,7 +410,7 @@ namespace eso
 			if (BytesRead != FileSize)
 			{
 				delete[] pFileData;
-				return PrintError("Failed to read ESOSubFile index file!");
+				return PrintError("\t\tFailed to read ESOSubFile index file!");
 			}
 
 			bool Result = Parse(pFileData, (size_t)FileSize);
@@ -420,7 +422,7 @@ namespace eso
 
 		bool ParseHeader(byte* pData, const size_t Size)
 		{
-			if (Size < 16) return PrintError("Not enough data for index subfile header (%08X)!", Size);
+			if (Size < 16) return PrintError("\t\tNot enough data for index subfile header (%08X)!", Size);
 
 			m_MagicBytes = ConvertMotorolaBytesToDword(pData);
 			m_Unknown1 = ConvertMotorolaBytesToDword(pData + 4);
@@ -428,9 +430,10 @@ namespace eso
 			m_Unknown3 = ConvertMotorolaBytesToDword(pData + 10);
 			m_Unknown4 = ConvertMotorolaBytesToDword(pData + 14);
 			m_Unknown5 = ConvertMotorolaBytesToDword(pData + 18);
-			m_NumRecords = ConvertMotorolaBytesToDword(pData + 22);
+			m_Unknown6 = ConvertMotorolaBytesToDword(pData + 22);	//Added in unknown update
+			m_NumRecords = ConvertMotorolaBytesToDword(pData + 26);
 
-			PrintError("Loading subfile index: 0x%08X, 0x%08X, %u records, 0x%08X", m_MagicBytes, m_Unknown1, m_NumRecords, m_Unknown2);
+			PrintDebug("\t\tLoading subfile index: 0x%08X, 0x%08X, %u records, 0x%08X", m_MagicBytes, m_Unknown1, m_NumRecords, m_Unknown2);
 
 			return true;
 		}
@@ -443,7 +446,7 @@ namespace eso
 
 			if (!ParseHeader(pData, Size)) return false;
 
-			Pos = 26;
+			Pos = 30;
 			m_Records.reserve(m_NumRecords);
 
 			while (Pos + 8 <= Size)
@@ -455,8 +458,8 @@ namespace eso
 				Pos += 8;
 			}
 
-			if (Pos < Size) PrintError("Warning: %u extra bytes left over at end of index subfile!", Size - Pos);
-			if (m_NumRecords != m_Records.size()) PrintError("Warning: Record count mismatch in index subfile (%u / %u)!", m_NumRecords, m_Records.size());
+			if (Pos < Size) PrintDebug("\t\tWarning: %u extra bytes left over at end of index subfile!", Size - Pos);
+			if (m_NumRecords != m_Records.size()) PrintDebug("\t\tWarning: Record count mismatch in index subfile (%u / %u)!", m_NumRecords, m_Records.size());
 
 			return true;
 		}

@@ -14,6 +14,8 @@ namespace eso {
 
 CFile g_LogFile;
 
+bool g_OutputDebugLog = false;
+
 
 bool OpenLog(const char* pFilename)
 {
@@ -31,6 +33,26 @@ bool PrintError(const char* pString, ...)
 	printf("\n");
 	fflush(stdout);
 	
+	PrintLogV(pString, Args);
+
+	va_end(Args);
+	return false;
+}
+
+
+bool PrintDebug(const char* pString, ...)
+{
+	va_list Args;
+
+	va_start(Args, pString);
+
+	if (g_OutputDebugLog) 
+	{
+		vprintf(pString, Args);
+		printf("\n");
+		fflush(stdout);
+	}
+
 	PrintLogV(pString, Args);
 
 	va_end(Args);

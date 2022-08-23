@@ -47,6 +47,7 @@ std::string ReplaceStrings (std::string subject, const std::string& search, cons
 
 void PrintLog   (const char* pString, ...);
 bool PrintError (const char* pString, ...);
+bool PrintDebug (const char* pString, ...);
 void PrintLogV  (const char* pString, va_list Args);
 bool OpenLog    (const char* pFilename);
 
@@ -103,6 +104,9 @@ bool GetFolderSize (__int64& FileSize, const std::string Path);
 bool DeleteFiles(const std::string Path);
 
 bool WriteMotorolaDword(FILE* pFile, const dword Value);
+
+
+extern bool g_OutputDebugLog;
 
 };
 

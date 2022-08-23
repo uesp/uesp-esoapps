@@ -9,8 +9,8 @@ namespace eso {
 
 	bool ParseSubFileRawData (dat_subfileinfo_t& FileInfo, const mnf_header_t& Header)
 	{
-		if (FileInfo.pUncompressedData == nullptr) return PrintError("Error: No uncompressed data in DAT sub-file to parse!");
-		if (FileInfo.UncompressedSize < 4) return PrintError("Error: Uncompressed data in DAT sub-file too small to parse!");
+		if (FileInfo.pUncompressedData == nullptr) return PrintDebug("Error: No uncompressed data in DAT sub-file to parse!");
+		if (FileInfo.UncompressedSize < 4) return PrintDebug("Error: Uncompressed data in DAT sub-file too small to parse!");
 
 		if (Header.Type != 6)
 		{
@@ -26,16 +26,16 @@ namespace eso {
 		FileInfo.NullByte = *(dword *) FileInfo.pUncompressedData;
 		if (FileInfo.NullByte != 0) PrintLog("\tNullByte = 0x%08X", FileInfo.NullByte);
 
-		if (FileInfo.UncompressedSize < 8) return PrintError("Error: Missing data1 size in DAT sub-file!");
+		if (FileInfo.UncompressedSize < 8) return PrintDebug("Error: Missing data1 size in DAT sub-file!");
 		FileInfo.DataSize1 = DwordSwap(*(dword *) (FileInfo.pUncompressedData + 4));
 
-		if (FileInfo.UncompressedSize < 8 + FileInfo.DataSize1) return PrintError("Error: Missing data1 record data in DAT sub-file!");
+		if (FileInfo.UncompressedSize < 8 + FileInfo.DataSize1) return PrintDebug("Error: Missing data1 record data in DAT sub-file!");
 		FileInfo.pData1 = FileInfo.pUncompressedData + 8;		
 
-		if (FileInfo.UncompressedSize < 8 + FileInfo.DataSize1) return PrintError("Error: Missing data2 size in DAT sub-file!");
+		if (FileInfo.UncompressedSize < 8 + FileInfo.DataSize1) return PrintDebug("Error: Missing data2 size in DAT sub-file!");
 		FileInfo.DataSize2 = DwordSwap(*(dword *) (FileInfo.pUncompressedData + FileInfo.DataSize1 + 8));
 
-		if (FileInfo.UncompressedSize < 12 + FileInfo.DataSize1 + FileInfo.DataSize2) return PrintError("Error: Missing data2 record data in DAT sub-file!");
+		if (FileInfo.UncompressedSize < 12 + FileInfo.DataSize1 + FileInfo.DataSize2) return PrintDebug("Error: Missing data2 record data in DAT sub-file!");
 		FileInfo.pData2 = FileInfo.pUncompressedData + 12 + FileInfo.DataSize1;
 
 		FileInfo.pFileDataStart = FileInfo.pUncompressedData + 12 + FileInfo.DataSize1 + FileInfo.DataSize2;
@@ -52,6 +52,7 @@ namespace eso {
 		//PrintLog("\tDataSizes = 0x%08X  0x%08X", FileInfo.DataSize1, FileInfo.DataSize2);
 		if (FileInfo.DataSize1 < 0x1B8 || FileInfo.DataSize1 > 0x1BC) PrintLog("\tDataSize1 = 0x%08X", FileInfo.DataSize1);
 		if (FileInfo.DataSize2 != 0x28) PrintLog("\tDataSize2 = 0x%08X", FileInfo.DataSize2);
+
 		return true;
 	}
 
@@ -60,7 +61,7 @@ namespace eso {
 	{
 		CFile File;
 
-		if (FileInfo.RawSize > INT_MAX) return PrintError("Error: Input size of DAT sub-file is too large (%u bytes)!", FileInfo.RawSize);
+		if (FileInfo.RawSize > INT_MAX) return PrintDebug("Error: Input size of DAT sub-file is too large (%u bytes)!", FileInfo.RawSize);
 
 		if (pInputFile == nullptr) 
 		{
@@ -87,9 +88,9 @@ namespace eso {
 	{
 		dword OutputSize;
 	
-		if (!ReadSubFileRawData(FileInfo, Header, pInputFile)) return PrintError("Error: Failed to read raw data for DAT subfile!");
+		if (!ReadSubFileRawData(FileInfo, Header, pInputFile)) return PrintDebug("\tError: Failed to read raw data for DAT subfile!");
 
-		if (FileInfo.UncompressedSize > INT_MAX) return PrintError("Error: Uncompressed size of DAT sub-file is too large (%u bytes)!", FileInfo.UncompressedSize);
+		if (FileInfo.UncompressedSize > INT_MAX) return PrintDebug("\tError: Uncompressed size of DAT sub-file is too large (%u bytes)!", FileInfo.UncompressedSize);
 
 		if (FileInfo.CompressType == 0)
 		{
@@ -115,7 +116,7 @@ namespace eso {
 
 			if (!InflateSnappyBlock(FileInfo.pUncompressedData, OutputSize, FileInfo.UncompressedSize, FileInfo.pRawData, FileInfo.RawSize))
 			{
-				PrintError("Error: Failed to decompress the Snappy data!");
+				PrintDebug("Error: Failed to decompress the Snappy data!");
 				delete[] FileInfo.pUncompressedData;	 
 				FileInfo.pUncompressedData = nullptr;
 				OutputSize = 0;
@@ -124,7 +125,7 @@ namespace eso {
 		}
 		else
 		{
-			PrintError("Error: Unknown compression type %u found in DAT sub-file!", (dword) FileInfo.CompressType);
+			PrintDebug("Error: Unknown compression type %u found in DAT sub-file!", (dword) FileInfo.CompressType);
 			return false;
 		}
 

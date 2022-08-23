@@ -300,7 +300,7 @@ namespace eso {
 		}
 		else if (!LoadZosft(ZosftHash, ZosftFile))
 		{
-			PrintError("Failed to load the ZOSFT data from MNF file data!\nFiles will be exported but without any filenames set.\n");
+			PrintError("Failed to load the ZOSFT data from MNF file data!\nFiles will be exported but without any filenames set.");
 		}
 		else 
 		{
@@ -524,7 +524,7 @@ namespace eso {
 		if (!ReadSubFileData(OutputDataInfo, m_Header, pFile)) return false;
 
 		if (m_Header.Version >= 3) {
-			if (!ParseDataFileVer3(FileEntry, OutputDataInfo)) PrintError("\t%d: Failed to parse V3 data file!", FileEntry.FileIndex);
+			ParseDataFileVer3(FileEntry, OutputDataInfo);
 			return true;
 		}
 
@@ -540,14 +540,18 @@ namespace eso {
 
 		if (!m_DecompressOodle) return true;
 
-		int OutputBufferSize = FileEntry.Size + 10000;
-		byte* pOutputBuffer = new byte[OutputBufferSize];
+		byte* pOutputBuffer =  nullptr;
+		int BytesDecompressed = 0;
 
-		int BytesDecompressed = g_OodleDecompressFunc(DataInfo.pFileDataStart, DataInfo.FileDataSize, pOutputBuffer, FileEntry.Size, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
+		int OutputBufferSize = FileEntry.Size + 10000;
+		pOutputBuffer = new byte[OutputBufferSize];
+
+		BytesDecompressed = g_OodleDecompressFunc(DataInfo.pFileDataStart, DataInfo.FileDataSize, pOutputBuffer, FileEntry.Size, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
 
 		if (BytesDecompressed <= 0)
 		{
 			delete[] pOutputBuffer;
+			PrintDebug("\t%d: Warning: Failed to decompress V3 data file!", FileEntry.FileIndex);
 			return false;
 		}
 		
@@ -564,7 +568,7 @@ namespace eso {
 
 		if (HeaderOffset1 >= BytesDecompressed) 
 		{
-			PrintLog("Header Offset #1 in V3 DAT file exceeds file size (0x%04X > 0x%08X)!", (dword)HeaderOffset1, BytesDecompressed);
+			PrintLog("\t\tHeader Offset #1 in V3 DAT file exceeds file size (0x%04X > 0x%08X)!", (dword)HeaderOffset1, BytesDecompressed);
 			return false;
 		}
 
@@ -572,7 +576,7 @@ namespace eso {
 
 		if (HeaderOffset2 >= (dword) BytesDecompressed) 
 		{
-			PrintLog("Header Offset #2 in V3 DAT file exceeds file size (0x%04X > 0x%08X)!", HeaderOffset2, BytesDecompressed);
+			PrintLog("\t\tHeader Offset #2 in V3 DAT file exceeds file size (0x%04X > 0x%08X)!", HeaderOffset2, BytesDecompressed);
 			return false;
 		}
 
@@ -685,7 +689,7 @@ namespace eso {
 
 		for (size_t i = StartIndex; i < m_FileTable.size(); ++i)
 		{
-			if (i % 100 == 0) PrintError("Subfile %u: %.0f%% complete...", i, (float)i*100.0f/(float)m_FileTable.size());
+			if (i % 100 == 0) PrintError("\tSubfile %7u of %7u: %.0f%% complete...", i, m_FileTable.size(), (float)i*100.0f/(float)m_FileTable.size());
 			Result &= SaveSubFile(m_FileTable[i], BasePath, ConvertDDS);
 		}
 
@@ -707,7 +711,7 @@ namespace eso {
 
 		if (ValidIndex > 0 && FileEntry.Index != ValidIndex)
 		{
-			PrintError("Warning: Skipping duplicate file '%s' with index %d!", OutputFilename.c_str(), FileEntry.Index);
+			PrintDebug("\tWarning: Skipping duplicate file '%s' with index %d!", OutputFilename.c_str(), FileEntry.Index);
 			return false;
 		}
 
@@ -986,10 +990,17 @@ namespace eso {
 
 		if (!ReadDataFile(FileEntry, DataInfo, pFile)) 
 		{
-			return PrintError("Error: Failed to load the file data from MNF %03u with file index %u (absolute index %u)!", (dword)FileEntry.ArchiveIndex, FileEntry.FileIndex, FileEntry.Index);
+				// Special case for the first MNF file with known data truncation issues
+			if (FileEntry.ArchiveIndex == 0 && FileEntry.Index >= 880) //TODO: Hardcoded index might change
+			{
+				PrintDebug("\tError: Failed to load the file data from MNF %03u with file index %u (absolute index %u)!", (dword)FileEntry.ArchiveIndex, FileEntry.FileIndex, FileEntry.Index);
+				return PrintError("\tWarning: Failed to load subfile %u from the end of MNF 000 due to a truncated file (this is a known issue with this file)!", FileEntry.Index);
+			}
+			
+			return PrintError("\tError: Failed to load the file data from MNF %03u with file index %u (absolute index %u)!", (dword)FileEntry.ArchiveIndex, FileEntry.FileIndex, FileEntry.Index);
 		}
 
-		if (DataInfo.pFileDataStart == nullptr) return PrintError("Error: No uncompressed data to write to file!");
+		if (DataInfo.pFileDataStart == nullptr) return PrintError("\tError: No uncompressed data to write to file!");
 
 		std::string FileExtension = GuessFileExtension((unsigned char *)DataInfo.pFileDataStart, DataInfo.FileDataSize);
 		
@@ -1235,7 +1246,7 @@ namespace eso {
 		if (ExportOptions.MnfEndIndex   > 0) EndIndex   = ExportOptions.MnfEndIndex;
 
 		double EndTime = GetTimerMS();	
-		PrintLog("Sorted MNF file table in %g ms...", EndTime - StartTime);
+		PrintDebug("Sorted MNF file table in %g ms...", EndTime - StartTime);
 
 		StartTime = GetTimerMS();
 
@@ -1246,19 +1257,19 @@ namespace eso {
 		else
 			PrintError("Saving %u sub-files (%u-%u) in MNF file...", EndIndex - StartIndex + 1, StartIndex, EndIndex);
 
-		PrintError("Saving sub-files to '%s'...", ExportOptions.OutputPath.c_str());
+		PrintDebug("Saving sub-files to '%s'...", ExportOptions.OutputPath.c_str());
 
 		for (size_t i = StartIndex; i <= EndIndex; ++i)
 		{
 			if (ExportOptions.ArchiveIndex >= 0 && ExportOptions.ArchiveIndex != SortedTable[i].ArchiveIndex) continue;
 			if (ExportOptions.BeginArchiveIndex >= 0 && SortedTable[i].ArchiveIndex < ExportOptions.BeginArchiveIndex) continue;
 
-			if (i % 100 == 0) 
+			if (i % 100 == 0 && i > 0) 
 			{
 				if (ExportOptions.ArchiveIndex >= 0)
-					PrintError("Subfile %u: %.0f%% complete...", i, (float)(i - StartIndex)*100.0f/(float)(ArchiveCount + 1));
+					PrintError("\tSubfile %7u of %7u: %.0f%% complete...", i, ArchiveCount, (float)(i - StartIndex)*100.0f/(float)(ArchiveCount + 1));
 				else
-					PrintError("Subfile %u: %.0f%% complete...", i, (float)(i - StartIndex)*100.0f/(float)(EndIndex - StartIndex + 1));
+					PrintError("\tSubfile %7u of %7u: %.0f%% complete...", i, EndIndex - StartIndex, (float)(i - StartIndex)*100.0f/(float)(EndIndex - StartIndex + 1));
 			}
 
 			if (SortedTable[i].ArchiveIndex != LastArchive)
@@ -1316,14 +1327,14 @@ namespace eso {
 		std::sort(SortedTable.begin(), SortedTable.end(), l_FileSortFunc);
 
 		double EndTime = GetTimerMS();
-		PrintLog("Sorted MNF file table in %g ms...", EndTime - StartTime);
+		PrintDebug("Sorted MNF file table in %g ms...", EndTime - StartTime);
 
 		StartTime = GetTimerMS();
 		PrintError("Saving %d sub-files referenced in MNF file to '%s'...", SortedTable.size(), BasePath.c_str());
 
 		for (size_t i = StartIndex; i < SortedTable.size(); ++i)
 		{
-			if (i % 100 == 0) PrintError("Subfile %u: %.0f%% complete...", i, (float)i*100.0f/(float)SortedTable.size());
+			if (i % 100 == 0) PrintError("\tSubfile %7u of %7u: %.0f%% complete...", i, SortedTable.size(), (float)i*100.0f/(float)SortedTable.size());
 
 			if (SortedTable[i].ArchiveIndex != LastArchive)
 			{
@@ -1341,7 +1352,7 @@ namespace eso {
 		}
 
 		EndTime = GetTimerMS();
-		PrintLog("Successfully exported %u sub-files in %g secs!", SuccessCount, (EndTime - StartTime)/1000.0);
+		PrintDebug("Successfully exported %u sub-files in %g secs!", SuccessCount, (EndTime - StartTime)/1000.0);
 		return SaveResult;
 	}
 

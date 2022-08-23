@@ -169,6 +169,12 @@
  * v0.51 -- 28 April 2022
  *		- Added the --matchfilename option for only outputting files that contain the given sub-string.
  *		- Added the --baselangfile option that uses the given LANG file as for base/missing entries when creating a new LANG file.
+ *
+ * v0.52 -- 25 August 2022
+ *		- Added the --debugoutput/-v option for outputting additional messages to the log and output. Default is off (so less messages).
+ *		  Set a bunch of error/warning messages to debug only. Note that all messages are still saved to the log file.
+ *		- Fixed the format of the subfile index which prevents a bunch of error messages from the ESO00000.DAT file.
+ *		- Adjusted tab levels of text output for a little neater visual output.
  */
 
 #include "stdafx.h"
@@ -1656,7 +1662,7 @@ cmdparamdef_t g_Cmds[] =
 	{ "startindex",		"s", "startindex",		"Start exporting sub-files at the given file index.",				false, true,  1, 0, false, "-1" },
 	{ "endindex",		"e", "endindex",	    "Stop exporting sub-files at the given file index.",				false, true,  1, 0, false, "-1" },
 	{ "archiveindex",	"a", "archive",			"Only export MNF file with the given index.",						false, true,  1, 0, false, "-1" },
-	{ "beginarchive",	"b", "beginarchive",	"start with the given MNF file index.",								false, true,  1, 0, false, "-1" },
+	{ "beginarchive",	"b", "beginarchive",	"Start with the given MNF file index.",								false, true,  1, 0, false, "-1" },
 	{ "fileindex",		"f", "fileindex",		"Only export MNF the subfile with the given file index.",			false, true,  1, 0, false, "-1" },
 	//{ "convertdds",		"c", "convertdds",		"(Doesn't Work Yet) Attempt to convert DDS files to PNG.",			false, true,  0, 0, false, "0" },
 	{ "skipsubfiles",	"k", "skipsubfiles",	"Don't export subfiles from the MNF data.",							false, true,  0, 0, false, "0" },
@@ -1679,12 +1685,14 @@ cmdparamdef_t g_Cmds[] =
 	{ "noriffconvert",	"",	 "noriffconvert",	"Don't convert RIFF files to WAV/OGG.",								false, true,  0, 0, false, "" },
 	{ "matchfilename",	"",	 "matchfilename",	"Only extract files containing the given substring.",				false, true,  1, 0, false, "" },
 	{ "baselangfile",	"",	 "baselangfile",	"Use the specified LANG file for missing entries.",					false, true,  1, 0, false, "" },
+	{ "debugoutput",	"v", "debugoutput",		"Output additional debug messages.",								false, true,  0, 0, false, "0" },
 	{ "",   "", "", "", false, false, false, false, "" }
 };
 
+const char g_AppTitle[] = "EsoExtractData v0.52 (25 August 2022)";
 const char g_AppDescription[] = "\
-ExportMnf v0.51 is a simple command line application to load and export files\n\
-from ESO's MNF and DAT files. Created by Daveh (dave@uesp.net).\n";
+EsoExtractData v0.52 is a simple command line application to load and export files\n\
+from Elder Scrolls Online's MNF and DAT files. Created by Daveh (dave@uesp.net).\n";
 
 
 int _tmain(int argc, _TCHAR* argv[])
@@ -1757,6 +1765,14 @@ int _tmain(int argc, _TCHAR* argv[])
 	ExportOptions.NoRiffConvert = CmdParamHandler.HasParamValue("noriffconvert");
 	ExportOptions.MatchFilename = CmdParamHandler.GetParamValue("matchfilename");
 	ExportOptions.BaseLangFilename = CmdParamHandler.GetParamValue("baselangfile");
+
+	PrintError("%s", g_AppTitle);
+
+	if (CmdParamHandler.HasParamValue("debugoutput"))
+	{
+		PrintError("Outputting additional debug messages.");
+		eso::g_OutputDebugLog = true;
+	}
 
 	ExportOptions.ExtractSubFileDataType = CmdParamHandler.GetParamValue("extractsubfile");
 	std::transform(ExportOptions.ExtractSubFileDataType.begin(), ExportOptions.ExtractSubFileDataType.end(), ExportOptions.ExtractSubFileDataType.begin(), ::tolower);

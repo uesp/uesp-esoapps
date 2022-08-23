@@ -1,7 +1,7 @@
 #!/bin/sh
 
 VERSION="35"
-ISPTS="1"
+ISPTS=""
 LASTVERSION="34"
 LASTPTSVERSION="35pts"
 
@@ -371,9 +371,9 @@ popd
 
 echo "Compressing Tribute Images..."
 pushd "$OUTPUTPATH/MoreImages/tribute/"
-zip -rq "../../Tribute.zip" *
+zip -rq "../../tribute.zip" *
 cd ../../
-zip -urq "Tribute.zip" Tribute.ptsdiff.txt Tribute.diff.txt
+zip -urq "tribute.zip" tribute.ptsdiff.txt tribute.diff.txt
 popd
 
 echo "Compressing Maps..."

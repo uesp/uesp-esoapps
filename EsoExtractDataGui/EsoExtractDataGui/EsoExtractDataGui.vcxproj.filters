@@ -93,6 +93,9 @@
     <ClInclude Include="..\..\common\snappy\snappy-stubs-public.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EsoExtractDataGui.cpp">
@@ -158,6 +161,9 @@
     <ClCompile Include="..\..\common\snappy\snappy.cc">
       <Filter>Source Files\Common</Filter>
     </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="EsoExtractDataGui.rc">
@@ -193,5 +199,10 @@
     <Library Include="..\..\common\devil\lib\x64\Release\ILUT.lib">
       <Filter>Source Files\Libs</Filter>
     </Library>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="exportmnf.log">
+      <Filter>Source Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

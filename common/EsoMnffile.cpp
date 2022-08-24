@@ -23,18 +23,19 @@ namespace eso {
 
 
 	CMnfFile::CMnfFile() :
-				m_HasBlock0(false),
-				m_Block0(false, false),
-				m_Block3(false, false),
-				m_DecompressOodle(true)
+		m_HasBlock0(false),
+		m_Block0(false, false),
+		m_Block3(false, false),
+		m_DecompressOodle(true),
+		m_ZosftFile(0)
 	{
 		memcpy(m_Header.FileID, MNF_MAGIC_ID, MNF_HEADER_MAGICSIZE);
-		m_Header.DataSize  = 0;
+		m_Header.DataSize = 0;
 		m_Header.FileCount = 0;
-		m_Header.Version   = 2;
-		m_Header.Type      = 1;
+		m_Header.Version = 2;
+		m_Header.Type = 1;
 
-		char path[MAX_PATH+4];
+		char path[MAX_PATH + 4];
 		GetModuleFileName(NULL, path, MAX_PATH);
 
 		m_Ww2OggPackedBinFilename = ExtractPath(path) + "packed_codebooks_aoTuV_603.bin";
@@ -60,12 +61,12 @@ namespace eso {
 		m_Block3.Destroy();
 
 		m_HasBlock0 = false;
-		m_Header.DataSize  = 0;
+		m_Header.DataSize = 0;
 		m_Header.FileCount = 0;
 	}
 
 
-	bool CMnfFile::CreateFileTable (void)
+	bool CMnfFile::CreateFileTable(void)
 	{
 		mnf_filetable_t  TableEntry;
 		mnf_block_data_t* pData1 = m_Block3.GetData(0);
@@ -74,7 +75,7 @@ namespace eso {
 		size_t Offset1 = 0;
 		size_t Offset2 = 0;
 		size_t Offset3 = 0;
-		
+
 		if (pData1 == nullptr || pData2 == nullptr || pData3 == nullptr ||
 			pData1->pUncompressedData == nullptr || pData2->pUncompressedData == nullptr || pData3->pUncompressedData == nullptr)
 		{
@@ -84,49 +85,49 @@ namespace eso {
 		double StartTime = GetTimerMS();
 		PrintLog("Creating MNF file table....");
 
-		if ( pData1->UncompressedSize % MNF_BLOCK1_RECORDSIZE != 0) PrintLog("Warning: MNF Block1 (%d bytes) is not an even multiple of the record size %d!", pData1->UncompressedSize, MNF_BLOCK1_RECORDSIZE);
-		if ( pData2->UncompressedSize % MNF_BLOCK2_RECORDSIZE != 0) PrintLog("Warning: MNF Block2 (%d bytes) is not an even multiple of the record size %d!", pData2->UncompressedSize, MNF_BLOCK2_RECORDSIZE);
-		if ( pData3->UncompressedSize % MNF_BLOCK3_RECORDSIZE != 0) PrintLog("Warning: MNF Block3 (%d bytes) is not an even multiple of the record size %d!", pData3->UncompressedSize, MNF_BLOCK3_RECORDSIZE);
+		if (pData1->UncompressedSize % MNF_BLOCK1_RECORDSIZE != 0) PrintLog("Warning: MNF Block1 (%d bytes) is not an even multiple of the record size %d!", pData1->UncompressedSize, MNF_BLOCK1_RECORDSIZE);
+		if (pData2->UncompressedSize % MNF_BLOCK2_RECORDSIZE != 0) PrintLog("Warning: MNF Block2 (%d bytes) is not an even multiple of the record size %d!", pData2->UncompressedSize, MNF_BLOCK2_RECORDSIZE);
+		if (pData3->UncompressedSize % MNF_BLOCK3_RECORDSIZE != 0) PrintLog("Warning: MNF Block3 (%d bytes) is not an even multiple of the record size %d!", pData3->UncompressedSize, MNF_BLOCK3_RECORDSIZE);
 
-		for (size_t i = 0; i < m_Block3.GetHeader().RecordCount23; ++i) 
+		for (size_t i = 0; i < m_Block3.GetHeader().RecordCount23; ++i)
 		{
-			TableEntry.Index = (dword) i;
+			TableEntry.Index = (dword)i;
 
-			if (Offset1 + MNF_BLOCK1_RECORDSIZE <= pData1->UncompressedSize) 
+			if (Offset1 + MNF_BLOCK1_RECORDSIZE <= pData1->UncompressedSize)
 			{
-				TableEntry.ID1 = *((dword *) (pData1->pUncompressedData + Offset1));
+				TableEntry.ID1 = *((dword *)(pData1->pUncompressedData + Offset1));
 
-				do 
+				do
 				{
 					Offset1 += MNF_BLOCK1_RECORDSIZE;
-				} while (Offset1 + MNF_BLOCK1_RECORDSIZE <= pData1->UncompressedSize && pData1->pUncompressedData[Offset1+3] != 0x80);
+				} while (Offset1 + MNF_BLOCK1_RECORDSIZE <= pData1->UncompressedSize && pData1->pUncompressedData[Offset1 + 3] != 0x80);
 			}
 			else
 			{
 				TableEntry.ID1 = 0;
 			}
 
-			if (Offset2 + MNF_BLOCK2_RECORDSIZE <= pData2->UncompressedSize) 
+			if (Offset2 + MNF_BLOCK2_RECORDSIZE <= pData2->UncompressedSize)
 			{
-				TableEntry.FileIndex = *((dword *) (pData2->pUncompressedData + Offset2 + 0));
-				TableEntry.Unknown1  = *((dword *) (pData2->pUncompressedData + Offset2 + 4));
+				TableEntry.FileIndex = *((dword *)(pData2->pUncompressedData + Offset2 + 0));
+				TableEntry.Unknown1 = *((dword *)(pData2->pUncompressedData + Offset2 + 4));
 				Offset2 += MNF_BLOCK2_RECORDSIZE;
 			}
 			else
 			{
 				TableEntry.FileIndex = 0;
-				TableEntry.Unknown1  = 0;
+				TableEntry.Unknown1 = 0;
 			}
 
-			if (Offset3 + MNF_BLOCK3_RECORDSIZE <= pData3->UncompressedSize) 
+			if (Offset3 + MNF_BLOCK3_RECORDSIZE <= pData3->UncompressedSize)
 			{
-				TableEntry.Size           = *((dword *) (pData3->pUncompressedData + Offset3 + 0));
-				TableEntry.CompressedSize = *((dword *) (pData3->pUncompressedData + Offset3 + 4));
-				TableEntry.Hash           = *((dword *) (pData3->pUncompressedData + Offset3 + 8));
-				TableEntry.Offset         = *((dword *) (pData3->pUncompressedData + Offset3 + 12));
-				TableEntry.CompressType   = pData3->pUncompressedData[Offset3 + 16];
-				TableEntry.ArchiveIndex   = pData3->pUncompressedData[Offset3 + 17];
-				TableEntry.Unknown2       = *((word  *) (pData3->pUncompressedData + Offset3 + 18));
+				TableEntry.Size = *((dword *)(pData3->pUncompressedData + Offset3 + 0));
+				TableEntry.CompressedSize = *((dword *)(pData3->pUncompressedData + Offset3 + 4));
+				TableEntry.Hash = *((dword *)(pData3->pUncompressedData + Offset3 + 8));
+				TableEntry.Offset = *((dword *)(pData3->pUncompressedData + Offset3 + 12));
+				TableEntry.CompressType = pData3->pUncompressedData[Offset3 + 16];
+				TableEntry.ArchiveIndex = pData3->pUncompressedData[Offset3 + 17];
+				TableEntry.Unknown2 = *((word  *)(pData3->pUncompressedData + Offset3 + 18));
 				Offset3 += MNF_BLOCK3_RECORDSIZE;
 
 				if (m_Header.Version >= 3)
@@ -153,7 +154,7 @@ namespace eso {
 		if (pData1->UncompressedSize != Offset1) PrintLog("Warning: Did not fully parse MNF Block1: only %d of %d bytes read!", Offset1, pData1->UncompressedSize);
 		if (pData2->UncompressedSize != Offset2) PrintLog("Warning: Did not fully parse MNF Block2: only %d of %d bytes read!", Offset2, pData2->UncompressedSize);
 		if (pData3->UncompressedSize != Offset3) PrintLog("Warning: Did not fully parse MNF Block3: only %d of %d bytes read!", Offset3, pData3->UncompressedSize);
-				
+
 		if (!CreateFileMaps()) return false;
 
 		double EndTime = GetTimerMS();
@@ -163,7 +164,7 @@ namespace eso {
 	}
 
 
-	bool CMnfFile::CreateFileMaps (void)
+	bool CMnfFile::CreateFileMaps(void)
 	{
 		m_FileHashMap.clear();
 		m_FileIndexMap.clear();
@@ -175,7 +176,7 @@ namespace eso {
 
 		for (size_t i = 0; i < m_FileTable.size(); ++i)
 		{
-			m_FileHashMap[m_FileTable[i].Hash]       = &m_FileTable[i];
+			m_FileHashMap[m_FileTable[i].Hash] = &m_FileTable[i];
 			m_FileIndexMap[m_FileTable[i].FileIndex] = &m_FileTable[i];
 			m_FileInternalIndexMap[m_FileTable[i].Index] = &m_FileTable[i];
 		}
@@ -206,13 +207,13 @@ namespace eso {
 	}
 
 
-	bool CMnfFile::DumpFileTable (const char* pFilename) 
+	bool CMnfFile::DumpFileTable(const char* pFilename)
 	{
 		return DumpFileTable(pFilename, m_FileTable);
 	}
 
 
-	bool CMnfFile::DumpFileTable (const char* pFilename, CMnfFileTableArray& FileTable)
+	bool CMnfFile::DumpFileTable(const char* pFilename, CMnfFileTableArray& FileTable)
 	{
 		CFile File;
 		std::string OutputPath = ExtractPath(pFilename);
@@ -226,15 +227,15 @@ namespace eso {
 		{
 			mnf_filetable_t& Entry = FileTable[i];
 			File.Printf("%7d, 0x%08X, 0x%08X, 0x%08X, 0x%08X, 0x%08X, 0x%08X, 0x%08X, 0x%02X, 0x%02X, 0x%04X, %s\n",
-					Entry.Index, Entry.ID1, Entry.FileIndex, Entry.Unknown1, Entry.Size, Entry.CompressedSize, Entry.Hash, Entry.Offset, Entry.CompressType, Entry.ArchiveIndex, Entry.Unknown2, 
-					Entry.pZosftEntry ? Entry.pZosftEntry->Filename.c_str() : "");
+				Entry.Index, Entry.ID1, Entry.FileIndex, Entry.Unknown1, Entry.Size, Entry.CompressedSize, Entry.Hash, Entry.Offset, Entry.CompressType, Entry.ArchiveIndex, Entry.Unknown2,
+				Entry.pZosftEntry ? Entry.pZosftEntry->Filename.c_str() : "");
 		}
 
 		return true;
 	}
 
 
-	bool CMnfFile::FindZosftHash (dword& ZosftHash)
+	bool CMnfFile::FindZosftHash(dword& ZosftHash)
 	{
 		bool CheckEso = true;
 		bool CheckGame = true;
@@ -250,7 +251,7 @@ namespace eso {
 			CheckGame = true;
 		}
 
-		if (CheckEso) 
+		if (CheckEso)
 		{
 			if (m_FileIndexMap.find(0x00FFFFFF) != m_FileIndexMap.end()) { ZosftHash = m_FileIndexMap[0x00FFFFFF]->Hash; return true; }
 			if (m_FileIndexMap.find(0xFFFFF) != m_FileIndexMap.end()) { ZosftHash = m_FileIndexMap[0xFFFFF]->Hash; return true; }
@@ -275,6 +276,26 @@ namespace eso {
 		return false;
 	}
 
+
+	bool CMnfFile::LoadZosft()
+	{
+		m_ZosftFile.Destroy();
+		m_ZosftFile.SetVersion(m_Header.Version);
+
+		dword ZosftHash = 0;
+
+		if (!FindZosftHash(ZosftHash))
+		{
+			return PrintError("ERROR: Failed to find the ZOSFT entry in the MNF file!");
+		}
+		else if (!LoadZosft(ZosftHash, m_ZosftFile))
+		{
+			return PrintError("Failed to load the ZOSFT data from MNF file data!\nFiles will be exported but without any filenames set.");
+		}
+		
+		return true;
+	}
+	
 
 	bool CMnfFile::Export (const mnf_exportoptions_t ExportOptions)
 	{

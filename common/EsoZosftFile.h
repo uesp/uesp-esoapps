@@ -99,6 +99,8 @@ namespace eso {
 
 		bool SaveBlock (const size_t BlockIndex, const size_t Index, const char* pFilename);
 
+		void SetVersion(const dword MnfVersion) { m_MnfVersion = MnfVersion; }
+
 	};
 
 };

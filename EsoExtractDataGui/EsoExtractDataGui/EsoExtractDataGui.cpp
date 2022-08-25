@@ -36,7 +36,10 @@ BOOL CEsoExtractDataGuiApp::InitInstance()
 
 	CWinApp::InitInstance();
 
+	AfxInitRichEdit2();
+
 	OpenLog("exportmnf.log");
+	
 	
 	if (!LoadOodleLib()) return -1;
 
@@ -45,10 +48,11 @@ BOOL CEsoExtractDataGuiApp::InitInstance()
 	CShellManager *pShellManager = new CShellManager;
 	CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows));
 
-	SetRegistryKey(_T("EsoExtractDataGui"));
+	SetRegistryKey(_T("UESP"));
 
 	CEsoExtractDataGuiDlg dlg;
 	m_pMainWnd = &dlg;
+
 	INT_PTR nResponse = dlg.DoModal();
 
 	if (nResponse == IDOK)

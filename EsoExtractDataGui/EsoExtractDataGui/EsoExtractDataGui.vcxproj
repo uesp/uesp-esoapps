@@ -208,6 +208,8 @@
     <ClInclude Include="..\..\common\snappy\snappy-sinksource.h" />
     <ClInclude Include="..\..\common\snappy\snappy-stubs-internal.h" />
     <ClInclude Include="..\..\common\snappy\snappy-stubs-public.h" />
+    <ClInclude Include="EsoMnfExtractDlg.h" />
+    <ClInclude Include="EsoMnfOptionsDlg.h" />
     <ClInclude Include="EsoExtractDataGui.h" />
     <ClInclude Include="EsoExtractDataGuiDlg.h" />
     <ClInclude Include="framework.h" />
@@ -325,6 +327,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="EsoMnfExtractDlg.cpp" />
+    <ClCompile Include="EsoMnfOptionsDlg.cpp" />
     <ClCompile Include="EsoExtractDataGui.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">stdafx.h</PrecompiledHeaderFile>

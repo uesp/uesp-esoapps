@@ -27,7 +27,8 @@ namespace eso {
 		m_Block0(false, false),
 		m_Block3(false, false),
 		m_DecompressOodle(true),
-		m_ZosftFile(0)
+		m_ZosftFile(0),
+		m_ZosftHash(0)
 	{
 		memcpy(m_Header.FileID, MNF_MAGIC_ID, MNF_HEADER_MAGICSIZE);
 		m_Header.DataSize = 0;
@@ -63,6 +64,9 @@ namespace eso {
 		m_HasBlock0 = false;
 		m_Header.DataSize = 0;
 		m_Header.FileCount = 0;
+
+		m_ZosftHash = 0;
+		m_ZosftFile.Destroy();
 	}
 
 
@@ -282,13 +286,13 @@ namespace eso {
 		m_ZosftFile.Destroy();
 		m_ZosftFile.SetVersion(m_Header.Version);
 
-		dword ZosftHash = 0;
+		m_ZosftHash = 0;
 
-		if (!FindZosftHash(ZosftHash))
+		if (!FindZosftHash(m_ZosftHash))
 		{
 			return PrintError("ERROR: Failed to find the ZOSFT entry in the MNF file!");
 		}
-		else if (!LoadZosft(ZosftHash, m_ZosftFile))
+		else if (!LoadZosft(m_ZosftHash, m_ZosftFile))
 		{
 			return PrintError("Failed to load the ZOSFT data from MNF file data!\nFiles will be exported but without any filenames set.");
 		}
@@ -312,32 +316,22 @@ namespace eso {
 		CZosftFile ZosftFile(m_Header.Version);
 
 		PrintError("Trying to find and load ZOSFT entry from MNF file!");
-
-		dword ZosftHash = 0;
-				
-		if (!FindZosftHash(ZosftHash))
-		{
-			PrintError("ERROR: Failed to find the ZOSFT entry in the MNF file!");
-		}
-		else if (!LoadZosft(ZosftHash, ZosftFile))
-		{
-			PrintError("Failed to load the ZOSFT data from MNF file data!\nFiles will be exported but without any filenames set.");
-		}
-		else 
-		{
-			PrintError("Successfully loaded the ZOSFT entry for MNF file!");
-		}
+		if (LoadZosft()) PrintError("Successfully loaded the ZOSFT entry for MNF file!");
 
 		if (!ExportOptions.MnfOutputFileTable.empty())
 		{
-			if (!DumpFileTable(ExportOptions.MnfOutputFileTable.c_str())) PrintError("Failed to dump the MNF filetable to a text file!");
-			PrintError("Saved the MNF filetable to %s!", ExportOptions.MnfOutputFileTable.c_str());
+			if (!DumpFileTable(ExportOptions.MnfOutputFileTable.c_str())) 
+				PrintError("Error: Failed to dump the MNF filetable to a text file '%s'!", ExportOptions.MnfOutputFileTable.c_str());
+			else
+				PrintError("Saved the MNF filetable to %s!", ExportOptions.MnfOutputFileTable.c_str());
 		}
 
 		if (!ExportOptions.ZosOutputFileTable.empty())
 		{
-			if (!ZosftFile.DumpFileTable(ExportOptions.ZosOutputFileTable.c_str())) PrintError("Failed to dump the ZOS filetable to a text file!");
-			PrintError("Saved the ZOSFT to %s!", ExportOptions.ZosOutputFileTable.c_str());
+			if (!ZosftFile.DumpFileTable(ExportOptions.ZosOutputFileTable.c_str())) 
+				PrintError("Error: Failed to dump the ZOS filetable to a text file '%s'!", ExportOptions.ZosOutputFileTable.c_str());
+			else
+				PrintError("Saved the ZOSFT to %s!", ExportOptions.ZosOutputFileTable.c_str());
 		}
 
 		if (ExportOptions.LuaFileList != "") 

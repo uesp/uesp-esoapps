@@ -105,8 +105,11 @@ bool DeleteFiles(const std::string Path);
 
 bool WriteMotorolaDword(FILE* pFile, const dword Value);
 
+std::vector<std::string> SplitString(const std::string &s, char delim);
+
 
 extern bool g_OutputDebugLog;
+extern void(*g_LogCallbackFunc)(const char* pString, va_list Args);
 
 };
 

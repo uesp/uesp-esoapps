@@ -8,6 +8,9 @@
 #include <time.h>
 #include <iostream>
 #include <string>
+#include <sstream>
+#include <vector>
+#include <iterator>
 
 
 namespace eso {
@@ -15,6 +18,9 @@ namespace eso {
 CFile g_LogFile;
 
 bool g_OutputDebugLog = false;
+
+
+void(*g_LogCallbackFunc)(const char* pString, va_list Args) = nullptr;
 
 
 bool OpenLog(const char* pFilename)
@@ -32,7 +38,9 @@ bool PrintError(const char* pString, ...)
 	vprintf(pString, Args);
 	printf("\n");
 	fflush(stdout);
-	
+
+	if (g_LogCallbackFunc) g_LogCallbackFunc(pString, Args);
+
 	PrintLogV(pString, Args);
 
 	va_end(Args);
@@ -51,6 +59,7 @@ bool PrintDebug(const char* pString, ...)
 		vprintf(pString, Args);
 		printf("\n");
 		fflush(stdout);
+		if (g_LogCallbackFunc) g_LogCallbackFunc(pString, Args);
 	}
 
 	PrintLogV(pString, Args);
@@ -856,6 +865,27 @@ bool DeleteFiles(const std::string FileSpec)
 
 	FindClose(sh);
 	return Return;
+}
+
+
+template <typename Out>
+void SplitString(const std::string &s, char delim, Out result) 
+{
+	std::istringstream iss(s);
+	std::string item;
+
+	while (std::getline(iss, item, delim)) 
+	{
+		*result++ = item;
+	}
+}
+
+
+std::vector<std::string> SplitString(const std::string &s, char delim) 
+{
+	std::vector<std::string> elems;
+	SplitString(s, delim, std::back_inserter(elems));
+	return elems;
 }
 
 };

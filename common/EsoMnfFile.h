@@ -65,6 +65,7 @@ namespace eso {
 		bool NoParseGR2;
 		bool OodleRawOutput;
 		bool NoRiffConvert;
+		bool DebugOutput;
 
 		mnf_exportoptions_t() :
 					MnfStartIndex(-1), 
@@ -80,7 +81,8 @@ namespace eso {
 					ExtractSubFileDataType("none"),
 					NoParseGR2(false),
 					OodleRawOutput(false),
-					NoRiffConvert(false)
+					NoRiffConvert(false),
+					DebugOutput(false)
 		{
 		}
 
@@ -141,6 +143,7 @@ namespace eso {
 		CMnfBlock3		m_Block3;
 
 		CZosftFile			m_ZosftFile;
+		dword				m_ZosftHash;
 		CMnfFileTableArray	m_FileTable;
 		CMnfFileHashMap     m_FileHashMap;
 		CMnfFileIndexMap    m_FileIndexMap;
@@ -153,8 +156,6 @@ namespace eso {
 
 
 	protected:
-		std::string CreateDataFilename(const byte ArchiveIndex);
-
 		bool CreateFileTable(void);
 		bool CreateFileMaps(void);
 		bool CreateDuplicateMap(CZosftFile& ZosftFile);
@@ -176,7 +177,6 @@ namespace eso {
 		bool SaveSubFileZosft(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo);
 		bool SaveSubFileGR2(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo);
 		bool SaveSubFileXV4(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo);
-		bool SaveSubFile(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS = false, CFile* pFile = nullptr, const std::string ExtractSubFileDataType = "none", const bool NoExtractGR2 = false, const std::string ExtractFileExtension = "", const bool NoConvertRiff = false, const std::string MatchFilename = "");
 		bool ExtractSubFileDataCombined(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo);
 		bool ExtractSubFileDataSeperate(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS, dat_subfileinfo_t& DataInfo);
 
@@ -185,6 +185,8 @@ namespace eso {
 		CMnfFile();
 		~CMnfFile();
 		void Destroy();
+
+		std::string CreateDataFilename(const byte ArchiveIndex);
 
 		bool DumpFileTable(const char* pFilename);
 
@@ -202,6 +204,7 @@ namespace eso {
 		CMnfFileIndexMap&   GetFileIndexMap() { return m_FileIndexMap; }
 		CMnfFileIndexMap&	GetFileInternalIndexMap() { return m_FileInternalIndexMap; }
 		CMnfDuplicateMap&	GetDuplicateNameMap() { return m_DuplicateNameMap; }
+		CZosftFile&         GetZosftFile() { return m_ZosftFile; }
 
 		bool HasFileHash (const dword Hash) { return m_FileHashMap.find(Hash) != m_FileHashMap.end(); }
 
@@ -218,6 +221,8 @@ namespace eso {
 		bool SaveSubFilesFast (const std::string BasePath, const bool ConvertDDS = false, const size_t StartIndex = 0);
 		bool SaveSubFiles     (const mnf_exportoptions_t ExportOptions);
 		bool SaveSubFile      (const size_t FileIndex, const mnf_exportoptions_t ExportOptions);
+
+		bool SaveSubFile(mnf_filetable_t& FileEntry, const std::string BasePath, const bool ConvertDDS = false, CFile* pFile = nullptr, const std::string ExtractSubFileDataType = "none", const bool NoExtractGR2 = false, const std::string ExtractFileExtension = "", const bool NoConvertRiff = false, const std::string MatchFilename = "");
 		
 	};
 

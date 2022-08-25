@@ -1758,7 +1758,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	ExportOptions.IdFilename2 = CmdParamHandler.GetParamValue("idfile2", 0);
 	ExportOptions.OrigLangFilename = CmdParamHandler.GetParamValue("origlang");
 	ExportOptions.ExtractFilename = CmdParamHandler.GetParamValue("filename");
-	ExportOptions.OodleRawOutput = CmdParamHandler.HasParamValue("oodleraw");
+	ExportOptions.OodleRawOutput = CmdParamHandler.HasParamValue("oodleoutput");
 	ExportOptions.ExtractFileExtension = CmdParamHandler.GetParamValue("fileext");
 	ExportOptions.LuaFileList = CmdParamHandler.GetParamValue("luafilelist");
 	ExportOptions.LuaStartIndex = CmdParamHandler.GetParamValueAsInt("luastartindex");
@@ -1771,6 +1771,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	if (CmdParamHandler.HasParamValue("debugoutput"))
 	{
 		PrintError("Outputting additional debug messages.");
+		ExportOptions.DebugOutput = true;
 		eso::g_OutputDebugLog = true;
 	}
 

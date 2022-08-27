@@ -1189,15 +1189,18 @@ function uespLog.StartGuildSearchSalesScan(startPage)
 		uespLog.SalesGuildSearchScanLastTimestamp = salesConfig.guildListTimes[guildName]
 		local diff = GetTimeStamp() - uespLog.SalesGuildSearchScanLastTimestamp
 		local diffTime = ""
+		local days = 0
+		local hours = 0
+		local minutes = 0
 		
 		if (diff > 86400) then
-			local days = diff/86400
+			days = diff/86400
 			diffTime = string.format("%.1f days", days)
 		elseif (diff > 3600) then
-			local hours = diff/3600
+			hours = diff/3600
 			diffTime = string.format("%.1f hours", hours)
 		elseif (diff > 60) then
-			local minutes = diff/60
+			minutes = diff/60
 			diffTime = string.format("%.1f mins", minutes)
 		else
 			diffTime = tostring(diff) .. " secs"

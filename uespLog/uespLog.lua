@@ -1173,6 +1173,9 @@
 --			- Increased the value of uespLog.MAXCAMPAIGN to 200 so newer campaigns will be shown with /uesppvpqueue .
 --			- Updated runebox collectible IDs.
 --
+--		-- v3.11 -- 27 August 2022
+--			- Fixed crash bug in guild sales parser.
+--
 --
 
 
@@ -1180,8 +1183,8 @@
 --	GLOBALS
 uespLog = uespLog or {}
 
-uespLog.version = "3.10"
-uespLog.releaseDate = "22 August 2022"
+uespLog.version = "3.11"
+uespLog.releaseDate = "27 August 2022"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

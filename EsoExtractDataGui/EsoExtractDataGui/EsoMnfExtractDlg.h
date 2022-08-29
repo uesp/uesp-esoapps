@@ -14,6 +14,8 @@ public:
 	mnf_exportoptions_t	m_Options;
 	std::vector<dword> m_FileIndexes;
 	std::vector<dword> m_SortedFileIndexes;
+	int	m_ExtractedFileCount;
+	int m_ExtractedErrorCount;
 
 	CFont m_ButtonFont;
 	CFont m_LogFont;

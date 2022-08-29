@@ -23,10 +23,8 @@
 #define IDC_DEBUGOUTPUT_CHECK           1009
 #define IDC_EXTRACT_PROGRESS            1009
 #define IDC_PROGRESS_LABEL              1010
-#define IDC_RICHEDIT21                  1011
-#define File                            32771
-#define New                             32772
-#define ID_FILE_NEW32773                32773
+#define IDC_RICHEDIT21                  1012
+#define IDC_READMETEXT                  1012
 #define ID_FILE_LOADMNF                 32774
 #define ID_FILE_EXIT                    32775
 #define ID_HELP_ABOUT                   32776
@@ -36,9 +34,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        137
+#define _APS_NEXT_RESOURCE_VALUE        138
 #define _APS_NEXT_COMMAND_VALUE         32778
-#define _APS_NEXT_CONTROL_VALUE         1012
+#define _APS_NEXT_CONTROL_VALUE         1013
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -9,46 +9,13 @@
 #include "EsoExtractDataGuiDlg.h"
 #include "EsoMnfOptionsDlg.h"
 #include "EsoMnfExtractDlg.h"
+#include "AboutDlg.h"
 #include "afxdialogex.h"
 
 
 #ifdef _DEBUG
 	#define new DEBUG_NEW
 #endif
-
-
-class CAboutDlg : public CDialogEx
-{
-public:
-	CAboutDlg();
-
-#ifdef AFX_DESIGN_TIME
-	enum { IDD = IDD_ABOUTBOX };
-#endif
-
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-
-protected:
-	DECLARE_MESSAGE_MAP()
-public:
-	
-};
-
-CAboutDlg::CAboutDlg() : CDialogEx(IDD_ABOUTBOX)
-{
-}
-
-void CAboutDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialogEx::DoDataExchange(pDX);
-}
-
-BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
-END_MESSAGE_MAP()
-
-
-
 
 
 CEsoExtractDataGuiDlg::CEsoExtractDataGuiDlg(CWnd* pParent /*=nullptr*/)

@@ -208,6 +208,7 @@
     <ClInclude Include="..\..\common\snappy\snappy-sinksource.h" />
     <ClInclude Include="..\..\common\snappy\snappy-stubs-internal.h" />
     <ClInclude Include="..\..\common\snappy\snappy-stubs-public.h" />
+    <ClInclude Include="AboutDlg.h" />
     <ClInclude Include="EsoMnfExtractDlg.h" />
     <ClInclude Include="EsoMnfOptionsDlg.h" />
     <ClInclude Include="EsoExtractDataGui.h" />
@@ -327,6 +328,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="AboutDlg.cpp">
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">stdafx.h</PrecompiledHeaderFile>
+    </ClCompile>
     <ClCompile Include="EsoMnfExtractDlg.cpp" />
     <ClCompile Include="EsoMnfOptionsDlg.cpp" />
     <ClCompile Include="EsoExtractDataGui.cpp">
@@ -369,6 +374,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="exportmnf.log" />
+    <Text Include="README.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

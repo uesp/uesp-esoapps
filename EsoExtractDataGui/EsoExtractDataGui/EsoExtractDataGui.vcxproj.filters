@@ -102,6 +102,9 @@
     <ClInclude Include="EsoMnfExtractDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AboutDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EsoExtractDataGui.cpp">
@@ -176,6 +179,9 @@
     <ClCompile Include="EsoMnfExtractDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AboutDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="EsoExtractDataGui.rc">
@@ -216,5 +222,6 @@
     <Text Include="exportmnf.log">
       <Filter>Source Files</Filter>
     </Text>
+    <Text Include="README.txt" />
   </ItemGroup>
 </Project>

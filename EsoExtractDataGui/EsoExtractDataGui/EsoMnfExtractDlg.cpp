@@ -25,7 +25,8 @@ void l_OnLogOutput(const char* pString, va_list Args)
 
 
 CEsoMnfExtractDlg::CEsoMnfExtractDlg(CMnfFile& MnfFile, mnf_exportoptions_t& Options, std::vector<dword>& FileIndexes, CWnd* pParent)
-	: CDialogEx(IDD_EXTRACTFILE_DIALOG, pParent), m_MnfFile(MnfFile), m_Options(Options), m_FileIndexes(FileIndexes)
+	: CDialogEx(IDD_EXTRACTFILE_DIALOG, pParent), m_MnfFile(MnfFile), m_Options(Options), m_FileIndexes(FileIndexes), m_ExtractedFileCount(0),
+	m_ExtractedErrorCount(0)
 {
 	g_pExtractDlg = this;
 }
@@ -113,8 +114,10 @@ BOOL CEsoMnfExtractDlg::OnInitDialog()
 	m_NextFileIndex = 0;
 	m_IsExtractionFinished = false;
 	m_IsExtractionEnabled = true;
+	m_ExtractedFileCount = 0;
+	m_ExtractedErrorCount = 0;
 
-	m_LogEdit.LimitText(164000);
+	m_LogEdit.LimitText(200000);
 
 	g_LogCallbackFunc = l_OnLogOutput;
 
@@ -132,12 +135,18 @@ BOOL CEsoMnfExtractDlg::OnInitDialog()
 
 void CEsoMnfExtractDlg::EndFileExtraction()
 {
+	CString Buffer;
+
 	KillTimer(m_hTimer);
 	m_IsExtractionFinished = true;
 
 	m_StopButton.SetWindowText("Finish");
+	Buffer.Format("Saving Subfile %7u of %7u (100%% complete)", m_SortedFileIndexes.size(), m_SortedFileIndexes.size());
+	m_ProgressLabel.SetWindowText(Buffer);
 
-	PrintError("Finished Extracting Files!");
+	PrintError("Finished extracting %d files with %d errors!", m_ExtractedFileCount, m_ExtractedErrorCount);
+
+	m_ProgressBar.SetPos(10000);
 }
 
 
@@ -209,6 +218,11 @@ bool CEsoMnfExtractDlg::DoNextFileExtraction()
 	}
 
 	bool result = m_MnfFile.SaveSubFile(record, m_Options.OutputPath, m_Options.ConvertDDS, &m_InputFile, m_Options.ExtractSubFileDataType, m_Options.NoParseGR2, m_Options.ExtractFileExtension, m_Options.NoRiffConvert, m_Options.MatchFilename);
+
+	if (result)
+		++m_ExtractedFileCount;
+	else
+		++m_ExtractedErrorCount;
 
 	return true;
 }

@@ -989,7 +989,7 @@ namespace eso {
 		CFile File;
 
 		DataInfo.DeletePtrs = true;
-
+		
 		if (ExtractFileExtension != "")
 		{
 			if (FileEntry.pZosftEntry == nullptr) return (false);
@@ -1014,7 +1014,7 @@ namespace eso {
 			
 			return PrintError("\tError: Failed to load the file data from MNF %03u with file index %u (absolute index %u)!", (dword)FileEntry.ArchiveIndex, FileEntry.FileIndex, FileEntry.Index);
 		}
-
+		
 		if (DataInfo.pFileDataStart == nullptr) return PrintError("\tError: No uncompressed data to write to file!");
 
 		std::string FileExtension = GuessFileExtension((unsigned char *)DataInfo.pFileDataStart, DataInfo.FileDataSize);
@@ -1039,7 +1039,7 @@ namespace eso {
 		{
 			SaveSubFileXV4(FileEntry, BasePath, ConvertDDS, DataInfo);
 		}
-
+				
 		OutputFilename = CreateFilename(BasePath, "%03u\\%06u.%s", (dword)FileEntry.ArchiveIndex, FileEntry.Index, FileExtension.c_str());
 		OutputPath = RemoveFilename(OutputFilename);
 		if (!EnsurePathExists(OutputPath)) return false;
@@ -1179,6 +1179,9 @@ namespace eso {
 
 		if (!File.Open(WavFilename, "wb")) return false;
 		Result = File.WriteBytes(pNewFileData, NewFileSize);
+
+		delete[] pNewFileData;
+
 		if (!Result) return false;
 
 		return true;

@@ -219,9 +219,6 @@
     </Library>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="exportmnf.log">
-      <Filter>Source Files</Filter>
-    </Text>
     <Text Include="README.txt" />
   </ItemGroup>
 </Project>

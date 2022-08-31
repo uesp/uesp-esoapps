@@ -49,6 +49,16 @@ BEGIN_MESSAGE_MAP(CEsoExtractDataGuiDlg, CDialogEx)
 	ON_COMMAND(ID_HELP_ABOUT, &CEsoExtractDataGuiDlg::OnHelpAbout)
 	ON_BN_CLICKED(IDC_EXTRACT_BUTTON, &CEsoExtractDataGuiDlg::OnBnClickedExtractButton)
 	ON_EN_CHANGE(IDC_ARCHIVEEDIT, &CEsoExtractDataGuiDlg::OnEnChangeArchiveedit)
+	ON_COMMAND(ID_LOAD_LIVE_GAME, &CEsoExtractDataGuiDlg::OnLoadLiveGame)
+	ON_COMMAND(ID_LOAD_LIVE_ESOSOUND, &CEsoExtractDataGuiDlg::OnLoadLiveEsosound)
+	ON_COMMAND(ID_LOAD_LIVE_ESO, &CEsoExtractDataGuiDlg::OnLoadLiveEso)
+	ON_COMMAND(ID_LOAD_LIVE_ESOAUDIO, &CEsoExtractDataGuiDlg::OnLoadLiveEsoaudio)
+	ON_COMMAND(ID_LOAD_PTS_GAME, &CEsoExtractDataGuiDlg::OnLoadPtsGame)
+	ON_COMMAND(ID_LOAD_PTS_ESO, &CEsoExtractDataGuiDlg::OnLoadPtsEso)
+	ON_COMMAND(ID_LOAD_PTS_ESOAUDIO, &CEsoExtractDataGuiDlg::OnLoadPtsEsoaudio)
+	ON_COMMAND(ID_LOAD_PTS_ESOSOUND, &CEsoExtractDataGuiDlg::OnLoadPtsEsosound)
+	ON_COMMAND(ID_PTS_OPENFOLDER, &CEsoExtractDataGuiDlg::OnPtsOpenfolder)
+	ON_COMMAND(ID_LIVE_OPENFOLDER, &CEsoExtractDataGuiDlg::OnLiveOpenfolder)
 END_MESSAGE_MAP()
 
 
@@ -241,17 +251,6 @@ afx_msg void CEsoExtractDataGuiDlg::OnLvnGetdispinfoFileList(NMHDR* pNotifyStruc
 	CString Buffer;
 	int iItem = m_SortedFileIndexes[pItem->iItem];
 	auto& record = m_MnfFile.GetFileTable()[iItem];
-
-	/*
-	m_FileList.InsertColumn(0, "Index", LVCFMT_LEFT, 90);
-	m_FileList.InsertColumn(1, "Filename", LVCFMT_LEFT, 90);
-	m_FileList.InsertColumn(2, "Archive", LVCFMT_LEFT, 90);
-	m_FileList.InsertColumn(3, "Hash", LVCFMT_LEFT, 90);
-	m_FileList.InsertColumn(4, "Size", LVCFMT_LEFT, 90);
-	m_FileList.InsertColumn(5, "ID", LVCFMT_LEFT, 90);
-	m_FileList.InsertColumn(6, "FileIndex", LVCFMT_LEFT, 90);
-	m_FileList.InsertColumn(7, "Offset", LVCFMT_LEFT, 90);
-	*/
 
 	if (pItem->mask & LVIF_TEXT)
 	{
@@ -609,6 +608,7 @@ void CEsoExtractDataGuiDlg::LoadRegistrySettings()
 	m_Options.NoRiffConvert = (pApp->GetProfileInt("Settings", "NoRiffConvert", (int)m_Options.NoRiffConvert) != 0);
 	m_Options.MnfOutputFileTable = pApp->GetProfileString("Settings", "MnfOutputFileTable", m_Options.MnfOutputFileTable.c_str());
 	m_Options.ZosOutputFileTable = pApp->GetProfileString("Settings", "ZosOutputFileTable", m_Options.ZosOutputFileTable.c_str());
+	m_Options.ExtractSubFileDataType = pApp->GetProfileString("Settings", "ExtractSubFileDataType", m_Options.ExtractSubFileDataType.c_str());
 }
 
 
@@ -621,4 +621,65 @@ void CEsoExtractDataGuiDlg::SaveRegistrySettings()
 	pApp->WriteProfileInt("Settings", "NoRiffConvert", (int)m_Options.NoRiffConvert);
 	pApp->WriteProfileString("Settings", "MnfOutputFileTable", m_Options.MnfOutputFileTable.c_str());
 	pApp->WriteProfileString("Settings", "ZosOutputFileTable", m_Options.ZosOutputFileTable.c_str());
+	pApp->WriteProfileString("Settings", "ExtractSubFileDataType", m_Options.ExtractSubFileDataType.c_str());
+}
+
+
+void CEsoExtractDataGuiDlg::OnLoadLiveGame()
+{
+	LoadMnfFile(GetEsoLiveInstallPath() + "game\\client\\game.mnf");
+}
+
+
+void CEsoExtractDataGuiDlg::OnLoadLiveEso()
+{
+	LoadMnfFile(GetEsoLiveInstallPath() + "depot\\eso.mnf");
+}
+
+
+void CEsoExtractDataGuiDlg::OnLoadLiveEsosound()
+{
+	LoadMnfFile(GetEsoLiveInstallPath() + "vo_soundsets\\esoaudiosoundsets.mnf");
+}
+
+
+void CEsoExtractDataGuiDlg::OnLoadLiveEsoaudio()
+{
+	LoadMnfFile(GetEsoLiveInstallPath() + "vo_en\\esoaudioen.mnf");
+}
+
+
+void CEsoExtractDataGuiDlg::OnLoadPtsGame()
+{
+	LoadMnfFile(GetEsoPtsInstallPath() + "game\\client\\game.mnf");
+}
+
+
+void CEsoExtractDataGuiDlg::OnLoadPtsEso()
+{
+	LoadMnfFile(GetEsoPtsInstallPath() + "depot\\eso.mnf");
+}
+
+
+void CEsoExtractDataGuiDlg::OnLoadPtsEsoaudio()
+{
+	LoadMnfFile(GetEsoPtsInstallPath() + "vo_en\\esoaudioen.mnf");
+}
+
+
+void CEsoExtractDataGuiDlg::OnLoadPtsEsosound()
+{
+	LoadMnfFile(GetEsoPtsInstallPath() + "vo_soundsets\\esoaudiosoundsets.mnf");
+}
+
+
+void CEsoExtractDataGuiDlg::OnPtsOpenfolder()
+{
+	ShellExecute(NULL, "open", GetEsoPtsInstallPath().c_str(), NULL, NULL, SW_SHOWDEFAULT);
+}
+
+
+void CEsoExtractDataGuiDlg::OnLiveOpenfolder()
+{
+	ShellExecute(NULL, "open", GetEsoLiveInstallPath().c_str(), NULL, NULL, SW_SHOWDEFAULT);
 }

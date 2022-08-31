@@ -175,6 +175,8 @@
  *		  Set a bunch of error/warning messages to debug only. Note that all messages are still saved to the log file.
  *		- Fixed the format of the subfile index which prevents a bunch of error messages from the ESO00000.DAT file.
  *		- Adjusted tab levels of text output for a little neater visual output.
+ *		- Introduced the EsoExtractDataGui program.
+ *		- Fixed a memory leak when converting RIFF files to WAV.
  */
 
 #include "stdafx.h"

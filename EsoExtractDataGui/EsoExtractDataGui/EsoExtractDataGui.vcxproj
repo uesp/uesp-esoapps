@@ -373,7 +373,6 @@
     <Library Include="..\..\common\zlib\lib64\zlib.lib" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="exportmnf.log" />
     <Text Include="README.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

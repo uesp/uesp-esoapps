@@ -38,8 +38,7 @@ BOOL CEsoExtractDataGuiApp::InitInstance()
 
 	AfxInitRichEdit2();
 
-	OpenLog("exportmnf.log");
-	
+	OpenLog("exportmnfgui.log");
 	
 	if (!LoadOodleLib()) return -1;
 

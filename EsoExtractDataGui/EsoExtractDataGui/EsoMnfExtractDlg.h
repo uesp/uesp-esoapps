@@ -8,7 +8,8 @@ class CEsoMnfExtractDlg : public CDialogEx
 	DECLARE_DYNAMIC(CEsoMnfExtractDlg)
 public:
 
-	const int BATCH_SIZE = 10;
+	const int BATCH_SIZE = 100;
+	const int MAX_BATCH_TIMEMS = 100;
 
 	CMnfFile& m_MnfFile;
 	mnf_exportoptions_t	m_Options;
@@ -39,6 +40,7 @@ public:
 	bool DoNextFileExtraction();
 	bool DoNextFileExtractionBatch();
 	void EndFileExtraction();
+	bool SkipToNextArchive(const int ArchiveIndex);
 
 	void OnLogOutput(const char* pString, va_list Args);
 

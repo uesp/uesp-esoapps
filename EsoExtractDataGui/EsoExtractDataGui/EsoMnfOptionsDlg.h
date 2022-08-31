@@ -33,4 +33,5 @@ public:
 	CButton m_SaveZosftFileListCheck;
 	CButton m_ConvertRiffCheck;
 	CButton m_DebugOutputCheck;
+	CComboBox m_SubfileExtractTypeList;
 };

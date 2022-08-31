@@ -127,7 +127,7 @@ BOOL CEsoMnfExtractDlg::OnInitDialog()
 	m_ProgressBar.SetRange32(0, 10000);
 	m_ProgressBar.SetPos(0);
 
-	m_hTimer = SetTimer(1234, 100, NULL);
+	m_hTimer = SetTimer(1234, MAX_BATCH_TIMEMS, NULL);
 
 	return true;
 }
@@ -155,6 +155,8 @@ bool CEsoMnfExtractDlg::DoNextFileExtractionBatch()
 	if (m_NextFileIndex < 0) return false;
 	if (!m_IsExtractionEnabled) return false;
 
+	DWORD startTick = GetTickCount();
+
 	for (int i = 0; i < BATCH_SIZE; ++i)
 	{
 		if (m_NextFileIndex >= m_SortedFileIndexes.size()) 
@@ -164,6 +166,9 @@ bool CEsoMnfExtractDlg::DoNextFileExtractionBatch()
 		}
 
 		DoNextFileExtraction();
+
+		DWORD endTick = GetTickCount();
+		if (endTick < startTick || endTick - startTick >= (DWORD) MAX_BATCH_TIMEMS) break;
 	}
 
 	return true;
@@ -198,6 +203,7 @@ bool CEsoMnfExtractDlg::DoNextFileExtraction()
 	if (m_LastArchiveIndex != record.ArchiveIndex)
 	{
 		std::string InputFilename = m_MnfFile.CreateDataFilename(record.ArchiveIndex);
+		m_LastArchiveIndex = record.ArchiveIndex;
 
 		if (!m_InputFile.Open(InputFilename, "rb"))
 		{
@@ -210,11 +216,11 @@ bool CEsoMnfExtractDlg::DoNextFileExtraction()
 		if (FileSize <= 14)
 		{
 			PrintError("Skipping empty DAT '%s'...", InputFilename.c_str());
+			SkipToNextArchive(m_LastArchiveIndex);
 			return true;
 		}
 
 		PrintError("Loading DAT '%s'...", InputFilename.c_str());
-		m_LastArchiveIndex = record.ArchiveIndex;
 	}
 
 	bool result = m_MnfFile.SaveSubFile(record, m_Options.OutputPath, m_Options.ConvertDDS, &m_InputFile, m_Options.ExtractSubFileDataType, m_Options.NoParseGR2, m_Options.ExtractFileExtension, m_Options.NoRiffConvert, m_Options.MatchFilename);
@@ -225,6 +231,23 @@ bool CEsoMnfExtractDlg::DoNextFileExtraction()
 		++m_ExtractedErrorCount;
 
 	return true;
+}
+
+
+bool CEsoMnfExtractDlg::SkipToNextArchive(const int ArchiveIndex)
+{
+	if (m_NextFileIndex < 0 || m_NextFileIndex >= m_SortedFileIndexes.size()) return false;
+	
+	do {
+		dword index = m_SortedFileIndexes[m_NextFileIndex];
+		auto& record = m_MnfFile.GetFileTable()[index];
+
+		if (record.ArchiveIndex != ArchiveIndex) return true;
+		
+		++m_NextFileIndex;
+	} while (m_NextFileIndex < m_SortedFileIndexes.size());
+
+	return false;
 }
 
 
@@ -275,7 +298,19 @@ void CEsoMnfExtractDlg::OnBnClickedStopextractButton()
 
 void CEsoMnfExtractDlg::OnTimer(UINT_PTR nIDEvent)
 {
-	if (nIDEvent == m_hTimer) DoNextFileExtractionBatch();
+	if (nIDEvent == m_hTimer)
+	{
+		CRITICAL_SECTION critSec;
+		InitializeCriticalSection(&critSec);
+
+		if (TryEnterCriticalSection(&critSec))
+		{
+			DoNextFileExtractionBatch();
+			LeaveCriticalSection(&critSec);
+		}
+
+		DeleteCriticalSection(&critSec);
+	}
 
 	CDialogEx::OnTimer(nIDEvent);
 }

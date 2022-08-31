@@ -21,7 +21,9 @@ public:
 	CEsoExtractDataGuiDlg(CWnd* pParent = nullptr);
 
 
+	
 	bool LoadMnfFile(CString Filename);
+	bool LoadMnfFile(std::string Filename) { return LoadMnfFile(CString(Filename.c_str())); }
 	void CreateSortedFileIndex();
 	void SortFileIndexes();
 	bool ExtractFiles();
@@ -72,4 +74,14 @@ public:
 	afx_msg void OnBnClickedExtractButton();
 	afx_msg void OnEnChangeArchiveedit();
 	CEdit m_ArchiveEdit;
+	afx_msg void OnLoadLiveGame();
+	afx_msg void OnLoadLiveEsosound();
+	afx_msg void OnLoadLiveEso();
+	afx_msg void OnLoadLiveEsoaudio();
+	afx_msg void OnLoadPtsGame();
+	afx_msg void OnLoadPtsEso();
+	afx_msg void OnLoadPtsEsoaudio();
+	afx_msg void OnLoadPtsEsosound();
+	afx_msg void OnPtsOpenfolder();
+	afx_msg void OnLiveOpenfolder();
 };

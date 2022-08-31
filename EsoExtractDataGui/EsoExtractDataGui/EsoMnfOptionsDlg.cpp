@@ -25,6 +25,7 @@ void CEsoMnfOptionsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SAVEZOSFTFILELIST_CHECK, m_SaveZosftFileListCheck);
 	DDX_Control(pDX, IDC_CONVERTRIFF_CHECK, m_ConvertRiffCheck);
 	DDX_Control(pDX, IDC_DEBUGOUTPUT_CHECK, m_DebugOutputCheck);
+	DDX_Control(pDX, IDC_SUBFILETYPE_COMBO, m_SubfileExtractTypeList);
 }
 
 
@@ -43,6 +44,10 @@ void CEsoMnfOptionsDlg::OnOK()
 BOOL CEsoMnfOptionsDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
+
+	m_SubfileExtractTypeList.AddString("None");
+	m_SubfileExtractTypeList.AddString("Combined");
+	m_SubfileExtractTypeList.AddString("Seperate");
 
 	SetControlData();
 
@@ -76,6 +81,16 @@ void CEsoMnfOptionsDlg::GetControlData()
 		m_MnfOptions.DebugOutput = true;
 	else
 		m_MnfOptions.DebugOutput = false;
+
+	int curSel = m_SubfileExtractTypeList.GetCurSel();
+	m_MnfOptions.ExtractSubFileDataType = "";
+
+	if (curSel != CB_ERR) 
+	{
+		CString Buffer;
+		m_SubfileExtractTypeList.GetLBText(curSel, Buffer);
+		m_MnfOptions.ExtractSubFileDataType = Buffer.MakeLower();
+	}
 }
 
 
@@ -105,4 +120,15 @@ void CEsoMnfOptionsDlg::SetControlData()
 		m_DebugOutputCheck.SetCheck(BST_CHECKED);
 	else
 		m_DebugOutputCheck.SetCheck(BST_UNCHECKED);
+
+	CString curType = m_MnfOptions.ExtractSubFileDataType.c_str();
+	if (curType == "") curType = "none";
+
+	for (int i = 0; i < m_SubfileExtractTypeList.GetCount(); i++)
+	{
+		CString Buffer;
+		m_SubfileExtractTypeList.GetLBText(i, Buffer);
+		Buffer.MakeLower();
+		if (Buffer == curType) m_SubfileExtractTypeList.SetCurSel(i);
+	}
 }

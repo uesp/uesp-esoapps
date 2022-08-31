@@ -4,12 +4,29 @@ EsoExtractDataGui is a 64-bit Windows application that can perform basic extract
 Elder Scrolls Online MNF and DAT files. It uses the same extraction code as the command line
 EsoExtractData program but without the ability for manipulating LANG files and other features.
 
+Note: This is the first release of the program and it may contain bugs.
+
+
+	Installation
+===============================================================================
+Unzip the EsoExtractData.zip file into a folder of your choice and run the EsoExtractDataGui.exe
+program from there.
+
+Note: If you receive an error about a missing DLL you may need to install the Visual C++ 
+Redistributable for Visual Studio 2015 available at:
+
+	https://www.microsoft.com/en-ie/download/details.aspx?id=48145
+
 
 	Basic Usage
 ===============================================================================
 File:New -- Clears the current loaded MNF data file.
-File:Load -- Loads a new MNF data file. By default the program tries to find and load from the ESO 
+File:Load... -- Loads a new MNF data file. By default the program tries to find and load from the ESO 
 	installation directory.
+File:Live... -- Attempts to load the standard MNF files from the Live installation of the game. If
+	the installation folder cannot be found you'll have to use the general Load... option.
+File:PTS... -- Attempts to load the standard MNF files from the PTS installation of the game. If
+	the installation folder cannot be found you'll have to use the general Load... option.
 File:Exit -- Exit the program
 View:Options -- Edit program options.
 	Parse GR2 Files -- If checked any GR2 file is loaded/parsed and a filename set based on the

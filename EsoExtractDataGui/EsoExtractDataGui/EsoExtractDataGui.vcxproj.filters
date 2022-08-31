@@ -219,6 +219,7 @@
     </Library>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="README.txt" />
+    <Text Include="exportmnfgui.log" />
+    <Text Include="README_GUI.txt" />
   </ItemGroup>
 </Project>

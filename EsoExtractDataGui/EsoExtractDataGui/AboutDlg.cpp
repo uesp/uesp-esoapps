@@ -37,7 +37,7 @@ bool CAboutDlg::LoadReadme()
 	eso::CFile File;
 	fpos_t FileSize;
 
-	byte* pBytes = File.ReadAll("README.txt", FileSize);
+	byte* pBytes = File.ReadAll("README_GUI.txt", FileSize);
 
 	m_ReadmeText.SetWindowTextA((const char*) pBytes);
 	m_ReadmeText.SetSel(-1, 0);

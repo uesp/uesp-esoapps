@@ -1,7 +1,7 @@
 
-	EsoExtractData v0.51 (formally EsoExportMnf)
+	EsoExtractData v0.52 (formally EsoExportMnf)
 	by Dave Humphrey (dave@uesp.net)
-	28 April 2022
+	31 August 2022
 -------------------------------
 EsoextractData is a simple Windows command line application that loads and exports
 data found in ESO's (Elder Scrolls Online) MNF and DAT files.

@@ -1691,7 +1691,7 @@ cmdparamdef_t g_Cmds[] =
 	{ "",   "", "", "", false, false, false, false, "" }
 };
 
-const char g_AppTitle[] = "EsoExtractData v0.52 (25 August 2022)";
+const char g_AppTitle[] = "EsoExtractData v0.52 (31 August 2022)";
 const char g_AppDescription[] = "\
 EsoExtractData v0.52 is a simple command line application to load and export files\n\
 from Elder Scrolls Online's MNF and DAT files. Created by Daveh (dave@uesp.net).\n";

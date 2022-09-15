@@ -1175,6 +1175,9 @@
 --
 --		-- v3.11 -- 27 August 2022
 --			- Fixed crash bug in guild sales parser.
+--	
+--		-- ?
+--			- Fixed incorrect skill mechanic being used sometimes when calculating skill coefficients.
 --
 --
 

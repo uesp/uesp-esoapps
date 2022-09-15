@@ -72,7 +72,7 @@ uespLog.SKILLCOEF_MECHANIC_NAMES = {
 	[POWERTYPE_HEALTH] = "Health",
 	[POWERTYPE_MAGICKA] = "Magicka",
 	[POWERTYPE_STAMINA] = "Stamina",
-	[4] = "Spell + Weapon Damage",	-- Same as UESP_POWERTYPE_DAMAGE
+	-- [4] = "Spell + Weapon Damage",	-- Same as UESP_POWERTYPE_DAMAGE, no longer used as of update 34?
 	[uespLog.UESP_POWERTYPE_SOULTETHER] = "Ultimate (ignore WD)",
 	[uespLog.UESP_POWERTYPE_LIGHTARMOR] = "Light Armor",
 	[uespLog.UESP_POWERTYPE_MEDIUMARMOR] = "Medium Armor",
@@ -5180,11 +5180,11 @@ function uespLog.GetSkillCoefAbilityCost(abilityId, rank)
 	local baseRankData = uespLog.SKILL_RANKDATA[abilityId]
 	
 	if (abilityId > 20000000) then
-		cost, mechanic = uespLog.GetAbilityCost(abilityId % 10000000, rank)
+		cost, mechanic = uespLog.GetAbilityCost(abilityId % 10000000, nil, rank)
 	elseif (baseRankData ~= nil) then
-		cost, mechanic = uespLog.GetAbilityCost(baseRankData[1], rank)
+		cost, mechanic = uespLog.GetAbilityCost(baseRankData[1], nil, rank)
 	else
-		cost, mechanic = uespLog.GetAbilityCost(abilityId, rank)
+		cost, mechanic = uespLog.GetAbilityCost(abilityId, nil, rank)
 	end	
 
 	return cost, mechanic

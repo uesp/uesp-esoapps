@@ -206,7 +206,7 @@ struct skilldata_t
 	dword recordLength2;
 	dword unknown1;
 	dword unknown2;
-	dword abilityId1;			// Always the same as abilityId2
+	dword abilityId1;			// Always the same as abilityId2 until update 36pts
 	dword recordLength3;
 	dword abilityId2;
 
@@ -313,9 +313,9 @@ struct skilldata34_t
 	dword recordLength2;
 	dword unknown1;
 	dword unknown2;
-	dword abilityId1;			// Always the same as abilityId2
+	dword unknown3;			// Always the same as abilityId2 until update 36pts
 	dword recordLength3;
-	dword abilityId2;
+	dword abilityId1;
 
 	std::string name;
 
@@ -348,7 +348,7 @@ struct skilldata34_t
 		word cost;
 		dword radius;
 		dword z8;
-		dword u3;
+		//dword u3;		// Removed in Update 36PTS
 		word u4;
 		dword u5;
 		byte u6;
@@ -1210,7 +1210,7 @@ bool ReadSkillRecord34(CFile& File)
 	result &= File.ReadDword(skill.recordLength2, false);
 	result &= File.ReadDword(skill.unknown1, false);
 	result &= File.ReadDword(skill.unknown2, false);
-	result &= File.ReadDword(skill.abilityId1, false);
+	result &= File.ReadDword(skill.unknown3, false);
 	result &= File.ReadDword(skill.recordLength3, false);
 
 	if (!result) return ReportError("Error: Failed to read skill data header!");
@@ -1223,8 +1223,8 @@ bool ReadSkillRecord34(CFile& File)
 
 	skill.endOffset = skill.startOffset + skill.recordLength1 + SKILLDATA_RECORDSIZE_OFFSET;
 
-	result &= File.ReadDword(skill.abilityId2, false);
-	if (skill.abilityId1 != skill.abilityId2) ReportError("Ability ID 1+2 Mismatch: 0x%08lX 0x%08lX ", skill.abilityId1, skill.abilityId2);
+	result &= File.ReadDword(skill.abilityId1, false);
+	//if (skill.abilityId1 != skill.abilityId1) ReportError("Ability ID 1+2 Mismatch: 0x%08lX 0x%08lX ", skill.abilityId1, skill.abilityId1);
 	g_ValidSkillIds[skill.abilityId1] = g_SkillIndex;
 
 	result &= File.ReadWord(stringSize, false);
@@ -1262,7 +1262,7 @@ bool ReadSkillRecord34(CFile& File)
 	result &= File.ReadWord(skill.baseData.cost, false);
 	result &= File.ReadDword(skill.baseData.radius, false);
 	result &= File.ReadDword(skill.baseData.z8, false);
-	result &= File.ReadDword(skill.baseData.u3, false);
+//	result &= File.ReadDword(skill.baseData.u3, false);		//Removed in update 36pts
 	result &= File.ReadWord(skill.baseData.u4, false);
 	result &= File.ReadDword(skill.baseData.u5, false);
 	result &= File.ReadByte(skill.baseData.u6);	
@@ -1871,7 +1871,7 @@ void OutputSummaryCsv()
 
 		std::replace(name.begin(), name.end(), '"', '\'');
 
-		File.Printf("%07d, ", skill.abilityId2);
+		File.Printf("%07d, ", skill.abilityId1);
 		File.Printf("\"%s\", ", name.c_str());
 		File.Printf("%d,", (int)skill.u1a);
 		File.Printf("%d,", (int)skill.u1b);
@@ -2029,7 +2029,7 @@ bool OutputSkill34(skilldata34_t& skill)
 	if (!File.Open(filename, "wb")) return false;
 
 	File.Printf("Name: %s\n", skill.name.c_str());
-	File.Printf("ID: %d, %d\n", skill.abilityId1, skill.abilityId2);
+	File.Printf("ID: %d\n", skill.abilityId1);
 
 	File.Printf("U2: %d, %d", skill.u1a, skill.u1b);
 

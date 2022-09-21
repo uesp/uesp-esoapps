@@ -1739,6 +1739,7 @@ uespLog.MINEITEM_LEVELS_SAFE = {
 
 uespLog.MINEITEM_LEVELS_SAFE_PTS = {
 	{  1,  1,   1,   2, "dropped" },
+	{ 50, 50, 364, 364, "jewelry" },
 	{ 50, 50, 366, 370, "crafted" },
 }
 

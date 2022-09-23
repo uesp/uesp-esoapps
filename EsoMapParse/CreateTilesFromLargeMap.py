@@ -8,7 +8,7 @@ import errno
 import csv
 import re
 
-USE_COMMAND_ARGS = False
+USE_COMMAND_ARGS = True
 
 if (not USE_COMMAND_ARGS):
     BasePathIndex = "36pts"
@@ -26,6 +26,9 @@ INPUTPATH = BasePath + "goodimages-" + BasePathIndex + "/CombinedMaps/"
 LARGEINPUTPATH = BasePath + "goodimages-" + BasePathIndex + "/LargeMaps/"
 OUTPUTPATH = BasePath + "goodimages-" + BasePathIndex + "/Maps/"
 DEFAULTNULLTILE = BasePath + "goodimages-" + BasePathIndex + "/Maps/blacknulltile.jpg"
+
+# LARGEINPUTPATH = "c:/Temp/LargeMaps/"
+# OUTPUTPATH = "c:/Temp/MapTiles/"
 
 MAPEXTENSION = ".jpg"
 CREATEZOOMLEVEL = 11

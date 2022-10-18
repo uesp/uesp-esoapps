@@ -71,6 +71,9 @@
 	v0.61 - 7 March 2019
 		- Fixed build uploading with multiple accounts in the saved variable file.
 
+	v0.62 - 18 October 2022
+		- Increased sleep after file change to prevent file locking issue.
+
 	TODO:
 		- Proper UI threading.
 
@@ -2948,7 +2951,7 @@ void CuespLogMonitorDlg::OnFileMonitorUpdate()
 		return;
 	}
 
-	Sleep(500);
+	Sleep(5000);
 
 	PrintLogLine(ULM_LOGLEVEL_INFO, "Automatically checking for changes in log file...");
 		

@@ -12,6 +12,7 @@ using namespace eso;
 const std::string BASE_PATH = "e:/esoexport/";
 std::string g_Version = "";
 
+	// Use command line version instead
 const int VERSION = 34;
 
 	// The file extracted from ESO.MNF that contains the skill data

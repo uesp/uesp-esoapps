@@ -7,23 +7,62 @@ import math
 import errno
 import csv
 
+SPLIT_TILES = True
+MAKE_LARGER_TILES = True
+MAKE_SMALLER_TILES = True
+
+
+    # TR Map
 BASEPATH = "d:/EGD/uesp/TamrielRebuilt/Map1/"
 INPUTMAP = BASEPATH + "TR_Release_Export_256.jpg"
 OUTPUTPATH = BASEPATH + "Tiles/"
 DEFAULTNULLTILE = BASEPATH + "troutofrange.jpg"
 
-    # To disable warning about decompression bomb
-Image.MAX_IMAGE_PIXELS = 1000000000
-
 MAPXTILEOFFSET = 15
 MAPYTILEOFFSET = 4
 MAPXTILECOUNT = 96
 MAPYTILECOUNT = 96
+MAPZOOMLEVEL = 16
+USESHORTFILENAME = False
+NORMALIZEOUTPUTZOOM = False
+MAPNAME = "TR"
+
+    # TR Map 2 (with offset for dev map)
+BASEPATH = "d:/EGD/uesp/TamrielRebuilt/Map3/"
+INPUTMAP = BASEPATH + "TR_Release_Export_256.jpg"
+OUTPUTPATH = BASEPATH + "Tiles/"
+DEFAULTNULLTILE = BASEPATH + "troutofrange.jpg"
+
+MAPXTILEOFFSET = 15 + 2
+MAPYTILEOFFSET = 4 + 4
+MAPXTILECOUNT = 96
+MAPYTILECOUNT = 96
+MAPZOOMLEVEL = 16
+USESHORTFILENAME = False
+NORMALIZEOUTPUTZOOM = False
+MAPNAME = "TR"
+
+    # TR Dev Map
+BASEPATH = "d:/EGD/uesp/TamrielRebuilt/DevMap2/"
+INPUTMAP = BASEPATH + "Tamriel_Rebuilt_Province_Map.jpg"
+OUTPUTPATH = BASEPATH + "Tiles/"
+DEFAULTNULLTILE = BASEPATH + "troutofrange.jpg"
+
+MAPXTILEOFFSET = 2
+MAPYTILEOFFSET = 0
+MAPXTILECOUNT = 52
+MAPYTILECOUNT = 51
+MAPZOOMLEVEL = 15
+USESHORTFILENAME = True
+NORMALIZEOUTPUTZOOM = True
+MAPNAME = "tamrielrebuilt"
+
+    # To disable warning about decompression bomb
+Image.MAX_IMAGE_PIXELS = 1000000000
 
 MAPEXTENSION = ".jpg"
-MAPNAME = "TR"
+SHORTMAPNAME = MAPNAME
 MINZOOMLEVEL = 9
-MAPZOOMLEVEL = 16
 MAXZOOMLEVEL = 17
 OUTPUTIMAGESIZE = 256
 
@@ -39,7 +78,9 @@ def mkdir_p(path):
         else: raise
         
 
-def MakeMapTileFilename(OutputPath, MapName, X, Y, Zoom):
+def MakeMapTileFilename(OutputPath, MapName, ShortMapName, X, Y, Zoom):
+    if (USESHORTFILENAME):
+        return "{0}/zoom{4}/{1}-{2}-{3}.jpg".format(OutputPath, ShortMapName, X, Y, Zoom)
     return "{0}/zoom{4}/{1}-{2}-{3}-{4}.jpg".format(OutputPath, MapName, X, Y, Zoom)
 
 
@@ -56,7 +97,10 @@ def SplitMap (OutputPath, MapFilename, MapZoomLevel):
     print "\t\tLoaded map image {0}x{1} pixels...".format(width, height)
     print "\t\tSplitting into {0}x{1} tiles...".format(NumTilesX, NumTilesY)
 
-    OutputZoomPath = os.path.join(OutputPath, "zoom{0}".format(ZoomLevel))
+    OutputZoomLevel = ZoomLevel
+    if (NORMALIZEOUTPUTZOOM): OutputZoomLevel = ZoomLevel - MINZOOMLEVEL
+    
+    OutputZoomPath = os.path.join(OutputPath, "zoom{0}".format(OutputZoomLevel))
     mkdir_p(OutputZoomPath)
 
     SplitImages = [[]]
@@ -65,7 +109,7 @@ def SplitMap (OutputPath, MapFilename, MapZoomLevel):
     for y in xrange(NumTilesY+1):
         for x in xrange(NumTilesX+1):
             SplitImages[y][x] = MapImage.crop((x*OUTPUTIMAGESIZE, y*OUTPUTIMAGESIZE, (x+1)*OUTPUTIMAGESIZE, (y+1)*OUTPUTIMAGESIZE))
-            OutputFilename = MakeMapTileFilename(OutputPath, MAPNAME, x + MAPXTILEOFFSET, y + MAPYTILEOFFSET, ZoomLevel)
+            OutputFilename = MakeMapTileFilename(OutputPath, MAPNAME, SHORTMAPNAME, x + MAPXTILEOFFSET, y + MAPYTILEOFFSET, OutputZoomLevel)
             SplitImages[y][x].save(OutputFilename)
             
     print "\t\tOutputting empty tiles..."
@@ -80,7 +124,7 @@ def SplitMap (OutputPath, MapFilename, MapZoomLevel):
             if (tilex >= 0 and tilex <= NumTilesX and tiley >= 0 and tiley <= NumTilesY):
                 continue
             
-            OutputFilename = MakeMapTileFilename(OutputPath, MAPNAME, x, y, ZoomLevel)
+            OutputFilename = MakeMapTileFilename(OutputPath, MAPNAME, SHORTMAPNAME, x, y, OutputZoomLevel)
             g_DefaultNullImage.save(OutputFilename)
             
     
@@ -89,9 +133,12 @@ def SplitMap (OutputPath, MapFilename, MapZoomLevel):
 
 def MakeSmallerTileZoom(ZoomLevel, OutputPath, NumTilesX, NumTilesY):
     global g_DefaultNullImage
+
+    OutputZoomLevel = ZoomLevel
+    if (NORMALIZEOUTPUTZOOM): OutputZoomLevel = ZoomLevel - MINZOOMLEVEL
     
     InputZoomPath = OutputPath + "zoom{0}/".format(ZoomLevel + 1)
-    OutputZoomPath = OutputPath + "zoom{0}/".format(ZoomLevel)
+    OutputZoomPath = OutputPath + "zoom{0}/".format(OutputZoomLevel)
     mkdir_p(OutputZoomPath)
 
     print "\t\tMaking smaller tiles from {0} and outputting to {1}".format(InputZoomPath, OutputZoomPath)
@@ -103,10 +150,10 @@ def MakeSmallerTileZoom(ZoomLevel, OutputPath, NumTilesX, NumTilesY):
             y1 = y*2
             y2 = y*2 + 1
 
-            InputFile1 = MakeMapTileFilename(OutputPath, MAPNAME, x1, y1, ZoomLevel + 1)
-            InputFile2 = MakeMapTileFilename(OutputPath, MAPNAME, x2, y1, ZoomLevel + 1)
-            InputFile3 = MakeMapTileFilename(OutputPath, MAPNAME, x1, y2, ZoomLevel + 1)
-            InputFile4 = MakeMapTileFilename(OutputPath, MAPNAME, x2, y2, ZoomLevel + 1)
+            InputFile1 = MakeMapTileFilename(OutputPath, MAPNAME, SHORTMAPNAME, x1, y1, OutputZoomLevel + 1)
+            InputFile2 = MakeMapTileFilename(OutputPath, MAPNAME, SHORTMAPNAME, x2, y1, OutputZoomLevel + 1)
+            InputFile3 = MakeMapTileFilename(OutputPath, MAPNAME, SHORTMAPNAME, x1, y2, OutputZoomLevel + 1)
+            InputFile4 = MakeMapTileFilename(OutputPath, MAPNAME, SHORTMAPNAME, x2, y2, OutputZoomLevel + 1)
 
             try:
                 Image1 =  Image.open(InputFile1)
@@ -135,23 +182,26 @@ def MakeSmallerTileZoom(ZoomLevel, OutputPath, NumTilesX, NumTilesY):
             NewImage.paste(Image3.resize((OUTPUTIMAGESIZE/2,OUTPUTIMAGESIZE/2), Image.ANTIALIAS), (0,OUTPUTIMAGESIZE/2))
             NewImage.paste(Image4.resize((OUTPUTIMAGESIZE/2,OUTPUTIMAGESIZE/2), Image.ANTIALIAS), (OUTPUTIMAGESIZE/2,OUTPUTIMAGESIZE/2))
 
-            OutputFilename = MakeMapTileFilename(OutputPath, MAPNAME, x, y, ZoomLevel)
+            OutputFilename = MakeMapTileFilename(OutputPath, MAPNAME, SHORTMAPNAME, x, y, OutputZoomLevel)
             NewImage.save(OutputFilename)
     return
 
 
 def MakeLargerTileZoom(ZoomLevel, OutputPath, NumTilesX, NumTilesY):
     global g_DefaultNullImage
+
+    OutputZoomLevel = ZoomLevel
+    if (NORMALIZEOUTPUTZOOM): OutputZoomLevel = ZoomLevel - MINZOOMLEVEL
     
     InputZoomPath = OutputPath + "zoom{0}/".format(ZoomLevel)
-    OutputZoomPath = OutputPath + "zoom{0}/".format(ZoomLevel + 1)
+    OutputZoomPath = OutputPath + "zoom{0}/".format(OutputZoomLevel + 1)
     mkdir_p(OutputZoomPath)
 
     print "\t\tMaking larger tiles from {0} and outputting to {1}".format(InputZoomPath, OutputZoomPath)
 
     for y in xrange(NumTilesY):
         for x in xrange(NumTilesX):
-            InputFile = MakeMapTileFilename(OutputPath, MAPNAME, x, y, ZoomLevel)
+            InputFile = MakeMapTileFilename(OutputPath, MAPNAME, SHORTMAPNAME, x, y, OutputZoomLevel)
             
             try:
                 InputImage = Image.open(InputFile)
@@ -175,10 +225,10 @@ def MakeLargerTileZoom(ZoomLevel, OutputPath, NumTilesX, NumTilesY):
             y1 = y*2
             y2 = y*2 + 1
 
-            OutputFilename1 = MakeMapTileFilename(OutputPath, MAPNAME, x1, y1, ZoomLevel + 1)
-            OutputFilename2 = MakeMapTileFilename(OutputPath, MAPNAME, x2, y1, ZoomLevel + 1)
-            OutputFilename3 = MakeMapTileFilename(OutputPath, MAPNAME, x1, y2, ZoomLevel + 1)
-            OutputFilename4 = MakeMapTileFilename(OutputPath, MAPNAME, x2, y2, ZoomLevel + 1)
+            OutputFilename1 = MakeMapTileFilename(OutputPath, MAPNAME, SHORTMAPNAME, x1, y1, OutputZoomLevel + 1)
+            OutputFilename2 = MakeMapTileFilename(OutputPath, MAPNAME, SHORTMAPNAME, x2, y1, OutputZoomLevel + 1)
+            OutputFilename3 = MakeMapTileFilename(OutputPath, MAPNAME, SHORTMAPNAME, x1, y2, OutputZoomLevel + 1)
+            OutputFilename4 = MakeMapTileFilename(OutputPath, MAPNAME, SHORTMAPNAME, x2, y2, OutputZoomLevel + 1)
             
             NewImage1.save(OutputFilename1)
             NewImage2.save(OutputFilename2)
@@ -187,28 +237,29 @@ def MakeLargerTileZoom(ZoomLevel, OutputPath, NumTilesX, NumTilesY):
 
 
 
-SplitMap(OUTPUTPATH, INPUTMAP, MAPZOOMLEVEL)
+if (SPLIT_TILES):
+    SplitMap(OUTPUTPATH, INPUTMAP, MAPZOOMLEVEL)
 
 
-    # Make the larger map tiles
-NumTilesX = MAPYTILECOUNT
-NumTilesY = MAPXTILECOUNT
+if (MAKE_LARGER_TILES):
+    NumTilesX = MAPYTILECOUNT
+    NumTilesY = MAPXTILECOUNT
 
-for ZoomLevel in xrange(MAPZOOMLEVEL, MAXZOOMLEVEL):
-    MakeLargerTileZoom(ZoomLevel, OUTPUTPATH, NumTilesX, NumTilesY)
+    for ZoomLevel in xrange(MAPZOOMLEVEL, MAXZOOMLEVEL):
+        MakeLargerTileZoom(ZoomLevel, OUTPUTPATH, NumTilesX, NumTilesY)
+        
+        NumTilesX = NumTilesX * 2
+        NumTilesY = NumTilesY * 2
     
-    NumTilesX = NumTilesX * 2
-    NumTilesY = NumTilesY * 2
-    
 
-    # Make the smaller map tiles
-NumTilesX = MAPYTILECOUNT
-NumTilesY = MAPXTILECOUNT
+if (MAKE_SMALLER_TILES):
+    NumTilesX = MAPYTILECOUNT
+    NumTilesY = MAPXTILECOUNT
 
-for ZoomLevel in xrange(MAPZOOMLEVEL - 1, MINZOOMLEVEL-1, -1):
+    for ZoomLevel in xrange(MAPZOOMLEVEL - 1, MINZOOMLEVEL-1, -1):
 
-    NumTilesX = int(math.ceil(NumTilesX / 2))
-    NumTilesY = int(math.ceil(NumTilesY / 2))
-    
-    MakeSmallerTileZoom(ZoomLevel, OUTPUTPATH, NumTilesX, NumTilesY)
+        NumTilesX = int(math.ceil(NumTilesX / 2))
+        NumTilesY = int(math.ceil(NumTilesY / 2))
+        
+        MakeSmallerTileZoom(ZoomLevel, OUTPUTPATH, NumTilesX + 1, NumTilesY + 1)
     

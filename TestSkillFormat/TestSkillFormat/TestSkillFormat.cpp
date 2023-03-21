@@ -70,8 +70,24 @@ const size_t U12SIZE = 22;
 const size_t U13SIZE = 2; */
 
 	/* Update 34 */
-const size_t FLAGSIZE = 191;	// 188 in first 29pts version, 189 prior to update 30, 191 in update 31, 192 starting in update 34, 191 in update 35
+/*const size_t FLAGSIZE = 191;	// 188 in first 29pts version, 189 prior to update 30, 191 in update 31, 192 starting in update 34, 191 in update 35
 const size_t U2SIZE = 5;		// 
+const size_t U4SIZE = 6;		//
+const size_t U6SIZE = 33;		//
+const size_t U6ASIZE = 7;
+const size_t U7SIZE = 9;
+const size_t U8SIZE = 3;
+const size_t U9SIZE = 4;
+const size_t U10SIZE = 6;
+const size_t U11SIZE = 12;
+const size_t U12SIZE = 27;
+const size_t U13SIZE = 8;
+const size_t U15SIZE = 5; */
+
+	/* Update 37 */
+const size_t FLAGSIZE = 182;	// 188 in first 29pts version, 189 prior to update 30, 191 in update 31, 192 starting in update 34, 191 in update 35, 182 in update 37
+const size_t U2SIZE = 5;		// 
+const size_t U2ASIZE = 3;
 const size_t U4SIZE = 6;		//
 const size_t U6SIZE = 33;		//
 const size_t U6ASIZE = 7;
@@ -363,7 +379,7 @@ struct skilldata34_t
 	dword size2;
 	idlist_t list2;
 
-	word u2a;
+	byte u2a[U2ASIZE];
 	dword u2[U2SIZE];
 
 	dword size3;
@@ -464,6 +480,7 @@ struct skilldata34_t
 	dword u16a;
 	dword u16b;
 	byte mechanic;
+	byte u17;
 };
 
 
@@ -1292,7 +1309,7 @@ bool ReadSkillRecord34(CFile& File)
 
 	if (!result) return ReportError("Error: Failed to read skill.list2 data!");
 
-	result &= File.ReadWord(skill.u2a, false);
+	result &= File.ReadBytes(skill.u2a, U2ASIZE);
 
 	for (dword i = 0; i < U2SIZE && result; ++i)
 	{
@@ -1553,6 +1570,9 @@ bool ReadSkillRecord34(CFile& File)
 
 	result &= File.ReadByte(skill.mechanic);
 	if (!result) return ReportError("Error: Failed to read skill.mechanic data!");
+
+	result &= File.ReadByte(skill.u17);
+	if (!result) return ReportError("Error: Failed to read skill.u17 data!");
 
 	fpos_t curPos = File.Tell();
 

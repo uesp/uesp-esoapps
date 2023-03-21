@@ -60,6 +60,7 @@ MAPNAME = "tamrielrebuilt"
     # To disable warning about decompression bomb
 Image.MAX_IMAGE_PIXELS = 1000000000
 
+TILEBGCOLOR = (133, 164, 182)
 MAPEXTENSION = ".jpg"
 SHORTMAPNAME = MAPNAME
 MINZOOMLEVEL = 9
@@ -94,21 +95,23 @@ def SplitMap (OutputPath, MapFilename, MapZoomLevel):
     NumTilesY = int(math.ceil( float(height) / OUTPUTIMAGESIZE))
     ZoomLevel = MapZoomLevel
 
-    print "\t\tLoaded map image {0}x{1} pixels...".format(width, height)
-    print "\t\tSplitting into {0}x{1} tiles...".format(NumTilesX, NumTilesY)
-
     OutputZoomLevel = ZoomLevel
     if (NORMALIZEOUTPUTZOOM): OutputZoomLevel = ZoomLevel - MINZOOMLEVEL
     
     OutputZoomPath = os.path.join(OutputPath, "zoom{0}".format(OutputZoomLevel))
     mkdir_p(OutputZoomPath)
 
+    print "\t\tLoaded map image {0}x{1} pixels...".format(width, height)
+    print "\t\tSplitting into {0}x{1} tiles to {2}...".format(NumTilesX, NumTilesY, OutputZoomPath)
+
     SplitImages = [[]]
     SplitImages = [[0 for x in xrange(NumTilesX+1)] for x in xrange(NumTilesY+1)] 
 
-    for y in xrange(NumTilesY+1):
-        for x in xrange(NumTilesX+1):
-            SplitImages[y][x] = MapImage.crop((x*OUTPUTIMAGESIZE, y*OUTPUTIMAGESIZE, (x+1)*OUTPUTIMAGESIZE, (y+1)*OUTPUTIMAGESIZE))
+    for y in xrange(NumTilesY):
+        for x in xrange(NumTilesX):
+            SplitImages[y][x] = Image.new('RGB', (OUTPUTIMAGESIZE, OUTPUTIMAGESIZE), TILEBGCOLOR)
+            # tmpImage = MapImage.crop((x*OUTPUTIMAGESIZE, y*OUTPUTIMAGESIZE, (x+1)*OUTPUTIMAGESIZE, (y+1)*OUTPUTIMAGESIZE))
+            SplitImages[y][x].paste(MapImage, (-x*OUTPUTIMAGESIZE, -y*OUTPUTIMAGESIZE))
             OutputFilename = MakeMapTileFilename(OutputPath, MAPNAME, SHORTMAPNAME, x + MAPXTILEOFFSET, y + MAPYTILEOFFSET, OutputZoomLevel)
             SplitImages[y][x].save(OutputFilename)
             
@@ -137,14 +140,14 @@ def MakeSmallerTileZoom(ZoomLevel, OutputPath, NumTilesX, NumTilesY):
     OutputZoomLevel = ZoomLevel
     if (NORMALIZEOUTPUTZOOM): OutputZoomLevel = ZoomLevel - MINZOOMLEVEL
     
-    InputZoomPath = OutputPath + "zoom{0}/".format(ZoomLevel + 1)
+    InputZoomPath = OutputPath + "zoom{0}/".format(OutputZoomLevel + 1)
     OutputZoomPath = OutputPath + "zoom{0}/".format(OutputZoomLevel)
     mkdir_p(OutputZoomPath)
 
     print "\t\tMaking smaller tiles from {0} and outputting to {1}".format(InputZoomPath, OutputZoomPath)
 
-    for y in xrange(NumTilesY+1):
-        for x in xrange(NumTilesX+1):
+    for y in xrange(NumTilesY):
+        for x in xrange(NumTilesX):
             x1 = x*2
             x2 = x*2 + 1
             y1 = y*2
@@ -175,7 +178,7 @@ def MakeSmallerTileZoom(ZoomLevel, OutputPath, NumTilesX, NumTilesY):
             except IOError:
                 Image4 = g_DefaultNullImage
 
-            NewImage = Image.new("RGB", (OUTPUTIMAGESIZE, OUTPUTIMAGESIZE) )
+            NewImage = Image.new("RGB", (OUTPUTIMAGESIZE, OUTPUTIMAGESIZE), TILEBGCOLOR)
             
             NewImage.paste(Image1.resize((OUTPUTIMAGESIZE/2,OUTPUTIMAGESIZE/2), Image.ANTIALIAS), (0,0))
             NewImage.paste(Image2.resize((OUTPUTIMAGESIZE/2,OUTPUTIMAGESIZE/2), Image.ANTIALIAS), (OUTPUTIMAGESIZE/2,0))
@@ -210,10 +213,10 @@ def MakeLargerTileZoom(ZoomLevel, OutputPath, NumTilesX, NumTilesY):
 
             InputImage = InputImage.resize((OUTPUTIMAGESIZE*2,OUTPUTIMAGESIZE*2), Image.ANTIALIAS)
 
-            NewImage1 = Image.new("RGB", (OUTPUTIMAGESIZE, OUTPUTIMAGESIZE) )
-            NewImage2 = Image.new("RGB", (OUTPUTIMAGESIZE, OUTPUTIMAGESIZE) )
-            NewImage3 = Image.new("RGB", (OUTPUTIMAGESIZE, OUTPUTIMAGESIZE) )
-            NewImage4 = Image.new("RGB", (OUTPUTIMAGESIZE, OUTPUTIMAGESIZE) )
+            NewImage1 = Image.new("RGB", (OUTPUTIMAGESIZE, OUTPUTIMAGESIZE), TILEBGCOLOR )
+            NewImage2 = Image.new("RGB", (OUTPUTIMAGESIZE, OUTPUTIMAGESIZE), TILEBGCOLOR )
+            NewImage3 = Image.new("RGB", (OUTPUTIMAGESIZE, OUTPUTIMAGESIZE), TILEBGCOLOR )
+            NewImage4 = Image.new("RGB", (OUTPUTIMAGESIZE, OUTPUTIMAGESIZE), TILEBGCOLOR )
 
             NewImage1.paste(InputImage.crop((0, 0, OUTPUTIMAGESIZE, OUTPUTIMAGESIZE)), (0,0))
             NewImage2.paste(InputImage.crop((OUTPUTIMAGESIZE, 0, OUTPUTIMAGESIZE*2, OUTPUTIMAGESIZE)), (0,0))
@@ -242,8 +245,8 @@ if (SPLIT_TILES):
 
 
 if (MAKE_LARGER_TILES):
-    NumTilesX = MAPYTILECOUNT
-    NumTilesY = MAPXTILECOUNT
+    NumTilesX = MAPXTILECOUNT
+    NumTilesY = MAPYTILECOUNT
 
     for ZoomLevel in xrange(MAPZOOMLEVEL, MAXZOOMLEVEL):
         MakeLargerTileZoom(ZoomLevel, OUTPUTPATH, NumTilesX, NumTilesY)
@@ -253,13 +256,14 @@ if (MAKE_LARGER_TILES):
     
 
 if (MAKE_SMALLER_TILES):
-    NumTilesX = MAPYTILECOUNT
-    NumTilesY = MAPXTILECOUNT
+    NumTilesX = MAPXTILECOUNT
+    NumTilesY = MAPYTILECOUNT
 
     for ZoomLevel in xrange(MAPZOOMLEVEL - 1, MINZOOMLEVEL-1, -1):
 
         NumTilesX = int(math.ceil(NumTilesX / 2))
         NumTilesY = int(math.ceil(NumTilesY / 2))
+        print "{0}: Size {1} x {2} tiles".format(ZoomLevel, NumTilesX+1, NumTilesY+1)
         
         MakeSmallerTileZoom(ZoomLevel, OUTPUTPATH, NumTilesX + 1, NumTilesY + 1)
     

@@ -22,6 +22,7 @@ uespLog.SkillCoefArmorCountHA = 0
 uespLog.SkillCoefWeaponCountDagger = 0
 uespLog.SkillCoefArmorTypeCount = 0
 
+uespLog.UESP_POWERTYPE_IGNORE        = -1000
 uespLog.UESP_POWERTYPE_SOULTETHER    = -50
 uespLog.UESP_POWERTYPE_LIGHTARMOR    = -51
 uespLog.UESP_POWERTYPE_MEDIUMARMOR   = -52
@@ -124,6 +125,9 @@ uespLog.SKILLCOEF_RECALC_TYPES = {
 
 -- Some skills have different mechanics that what the game data says
 uespLog.SKILLCOEF_SPECIALTYPES = {
+
+	-- Sword Dancer set has weird variations with medium armor?
+	[85622] = uespLog.UESP_POWERTYPE_IGNORE,
 
 	-- Bash
 	[21970] = POWERTYPE_ULTIMATE,
@@ -4605,7 +4609,11 @@ function uespLog.SkillCoefAddAllSkills_Next()
 	uespLog.Msg("Add skill coefficients for skills from "..tostring(startIndex).."-"..tostring(endIndex).."...")
 
 	for abilityId = startIndex, endIndex do
-		if (DoesAbilityExist(abilityId)) then
+		local specialType = uespLog.SKILLCOEF_SPECIALTYPES[abilityId]
+		
+		if (specialType == uespLog.UESP_POWERTYPE_IGNORE) then
+			-- Do nothing
+		elseif (DoesAbilityExist(abilityId)) then
 			uespLog.SkillCoefAddAllValidCount = uespLog.SkillCoefAddAllValidCount + 1
 			local desc = GetAbilityDescription(abilityId)
 			

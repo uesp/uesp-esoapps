@@ -1,9 +1,9 @@
 #!/bin/sh
 
-VERSION="36"
+VERSION="37"
 ISPTS=""
-LASTVERSION="35"
-LASTPTSVERSION="36pts"
+LASTVERSION="36"
+LASTPTSVERSION="37pts"
 
 MAKEPTSDIFF="1"
 MAKEDIFF="1"
@@ -78,7 +78,7 @@ makediff () {
 }
 
 makemapsdiff () {
-	echo "       Making Maps Diff: $3 ..."
+echo "       Making Maps Diff: $3 ..."
 	
 	rsync -a --include '*/' --exclude '*' "$2" "$1"
 	rsync -a --include '*/' --exclude '*' "$1" "$2"
@@ -88,15 +88,18 @@ makemapsdiff () {
 	SAFE1=$(printf '%s\n' "$1" | sed 's/[[\.*^$/]/\\&/g')
 	SAFE2=$(printf '%s\n' "$2" | sed 's/[[\.*^$/]/\\&/g')
 	
-	diff -qr "$1" "$2" | grep -v ".png" | egrep "_0.dds|Only in $1:|Only in $2:" | sort > "$3"
+	diff -qr "$1" "$2" | grep -v ".png" | egrep "differ|Only in " | sort > "$3"
 	
+	cp -f "$3" "$3.origlist.txt"
 	cp -f "$3" "$3.list"
 	
+	sed -i "s#_[0-9]\+\.dds##g" "$3"
+	sed -i "#\.dds#d" "$3.list"
+	awk -i inplace '!seen[$0]++' "$3"
+		
 	sed -i "0,/Files .* and .* differ/s//\n\nChanged:\n&/" "$3"
 	sed -i "0,/Only in $SAFE1/s//\n\nRemoved:\n&/" "$3"
 	sed -i "0,/Only in $SAFE2/s//\n\nAdded:\n&/" "$3"
-	
-	sed -i "s#_0.dds##g" "$3"
 	
 	grep -e "Only in .*mnf-$VERSION2" "$3" > "$3.newmaps"
 	
@@ -111,7 +114,9 @@ makemapsdiff () {
 	sed -i "s#Only in $SAFE2\(.*\): #\1/#g" "$3.list"
 	sed -i "/Only in .*mnf-$VERSION1\(.*\): /d" "$3.list"
 	sed -i "s#^/##g" "$3.list"
-	sed -i "s#_0.dds#.jpg#g" "$3.list"
+	sed -i "s#_[0-9]\+\.dds#.jpg#g" "$3.list"
+	sed -i "#\.dds#d" "$3.list"
+	awk -i inplace '!seen[$0]++' "$3.list"
 	
 	grep ".jpg" "$3.list" > "$3.updatedmaps"
 	sed -i "s#.*/##g" "$3.updatedmaps"
@@ -132,7 +137,6 @@ makemapsdiff () {
 	sed -i "s#_base\$##g" "$3.newmaps"
 	sed -i "s#\.base\$##g" "$3.newmaps"
 	sed "s#Only in ./esomnf-$VERSION2/art/maps/\(.*\): \(.*\)#\2,\2,\1,-1#g" "$3.newmaps" > "$OUTPUTPATH/maps_new.txt"
-		
 }
 
 makezipdiff () {

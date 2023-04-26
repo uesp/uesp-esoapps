@@ -85,7 +85,7 @@ const size_t U13SIZE = 8;
 const size_t U15SIZE = 5; */
 
 	/* Update 37 */
-const size_t FLAGSIZE = 182;	// 188 in first 29pts version, 189 prior to update 30, 191 in update 31, 192 starting in update 34, 191 in update 35, 182 in update 37
+const size_t FLAGSIZE = 183;	// 188 in first 29pts version, 189 prior to update 30, 191 in update 31, 192 starting in update 34, 191 in update 35, 182 in update 37, 183 in update 38
 const size_t U2SIZE = 5;		// 
 const size_t U2ASIZE = 3;
 const size_t U4SIZE = 6;		//
@@ -99,6 +99,7 @@ const size_t U11SIZE = 12;
 const size_t U12SIZE = 27;
 const size_t U13SIZE = 8;
 const size_t U15SIZE = 5;
+const size_t U18SIZE = 10;	//Added update 38
 
 
 
@@ -481,6 +482,8 @@ struct skilldata34_t
 	dword u16b;
 	byte mechanic;
 	byte u17;
+
+	byte u18[U18SIZE];
 };
 
 
@@ -1573,6 +1576,11 @@ bool ReadSkillRecord34(CFile& File)
 
 	result &= File.ReadByte(skill.u17);
 	if (!result) return ReportError("Error: Failed to read skill.u17 data!");
+
+	for (dword i = 0; i < U18SIZE && result; ++i)
+	{
+		result &= File.ReadByte(skill.u18[i]);
+	}
 
 	fpos_t curPos = File.Tell();
 

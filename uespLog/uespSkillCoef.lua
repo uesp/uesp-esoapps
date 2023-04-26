@@ -22,6 +22,8 @@ uespLog.SkillCoefArmorCountHA = 0
 uespLog.SkillCoefWeaponCountDagger = 0
 uespLog.SkillCoefArmorTypeCount = 0
 
+uespLog.SKILL_COEF_DEBUG = false
+
 uespLog.UESP_POWERTYPE_IGNORE        = -1000
 uespLog.UESP_POWERTYPE_SOULTETHER    = -50
 uespLog.UESP_POWERTYPE_LIGHTARMOR    = -51
@@ -125,6 +127,8 @@ uespLog.SKILLCOEF_RECALC_TYPES = {
 
 -- Some skills have different mechanics that what the game data says
 uespLog.SKILLCOEF_SPECIALTYPES = {
+
+	--[61503] = POWERTYPE_ULTIMATE,
 
 	-- Sword Dancer set has weird variations with medium armor?
 	[85622] = uespLog.UESP_POWERTYPE_IGNORE,
@@ -5576,9 +5580,38 @@ function uespLog.ComputeSkillCoefSkill(abilityId, skillsData)
 				table.insert(coefData.result, result)
 				
 				if (not uespLog.isFinite(result.a) or not uespLog.isFinite(result.b) or not uespLog.isFinite(result.c) or not uespLog.isFinite(result.R2)) then
+				
+					if (uespLog.SKILL_COEF_DEBUG) then
+						uespLog.DebugMsg("" .. tostring(abilityId) .. ":" .. tostring(i) .. ": Bad Coefficient Data!")
+						
+						if (not uespLog.isFinite(result.a)) then
+							uespLog.DebugMsg("A matrix is not finite!")
+						end
+						if (not uespLog.isFinite(result.b)) then
+							uespLog.DebugMsg("B matrix is not finite!")
+						end
+
+						if (not uespLog.isFinite(result.c)) then
+							uespLog.DebugMsg("C matrix is not finite!")
+						end
+						
+						if (not uespLog.isFinite(result.R2)) then
+							uespLog.DebugMsg("R2 matrix is not finite!")
+						end
+					end
+					
 					uespLog.SkillCoefNumBadCoefCount = uespLog.SkillCoefNumBadCoefCount + 1
-					table.insert(uespLog.SkillCoefBadData, { ['id'] = abilityId, ['numberIndex'] = i, 
-						['a'] = uespLog.isFinite(result.a), ['b'] =  uespLog.isFinite(result.b), ['c'] =  uespLog.isFinite(result.c), ['r2'] =  uespLog.isFinite(result.R2) } )
+					
+					local badResult = { ['id'] = abilityId, ['numberIndex'] = i, 
+						['a'] = uespLog.isFinite(result.a), ['b'] =  uespLog.isFinite(result.b), ['c'] =  uespLog.isFinite(result.c), ['r2'] =  uespLog.isFinite(result.R2) }
+						
+					if (uespLog.SKILL_COEF_DEBUG) then
+						badResult.A = A
+						badResult.B = B
+						badResult.result = result
+					end
+						
+					table.insert(uespLog.SkillCoefBadData, badResult)
 				else
 					allInvalid = false
 					uespLog.SkillCoefNumValidCoefCount = uespLog.SkillCoefNumValidCoefCount + 1
@@ -6710,6 +6743,41 @@ function uespLog.TryRecalcAllBadSkillCoefs()
 	uespLog.Msg("Trying to recalculate all bad skill coefficients...")
 	
 	uespLog.SkillCoefRecalcData = {}
+	
+	for j, badCoefData in pairs(uespLog.SkillCoefBadData) do
+		local id = badCoefData.id
+		local calcData = uespLog.SkillCoefCalcData[id]
+		local hasOutputName = false
+		
+		if (calcData ~= nil and not calcData.isValid) then
+			uespLog.SkillCoefRecalcData[id] = {}
+			
+			for i,result in ipairs(calcData.result) do
+				local doesVary = calcData.numbersVary[i]
+				
+				if (doesVary) then
+					recalcCount = recalcCount + 1
+					local recalcResults, bestResult, bestCoefType, bestR2, origCoefType = uespLog.RecalcSkillCoef(id, i, result)
+					
+					uespLog.SkillCoefRecalcData[id][i] = recalcResults
+					
+					if (bestR2 > 0.5) then
+						data[#data+1] = "Coefficient " .. tostring(id) .. ":" .. tostring(i) .. " had best result of " .. tostring(bestR2) .. " with coef type " .. tostring(bestCoefType) .. " (original " .. tostring(origCoefType) .. ")"
+						recalcSuccessCount = recalcSuccessCount + 1
+						
+						calcData.result[i] = bestResult
+						calcData.isValid = true
+					end
+				end
+			end
+		end
+		
+		totalCount = totalCount + 1
+	end
+	
+	uespLog.Msg("Tried to recalculate " .. recalcCount .. " out of " .. totalCount .. " bad coefficients with " .. recalcSuccessCount .. " better results!")
+	totalCount = 0
+	recalcCount = 0
 
 	for id,coefData in pairs(uespLog.SkillCoefAbilityData) do
 		local calcData = uespLog.SkillCoefCalcData[id]

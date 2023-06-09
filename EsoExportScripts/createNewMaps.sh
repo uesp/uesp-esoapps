@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION="38pts"
+VERSION="38"
 NEXTFREEWORLDID="2343"
 
 MAPSOURCEPATH="/cygdrive/d/src/uesp/EsoApps/EsoMapParse"

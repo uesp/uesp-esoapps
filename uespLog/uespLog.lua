@@ -1176,8 +1176,9 @@
 --		-- v3.11 -- 27 August 2022
 --			- Fixed crash bug in guild sales parser.
 --	
---		-- ?
+--		-- v3.20 -- 5 June 2023
 --			- Fixed incorrect skill mechanic being used sometimes when calculating skill coefficients.
+--			- Updated version for update 38.
 --
 --
 
@@ -1186,8 +1187,8 @@
 --	GLOBALS
 uespLog = uespLog or {}
 
-uespLog.version = "3.11"
-uespLog.releaseDate = "27 August 2022"
+uespLog.version = "3.20"
+uespLog.releaseDate = "5 June 2023"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -22489,7 +22490,6 @@ end
 function uespLog.EndMineTestFunction()
 	zo_callLater(uespLog.DoNextMineTest, 2000)
 end
-
 
 
 

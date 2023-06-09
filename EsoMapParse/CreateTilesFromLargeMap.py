@@ -11,7 +11,7 @@ import re
 USE_COMMAND_ARGS = False
 
 if (not USE_COMMAND_ARGS):
-    BasePathIndex = "38pts"
+    BasePathIndex = "38"
     BasePath = "e:/esoexport/"
 elif (len(sys.argv) < 3):
     print("Missing required command line arguments!")

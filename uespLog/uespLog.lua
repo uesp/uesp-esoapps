@@ -21628,7 +21628,7 @@ function uespLog.LogLocationData()
 	logData.telvarBehavior = DoesCurrentZoneHaveTelvarStoneBehavior()
 	logData.isOutlaw = IsInOutlawZone()
 	logData.isJustice = IsInJusticeEnabledZone()
-	logData.isTutorial = IsInTutorialZone()
+	--logData.isTutorial = IsInTutorialZone()		--Removed in update 39
 	logData.isGroupOwnable = IsActiveWorldGroupOwnable()
 	logData.isDungeon = IsUnitInDungeon("player")
 	logData.dungeonDifficulty = GetCurrentZoneDungeonDifficulty()

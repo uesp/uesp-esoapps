@@ -23,13 +23,13 @@ MAPYTILEOFFSET = 4
 MAPXTILECOUNT = 96
 MAPYTILECOUNT = 96
 MAPZOOMLEVEL = 16
-USESHORTFILENAME = False
-NORMALIZEOUTPUTZOOM = False
+USESHORTFILENAME = True
+NORMALIZEOUTPUTZOOM = True
 MAPNAME = "TR"
 
     # TR Map 2 (with offset for dev map)
-BASEPATH = "d:/EGD/uesp/TamrielRebuilt/Map3/"
-INPUTMAP = BASEPATH + "TR_Release_Export_256.jpg"
+BASEPATH = "d:/EGD/uesp/TamrielRebuilt/Map4/"
+INPUTMAP = BASEPATH + "TR_Release_Export_256.png"
 OUTPUTPATH = BASEPATH + "Tiles/"
 DEFAULTNULLTILE = BASEPATH + "troutofrange.jpg"
 
@@ -38,16 +38,17 @@ MAPYTILEOFFSET = 4 + 4
 MAPXTILECOUNT = 96
 MAPYTILECOUNT = 96
 MAPZOOMLEVEL = 16
-USESHORTFILENAME = False
-NORMALIZEOUTPUTZOOM = False
+USESHORTFILENAME = True
+NORMALIZEOUTPUTZOOM = True
 MAPNAME = "TR"
+MAPNAME = "tamrielrebuilt"
 
     # TR Dev Map
-BASEPATH = "d:/EGD/uesp/TamrielRebuilt/DevMap2/"
+BASEPATH = "d:/EGD/uesp/TamrielRebuilt/DevMap4/"
 INPUTMAP = BASEPATH + "Tamriel_Rebuilt_Province_Map.jpg"
 OUTPUTPATH = BASEPATH + "Tiles/"
 DEFAULTNULLTILE = BASEPATH + "troutofrange.jpg"
-
+ 
 MAPXTILEOFFSET = 2
 MAPYTILEOFFSET = 0
 MAPXTILECOUNT = 52
@@ -56,6 +57,7 @@ MAPZOOMLEVEL = 15
 USESHORTFILENAME = True
 NORMALIZEOUTPUTZOOM = True
 MAPNAME = "tamrielrebuilt"
+
 
     # To disable warning about decompression bomb
 Image.MAX_IMAGE_PIXELS = 1000000000
@@ -87,6 +89,7 @@ def MakeMapTileFilename(OutputPath, MapName, ShortMapName, X, Y, Zoom):
 
 def SplitMap (OutputPath, MapFilename, MapZoomLevel):
     global g_DefaultNullImage
+    global NORMALIZEOUTPUTZOOM
 
     MapImage = Image.open(INPUTMAP)
     
@@ -96,7 +99,9 @@ def SplitMap (OutputPath, MapFilename, MapZoomLevel):
     ZoomLevel = MapZoomLevel
 
     OutputZoomLevel = ZoomLevel
-    if (NORMALIZEOUTPUTZOOM): OutputZoomLevel = ZoomLevel - MINZOOMLEVEL
+    if (NORMALIZEOUTPUTZOOM):
+        OutputZoomLevel = ZoomLevel - MINZOOMLEVEL
+        print "\t\tNormalizing Output Zoom Levels..."
     
     OutputZoomPath = os.path.join(OutputPath, "zoom{0}".format(OutputZoomLevel))
     mkdir_p(OutputZoomPath)

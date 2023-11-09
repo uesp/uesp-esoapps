@@ -85,8 +85,8 @@ const size_t U13SIZE = 8;
 const size_t U15SIZE = 5; */
 
 	/* Update 37 */
-const size_t FLAGSIZE = 186;	// 188 in first 29pts version, 189 prior to update 30, 191 in update 31, 192 starting in update 34, 191 in update 35, 182 in update 37
-								// 183 in update 38 pts, 185 in update 38 PTS1, 186 in update 39pts
+const size_t FLAGSIZE = 190;	// 188 in first 29pts version, 189 prior to update 30, 191 in update 31, 192 starting in update 34, 191 in update 35, 182 in update 37
+								// 183 in update 38 pts, 185 in update 38 PTS1, 186 in update 39pts, 190 in update 40pts
 const size_t U2SIZE = 5;		// 
 const size_t U2ASIZE = 3;
 const size_t U4SIZE = 6;		//
@@ -99,8 +99,8 @@ const size_t U10SIZE = 6;
 const size_t U11SIZE = 12;
 const size_t U12SIZE = 27;
 const size_t U13SIZE = 8;
-const size_t U15SIZE = 5;
-const size_t U18SIZE = 18;	//Added update 38 (10 bytes), 18 bytes in update 39pts
+const size_t U15SIZE = 21;	//20 preupdate 40pts, 21 in update 40pts
+const size_t U18SIZE = 23;	//Added update 38 (10 bytes), 18 bytes in update 39pts, 23 in update 40pts
 
 
 
@@ -474,7 +474,7 @@ struct skilldata34_t
 	byte u13a;
 	dword u14;
 
-	dword u15[U15SIZE];
+	byte u15[U15SIZE];
 
 	dword size14;
 	byteidlist_t list14;
@@ -1553,7 +1553,7 @@ bool ReadSkillRecord34(CFile& File)
 
 	for (dword i = 0; i < U15SIZE && result; ++i)
 	{
-		result &= File.ReadDword(skill.u15[i], false);
+		result &= File.ReadByte(skill.u15[i]);
 	}
 
 	if (!result) return ReportError("Error: Failed to read skill.u15 data!");

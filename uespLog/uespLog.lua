@@ -1889,7 +1889,7 @@ uespLog.isAutoMiningItems = false
 uespLog.MINEITEMS_AUTODELAY = 500 -- Delay in ms
 uespLog.MINEITEMS_AUTOLOOPCOUNT = 400
 uespLog.MINEITEMS_AUTOMAXLOOPCOUNT = 400
-uespLog.MINEITEM_AUTO_MAXITEMID = 220000
+uespLog.MINEITEM_AUTO_MAXITEMID = 250000
 uespLog.mineItemsAutoNextItemId = 1
 uespLog.mineItemsAutoNextListIndex = 1
 uespLog.mineItemsAutoLastItemId = uespLog.MINEITEM_AUTO_MAXITEMID
@@ -1926,7 +1926,7 @@ uespLog.MINEITEM_ENCHANT_ENCHANTID = 26841
 uespLog.SkillDump_validAbilityCount = 0
 uespLog.SkillDump_startAbilityId = 0
 uespLog.SkillDump_countAbilityId = 1000
-uespLog.SkillDump_lastAbilityId = 220000
+uespLog.SkillDump_lastAbilityId = 250000
 uespLog.SkillDump_lastValidAbilityId = 0
 uespLog.SkillDump_delay = 1000
 

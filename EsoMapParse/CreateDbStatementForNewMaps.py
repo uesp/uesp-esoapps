@@ -5,11 +5,11 @@ import math
 import errno
 import csv
 
-USE_COMMAND_ARGS = True
+USE_COMMAND_ARGS = False
 
 if (not USE_COMMAND_ARGS):
-    FIRSTID = 1447
-    BasePathIndex = "17"
+    FIRSTID = 2455
+    BasePathIndex = "40"
     BasePath = "e:/esoexport/"
 elif (len(sys.argv) < 4):
     print("Missing required command line arguments!")
@@ -25,6 +25,10 @@ else:
 MAPINFOFILE = BasePath + "goodimages-" + BasePathIndex + "/Maps/mapinfo.txt"
 NEWMAPSFILE = BasePath + "goodimages-" + BasePathIndex + "/maps_new.txt"
 OUTPUTPATH = BasePath + "goodimages-" + BasePathIndex + "/Maps/"
+
+OUTPUTSUFFIX = ""
+# OUTPUTSUFFIX = "_missing"
+# NEWMAPSFILE = BasePath + "goodimages-" + BasePathIndex + "/maps_missing.txt"
 
 MAX_ZOOM_VALUE = 12
 
@@ -206,6 +210,6 @@ def CreateDBOutput (OutputFilename):
 LoadMapInfo(MAPINFOFILE)
 LoadNewMaps(NEWMAPSFILE)
 MatchDisplayNames()
-CreateDBCheckMaps(OUTPUTPATH + "checkmaps.sql")
-CreateDBCheckParentMaps(OUTPUTPATH + "checkparents.sql")
-CreateDBOutput(OUTPUTPATH + "newmaps.sql")
+CreateDBCheckMaps(OUTPUTPATH + "checkmaps" + OUTPUTSUFFIX + ".sql")
+CreateDBCheckParentMaps(OUTPUTPATH + "checkparents" + OUTPUTSUFFIX + ".sql")
+CreateDBOutput(OUTPUTPATH + "newmaps" + OUTPUTSUFFIX + ".sql")

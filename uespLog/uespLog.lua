@@ -1180,6 +1180,18 @@
 --			- Fixed incorrect skill mechanic being used sometimes when calculating skill coefficients.
 --			- Updated version for update 38.
 --
+--		-- v3.21 -- 28 August 2023
+--			- Update 39
+--
+--		-- v3.22 -- 11 March 2024 (update 41)
+--			- Disabled guild trader list scanning until the API is updated.
+--			- Updated version for update 41.
+--
+--		-- v3.23 -- 2 April 2024
+--			- Updated runebox collectible IDs.
+--			- Scanning guild trader purchases is almost working again (API changed). Right now you have to manually open the guild trader history sometime to update it with recent data.
+--			- Added function to mine all potion data.
+--			- Logging of NPCs/Mobs is improved and now includes non-combat NPCs as well. Logs unit type and dungeon difficulty.
 --
 
 
@@ -1187,8 +1199,8 @@
 --	GLOBALS
 uespLog = uespLog or {}
 
-uespLog.version = "3.20"
-uespLog.releaseDate = "5 June 2023"
+uespLog.version = "3.23"
+uespLog.releaseDate = "2 April 2024"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -1478,6 +1490,7 @@ uespLog.lastTargetData = {
 	worldy = "",
 	worldz = "",
 	worldzoneid = "",
+	zonediff = "",
     zone = "",
 	gameTime = "",
 	timeStamp = "",
@@ -1551,6 +1564,7 @@ uespLog.currentTargetData = {
 	worldy = "",
 	worldz = "",
 	worldzoneid = "",
+	zonediff = "",
 }
 
 uespLog.currentConversationData = {
@@ -1747,6 +1761,18 @@ uespLog.MINEITEM_LEVELS_SAFE_PTS = {
 uespLog.MINEITEM_LEVELS_SAFE_QUICK = {
 	{  1,  1,   1,   2, "dropped" },
 	{ 50, 50, 370, 370, "crafted" },
+}
+
+uespLog.MINEITEM_LEVELS_POTION = {
+	{  3,  3,  30,  30, "level 3" },
+	{ 10, 10,  30,  30, "level 10" },
+	{ 20, 20,  30,  30, "level 20" },
+	{ 30, 30,  30,  30, "level 30" },
+	{ 40, 40,  30,  30, "level 40" },
+	{ 50, 50, 125, 125, "CP10" },
+	{ 50, 50, 129, 129, "CP50" },
+	{ 50, 50, 134, 134, "CP100" },
+	{ 50, 50, 308, 308, "CP150" },
 }
 
 
@@ -2315,43 +2341,27 @@ uespLog.ITEMCHANGE_IGNORE_FIELDS = {
 
 
 uespLog.RUNEBOX_COLLECTIBLE_IDS = {
-		[79329] = 148, 			-- Xivkyn Dreadguard
-        [79330] = 147, 			-- Xivkyn Tormentor
-        [79331] = 146, 			-- Xivkyn Augur
-        [83516] = 439, 			-- Pumpkin Spectre Mask
-        [83517] = 440, 			-- Scarecrow Spectre Mask
-        [96391] = 601, 			-- Mud Ball Pouch
-        [96392] = 597, 			-- Sword-Swallower's Blade
-        [96393] = 598, 			-- Juggler's Knives
-        [96395] = 600, 			-- Fire-Breather's Torches
-        [96951] = 753, 			-- Nordic Bather's Towel
-        [96952] = 755, 			-- Colovian Fur Hood
-        [96953] = 754, 			-- Colovian Filigreed Hood
-        [119692] = 1108,        -- Cherry Blossom Branch
-        [124658] = 1232,        -- Dwarven Theodolite
-        [124659] = 1230,        -- Sixth House Robe
-        [128359] = 1338,        -- Hollowjack Spectre Mask
-        [128360] = 1339,        -- Thicketman Spectre Mask
-        [133550] = 4660,        -- Clockwork Curator
-        [134678] = 4797,        -- Jester's Scintillator
-        [137962] = 149,         -- Stonefire Scamp
-        [137963] = 161,         -- Soul-Shriven
-        [138784] = 5019,        -- Arena Gladiator Helm
-        [139464] = 4996,        -- Big-Eared Ginger Kitten
-        [139465] = 5047,        -- Psijic Glowglobe
         [141749] = 5656,        -- Swamp Jelly
         [141750] = 5589,        -- Arena Gladiator
         [141915] = 5590,        -- Apple-Bobbing Cauldron
         [146041] = 5746,        -- Gladiator Taunt
         [147286] = 6064,        -- Elinhir Arena Lion
         [147499] = 6197,        -- Guar Stomp
+        [79329] = 148,  -- Xivkyn Dreadguard
+        [79330] = 147,  -- Xivkyn Tormentor
+        [79331] = 146,  -- Xivkyn Augur
         [151931] = 6493,        -- Aldmeri Dominion Banner
         [151932] = 6365,        -- Daggerfall Covenant Banner
         [151933] = 6494,        -- Ebonheart Pact Banner
         [151940] = 6438,        -- Siegemaster Close Helm
+        [83516] = 439,  -- Pumpkin Spectre Mask
+        [83517] = 440,  -- Scarecrow Spectre Mask
         [153537] = 6665,        -- Siegemaster's Uniform
         [156626] = 1338,        -- Hollowjack Spectre Mask
         [166468] = 7595,        -- Reach-Mage Ceremonial Skullcap
+        [96951] = 753,  -- Nordic Bather's Towel
+        [96952] = 755,  -- Colovian Fur Hood
+        [96953] = 754,  -- Colovian Filigreed Hood
         [167305] = 8043,        -- Timbercrow Wanderer
         [167937] = 439,         -- Pumpkin Spectre Mask
         [167938] = 440,         -- Scarecrow Spectre Mask
@@ -2366,17 +2376,34 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [171533] = 8655,        -- Rage of the Reach
         [178695] = 8654,        -- Marshmallow Toasty Treat
         [178696] = 9530,        -- Witch's Bonfire Dust
+        [119692] = 1108,        -- Cherry Blossom Branch
         [182487] = 8541,        -- Powderwhite Coney
         [182517] = 9402,        -- The Black Drake's Face Warpaint
         [182518] = 9403,        -- The Black Drake's Body Warpaint
         [182591] = 9401,        -- Gloam Gryphon Fledgling
         [183195] = 9718,        -- Siegestomper
+        [124658] = 1232,        -- Dwarven Theodolite
+        [124659] = 1230,        -- Sixth House Robe
         [187679] = 9877,        -- Battle-Scarred Visage
         [187680] = 9878,        -- Battle-Scarred Body
+        [128359] = 1338,        -- Hollowjack Spectre Mask
+        [128360] = 1339,        -- Thicketman Spectre Mask
+        [133550] = 4660,        -- Clockwork Curator
+        [134678] = 4797,        -- Jester's Scintillator
         [190035] = 10850,       -- Ghastly Visitation
+        [137962] = 149,         -- Stonefire Scamp
+        [137963] = 161,         -- Soul-Shriven
+        [138784] = 5019,        -- Arena Gladiator Helm
+        [139464] = 4996,        -- Big-Eared Ginger Kitten
+        [139465] = 5047,        -- Psijic Glowglobe
+        [96391] = 601,  -- Mud Ball Pouch
+        [96392] = 597,  -- Sword-Swallower's Blade
+        [96393] = 598,  -- Juggler's Knives
+        [96395] = 600,  -- Fire-Breather's Torches
+        -- [198322] = ?,        -- Face-Eating Tome Memento
         [140308] = 5454,        -- Molag Kena Mask
         [140309] = 5455,        -- Molag Kena's Shoulder
-        [140310] = 5457,        -- Shadowrend's Shoulder
+        [140310] = 5457,        -- Shadowrend Shoulder
         [140311] = 5456,        -- Shadowrend Mask
         [140312] = 5453,        -- Ilambris' Shoulder
         [140313] = 5452,        -- Ilambris Mask
@@ -2466,18 +2493,18 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [141996] = 5650,        -- Firedrake Gauntlets
         [141997] = 5651,        -- Firedrake Girdle
         [142010] = 5615,        -- Iceheart Mask
-        [142011] = 5616,        -- Iceheart's Shoulder
-        [142012] = 5546,        -- Grothdarr's Shoulder
+        [142011] = 5616,        -- Iceheart Shoulder
+        [142012] = 5546,        -- Grothdarr Shoulder
         [142013] = 5545,        -- Grothdarr Mask
-        [142014] = 5608,        -- Troll King's Shoulder
+        [142014] = 5608,        -- Troll King Shoulder
         [142015] = 5607,        -- Troll King Mask
         [146038] = 5924,        -- Bloodspawn Mask
-        [146040] = 5925,        -- Bloodspawn's Shoulder
+        [146040] = 5925,        -- Bloodspawn Shoulder
         [146043] = 5763,        -- Sellistrix Mask
         [146044] = 5764,        -- Sellistrix's Shoulder
         [146045] = 5926,        -- Swarm Mother Mask
-        [146046] = 5927,        -- Swarm Mother's Shoulder
-        [146074] = 6045,        -- Engine Guardian's Shoulder
+        [146046] = 5927,        -- Swarm Mother Shoulder
+        [146074] = 6045,        -- Engine Guardian Shoulder
         [146075] = 6044,        -- Engine Guardian Mask
         [147301] = 6141,        -- Prophet's Hood
         [147302] = 6143,        -- Prophet's Sandals
@@ -2540,7 +2567,7 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [147363] = 6172,        -- Abnur Tharn's Dagger
         [147364] = 6173,        -- Abnur Tharn's Staff
         [147428] = 6174,        -- Valkyn Skoria Mask
-        [147429] = 6175,        -- Valkyn Skoria's Shoulder
+        [147429] = 6175,        -- Valkyn Skoria Shoulder
         [147467] = 6097,        -- Cadwell's "Battle Axe"
         [147468] = 6098,        -- Cadwell's "Maul"
         [147469] = 6099,        -- Cadwell's "Greatsword"
@@ -2592,11 +2619,11 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [147562] = 6227,        -- Firedrake Staff
         [147563] = 6228,        -- Firedrake Sword
         [147601] = 6251,        -- Nightflame Mask
-        [147602] = 6252,        -- Nightflame's Shoulder
+        [147602] = 6252,        -- Nightflame Shoulder
         [147660] = 6295,        -- Prophet's Breeches
         [147661] = 6295,        -- Prophet's Breeches
         [147767] = 6388,        -- Lord Warden Mask
-        [147768] = 6389,        -- Lord Warden's Shoulder
+        [147768] = 6389,        -- Lord Warden Shoulder
         [151561] = 5463,        -- Shadowrend Greatsword
         [151562] = 5464,        -- Shadowrend Bow
         [151563] = 5465,        -- Shadowrend Shield
@@ -2618,13 +2645,13 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [151579] = 5194,        -- Grothdarr Bow
         [151580] = 5195,        -- Grothdarr Shield
         [151581] = 5456,        -- Shadowrend Mask
-        [151582] = 5457,        -- Shadowrend's Shoulder
+        [151582] = 5457,        -- Shadowrend Shoulder
         [151583] = 5452,        -- Ilambris Mask
         [151584] = 5453,        -- Ilambris' Shoulder
         [151585] = 5454,        -- Molag Kena Mask
         [151586] = 5455,        -- Molag Kena's Shoulder
         [151587] = 5545,        -- Grothdarr Mask
-        [151588] = 5546,        -- Grothdarr's Shoulder
+        [151588] = 5546,        -- Grothdarr Shoulder
         [151916] = 6586,        -- Second Legion Jack
         [151917] = 6587,        -- Second Legion Helmet
         [151918] = 6588,        -- Second Legion Arm Cops
@@ -2660,11 +2687,11 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [152139] = 3728,        -- The Maelstrom's Sword
         [152140] = 4892,        -- The Maelstrom's Dagger
         [152252] = 6690,        -- Mighty Chudan Mask
-        [152253] = 6691,        -- Mighty Chudan's Shoulder
-        [152254] = 6693,        -- Velidreth's Shoulder
+        [152253] = 6691,        -- Mighty Chudan Shoulder
+        [152254] = 6693,        -- Velidreth Shoulder
         [152255] = 6692,        -- Velidreth Mask
         [153475] = 6721,        -- Pirate Skeleton Mask
-        [153476] = 6722,        -- Pirate Skeleton's Shoulder
+        [153476] = 6722,        -- Pirate Skeleton Shoulder
         [153493] = 6728,        -- Battleground Runner Jack
         [153494] = 6733,        -- Battleground Runner Bracers
         [153495] = 6730,        -- Battleground Runner Guards
@@ -2672,7 +2699,7 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [153497] = 6731,        -- Battleground Runner Arm Cops
         [153498] = 6729,        -- Battleground Runner Helmet
         [153499] = 6744,        -- Chokethorn Mask
-        [153500] = 6745,        -- Chokethorn's Shoulder
+        [153500] = 6745,        -- Chokethorn Shoulder
         [153564] = 6753,        -- Glenmoril Wyrd Battle Axe
         [153565] = 6754,        -- Glenmoril Wyrd Maul
         [153566] = 6755,        -- Glenmoril Wyrd Greatsword
@@ -2694,14 +2721,14 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [153582] = 6761,        -- Glenmoril Wyrd Staff
         [153583] = 6762,        -- Glenmoril Wyrd Sword
         [153619] = 6775,        -- Spawn of Mephala Mask
-        [153620] = 6776,        -- Spawn of Mephala's Shoulder
+        [153620] = 6776,        -- Spawn of Mephala Shoulder
         [153740] = 6911,        -- Opal Ilambris' Shoulder
         [153741] = 6910,        -- Opal Ilambris Mask
-        [153742] = 6913,        -- Opal Troll King's Shoulder
+        [153742] = 6913,        -- Opal Troll King Shoulder
         [153743] = 6912,        -- Opal Troll King Mask
         [153744] = 6906,        -- Opal Bloodspawn Mask
-        [153745] = 6907,        -- Opal Bloodspawn's Shoulder
-        [153746] = 6909,        -- Opal Engine Guardian's Shoulder
+        [153745] = 6907,        -- Opal Bloodspawn Shoulder
+        [153746] = 6909,        -- Opal Engine Guardian Shoulder
         [153747] = 6908,        -- Opal Engine Guardian Mask
         [153776] = 6787,        -- Glenmoril Wyrd Jerkin
         [153777] = 6788,        -- Glenmoril Wyrd Hat
@@ -2766,11 +2793,11 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [156714] = 7298,        -- Skaal Explorer Gloves
         [156718] = 6911,        -- Opal Ilambris' Shoulder
         [156719] = 6910,        -- Opal Ilambris Mask
-        [156720] = 6913,        -- Opal Troll King's Shoulder
+        [156720] = 6913,        -- Opal Troll King Shoulder
         [156721] = 6912,        -- Opal Troll King Mask
         [156722] = 6906,        -- Opal Bloodspawn Mask
-        [156723] = 6907,        -- Opal Bloodspawn's Shoulder
-        [156724] = 6909,        -- Opal Engine Guardian's Shoulder
+        [156723] = 6907,        -- Opal Bloodspawn Shoulder
+        [156724] = 6909,        -- Opal Engine Guardian Shoulder
         [156725] = 6908,        -- Opal Engine Guardian Mask
         [156726] = 6814,        -- Opal Ilambris Battle Axe
         [156727] = 6815,        -- Opal Ilambris Bow
@@ -2826,7 +2853,7 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [156828] = 6831,        -- Opal Troll King Battle Axe
         [156829] = 6832,        -- Opal Troll King Bow
         [156830] = 6833,        -- Opal Troll King Shield
-        [156835] = 7330,        -- Slimecraw's Shoulder
+        [156835] = 7330,        -- Slimecraw Shoulder
         [156836] = 7329,        -- Slimecraw Mask
         [156837] = 7425,        -- Stormfist Shoulder
         [156838] = 7424,        -- Stormfist Mask
@@ -2834,7 +2861,7 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [156840] = 7338,        -- Knight of the Circle Cuirass
         [156841] = 7339,        -- Knight of the Circle Helm
         [158212] = 7511,        -- Mother Ciannait Mask
-        [158213] = 7512,        -- Mother Ciannait's Shoulder
+        [158213] = 7512,        -- Mother Ciannait Shoulder
         [158271] = 7513,        -- Kjalnar's Nightmare Mask
         [158272] = 7514,        -- Kjalnar's Nightmare Shoulder
         [159472] = 7332,        -- Jephrine Paladin Helm
@@ -2875,15 +2902,15 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [159692] = 7682,        -- Scourge Harvester Mask
         [160516] = 7750,        -- Domihaus Shoulder
         [160517] = 7749,        -- Domihaus Mask
-        [160518] = 7757,        -- Opal Iceheart's Shoulder
+        [160518] = 7757,        -- Opal Iceheart Shoulder
         [160519] = 7756,        -- Opal Iceheart Mask
-        [160520] = 7764,        -- Opal Lord Warden's Shoulder
+        [160520] = 7764,        -- Opal Lord Warden Shoulder
         [160521] = 7763,        -- Opal Lord Warden Mask
-        [160522] = 7771,        -- Opal Nightflame's Shoulder
+        [160522] = 7771,        -- Opal Nightflame Shoulder
         [160523] = 7770,        -- Opal Nightflame Mask
-        [160526] = 7785,        -- Nerien'eth's Shoulder
+        [160526] = 7785,        -- Nerien'eth Shoulder
         [160527] = 7784,        -- Nerien'eth Mask
-        [160537] = 7809,        -- Opal Swarm Mother's Shoulder
+        [160537] = 7809,        -- Opal Swarm Mother Shoulder
         [160538] = 7808,        -- Opal Swarm Mother Mask
         [165900] = 8116,        -- Snowhawk Mage Jerkin
         [165901] = 8117,        -- Snowhawk Mage Hat
@@ -2920,9 +2947,9 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [165971] = 8108,        -- Chitinous Sword
         [166479] = 8148,        -- Maw of the Infernal's Shoulder
         [166480] = 8147,        -- Maw of the Infernal Mask
-        [166962] = 8168,        -- Earthgore's Shoulder
+        [166962] = 8168,        -- Earthgore Shoulder
         [166963] = 8167,        -- Earthgore Mask
-        [166967] = 8177,        -- Tremorscale's Shoulder
+        [166967] = 8177,        -- Tremorscale Shoulder
         [166968] = 8176,        -- Tremorscale Mask
         [167008] = 8340,        -- Selene Shoulder
         [167009] = 8339,        -- Selene Mask
@@ -3052,7 +3079,7 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [170228] = 7763,        -- Opal Lord Warden Mask
         [170229] = 7770,        -- Opal Nightflame Mask
         [170230] = 7808,        -- Opal Swarm Mother Mask
-        [171266] = 7764,        -- Opal Lord Warden's Shoulder
+        [171266] = 7764,        -- Opal Lord Warden Shoulder
         [171271] = 7751,        -- Opal Iceheart Greatsword
         [171272] = 7752,        -- Opal Iceheart Bow
         [171273] = 7753,        -- Opal Iceheart Shield
@@ -3093,9 +3120,9 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [171308] = 7805,        -- Opal Swarm Mother Shield
         [171309] = 7806,        -- Opal Swarm Mother Staff
         [171310] = 7807,        -- Opal Swarm Mother Mace
-        [171311] = 7757,        -- Opal Iceheart's Shoulder
-        [171312] = 7771,        -- Opal Nightflame's Shoulder
-        [171313] = 7809,        -- Opal Swarm Mother's Shoulder
+        [171311] = 7757,        -- Opal Iceheart Shoulder
+        [171312] = 7771,        -- Opal Nightflame Shoulder
+        [171313] = 7809,        -- Opal Swarm Mother Shoulder
         [171439] = 8856,        -- Hungering Void Battle Axe
         [171440] = 8857,        -- Hungering Void Maul
         [171441] = 8858,        -- Hungering Void Greatsword
@@ -3279,14 +3306,14 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [183857] = 10000,       -- Second Seed Raiment Jerkin
         [183858] = 10001,       -- Second Seed Raiment Hat
         [183859] = 10002,       -- Second Seed Raiment Breeches
-        [183860] = 10003,       -- Second Seed Raiment Epaulets
+        [183860] = 10003,       -- Second Seed Raiment Epaulet
         [183861] = 10004,       -- Second Seed Raiment Shoes
         [183862] = 10005,       -- Second Seed Raiment Gloves
         [183863] = 10006,       -- Second Seed Raiment Sash
         [183864] = 10000,       -- Second Seed Raiment Jerkin
         [183865] = 10001,       -- Second Seed Raiment Hat
         [183866] = 10002,       -- Second Seed Raiment Breeches
-        [183867] = 10003,       -- Second Seed Raiment Epaulets
+        [183867] = 10003,       -- Second Seed Raiment Epaulet
         [183868] = 10004,       -- Second Seed Raiment Shoes
         [183869] = 10005,       -- Second Seed Raiment Gloves
         [183870] = 10006,       -- Second Seed Raiment Sash
@@ -3341,10 +3368,14 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [187715] = 10298,       -- High Rock Spellsword Sash
         [187716] = 10299,       -- High Rock Spellsword Robe
         [187717] = 10299,       -- High Rock Spellsword Robe
+        [187718] = 10426,       -- Opal Earthgore Shoulder
+        [187719] = 10425,       -- Opal Earthgore Mask
         [187915] = 10564,       -- Euphotic Gatekeeper Shoulder
         [187916] = 10563,       -- Euphotic Gatekeeper Mask
         [187917] = 10566,       -- Archdruid Devyric Shoulder
         [187918] = 10565,       -- Archdruid Devyric Mask
+        [188288] = 10752,       -- Opal Rkugamz Sentinel Shoulder
+        [188289] = 10751,       -- Opal Rkugamz Sentinel Mask
         [190020] = 10360,       -- Witchmother's Servant Jerkin
         [190021] = 10361,       -- Witchmother's Servant Hat
         [190022] = 10362,       -- Witchmother's Servant Breeches
@@ -3387,6 +3418,692 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [190113] = 10558,       -- Opal Velidreth Shield
         [190114] = 10559,       -- Opal Velidreth Staff
         [190115] = 10560,       -- Opal Velidreth Sword
+        [190320] = 10898,       -- Bonemold Cuirass
+        [190321] = 10899,       -- Bonemold Helm
+        [190322] = 10900,       -- Bonemold Greaves
+        [190323] = 10901,       -- Bonemold Pauldrons
+        [190324] = 10902,       -- Bonemold Sabatons
+        [190325] = 10903,       -- Bonemold Gauntlets
+        [190326] = 10904,       -- Bonemold Girdle
+        [190327] = 10898,       -- Bonemold Cuirass
+        [190328] = 10899,       -- Bonemold Helm
+        [190329] = 10900,       -- Bonemold Greaves
+        [190330] = 10901,       -- Bonemold Pauldrons
+        [190331] = 10902,       -- Bonemold Sabatons
+        [190332] = 10903,       -- Bonemold Gauntlets
+        [190333] = 10904,       -- Bonemold Girdle
+        [190923] = 11004,       -- Ozezan the Inferno Shoulder
+        [190924] = 11003,       -- Ozezan the Inferno Mask
+        [190925] = 11011,       -- Roksa the Warped Shoulder
+        [190926] = 11010,       -- Roksa the Warped Mask
+        [190943] = 9018,        -- Encratis's Behemoth Shoulder
+        [190944] = 9017,        -- Encratis's Behemoth Mask
+        [190955] = 11090,       -- Kwama Miner's Kit Jack
+        [190956] = 11091,       -- Kwama Miner's Kit Helmet
+        [190957] = 11092,       -- Kwama Miner's Kit Guards
+        [190958] = 11093,       -- Kwama Miner's Kit Arm Cops
+        [190959] = 11094,       -- Kwama Miner's Kit Boots
+        [190960] = 11095,       -- Kwama Miner's Kit Bracers
+        [190962] = 11090,       -- Kwama Miner's Kit Jack
+        [190963] = 11091,       -- Kwama Miner's Kit Helmet
+        [190964] = 11092,       -- Kwama Miner's Kit Guards
+        [190965] = 11093,       -- Kwama Miner's Kit Arm Cops
+        [190966] = 11094,       -- Kwama Miner's Kit Boots
+        [190967] = 11095,       -- Kwama Miner's Kit Bracers
+        [192386] = 10684,       -- Pelin's Paragon Jack
+        [192387] = 10685,       -- Pelin's Paragon Helmet
+        [192388] = 10686,       -- Pelin's Paragon Guards
+        [192389] = 10687,       -- Pelin's Paragon Arm Cops
+        [192390] = 10688,       -- Pelin's Paragon Boots
+        [192391] = 10689,       -- Pelin's Paragon Bracers
+        [192392] = 10690,       -- Pelin's Paragon Belt
+        [192468] = 10583,       -- Eldertide Epaulets
+        [192469] = 10705,       -- Eldertide Arm Cops
+        [192470] = 10584,       -- Eldertide Pauldrons
+        [192486] = 7750,        -- Domihaus Shoulder
+        [192487] = 7749,        -- Domihaus Mask
+        -- [192488] = ?,        -- Domihaus WEAPON
+        [192489] = 7745,        -- Domihaus Bow
+        [192490] = 7746,        -- Domihaus Shield
+        [192491] = 7747,        -- Domihaus Staff
+        -- [192492] = ?,        -- Domihaus WEAPON
+        [192493] = 7750,        -- Domihaus Shoulder
+        [192494] = 7749,        -- Domihaus Mask
+        -- [192495] = ?,        -- Domihaus WEAPON
+        [192496] = 7745,        -- Domihaus Bow
+        [192497] = 7746,        -- Domihaus Shield
+        [192498] = 7747,        -- Domihaus Staff
+        -- [192499] = ?,        -- Domihaus WEAPON
+        [192584] = 10720,       -- Evergreen Jack
+        [192585] = 10721,       -- Evergreen Helmet
+        [192586] = 10722,       -- Evergreen Guards
+        [192588] = 10724,       -- Evergreen Boots
+        [192589] = 10725,       -- Evergreen Bracers
+        [192590] = 10726,       -- Evergreen Belt
+        [192591] = 10720,       -- Evergreen Jack
+        [192592] = 10721,       -- Evergreen Helmet
+        [192593] = 10722,       -- Evergreen Guards
+        [192595] = 10724,       -- Evergreen Boots
+        [192596] = 10725,       -- Evergreen Bracers
+        [192597] = 10726,       -- Evergreen Belt
+        [192598] = 10710,       -- Gloamsedge Jack
+        [192599] = 10711,       -- Gloamsedge Helmet
+        [192600] = 10712,       -- Gloamsedge Guards
+        [192601] = 10713,       -- Gloamsedge Arm Cop
+        [192602] = 10714,       -- Gloamsedge Boots
+        [192603] = 10715,       -- Gloamsedge Bracers
+        [192604] = 10716,       -- Gloamsedge Belt
+        [192605] = 10710,       -- Gloamsedge Jack
+        [192606] = 10711,       -- Gloamsedge Helmet
+        [192607] = 10712,       -- Gloamsedge Guards
+        [192608] = 10713,       -- Gloamsedge Arm Cop
+        [192609] = 10714,       -- Gloamsedge Boots
+        [192610] = 10715,       -- Gloamsedge Bracers
+        [192611] = 10716,       -- Gloamsedge Belt
+        [193738] = 10727,       -- Claw-Dance Acolyte Jack
+        [193739] = 10728,       -- Claw-Dance Acolyte Helmet
+        [193740] = 10729,       -- Claw-Dance Acolyte Guards
+        [193741] = 10730,       -- Claw-Dance Acolyte Arm Cops
+        [193742] = 10731,       -- Claw-Dance Acolyte Boots
+        [193743] = 10732,       -- Claw-Dance Acolyte Bracers
+        [193744] = 10733,       -- Claw-Dance Acolyte Belt
+        [193745] = 10727,       -- Claw-Dance Acolyte Jack
+        [193746] = 10728,       -- Claw-Dance Acolyte Helmet
+        [193747] = 10729,       -- Claw-Dance Acolyte Guards
+        [193748] = 10730,       -- Claw-Dance Acolyte Arm Cops
+        [193749] = 10731,       -- Claw-Dance Acolyte Boots
+        [193750] = 10732,       -- Claw-Dance Acolyte Bracers
+        [193751] = 10733,       -- Claw-Dance Acolyte Belt
+        [193763] = 10336,       -- Saarthal Scholar Jerkin
+        [193764] = 10337,       -- Saarthal Scholar Hat
+        [193765] = 10338,       -- Saarthal Scholar Breeches
+        [193766] = 10339,       -- Saarthal Scholar Epaulets
+        [193767] = 10340,       -- Saarthal Scholar Shoes
+        [193768] = 10341,       -- Saarthal Scholar Gloves
+        [193769] = 10336,       -- Saarthal Scholar Jerkin
+        [193770] = 10337,       -- Saarthal Scholar Hat
+        [193771] = 10338,       -- Saarthal Scholar Breeches
+        [193772] = 10339,       -- Saarthal Scholar Epaulets
+        [193773] = 10340,       -- Saarthal Scholar Shoes
+        [193774] = 10341,       -- Saarthal Scholar Gloves
+        [194415] = 7616,        -- Broom
+        [194416] = 7617,        -- Bucket
+        [194417] = 7616,        -- Broom
+        [194418] = 7617,        -- Bucket
+        [194478] = 11243,       -- Sancre Tor Sentry Cuirass
+        [194479] = 11244,       -- Sancre Tor Sentry Helm
+        [194480] = 11245,       -- Sancre Tor Sentry Greaves
+        [194481] = 11246,       -- Sancre Tor Sentry Pauldrons
+        [194482] = 11247,       -- Sancre Tor Sentry Sabatons
+        [194483] = 11248,       -- Sancre Tor Sentry Gauntlets
+        [194484] = 11249,       -- Sancre Tor Sentry Girdle
+        [194485] = 11243,       -- Sancre Tor Sentry Cuirass
+        [194486] = 11244,       -- Sancre Tor Sentry Helm
+        [194487] = 11245,       -- Sancre Tor Sentry Greaves
+        [194488] = 11246,       -- Sancre Tor Sentry Pauldrons
+        [194489] = 11247,       -- Sancre Tor Sentry Sabatons
+        [194490] = 11248,       -- Sancre Tor Sentry Gauntlets
+        [194491] = 11249,       -- Sancre Tor Sentry Girdle
+        [197652] = 11392,       -- Ashen Militia Battle Axe
+        [197653] = 11392,       -- Ashen Militia Battle Axe
+        [197654] = 11393,       -- Ashen Militia Bow
+        [197655] = 11394,       -- Ashen Militia Shield
+        [197656] = 11395,       -- Ashen Militia Staff
+        [197657] = 11396,       -- Ashen Militia Axe
+        [197658] = 11397,       -- Ashen Militia Maul
+        [197659] = 11398,       -- Ashen Militia Greatsword
+        [197660] = 11399,       -- Ashen Militia Mace
+        [197661] = 11400,       -- Ashen Militia Sword
+        [197662] = 11401,       -- Ashen Militia Dagger
+        [197663] = 11393,       -- Ashen Militia Bow
+        [197664] = 11394,       -- Ashen Militia Shield
+        [197665] = 11395,       -- Ashen Militia Staff
+        [197666] = 11396,       -- Ashen Militia Axe
+        [197667] = 11397,       -- Ashen Militia Maul
+        [197668] = 11398,       -- Ashen Militia Greatsword
+        [197669] = 11399,       -- Ashen Militia Mace
+        [197670] = 11400,       -- Ashen Militia Sword
+        [197671] = 11401,       -- Ashen Militia Dagger
+        [197672] = 11250,       -- Sancre Tor Sentry Battle Axe
+        [197673] = 11251,       -- Sancre Tor Sentry Bow
+        [197674] = 11252,       -- Sancre Tor Sentry Shield
+        [197675] = 11253,       -- Sancre Tor Sentry Staff
+        [197676] = 11254,       -- Sancre Tor Sentry Axe
+        [197677] = 11255,       -- Sancre Tor Sentry Maul
+        [197678] = 11256,       -- Sancre Tor Sentry Greatsword
+        [197679] = 11257,       -- Sancre Tor Sentry Mace
+        [197680] = 11258,       -- Sancre Tor Sentry Sword
+        [197681] = 11259,       -- Sancre Tor Sentry Dagger
+        [197682] = 11250,       -- Sancre Tor Sentry Battle Axe
+        [197683] = 11251,       -- Sancre Tor Sentry Bow
+        [197684] = 11252,       -- Sancre Tor Sentry Shield
+        [197685] = 11253,       -- Sancre Tor Sentry Staff
+        [197686] = 11254,       -- Sancre Tor Sentry Axe
+        [197687] = 11255,       -- Sancre Tor Sentry Maul
+        [197688] = 11256,       -- Sancre Tor Sentry Greatsword
+        [197689] = 11257,       -- Sancre Tor Sentry Mace
+        [197690] = 11258,       -- Sancre Tor Sentry Sword
+        [197691] = 11259,       -- Sancre Tor Sentry Dagger
+        [197995] = 11371,       -- Gravegrasp Cuirass
+        [197996] = 11372,       -- Gravegrasp Helm
+        [197997] = 11373,       -- Gravegrasp Greaves
+        [197998] = 11374,       -- Gravegrasp Pauldrons
+        [197999] = 11375,       -- Gravegrasp Sabatons
+        [198000] = 11376,       -- Gravegrasp Gauntlets
+        [198001] = 11377,       -- Gravegrasp Girdle
+        -- [198326] = ?,        -- Thane of Falkreath Cuirass
+        [198327] = 11582,       -- Thane of Falkreath Helm
+        -- [198328] = ?,        -- Thane of Falkreath Greaves
+        [198329] = 11584,       -- Thane of Falkreath Pauldrons
+        -- [198330] = ?,        -- Thane of Falkreath Sabatons
+        -- [198331] = ?,        -- Thane of Falkreath Gauntlets
+        -- [198332] = ?,        -- Thane of Falkreath Girdle
+        -- [198333] = ?,        -- Thane of Falkreath Cuirass
+        [198334] = 11582,       -- Thane of Falkreath Helm
+        -- [198335] = ?,        -- Thane of Falkreath Greaves
+        [198336] = 11584,       -- Thane of Falkreath Pauldrons
+        -- [198337] = ?,        -- Thane of Falkreath Sabatons
+        -- [198338] = ?,        -- Thane of Falkreath Gauntlets
+        -- [198339] = ?,        -- Thane of Falkreath Girdle
+        [198340] = 11588,       -- Crowborne Hunter Jerkin
+        [198341] = 11589,       -- Crowborne Hunter Hat
+        [198342] = 11590,       -- Crowborne Hunter Breeches
+        [198343] = 11591,       -- Crowborne Hunter Epaulets
+        [198344] = 11592,       -- Crowborne Hunter Shoes
+        [198345] = 11593,       -- Crowborne Hunter Gloves
+        [198346] = 11594,       -- Crowborne Hunter Sash
+        [198347] = 11588,       -- Crowborne Hunter Jerkin
+        [198348] = 11589,       -- Crowborne Hunter Hat
+        [198349] = 11590,       -- Crowborne Hunter Breeches
+        [198350] = 11591,       -- Crowborne Hunter Epaulets
+        [198351] = 11592,       -- Crowborne Hunter Shoes
+        [198352] = 11593,       -- Crowborne Hunter Gloves
+        [198353] = 11594,       -- Crowborne Hunter Sash
+        [198354] = 11595,       -- Apocrypha Expedition Jack
+        [198355] = 11596,       -- Apocrypha Expedition Helmet
+        [198356] = 11597,       -- Apocrypha Expedition Guards
+        [198357] = 11598,       -- Apocrypha Expedition Arm Cops
+        [198358] = 11599,       -- Apocrypha Expedition Boots
+        [198359] = 11600,       -- Apocrypha Expedition Bracers
+        -- [198360] = ?,        -- Apocrypha Expedition Belt
+        [198361] = 11595,       -- Apocrypha Expedition Jack
+        [198362] = 11596,       -- Apocrypha Expedition Helmet
+        [198363] = 11597,       -- Apocrypha Expedition Guards
+        [198364] = 11598,       -- Apocrypha Expedition Arm Cops
+        [198365] = 11599,       -- Apocrypha Expedition Boots
+        [198366] = 11600,       -- Apocrypha Expedition Bracers
+        -- [198367] = ?,        -- Apocrypha Expedition Belt
+        [198600] = 10746,       -- Opal Rkugamz Sentinel Battle Axe
+        [198601] = 10747,       -- Opal Rkugamz Sentinel Bow
+        [198602] = 10748,       -- Opal Rkugamz Sentinel Shield
+        [198603] = 10749,       -- Opal Rkugamz Sentinel Staff
+        [198604] = 10750,       -- Opal Rkugamz Sentinel Mace
+        [198605] = 10752,       -- Opal Rkugamz Sentinel Shoulder
+        [198606] = 10751,       -- Opal Rkugamz Sentinel Mask
+        [198607] = 10746,       -- Opal Rkugamz Sentinel Battle Axe
+        [198608] = 10747,       -- Opal Rkugamz Sentinel Bow
+        [198609] = 10748,       -- Opal Rkugamz Sentinel Shield
+        [198610] = 10749,       -- Opal Rkugamz Sentinel Staff
+        [198611] = 10750,       -- Opal Rkugamz Sentinel Mace
+        [198612] = 11667,       -- Reawakened Hierophant Battle Axe
+        [198613] = 11668,       -- Reawakened Hierophant Bow
+        [198614] = 11669,       -- Reawakened Hierophant Shield
+        [198615] = 11670,       -- Reawakened Hierophant Staff
+        [198616] = 11671,       -- Reawakened Hierophant Axe
+        [198617] = 11672,       -- Reawakened Hierophant Maul
+        [198618] = 11673,       -- Reawakened Hierophant Greatsword
+        [198619] = 11674,       -- Reawakened Hierophant Mace
+        [198620] = 11675,       -- Reawakened Hierophant Sword
+        [198621] = 11676,       -- Reawakened Hierophant Dagger
+        [198622] = 11667,       -- Reawakened Hierophant Battle Axe
+        [198623] = 11668,       -- Reawakened Hierophant Bow
+        [198624] = 11669,       -- Reawakened Hierophant Shield
+        [198625] = 11670,       -- Reawakened Hierophant Staff
+        [198626] = 11671,       -- Reawakened Hierophant Axe
+        [198627] = 11672,       -- Reawakened Hierophant Maul
+        [198628] = 11673,       -- Reawakened Hierophant Greatsword
+        [198629] = 11674,       -- Reawakened Hierophant Mace
+        [198630] = 11675,       -- Reawakened Hierophant Sword
+        [198631] = 11676,       -- Reawakened Hierophant Dagger
+        [198632] = 11678,       -- Reawakened Hierophant Jerkin
+        [198633] = 11679,       -- Reawakened Hierophant Hat
+        [198634] = 11680,       -- Reawakened Hierophant Breeches
+        [198635] = 11681,       -- Reawakened Hierophant Epaulets
+        [198636] = 11682,       -- Reawakened Hierophant Shoes
+        [198637] = 11683,       -- Reawakened Hierophant Gloves
+        [198638] = 11684,       -- Reawakened Hierophant Sash
+        [198639] = 11678,       -- Reawakened Hierophant Jerkin
+        [198640] = 11679,       -- Reawakened Hierophant Hat
+        [198641] = 11680,       -- Reawakened Hierophant Breeches
+        [198642] = 11681,       -- Reawakened Hierophant Epaulets
+        [198643] = 11682,       -- Reawakened Hierophant Shoes
+        [198644] = 11683,       -- Reawakened Hierophant Gloves
+        [198645] = 11684,       -- Reawakened Hierophant Sash
+        [198733] = 11694,       -- Basalt-Blood Warrior Jack
+        [198734] = 11695,       -- Basalt-Blood Warrior Helmet
+        [198735] = 11696,       -- Basalt-Blood Warrior Guards
+        [198736] = 11697,       -- Basalt-Blood Warrior Arm Cops
+        [198737] = 11698,       -- Basalt-Blood Warrior Boots
+        [198738] = 11699,       -- Basalt-Blood Warrior Bracers
+        [198739] = 11700,       -- Basalt-Blood Warrior Belt
+        [198740] = 11694,       -- Basalt-Blood Warrior Jack
+        [198741] = 11695,       -- Basalt-Blood Warrior Helmet
+        [198742] = 11696,       -- Basalt-Blood Warrior Guards
+        [198743] = 11697,       -- Basalt-Blood Warrior Arm Cops
+        [198744] = 11698,       -- Basalt-Blood Warrior Boots
+        [198745] = 11699,       -- Basalt-Blood Warrior Bracers
+        [198746] = 11700,       -- Basalt-Blood Warrior Belt
+        [198748] = 11701,       -- Nobility in Decay Jack
+        [198749] = 11702,       -- Nobility in Decay Helmet
+        [198750] = 11703,       -- Nobility in Decay Guards
+        [198751] = 11704,       -- Nobility in Decay Arm Cops
+        [198752] = 11705,       -- Nobility in Decay Boots
+        [198753] = 11706,       -- Nobility in Decay Bracers
+        [198754] = 11707,       -- Nobility in Decay Belt
+        [198755] = 11701,       -- Nobility in Decay Jack
+        [198756] = 11702,       -- Nobility in Decay Helmet
+        [198757] = 11703,       -- Nobility in Decay Guards
+        [198758] = 11704,       -- Nobility in Decay Arm Cops
+        [198759] = 11705,       -- Nobility in Decay Boots
+        [198760] = 11706,       -- Nobility in Decay Bracers
+        [198761] = 11707,       -- Nobility in Decay Belt
+        [198874] = 11708,       -- Soulcleaver Jack
+        [198875] = 11709,       -- Soulcleaver Helmet
+        [198876] = 11710,       -- Soulcleaver Guards
+        [198877] = 11711,       -- Soulcleaver Arm Cops
+        [198878] = 11712,       -- Soulcleaver Boots
+        [198879] = 11713,       -- Soulcleaver Bracers
+        [198880] = 11714,       -- Soulcleaver Belt
+        [198881] = 11708,       -- Soulcleaver Jack
+        [198882] = 11709,       -- Soulcleaver Helmet
+        [198883] = 11710,       -- Soulcleaver Guards
+        [198884] = 11711,       -- Soulcleaver Arm Cops
+        [198885] = 11712,       -- Soulcleaver Boots
+        [198886] = 11713,       -- Soulcleaver Bracers
+        [198887] = 11714,       -- Soulcleaver Belt
+        [198888] = 11715,       -- Monolith of Storms Cuirass
+        [198889] = 11716,       -- Monolith of Storms Helm
+        [198890] = 11717,       -- Monolith of Storms Greaves
+        [198891] = 11718,       -- Monolith of Storms Pauldrons
+        [198892] = 11719,       -- Monolith of Storms Sabatons
+        [198893] = 11720,       -- Monolith of Storms Gauntlets
+        [198894] = 11721,       -- Monolith of Storms Girdle
+        [198895] = 11715,       -- Monolith of Storms Cuirass
+        [198896] = 11716,       -- Monolith of Storms Helm
+        [198897] = 11717,       -- Monolith of Storms Greaves
+        [198898] = 11718,       -- Monolith of Storms Pauldrons
+        [198899] = 11719,       -- Monolith of Storms Sabatons
+        [198900] = 11720,       -- Monolith of Storms Gauntlets
+        [198901] = 11721,       -- Monolith of Storms Girdle
+        [198902] = 11722,       -- Wrathsun Cuirass
+        [198903] = 11723,       -- Wrathsun Helm
+        [198904] = 11724,       -- Wrathsun Greaves
+        [198905] = 11725,       -- Wrathsun Pauldrons
+        [198906] = 11726,       -- Wrathsun Sabatons
+        [198907] = 11727,       -- Wrathsun Gauntlets
+        [198908] = 11728,       -- Wrathsun Girdle
+        [198909] = 11722,       -- Wrathsun Cuirass
+        [198910] = 11723,       -- Wrathsun Helm
+        [198911] = 11724,       -- Wrathsun Greaves
+        [198912] = 11725,       -- Wrathsun Pauldrons
+        [198913] = 11726,       -- Wrathsun Sabatons
+        [198914] = 11727,       -- Wrathsun Gauntlets
+        [198915] = 11728,       -- Wrathsun Girdle
+        [198916] = 11729,       -- Gardener of Seasons Jack
+        [198917] = 11730,       -- Gardener of Seasons Helmet
+        [198918] = 11731,       -- Gardener of Seasons Guards
+        [198919] = 11732,       -- Gardener of Seasons Arm Cops
+        [198920] = 11733,       -- Gardener of Seasons Boots
+        [198921] = 11734,       -- Gardener of Seasons Bracers
+        [198922] = 11735,       -- Gardener of Seasons Belt
+        [198923] = 11729,       -- Gardener of Seasons Jack
+        [198924] = 11730,       -- Gardener of Seasons Helmet
+        [198925] = 11731,       -- Gardener of Seasons Guards
+        [198926] = 11732,       -- Gardener of Seasons Arm Cops
+        [198927] = 11733,       -- Gardener of Seasons Boots
+        [198928] = 11734,       -- Gardener of Seasons Bracers
+        [198929] = 11735,       -- Gardener of Seasons Belt
+        [198930] = 11736,       -- Basalt-Blood Warrior Battle Axe
+        [198931] = 11737,       -- Basalt-Blood Warrior Bow
+        [198932] = 11738,       -- Basalt-Blood Warrior Shield
+        [198933] = 11739,       -- Basalt-Blood Warrior Staff
+        [198934] = 11740,       -- Basalt-Blood Warrior Axe
+        [198935] = 11741,       -- Basalt-Blood Warrior Maul
+        [198936] = 11742,       -- Basalt-Blood Warrior Greatsword
+        [198937] = 11743,       -- Basalt-Blood Warrior Mace
+        [198938] = 11744,       -- Basalt-Blood Warrior Sword
+        [198939] = 11745,       -- Basalt-Blood Warrior Dagger
+        [198940] = 11736,       -- Basalt-Blood Warrior Battle Axe
+        [198941] = 11737,       -- Basalt-Blood Warrior Bow
+        [198942] = 11738,       -- Basalt-Blood Warrior Shield
+        [198943] = 11739,       -- Basalt-Blood Warrior Staff
+        [198944] = 11740,       -- Basalt-Blood Warrior Axe
+        [198945] = 11741,       -- Basalt-Blood Warrior Maul
+        [198946] = 11742,       -- Basalt-Blood Warrior Greatsword
+        [198947] = 11743,       -- Basalt-Blood Warrior Mace
+        [198948] = 11744,       -- Basalt-Blood Warrior Sword
+        [198949] = 11745,       -- Basalt-Blood Warrior Dagger
+        [198950] = 11746,       -- Nobility in Decay Battle Axe
+        [198951] = 11747,       -- Nobility in Decay Bow
+        [198952] = 11748,       -- Nobility in Decay Shield
+        [198953] = 11749,       -- Nobility in Decay Staff
+        [198954] = 11750,       -- Nobility in Decay Axe
+        [198955] = 11751,       -- Nobility in Decay Maul
+        [198956] = 11752,       -- Nobility in Decay Greatsword
+        [198957] = 11753,       -- Nobility in Decay Mace
+        [198958] = 11754,       -- Nobility in Decay Sword
+        [198959] = 11755,       -- Nobility in Decay Dagger
+        [198960] = 11746,       -- Nobility in Decay Battle Axe
+        [198961] = 11747,       -- Nobility in Decay Bow
+        [198962] = 11748,       -- Nobility in Decay Shield
+        [198963] = 11749,       -- Nobility in Decay Staff
+        [198964] = 11750,       -- Nobility in Decay Axe
+        [198965] = 11751,       -- Nobility in Decay Maul
+        [198966] = 11752,       -- Nobility in Decay Greatsword
+        [198967] = 11753,       -- Nobility in Decay Mace
+        [198968] = 11754,       -- Nobility in Decay Sword
+        [198969] = 11755,       -- Nobility in Decay Dagger
+        [198970] = 11756,       -- Soulcleaver Battle Axe
+        [198971] = 11757,       -- Soulcleaver Bow
+        [198972] = 11758,       -- Soulcleaver Shield
+        [198973] = 11759,       -- Soulcleaver Staff
+        [198974] = 11760,       -- Soulcleaver Axe
+        [198975] = 11761,       -- Soulcleaver Maul
+        [198976] = 11762,       -- Soulcleaver Greatsword
+        [198977] = 11763,       -- Soulcleaver Mace
+        [198978] = 11764,       -- Soulcleaver Sword
+        [198979] = 11765,       -- Soulcleaver Dagger
+        [198980] = 11756,       -- Soulcleaver Battle Axe
+        [198981] = 11757,       -- Soulcleaver Bow
+        [198982] = 11758,       -- Soulcleaver Shield
+        [198983] = 11759,       -- Soulcleaver Staff
+        [198984] = 11760,       -- Soulcleaver Axe
+        [198985] = 11761,       -- Soulcleaver Maul
+        [198986] = 11762,       -- Soulcleaver Greatsword
+        [198987] = 11763,       -- Soulcleaver Mace
+        [198988] = 11764,       -- Soulcleaver Sword
+        [198989] = 11765,       -- Soulcleaver Dagger
+        [198990] = 11766,       -- Monolith of Storms Battle Axe
+        [198991] = 11767,       -- Monolith of Storms Bow
+        [198992] = 11768,       -- Monolith of Storms Shield
+        [198993] = 11769,       -- Monolith of Storms Staff
+        [198994] = 11770,       -- Monolith of Storms Axe
+        [198995] = 11771,       -- Monolith of Storms Maul
+        [198996] = 11772,       -- Monolith of Storms Greatsword
+        [198997] = 11773,       -- Monolith of Storms Mace
+        [198998] = 11774,       -- Monolith of Storms Sword
+        [198999] = 11775,       -- Monolith of Storms Dagger
+        [199000] = 11766,       -- Monolith of Storms Battle Axe
+        [199001] = 11767,       -- Monolith of Storms Bow
+        [199002] = 11768,       -- Monolith of Storms Shield
+        [199003] = 11769,       -- Monolith of Storms Staff
+        [199004] = 11770,       -- Monolith of Storms Axe
+        [199005] = 11771,       -- Monolith of Storms Maul
+        [199006] = 11772,       -- Monolith of Storms Greatsword
+        [199007] = 11773,       -- Monolith of Storms Mace
+        [199008] = 11774,       -- Monolith of Storms Sword
+        [199009] = 11775,       -- Monolith of Storms Dagger
+        [199010] = 11776,       -- Wrathsun Battle Axe
+        [199011] = 11777,       -- Wrathsun Bow
+        [199012] = 11778,       -- Wrathsun Shield
+        [199013] = 11779,       -- Wrathsun Staff
+        [199014] = 11780,       -- Wrathsun Axe
+        [199015] = 11781,       -- Wrathsun Maul
+        [199016] = 11782,       -- Wrathsun Greatsword
+        [199017] = 11783,       -- Wrathsun Mace
+        [199018] = 11784,       -- Wrathsun Sword
+        [199019] = 11785,       -- Wrathsun Dagger
+        [199020] = 11776,       -- Wrathsun Battle Axe
+        [199021] = 11777,       -- Wrathsun Bow
+        [199022] = 11778,       -- Wrathsun Shield
+        [199023] = 11779,       -- Wrathsun Staff
+        [199024] = 11780,       -- Wrathsun Axe
+        [199025] = 11781,       -- Wrathsun Maul
+        [199026] = 11782,       -- Wrathsun Greatsword
+        [199027] = 11783,       -- Wrathsun Mace
+        [199028] = 11784,       -- Wrathsun Sword
+        [199029] = 11785,       -- Wrathsun Dagger
+        [199030] = 11786,       -- Gardener of Seasons Battle Axe
+        [199031] = 11787,       -- Gardener of Seasons Bow
+        [199032] = 11788,       -- Gardener of Seasons Shield
+        [199033] = 11789,       -- Gardener of Seasons Staff
+        [199034] = 11790,       -- Gardener of Seasons Axe
+        [199035] = 11791,       -- Gardener of Seasons Maul
+        [199036] = 11792,       -- Gardener of Seasons Greatsword
+        [199037] = 11793,       -- Gardener of Seasons Mace
+        [199038] = 11794,       -- Gardener of Seasons Sword
+        [199039] = 11795,       -- Gardener of Seasons Dagger
+        [199040] = 11786,       -- Gardener of Seasons Battle Axe
+        [199041] = 11787,       -- Gardener of Seasons Bow
+        [199042] = 11788,       -- Gardener of Seasons Shield
+        [199043] = 11789,       -- Gardener of Seasons Staff
+        [199044] = 11790,       -- Gardener of Seasons Axe
+        [199045] = 11791,       -- Gardener of Seasons Maul
+        [199046] = 11792,       -- Gardener of Seasons Greatsword
+        [199047] = 11793,       -- Gardener of Seasons Mace
+        [199048] = 11794,       -- Gardener of Seasons Sword
+        [199049] = 11795,       -- Gardener of Seasons Dagger
+        [199053] = 11803,       -- Y'ffre's Fallen-Wood Cuirass
+        [199054] = 11804,       -- Y'ffre's Fallen-Wood Helm
+        [199055] = 11805,       -- Y'ffre's Fallen-Wood Greaves
+        [199056] = 11806,       -- Y'ffre's Fallen-Wood Pauldrons
+        [199057] = 11807,       -- Y'ffre's Fallen-Wood Sabatons
+        [199058] = 11808,       -- Y'ffre's Fallen-Wood Gauntlets
+        [199059] = 11809,       -- Y'ffre's Fallen-Wood Girdle
+        [199060] = 11803,       -- Y'ffre's Fallen-Wood Cuirass
+        [199061] = 11804,       -- Y'ffre's Fallen-Wood Helm
+        [199062] = 11805,       -- Y'ffre's Fallen-Wood Greaves
+        [199063] = 11806,       -- Y'ffre's Fallen-Wood Pauldrons
+        [199064] = 11807,       -- Y'ffre's Fallen-Wood Sabatons
+        [199065] = 11808,       -- Y'ffre's Fallen-Wood Gauntlets
+        [199066] = 11809,       -- Y'ffre's Fallen-Wood Girdle
+        [199067] = 11810,       -- Bristleback Hunter Jack
+        [199068] = 11811,       -- Bristleback Hunter Helmet
+        [199069] = 11812,       -- Bristleback Hunter Guards
+        [199070] = 11813,       -- Bristleback Hunter Arm Cops
+        [199071] = 11814,       -- Bristleback Hunter Boots
+        [199072] = 11815,       -- Bristleback Hunter Bracers
+        [199073] = 11816,       -- Bristleback Hunter Belt
+        [199074] = 11810,       -- Bristleback Hunter Jack
+        [199075] = 11811,       -- Bristleback Hunter Helmet
+        [199076] = 11812,       -- Bristleback Hunter Guards
+        [199077] = 11813,       -- Bristleback Hunter Arm Cops
+        [199078] = 11814,       -- Bristleback Hunter Boots
+        [199079] = 11815,       -- Bristleback Hunter Bracers
+        [199080] = 11816,       -- Bristleback Hunter Belt
+        [199081] = 11817,       -- Morningstar Frostwear Jerkin
+        [199082] = 11818,       -- Morningstar Frostwear Hat
+        [199083] = 11819,       -- Morningstar Frostwear Breeches
+        [199084] = 11820,       -- Morningstar Frostwear Epaulets
+        [199085] = 11821,       -- Morningstar Frostwear Shoes
+        [199086] = 11822,       -- Morningstar Frostwear Gloves
+        [199087] = 11823,       -- Morningstar Frostwear Sash
+        [199088] = 11817,       -- Morningstar Frostwear Jerkin
+        [199089] = 11818,       -- Morningstar Frostwear Hat
+        [199090] = 11819,       -- Morningstar Frostwear Breeches
+        [199091] = 11820,       -- Morningstar Frostwear Epaulets
+        [199092] = 11821,       -- Morningstar Frostwear Shoes
+        [199093] = 11822,       -- Morningstar Frostwear Gloves
+        [199094] = 11823,       -- Morningstar Frostwear Sash
+        [199095] = 11824,       -- Dovah's Du'ul Cuirass
+        [199096] = 11825,       -- Dovah's Du'ul Helm
+        [199097] = 11826,       -- Dovah's Du'ul Greaves
+        [199098] = 11827,       -- Dovah's Du'ul Pauldrons
+        [199099] = 11828,       -- Dovah's Du'ul Sabatons
+        [199100] = 11829,       -- Dovah's Du'ul Gauntlets
+        [199101] = 11830,       -- Dovah's Du'ul Girdle
+        [199102] = 11824,       -- Dovah's Du'ul Cuirass
+        [199103] = 11825,       -- Dovah's Du'ul Helm
+        [199104] = 11826,       -- Dovah's Du'ul Greaves
+        [199105] = 11827,       -- Dovah's Du'ul Pauldrons
+        [199106] = 11828,       -- Dovah's Du'ul Sabatons
+        [199107] = 11829,       -- Dovah's Du'ul Gauntlets
+        [199108] = 11830,       -- Dovah's Du'ul Girdle
+        [199143] = 11568,       -- Cumberland Cavalier Pauldrons
+        [199144] = 11575,       -- Highborn Gallant Pauldrons
+        [199145] = 11566,       -- Cumberland Cavalier Helm
+        [199146] = 11573,       -- Highborn Gallant Helm
+        [199729] = 11572,       -- Highborn Gallant Cuirass
+        [199730] = 11574,       -- Highborn Gallant Greaves
+        [199731] = 11576,       -- Highborn Gallant Sabatons
+        [199732] = 11577,       -- Highborn Gallant Gauntlets
+        [199733] = 11578,       -- Highborn Gallant Girdle
+        [203125] = 11917,       -- Frandar's Tribute Jack
+        [203126] = 11918,       -- Frandar's Tribute Helmet
+        [203127] = 11919,       -- Frandar's Tribute Guards
+        [203128] = 11920,       -- Frandar's Tribute Arm Cops
+        [203129] = 11921,       -- Frandar's Tribute Boots
+        [203130] = 11922,       -- Frandar's Tribute Bracers
+        [203131] = 11923,       -- Frandar's Tribute Belt
+        [203231] = 11995,       -- Earthbone Ayleid Jerkin
+        [203232] = 11996,       -- Earthbone Ayleid Hat
+        [203233] = 11997,       -- Earthbone Ayleid Breeches
+        [203234] = 11998,       -- Earthbone Ayleid Epaulets
+        [203235] = 11999,       -- Earthbone Ayleid Shoes
+        [203236] = 12000,       -- Earthbone Ayleid Gloves
+        [203237] = 12001,       -- Earthbone Ayleid Sash
+        [203238] = 11995,       -- Earthbone Ayleid Jerkin
+        [203239] = 11996,       -- Earthbone Ayleid Hat
+        [203240] = 11997,       -- Earthbone Ayleid Breeches
+        [203241] = 11998,       -- Earthbone Ayleid Epaulets
+        [203242] = 11999,       -- Earthbone Ayleid Shoes
+        [203243] = 12000,       -- Earthbone Ayleid Gloves
+        [203244] = 12001,       -- Earthbone Ayleid Sash
+        [203246] = 12002,       -- Jester's Seeker Suit Jerkin
+        [203247] = 12003,       -- Jester's Seeker Suit Hat
+        [203248] = 12004,       -- Jester's Seeker Suit Breeches
+        [203249] = 12005,       -- Jester's Seeker Suit Epaulets
+        [203250] = 12006,       -- Jester's Seeker Suit Shoes
+        [203251] = 12007,       -- Jester's Seeker Suit Gloves
+        [203252] = 12008,       -- Jester's Seeker Suit Sash
+        [203253] = 12002,       -- Jester's Seeker Suit Jerkin
+        [203254] = 12003,       -- Jester's Seeker Suit Hat
+        [203255] = 12004,       -- Jester's Seeker Suit Breeches
+        [203256] = 12005,       -- Jester's Seeker Suit Epaulets
+        [203257] = 12006,       -- Jester's Seeker Suit Shoes
+        [203258] = 12007,       -- Jester's Seeker Suit Gloves
+        [203259] = 12008,       -- Jester's Seeker Suit Sash
+        [203260] = 12015,       -- Aradros Shoulder
+        [203261] = 12014,       -- Aradros Mask
+        [203262] = 12022,       -- The Blind Shoulder
+        [203263] = 12021,       -- The Blind Mask
+        [203545] = 5924,        -- Bloodspawn Mask
+        [203546] = 5925,        -- Bloodspawn Shoulder
+        [203547] = 6744,        -- Chokethorn Mask
+        [203548] = 6745,        -- Chokethorn Shoulder
+        [203549] = 6045,        -- Engine Guardian Shoulder
+        [203550] = 6044,        -- Engine Guardian Mask
+        [203559] = 10531,       -- Red Rook Bandit Jerkin
+        [203560] = 10532,       -- Red Rook Bandit Hat
+        [203561] = 10533,       -- Red Rook Bandit Breeches
+        [203562] = 10534,       -- Red Rook Bandit Epaulets
+        [203563] = 10535,       -- Red Rook Bandit Shoes
+        [203564] = 10536,       -- Red Rook Bandit Gloves
+        [203578] = 12015,       -- Aradros Shoulder
+        [203579] = 12014,       -- Aradros Mask
+        [203580] = 12022,       -- The Blind Shoulder
+        [203581] = 12021,       -- The Blind Mask
+        [203615] = 5545,        -- Grothdarr Mask
+        [203616] = 5546,        -- Grothdarr Shoulder
+        [203617] = 5615,        -- Iceheart Mask
+        [203618] = 5616,        -- Iceheart Shoulder
+        [203619] = 5452,        -- Ilambris Mask
+        [203620] = 5453,        -- Ilambris' Shoulder
+        [203621] = 6948,        -- Infernal Guardian Mask
+        [203622] = 6949,        -- Infernal Guardian Shoulder
+        [203623] = 6956,        -- Kra'gh Mask
+        [203624] = 6957,        -- Kra'gh Shoulder
+        [203625] = 8147,        -- Maw of the Infernal Mask
+        [203626] = 8148,        -- Maw of the Infernal's Shoulder
+        [203627] = 7784,        -- Nerien'eth Mask
+        [203628] = 7785,        -- Nerien'eth Shoulder
+        [203629] = 6251,        -- Nightflame Mask
+        [203630] = 6252,        -- Nightflame Shoulder
+        [203635] = 6721,        -- Pirate Skeleton Mask
+        [203636] = 6722,        -- Pirate Skeleton Shoulder
+        [203637] = 7682,        -- Scourge Harvester Mask
+        [203638] = 7683,        -- Scourge Harvester Shoulder
+        [203639] = 8339,        -- Selene Mask
+        [203640] = 8340,        -- Selene Shoulder
+        [203641] = 5763,        -- Sellistrix Mask
+        [203642] = 5764,        -- Sellistrix's Shoulder
+        [203643] = 6963,        -- Sentinel of Rkugamz Mask
+        [203644] = 6964,        -- Sentinel of Rkugamz Shoulder
+        [203645] = 5456,        -- Shadowrend Mask
+        [203646] = 5457,        -- Shadowrend Shoulder
+        [203647] = 7329,        -- Slimecraw Mask
+        [203648] = 7330,        -- Slimecraw Shoulder
+        [203649] = 6775,        -- Spawn of Mephala Mask
+        [203650] = 6776,        -- Spawn of Mephala Shoulder
+        [203651] = 7424,        -- Stormfist Mask
+        [203652] = 7425,        -- Stormfist Shoulder
+        [203653] = 5926,        -- Swarm Mother Mask
+        [203654] = 5927,        -- Swarm Mother Shoulder
+        [203655] = 8176,        -- Tremorscale Mask
+        [203656] = 8177,        -- Tremorscale Shoulder
+        [203657] = 5607,        -- Troll King Mask
+        [203658] = 5608,        -- Troll King Shoulder
+        [203659] = 6174,        -- Valkyn Skoria Mask
+        [203660] = 6175,        -- Valkyn Skoria Shoulder
+        [203661] = 6388,        -- Lord Warden Mask
+        [203662] = 6389,        -- Lord Warden Shoulder
+        [203663] = 6690,        -- Mighty Chudan Mask
+        [203664] = 6691,        -- Mighty Chudan Shoulder
+        [203665] = 6692,        -- Velidreth Mask
+        [203666] = 6693,        -- Velidreth Shoulder
+        [203667] = 7749,        -- Domihaus Mask
+        [203668] = 7750,        -- Domihaus Shoulder
+        [203669] = 8167,        -- Earthgore Mask
+        [203670] = 8168,        -- Earthgore Shoulder
+        [203671] = 8695,        -- Thurvokun Mask
+        [203672] = 8696,        -- Thurvokun Shoulder
+        [203673] = 8761,        -- Zaan Mask
+        [203674] = 8762,        -- Zaan Shoulder
+        [203675] = 7426,        -- Balorgh Mask
+        [203676] = 7427,        -- Balorgh Shoulder
+        [203677] = 8688,        -- Vykosa Mask
+        [203678] = 8689,        -- Vykosa Shoulder
+        [203679] = 9001,        -- Stonekeeper Mask
+        [203680] = 9002,        -- Stonekeeper Shoulder
+        [203681] = 8958,        -- Symphony of Blades Mask
+        [203682] = 8959,        -- Symphony of Blades Shoulder
+        [203684] = 9128,        -- Grundwulf Mask
+        [203685] = 9129,        -- Grundwulf Shoulder
+        [203686] = 9273,        -- Maarselok Mask
+        [203687] = 9274,        -- Maarselok Shoulder
+        [203688] = 7513,        -- Kjalnar's Nightmare Mask
+        [203689] = 7514,        -- Kjalnar's Nightmare Shoulder
+        [203690] = 7511,        -- Mother Ciannait Mask
+        [203691] = 7512,        -- Mother Ciannait Shoulder
+        [203692] = 10022,       -- Lady Thorn Mask
+        [203693] = 10023,       -- Lady Thorn Shoulder
+        -- [203694] = ?,        -- Stone Husk Mask
+        -- [203695] = ?,        -- Stone Husk Shoulder
+        [203696] = 9015,        -- Baron Zaudrus Mask
+        [203697] = 9016,        -- Baron Zaudrus Shoulder
+        [203698] = 9017,        -- Encratis's Behemoth Mask
+        [203699] = 9018,        -- Encratis's Behemoth Shoulder
+        [203700] = 9629,        -- Magma Incarnate Mask
+        [203701] = 9630,        -- Magma Incarnate Shoulder
+        [203702] = 9588,        -- Prior Thierric Mask
+        [203703] = 9589,        -- Prior Thierric Shoulder
+        [203704] = 10035,       -- Kargaeda Mask
+        [203705] = 10036,       -- Kargaeda Shoulder
+        [203706] = 10042,       -- Nazaray Mask
+        [203707] = 10043,       -- Nazaray Shoulder
+        [203708] = 10565,       -- Archdruid Devyric Mask
+        [203709] = 10566,       -- Archdruid Devyric Shoulder
+        [203710] = 10563,       -- Euphotic Gatekeeper Mask
+        [203711] = 10564,       -- Euphotic Gatekeeper Shoulder
+        [203712] = 11003,       -- Ozezan the Inferno Mask
+        [203713] = 11004,       -- Ozezan the Inferno Shoulder
+        [203714] = 11010,       -- Roksa the Warped Mask
+        [203715] = 11011,       -- Roksa the Warped Shoulder
+        [204475] = 12437,       -- Trueflame Sword Replica
+        [204476] = 12438,       -- Staff of Worms Replica
+        [204477] = 12439,       -- Sunna'rah Replica
+        [204478] = 12440,       -- Barbas Helmet Replica
+        [204479] = 12441,       -- Ul'vor Staff Replica
 }
 
 function uespLog.BoolToOnOff(flag)
@@ -4436,7 +5153,8 @@ function uespLog.GetLastTargetData()
 	result.worldy = uespLog.lastTargetData.worldy
 	result.worldz = uespLog.lastTargetData.worldz
 	result.worldzoneid = uespLog.lastTargetData.worldzoneid
-	
+	result.zonediff = uespLog.lastTargetData.zonediff
+		
 	return result
 end
 
@@ -4453,6 +5171,7 @@ function uespLog.GetCurrentTargetData()
 	result.worldy = uespLog.currentTargetData.worldy
 	result.worldz = uespLog.currentTargetData.worldz
 	result.worldzoneid = uespLog.currentTargetData.worldzoneid
+	result.zonediff = uespLog.lastTargetData.zonediff
 	
 	return result
 end
@@ -5363,6 +6082,8 @@ function uespLog.UpdateMineItemTable()
 		uespLog.MINEITEM_TABLE = uespLog.MINEITEM_LEVELS_SAFE_PTS
 	elseif (uespLog.mineItemTable == "quick") then
 		uespLog.MINEITEM_TABLE = uespLog.MINEITEM_LEVELS_SAFE_QUICK
+	elseif (uespLog.mineItemTable == "potion") then
+		uespLog.MINEITEM_TABLE = uespLog.MINEITEM_LEVELS_POTION
 	else
 		uespLog.MINEITEM_TABLE = uespLog.MINEITEM_LEVELS_SAFE
 	end
@@ -7897,6 +8618,7 @@ function uespLog.OnOpenFootlocker(eventCode, bagId, slotIndex, itemLink, itemSou
 	
 	if (GetUnitRawWorldPosition ~= nil) then
 		uespLog.lastTargetData.worldzoneid, uespLog.lastTargetData.worldx, uespLog.lastTargetData.worldy, uespLog.lastTargetData.worldz = GetUnitRawWorldPosition("player")
+		uespLog.lastTargetData.zonediff = GetCurrentZoneDungeonDifficulty()
 	end
 	
 	uespLog.lastItemLinkUsed = ""
@@ -8089,8 +8811,9 @@ function uespLog.OnTargetChange (eventCode)
 		--COMBAT_UNIT_TYPE_TARGET_DUMMY - 4
 		
 		-- local localPlayerIsTarget = AreUnitsEqual("player", "reticleover")
+	--uespLog.DebugExtraMsg("Target type changed to "..tostring(unitType))
 
-    if (unitType == 2) then -- NPC, COMBAT_UNIT_TYPE_OTHER?
+    if (unitType == 2 or unitType == 11) then -- NPC, COMBAT_UNIT_TYPE_OTHER?
         local name = GetUnitName(unitTag)
         local x, y, z, zone = uespLog.GetUnitPosition(unitTag)
 		local gameTime = GetGameTimeMilliseconds()
@@ -8119,6 +8842,7 @@ function uespLog.OnTargetChange (eventCode)
 		
 		if (GetUnitRawWorldPosition ~= nil) then
 			uespLog.lastTargetData.worldzoneid, uespLog.lastTargetData.worldx, uespLog.lastTargetData.worldy, uespLog.lastTargetData.worldz = GetUnitRawWorldPosition("player")
+			uespLog.lastTargetData.zonediff = GetCurrentZoneDungeonDifficulty()
 		end
 		
         local level = GetUnitLevel(unitTag)
@@ -8162,6 +8886,7 @@ function uespLog.OnTargetChange (eventCode)
 			logData.maxMg = maxMg
 			logData.maxSt = maxSt
 			logData.reaction = GetUnitReaction(unitTag)
+			logData.unitType = unitType
 			
 			if (includeLocData) then
 				uespLog.AppendDataToLog("all", logData, uespLog.GetLastTargetData(), uespLog.GetTimeData())
@@ -8178,7 +8903,7 @@ function uespLog.OnTargetChange (eventCode)
 		uespLog.lastTargetLogName = ""
 		uespLog.lastTargetMsgName = ""
 	elseif (unitType ~= 0) then
-		--local name = GetUnitName(unitTag)
+		local name = GetUnitName(unitTag)
 		--uespLog.DebugMsg("Other Target: "..tostring(name))
 		
 		uespLog.lastTargetData.level = ""
@@ -8870,6 +9595,7 @@ function uespLog.OnUpdate ()
 		uespLog.currentTargetData.worldy = ""
 		uespLog.currentTargetData.worldz = ""
 		uespLog.currentTargetData.worldzoneid = ""
+		uespLog.lastTargetData.zonediff = ""
         return
     end
 	
@@ -8893,6 +9619,7 @@ function uespLog.OnUpdate ()
 		uespLog.lastTargetData.worldy = uespLog.currentTargetData.worldy
 		uespLog.lastTargetData.worldz = uespLog.currentTargetData.worldz
 		uespLog.lastTargetData.worldzoneid = uespLog.currentTargetData.worldzoneid
+		uespLog.lastTargetData.zonediff = uespLog.currentTargetData.zonediff
 		uespLog.lastTargetData.gameTime = GetGameTimeMilliseconds()
 		uespLog.lastTargetData.timeStamp = GetTimeStamp()
 		uespLog.lastTargetData.action = uespLog.currentTargetData.action
@@ -8933,6 +9660,7 @@ function uespLog.OnUpdate ()
 		
 		if (GetUnitRawWorldPosition ~= nil) then
 			uespLog.currentTargetData.worldzoneid, uespLog.currentTargetData.worldx, uespLog.currentTargetData.worldy, uespLog.currentTargetData.worldz = GetUnitRawWorldPosition("player")
+			uespLog.currentTargetData.zonediff = GetCurrentZoneDungeonDifficulty()
 		end
 		
 		--uespLog.DebugMsg("UnitPos: "..tostring(x)..", "..tostring(y))
@@ -8942,6 +9670,7 @@ function uespLog.OnUpdate ()
 		
 		if (GetUnitRawWorldPosition ~= nil) then
 			uespLog.currentTargetData.worldzoneid, uespLog.currentTargetData.worldx, uespLog.currentTargetData.worldy, uespLog.currentTargetData.worldz = GetUnitRawWorldPosition("player")
+			uespLog.currentTargetData.zonediff = GetCurrentZoneDungeonDifficulty()
 		end
 		--uespLog.DebugMsg("PlayerPos: "..tostring(x)..", "..tostring(y))
 		--uespLog.DebugMsg("UnitPos: "..tostring(x1)..", "..tostring(y1))
@@ -13072,6 +13801,85 @@ function uespLog.MineItemIteratePotionDataSafe (effectIndex, realItemId, potionI
 end
 
 
+function uespLog.MinePotionData()
+	local origTable = uespLog.savedVars.settings.data.mineItemTable
+	
+	uespLog.savedVars.settings.data.mineItemTable = "potion"
+	uespLog.mineItemTable = "potion"
+	
+	uespLog.Msg("Mining data for potions...")
+			
+	uespLog.MineItems(54339, 54339)
+	uespLog.MineItems(76827, 76827)
+	uespLog.MineItems(44812, 44812)
+	uespLog.MineItems(76826, 76826)
+	uespLog.MineItems(54340, 54340)
+	uespLog.MineItems(76828, 76828)
+	uespLog.MineItems(44815, 44815)
+	uespLog.MineItems(76829, 76829)
+	uespLog.MineItems(54341, 54341)
+	uespLog.MineItems(76830, 76830)
+	uespLog.MineItems(44809, 44809)
+	uespLog.MineItems(76830, 76830)
+	uespLog.MineItems(44814, 44814)
+	uespLog.MineItems(76832, 76832)
+	uespLog.MineItems(44821, 44821)
+	uespLog.MineItems(76833, 76833)
+	uespLog.MineItems(27042, 27042)
+	uespLog.MineItems(76837, 76837)
+	uespLog.MineItems(27040, 27040)
+	uespLog.MineItems(76835, 76835)
+	uespLog.MineItems(30145, 30145)
+	uespLog.MineItems(76840, 76840)
+	uespLog.MineItems(44813, 44813)
+	uespLog.MineItems(76834, 76834)
+	uespLog.MineItems(44714, 44714)
+	uespLog.MineItems(76838, 76838)
+	uespLog.MineItems(44810, 44810)
+	uespLog.MineItems(76839, 76839)
+	uespLog.MineItems(30141, 30141)
+	uespLog.MineItems(76836, 76836)
+	uespLog.MineItems(54336, 54336)
+	uespLog.MineItems(76841, 76841)
+	uespLog.MineItems(30146, 30146)
+	uespLog.MineItems(76842, 76842)
+	uespLog.MineItems(54337, 54337)
+	uespLog.MineItems(76843, 76843)
+	uespLog.MineItems(27039, 27039)
+	uespLog.MineItems(76844, 76844)
+	uespLog.MineItems(54333, 54333)
+	uespLog.MineItems(76845, 76845)
+	uespLog.MineItems(30142, 30142)
+	uespLog.MineItems(76847, 76847)
+	uespLog.MineItems(44715, 44715)
+	uespLog.MineItems(76844, 76844)
+	uespLog.MineItems(27041, 27041)
+	uespLog.MineItems(54335, 54335)
+	uespLog.MineItems(81196, 81196)
+	uespLog.MineItems(77596, 77596)
+	uespLog.MineItems(77597, 77597)
+	uespLog.MineItems(77598, 77598)
+	uespLog.MineItems(77599, 77599)
+	uespLog.MineItems(77592, 77592)
+	uespLog.MineItems(77593, 77593)
+	uespLog.MineItems(77594, 77594)
+	uespLog.MineItems(81195, 81195)
+	uespLog.MineItems(77600, 77600)
+	uespLog.MineItems(77601, 77601)
+	uespLog.MineItems(77602, 77602)
+	uespLog.MineItems(77603, 77603)
+	uespLog.MineItems(151969, 151969)
+	uespLog.MineItems(152151, 152151)
+	uespLog.MineItems(151969, 151969)
+	uespLog.MineItems(152151, 152151)
+	
+	uespLog.savedVars.settings.data.mineItemTable = origTable
+	uespLog.mineItemTable = origTable
+	
+	uespLog.Msg("Finished mining data for potions...")
+end
+
+
 function uespLog.MineItems (startId, endId)
 	local itemLink
 	local itemName
@@ -13568,6 +14376,8 @@ function uespLog.MineItemsAutoStatus ()
 		uespLog.MsgColor(uespLog.mineColor, "Using PTS table for mining items.")
 	elseif (uespLog.mineItemTable == "quick") then
 		uespLog.MsgColor(uespLog.mineColor, "Using QUICK table for mining items.")
+	elseif (uespLog.mineItemTable == "potion") then
+		uespLog.MsgColor(uespLog.mineColor, "Using POTION table for mining items.")
 	end
 end
 
@@ -13896,6 +14706,11 @@ SLASH_COMMANDS["/uespmineitems"] = function (cmd)
 			uespLog.savedVars.settings.data.mineItemTable = "quick"
 			uespLog.mineItemTable = "quick"
 			uespLog.MsgColor(uespLog.mineColor, "Now using QUICK table for mining items.")
+			uespLog.UpdateMineItemTable()
+		elseif (tableName == "potion") then
+			uespLog.savedVars.settings.data.mineItemTable = "potion"
+			uespLog.mineItemTable = "potion"
+			uespLog.MsgColor(uespLog.mineColor, "Now using POTION table for mining items.")
 			uespLog.UpdateMineItemTable()
 		else
 			uespLog.MsgColor(uespLog.mineColor, "Valid options for 'table' are: safe, pts")

@@ -17,6 +17,7 @@ uespLog.NewGuildSales = 0
 uespLog.SalesCurrentGuildIndex = 1
 uespLog.SalesStartEventIndex = 1
 uespLog.SalesScanCurrentLastTimestamp = -1
+uespLog.SalesRequestId = -1
 uespLog.SalesScanSingleGuild = false
 uespLog.MAX_GUILD_INDEX = 5
 uespLog.SalesCurrentListingData = {}
@@ -337,11 +338,15 @@ function uespLog.SaveNewSalesData()
 end
 
 
-function uespLog.StartGuildSalesScan(guildIndex)
+function uespLog.StartGuildSalesScan_old(guildIndex)
 
 	if (RequestGuildHistoryCategoryNewest == nil) then
 		--uespLog.DebugExtraMsg("UESP: RequestGuildHistoryCategoryNewest is nil...aborting scan")
 		--return false
+	end
+	
+	if (RequestMoreGuildHistoryCategoryEvents == nil) then
+		return false
 	end
 
 	if (guildIndex > uespLog.MAX_GUILD_INDEX) then
@@ -373,7 +378,135 @@ function uespLog.StartGuildSalesScan(guildIndex)
 end
 
 
+uespLog.MAX_GUILD_TRADER_EVENTS_LOGCOUNT = 100
+
+
+function uespLog.StartGuildSalesScan(guildIndex)
+	local guildId = GetGuildId(guildIndex)
+	
+	if (uespLog.SalesRequestId > 0) then
+		DestroyGuildHistoryRequest(uespLog.SalesRequestId)
+		uespLog.SalesRequestId = -1
+	end
+	
+	if (guildIndex > uespLog.MAX_GUILD_INDEX) then
+	
+		if (uespLog.NewGuildSales > 0) then
+			uespLog.Msg("UESP: Found and saved "..tostring(uespLog.NewGuildSales).." new guild sales!")
+		else
+			uespLog.DebugMsg("UESP: Found no new guild sales since last save!")
+		end
+		
+		uespLog.IsSavingGuildSales = false
+		return false
+	end
+		
+	uespLog.DebugExtraMsg("UESP: Starting sales history scan for guild #"..tostring(guildIndex))
+	
+	uespLog.GuildHistoryLastReceivedTimestamp = GetTimeStamp()
+	
+	uespLog.SalesStartEventIndex = 1
+	uespLog.SalesCurrentGuildIndex = guildIndex
+	uespLog.SalesScanCurrentLastTimestamp = -1
+	uespLog.SalesBadScanCount = 0
+	
+	--uespLog.SalesRequestId = CreateGuildHistoryRequest(guildId, GUILD_HISTORY_EVENT_CATEGORY_TRADER, GetTimeStamp(), 0)
+	--uespLog.SalesRequestId = CreateGuildHistoryRequest(guildId, GUILD_HISTORY_EVENT_CATEGORY_TRADER)
+	--RequestMoreGuildHistoryEvents(uespLog.SalesRequestId, true)
+		
+	zo_callLater(function() uespLog.ScanGuildSales(guildIndex) end, uespLog.SALES_SCAN_DELAY)
+	
+	return true
+end
+
+
 function uespLog.StartGuildSalesScanMore(guildIndex)
+	local guildId = GetGuildId(guildIndex)
+	return false
+end
+
+
+function uespLog.ScanGuildSales_Loop(guildId, currentTimestamp, lastTimestamp)
+	local numEvents = GetNumGuildHistoryEvents(guildId, GUILD_HISTORY_EVENT_CATEGORY_TRADER)
+	
+	if (numEvents <= 0) then
+		uespLog.DebugExtraMsg("No sales events for guild ID "..tostring(guildId))
+		return false
+	end
+	
+	uespLog.DebugExtraMsg("Checking "..tostring(numEvents).." sales events for guild ID "..tostring(guildId).." starting at "..tostring(uespLog.SalesStartEventIndex))
+	
+	for eventIndex = uespLog.SalesStartEventIndex, numEvents do
+		local eventId, seconds, isRedacted, eventType = GetGuildHistoryTraderEventInfo(guildId, eventIndex)
+		local eventTimestamp = seconds
+		
+		if (eventTimestamp < lastTimestamp) then
+			return false
+		end
+		
+		if (eventType == GUILD_HISTORY_TRADER_EVENT_ITEM_SOLD) then
+			uespLog.SaveGuildPurchase(guildId, eventIndex)
+			uespLog.NewGuildSales = uespLog.NewGuildSales + 1
+		end
+	end
+	
+	return false
+end
+
+
+function uespLog.ScanGuildSales(guildIndex)
+	local salesConfig = uespLog.GetSalesDataConfig()
+	local guildConfig = salesConfig[guildIndex]
+	local lastTimestamp = salesConfig.lastTimestamp
+	local guildId = GetGuildId(guildIndex)
+	local requested = false
+	local currentTimestamp = uespLog.GuildHistoryLastReceivedTimestamp
+	local numEvents = GetNumGuildHistoryEvents(guildId, GUILD_HISTORY_EVENT_CATEGORY_TRADER)
+		
+	if (uespLog.SalesStartEventIndex >= numEvents and numEvents > 0) then
+		uespLog.SalesBadScanCount = uespLog.SalesBadScanCount + 1
+		uespLog.DebugExtraMsg("UESP: Bad guild sale scan "..guildIndex..":"..uespLog.SalesBadScanCount)
+		
+		if (uespLog.SalesBadScanCount > 10) then
+			uespLog.StartGuildSalesScan(guildIndex + 1)
+			return false
+		end
+		
+		uespLog.StartGuildSalesScanMore(guildIndex)	
+		return false
+	end
+	
+	if (guildConfig.lastTimestamp < lastTimestamp) then
+		lastTimestamp = guildConfig.lastTimestamp
+	end
+	
+	if (uespLog.SalesScanCurrentLastTimestamp >= 0) then
+		lastTimestamp = uespLog.SalesScanCurrentLastTimestamp
+	else
+		guildConfig.lastTimestamp = currentTimestamp
+		salesConfig.lastTimestamp = currentTimestamp
+		uespLog.SalesScanCurrentLastTimestamp = lastTimestamp
+	end
+	
+	uespLog.DebugExtraMsg("UESP: Scanning sales history for guild #"..tostring(guildIndex)..", up to timestamp "..lastTimestamp)
+	
+	--lastTimestamp = 0
+	
+	local scanMore = uespLog.ScanGuildSales_Loop(guildId, currentTimestamp, lastTimestamp)
+	
+	if (scanMore) then
+		uespLog.StartGuildSalesScanMore(guildIndex)
+	elseif (uespLog.SalesScanSingleGuild) then
+		uespLog.SalesScanSingleGuild = false
+	else
+		uespLog.StartGuildSalesScan(guildIndex + 1)
+	end
+	
+	return true
+end
+
+
+function uespLog.StartGuildSalesScanMore_old(guildIndex)
 	local guildId = GetGuildId(guildIndex)
 	local hasMore = DoesGuildHistoryCategoryHaveMoreEvents(guildId, GUILD_HISTORY_STORE)
 	
@@ -400,6 +533,33 @@ function uespLog.StartGuildSalesScanMore(guildIndex)
 	
 	uespLog.GuildHistoryLastReceivedTimestamp = GetTimeStamp()
 	local requested = RequestMoreGuildHistoryCategoryEvents(guildId, GUILD_HISTORY_STORE)
+	
+	-- CreateGuildHistoryRequest(*integer* _guildId_, *[GuildHistoryEventCategory|#GuildHistoryEventCategory]* _category_, *integer53* _newestTimeS_, *integer53* _oldestTimeS_)
+	--		CreateGuildHistoryRequest(4993, GUILD_HISTORY_EVENT_CATEGORY_TRADER, 1710423616, 0)
+	--		CreateGuildHistoryRequest(4993, GUILD_HISTORY_EVENT_CATEGORY_TRADER, GetTimeStamp(), 0)
+	--		GetNumGuildHistoryEvents(4993, GUILD_HISTORY_EVENT_CATEGORY_TRADER)
+	--		RequestMoreGuildHistoryEvents(3, true)
+	--		GetGuildHistoryEventIndicesForTimeRange(4993, GUILD_HISTORY_EVENT_CATEGORY_TRADER, 1710423616, 0)
+	--		GetGuildHistoryEventIndicesForTimeRange(4993, GUILD_HISTORY_EVENT_CATEGORY_TRADER, 0, 1000)
+	--		GetGuildHistoryTraderEventInfo(4993, 1)
+	--		GetGuildHistoryTraderEventInfo(4993, 603)
+	--		GetGuildHistoryTraderEventInfo(4993, 604)
+	--		GetOldestGuildHistoryEventIndexForUpToDateEventsWithoutGaps(4993, GUILD_HISTORY_EVENT_CATEGORY_TRADER)
+	--		GetNumGuildHistoryEventRanges(4993, GUILD_HISTORY_EVENT_CATEGORY_TRADER)
+	--		GetGuildHistoryEventRangeInfo(4993, GUILD_HISTORY_EVENT_CATEGORY_TRADER, 1)
+	-- GetNumGuildHistoryEventRanges(*integer* _guildId_, *[GuildHistoryEventCategory|#GuildHistoryEventCategory]* _category_)
+		--_Returns:_ *integer* _numGuildHistoryEventRanges_
+	-- GetGuildHistoryEventRangeInfo(*integer* _guildId_, *[GuildHistoryEventCategory|#GuildHistoryEventCategory]* _category_, *luaindex* _rangeIndex_)
+		--_Returns:_ *integer53* _newestTimeS_, *integer53* _oldestTimeS_, *integer53* _newestEventId_, *integer53* _oldestEventId_
+
+	-- GetOldestGuildHistoryEventIndexForUpToDateEventsWithoutGaps(*integer* _guildId_, *[GuildHistoryEventCategory|#GuildHistoryEventCategory]* _category_)
+	-- RequestMoreGuildHistoryEvents (*integer* _requestId_, *bool* _queueRequestIfOnCooldown_)
+	-- DestroyGuildHistoryRequest(*integer* _requestId_)
+	-- GetNumGuildHistoryEvents(*integer* _guildId_, *[GuildHistoryEventCategory|#GuildHistoryEventCategory]* _category_)
+	-- GetGuildHistoryEventIndicesForTimeRange(*integer* _guildId_, *[GuildHistoryEventCategory|#GuildHistoryEventCategory]* _category_, *integer53* _newestTimeS_, *integer53* _oldestTimeS_)
+		--** _Returns:_ *luaindex:nilable* _newestEventIndex_, *luaindex:nilable* _oldestEventIndex_
+	--GetGuildHistoryTraderEventInfo(*integer* _guildId_, *luaindex* _eventIndex_)
+		--** _Returns:_ *integer53* _eventId_, *integer53* _timestampS_, *[GuildHistoryTraderEvent|#GuildHistoryTraderEvent]* _eventType_, *string* _sellerDisplayName_, *string* _buyerDisplayName_, *string* _itemLink_, *integer* _quantity_, *integer* _price_, *integer* _tax_
 			
 	zo_callLater(function() uespLog.ScanGuildSales(guildIndex) end, uespLog.SALES_SCAN_DELAY)
 	
@@ -407,7 +567,7 @@ function uespLog.StartGuildSalesScanMore(guildIndex)
 end
 
 
-function uespLog.ScanGuildSales(guildIndex)
+function uespLog.ScanGuildSales_old(guildIndex)
 	local salesConfig = uespLog.GetSalesDataConfig()
 	local guildConfig = salesConfig[guildIndex]
 	local lastTimestamp = salesConfig.lastTimestamp
@@ -457,7 +617,7 @@ function uespLog.ScanGuildSales(guildIndex)
 end
 
 
-function uespLog.ScanGuildSales_Loop(guildId, currentTimestamp, lastTimestamp)
+function uespLog.ScanGuildSales_Loop_old(guildId, currentTimestamp, lastTimestamp)
 	local numEvents = GetNumGuildEvents(guildId, GUILD_HISTORY_STORE)
 	
 	if (numEvents <= 0) then
@@ -522,14 +682,16 @@ end
 
 
 function uespLog.SaveGuildPurchase(guildId, eventIndex)
-	local eventType, seconds, seller, buyer, qnt, itemLink, gold, taxes = GetGuildEventInfo(guildId, GUILD_HISTORY_STORE, eventIndex)
-	local eventId = GetGuildEventId(guildId, GUILD_HISTORY_STORE, eventIndex)
+	--local eventType, seconds, seller, buyer, qnt, itemLink, gold, taxes = GetGuildEventInfo(guildId, GUILD_HISTORY_STORE, eventIndex)
+	--local eventId = GetGuildEventId(guildId, GUILD_HISTORY_STORE, eventIndex)
+	local eventId, seconds, isRedacted, eventType, seller, buyer, itemLink, qnt, gold, taxes = GetGuildHistoryTraderEventInfo(guildId, eventIndex)
+	
 	local logData = {}
 	local currentTimestamp = GetTimeStamp()
 	
 	logData.event = "GuildSale"
 	logData.type = eventType
-	logData.saleTimestamp = tostring(currentTimestamp - seconds)
+	logData.saleTimestamp = tostring(seconds)
 	logData.eventId = Id64ToString(eventId)
 	logData.seller = seller
 	logData.buyer = buyer

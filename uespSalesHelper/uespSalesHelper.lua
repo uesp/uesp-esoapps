@@ -41,6 +41,32 @@ uespSalesHelper.lastTargetData = {
 	interactionType = "",
 }
 
+uespSalesHelper.USE_CUSTOM_LABELS = true
+
+uespSalesHelper.CONTROL_INFO = {
+	uespSalesHelperUIX = {
+		numLetters = 5
+	},
+	uespSalesHelperUIY = {
+		numLetters = 5
+	},
+	uespSalesHelperUIDir = {
+		numLetters = 3
+	},
+	uespSalesHelperUIZone = {
+		numLetters = 50
+	},
+	uespSalesHelperUITarget = {
+		numLetters = 74
+	},
+	uespSalesHelperUIState = {
+		numLetters = 74
+	},
+	uespSalesHelperUIExtra = {
+		numLetters = 74
+	},
+}
+
 
 uespSalesHelper.DEFAULT_SAVED_VARS = {
 	autoScanStores = false,
@@ -90,6 +116,35 @@ function uespSalesHelper.OnAddonLoaded(self, addOnName)
 	uespSalesHelper.Old_ZO_ConfirmPendingPurchase = TRADING_HOUSE.ConfirmPendingPurchase
 	TRADING_HOUSE.ConfirmPendingPurchase = uespSalesHelper.ConfirmPendingPurchase
 	TRADING_HOUSE.OldConfirmPendingPurchase = uespSalesHelper.Old_ZO_ConfirmPendingPurchase 
+	
+	for labelName, labelData in pairs(uespSalesHelper.CONTROL_INFO) do
+		uespSalesHelper.CreateCustomLabel(labelName, labelData)
+	end
+		
+end
+
+
+function uespSalesHelper.CreateCustomLabel(labelName, labelData)
+	local i
+	local numLetters = labelData.numLetters or 4
+	local parent = _G[labelName]
+	
+	if (_G[labelName] == nil) then
+		return
+	end
+	
+	for i = 0, numLetters - 1 do
+		local ctrl = CreateControl(labelName.."_"..tostring(i), _G[labelName], CT_LABEL)
+
+		ctrl:ClearAnchors()
+		ctrl:SetAnchor(TOPLEFT, _G[labelName], TOPLEFT, 7*i, 0)
+		ctrl:SetDimensions(8, 25)
+		ctrl:SetFont("uespSalesHelperFont")
+		ctrl:SetHorizontalAlignment(TEXT_ALIGN_LEFT)
+		ctrl:SetVerticalAlignment(TEXT_ALIGN_CENTER)
+		ctrl:SetWrapMode(TEXT_WRAP_MODE_TRUNCATE)
+		ctrl:SetText("")
+	end
 end
 
 
@@ -258,9 +313,13 @@ function uespSalesHelper.UpdateLabels()
 		x = "0.000"
 		y = "0.000"
 		dir = "000"
-		zone = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-_~!@#$%^&*()_+`=[]\\{}||;':\",./<>? 0000000000"
+		zone = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-_~!@#$%^&*()_+`=[]\\{}\|;':\",./<>? "
+		--     "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-_~!@#$%^&*()_+`=[]\\{} |;':\",./<>? ";
 		currentTarget = zone
 		extraData = zone
+		
+		--x = "0"
+		--extraData = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 	end
 	
 	if (extraData == "" and not uespSalesHelper.autoScanStores) then
@@ -272,13 +331,59 @@ function uespSalesHelper.UpdateLabels()
 	currentState = currentState:upper()
 	extraData = extraData:upper()
 	
-	uespSalesHelperUIX:SetText(x)
-	uespSalesHelperUIY:SetText(y)
-	uespSalesHelperUIDir:SetText(dir)
-	uespSalesHelperUIZone:SetText(zone)
-	uespSalesHelperUITarget:SetText(currentTarget)
-	uespSalesHelperUIState:SetText(currentState)
-	uespSalesHelperUIExtra:SetText(extraData)
+	uespSalesHelper.SetLabelText("uespSalesHelperUIX", x)
+	uespSalesHelper.SetLabelText("uespSalesHelperUIY", y)
+	uespSalesHelper.SetLabelText("uespSalesHelperUIDir", dir)
+	uespSalesHelper.SetLabelText("uespSalesHelperUIZone", zone)
+	uespSalesHelper.SetLabelText("uespSalesHelperUITarget", currentTarget)
+	uespSalesHelper.SetLabelText("uespSalesHelperUIState", currentState)
+	uespSalesHelper.SetLabelText("uespSalesHelperUIExtra", extraData)
+	
+	--uespSalesHelperUIX:SetText(x)
+	--uespSalesHelperUIY:SetText(y)
+	--uespSalesHelperUIDir:SetText(dir)
+	--uespSalesHelperUIZone:SetText(zone)
+	--uespSalesHelperUITarget:SetText(currentTarget)
+	--uespSalesHelperUIState:SetText(currentState)
+	--uespSalesHelperUIExtra:SetText(extraData)
+end
+
+
+function uespSalesHelper.SetLabelText(labelName, text)
+	local label = _G[labelName]
+	local labelData = uespSalesHelper.CONTROL_INFO[labelName]
+	local i
+	
+	if (label == nil or text == nil) then
+		return
+	end
+	
+	if (not uespSalesHelper.USE_CUSTOM_LABELS or labelData == nil) then
+		label:SetText(text)
+		return
+	end
+
+	label:SetText("")
+	local numLetters = labelData.numLetters or 4
+	local textLength = string.len(text)
+	
+	for i = 0, numLetters - 1 do
+		local ctrl = _G[labelName .. "_" .. tostring(i)]
+		local letter = string.sub(text, i+1, i+1)
+		
+		if (letter == '|') then
+			letter = '||'
+		end
+	
+		if (ctrl == nil) then
+			uespLog.DebugMsg("Missing Control ".. labelName .. "_" .. tostring(i))
+		elseif (i > textLength) then
+			ctrl:SetText("")
+		else
+			ctrl:SetText(letter)
+		end
+		
+	end
 	
 end
 
@@ -493,9 +598,11 @@ function uespSalesHelper.SalesHelperCommand(cmd)
 		uespSalesHelper.autoScanStores = false
 		uespSalesHelper.savedVars.autoScanStores = false
 		uespLog.Msg("UESP sales helper turned off.")
+	elseif (cmd == "calibrate") then
+		uespSalesHelper.Calibrate()
 	else
 		uespLog.Msg("Turns the UESP sales helper on/off:")
-		uespLog.Msg(".      /uespsaleshelper [on||off]")
+		uespLog.Msg(".      /uespsaleshelper [on||off||calibrate]")
 	end
 	
 end

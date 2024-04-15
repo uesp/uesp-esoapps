@@ -15120,6 +15120,9 @@ uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
 	["wood_elf"] = 8,
 	["khajiit"] = 9,
 	["orc"] = 3,
+	["reach winter"] = 37,
+	["reach_winter"] = 37,
+	["reachwinter"] = 37,
 		
 			-- Thieves Guild
 	["outlaw"] = 47,
@@ -15432,6 +15435,16 @@ uespLog.CRAFTSTYLENAME_TO_ITEMSTYLE = {
 	['systres guardian'] = 132,
 	['systresguardian'] = 132,
 	['systres'] = 132,
+	
+		--135 => 'Y\'ffre\'s Will',
+		--136 => 'Drowned Mariner',
+		--138 => 'Firesong',
+		--139 => 'House Mornard',
+		--140 => 'Scribes of Mora',
+		--141 => 'Blessed Inheritor',
+		--142 => 'Clan Dreamcarver',
+		--143 => 'Dead Keeper',
+		--144 => 'Kindred\'s Concord',
 }
 
 

@@ -66,6 +66,7 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[ITEMSTYLE_UNIVERSAL] 			 = "uespLog/images/mimicstone.dds",			-- Universal, Crown Mimic Stone, 36 /esoui/art/icons/crafing_universal_item.dds  (incorrect spelling "crafing" in 1.9 PTS)
 	[ITEMSTYLE_ORG_THIEVES_GUILD] 	 = "uespLog/images/thievesguild_style.dds",	-- Thieves Guild, Fine Chalk, 11 /esoui/art/icons/crafting_style_item_thieves_guild_r2.dds
 	[ITEMSTYLE_ORG_DARK_BROTHERHOOD] = "uespLog/images/darkbrotherhood.dds",	-- Dark Brotherhood, Black Beeswax, 12, /esoui/art/icons/crafting_style_item_dark_brotherhood_r2.dds
+	--[37] 							 = "uespLog/images/reachwinter.dds",		-- Reach Winter
 	[39] 							 = "uespLog/images/minotaur.dds",			-- Minotaur, Oxblood Fungus, 39, /esoui/art/icons/crafting_style_item_minotaur_r2.dds
 	[16] 							 = "uespLog/images/akatosh.dds",			-- Akatosh, Pearl Sand, 16, /esoui/art/icons/crafting_style_item_orderoth_r2.dds
 	[ITEMSTYLE_AREA_YOKUDAN] 		 = "uespLog/images/yokudan.dds",			-- Yokudan, Ferrous Salts, 35, /esoui/art/icons/crafting_humanoid_daedra_void_salts.dds
@@ -153,6 +154,15 @@ uespLog.ALT_STYLE_ICON_DATA = {
 	[130]							 = "uespLog/images/syrabanicmarine.dds",	-- Syrabanic Marine, Scalloped Frog-Metal, 130, /esoui/art/icons/u34_crafting_style_item_sybranic_marine.dds
 	[131]							 = "uespLog/images/steadfastsociety.dds",	-- Steadfast Society, Stendarr Stamp, 131, /esoui/art/icons/u34_crafting_style_item_steadfast_society.dds
 	--[132]							 = "uespLog/images/systresguardian.dds",	-- Systres Guardian, ?, 132, /esoui/art/icons/?.dds
+		--135 => 'Y\'ffre\'s Will',
+		--136 => 'Drowned Mariner',
+		--138 => 'Firesong',
+		--139 => 'House Mornard',
+		--140 => 'Scribes of Mora',
+		--141 => 'Blessed Inheritor',
+		--142 => 'Clan Dreamcarver',
+		--143 => 'Dead Keeper',
+		--144 => 'Kindred\'s Concord',
 }
 
 

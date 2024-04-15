@@ -4,9 +4,9 @@ import EsoFunctionInfo
 import json
 
     # Modify below constants to point to relevant files/paths
-INPUT_GLOBAL_FILENAME = "/cygdrive/e/esoexport/goodimages-40/globals.txt"
-INPUT_LUA_PATH = "/cygdrive/e/esoexport/gamemnf-40/esoui/"
-OUTPUT_PATH = "/cygdrive/e/esoexport/apidata/101040/"
+INPUT_GLOBAL_FILENAME = "/cygdrive/e/esoexport/goodimages-41/globals.txt"
+INPUT_LUA_PATH = "/cygdrive/e/esoexport/gamemnf-41/esoui/"
+OUTPUT_PATH = "/cygdrive/e/esoexport/apidata/101041/"
 
     # Set to your specific Google CSE ID if you want site search
 GOOGLE_SEARCH_ENGINE_ID = "012503365948233236492:dsuicagnjii"

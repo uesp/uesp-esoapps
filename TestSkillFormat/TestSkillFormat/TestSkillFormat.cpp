@@ -85,22 +85,22 @@ const size_t U13SIZE = 8;
 const size_t U15SIZE = 5; */
 
 	/* Update 37 */
-const size_t FLAGSIZE = 190;	// 188 in first 29pts version, 189 prior to update 30, 191 in update 31, 192 starting in update 34, 191 in update 35, 182 in update 37
-								// 183 in update 38 pts, 185 in update 38 PTS1, 186 in update 39pts, 190 in update 40pts
-const size_t U2SIZE = 5;		// 
-const size_t U2ASIZE = 3;
+const size_t FLAGSIZE = 182;	// 188 in first 29pts version, 189 prior to update 30, 191 in update 31, 192 starting in update 34, 191 in update 35, 182 in update 37
+								// 183 in update 38 pts, 185 in update 38 PTS1, 186 in update 39pts, 190 in update 40pts, 182 in 41pts
+const size_t U2SIZE = 6;		// 5 in 40pts and earlier, 6 in 41pts
+const size_t U2ASIZE = 3;		//
 const size_t U4SIZE = 6;		//
 const size_t U6SIZE = 33;		//
 const size_t U6ASIZE = 7;
 const size_t U7SIZE = 9;
 const size_t U8SIZE = 3;
 const size_t U9SIZE = 4;
-const size_t U10SIZE = 6;
+const size_t U10SIZE = 5;		//6 in update 40 and prior, 5 in update 41pts
 const size_t U11SIZE = 12;
 const size_t U12SIZE = 27;
 const size_t U13SIZE = 8;
 const size_t U15SIZE = 21;	//20 preupdate 40pts, 21 in update 40pts
-const size_t U18SIZE = 23;	//Added update 38 (10 bytes), 18 bytes in update 39pts, 23 in update 40pts
+const size_t U18SIZE = 35;	//Added update 38 (10 bytes), 18 bytes in update 39pts, 23 in update 40pts, 35 in update 41pts
 
 
 
@@ -352,6 +352,7 @@ struct skilldata34_t
 		dword z1;
 		dword z2;
 		dword coolDown;
+		dword value0;
 		dword value1;
 		dword value2;
 		dword z3;
@@ -441,7 +442,7 @@ struct skilldata34_t
 	word size7;
 	idlist_t list7;
 
-	byte u7;
+	//byte u7;	//Removed in 41pts
 	dword u8[U8SIZE];
 		
 	dword size8;
@@ -1269,6 +1270,7 @@ bool ReadSkillRecord34(CFile& File)
 	result &= File.ReadDword(skill.baseData.z1, false);
 	result &= File.ReadDword(skill.baseData.z2, false);
 	result &= File.ReadDword(skill.baseData.coolDown, false);
+	result &= File.ReadDword(skill.baseData.value0, false);
 	result &= File.ReadDword(skill.baseData.value1, false);
 	result &= File.ReadDword(skill.baseData.value2, false);
 	result &= File.ReadDword(skill.baseData.z3, false);
@@ -1446,8 +1448,8 @@ bool ReadSkillRecord34(CFile& File)
 
 	if (!result) return ReportError("Error: Failed to read skill.list7 data!");
 
-	result &= File.ReadByte(skill.u7);
-	if (!result) return ReportError("Error: Failed to read skill.u7 data!");
+	//result &= File.ReadByte(skill.u7);
+	//if (!result) return ReportError("Error: Failed to read skill.u7 data!");
 	
 	for (dword i = 0; i < U8SIZE && result; ++i)
 	{
@@ -3971,6 +3973,7 @@ bool ExportPhpData(std::string Filename)
 		if (escSkillName != "") fprintf(pFile, "\t\t'name' => \"%s\",\n", escSkillName.c_str());
 		if (escSkillDesc != "") fprintf(pFile, "\t\t'desc' => \"%s\",\n", escSkillDesc.c_str());
 		if (skill.baseData.coolDown != 0) fprintf(pFile, "\t\t'cooldown' => %d,\n", skill.baseData.coolDown);
+		if (skill.baseData.value0 != 0) fprintf(pFile, "\t\t'value0' => %d,\n", skill.baseData.value0);
 		if (skill.baseData.value1 != 0) fprintf(pFile, "\t\t'value1' => %d,\n", skill.baseData.value1);
 		if (skill.baseData.value2 != 0) fprintf(pFile, "\t\t'value2' => %d,\n", skill.baseData.value2);
 		if (skill.baseData.duration != 0) fprintf(pFile, "\t\t'duration' => %d,\n", skill.baseData.duration);
@@ -4058,6 +4061,7 @@ bool ExportPhpData(std::string Filename)
 			//if (isRankMod != 0) fprintf(pFile, "\t\t\t\t\t\t'rankMod' => %d,\n", isRankMod);
 
 			if (skill1.baseData.coolDown != 0) fprintf(pFile, "\t\t\t\t\t\t'cooldown' => %d,\n", skill1.baseData.coolDown);
+			if (skill1.baseData.value0 != 0) fprintf(pFile, "\t\t\t\t\t\t'value0' => %d,\n", skill1.baseData.value0);
 			if (skill1.baseData.value1 != 0) fprintf(pFile, "\t\t\t\t\t\t'value1' => %d,\n", skill1.baseData.value1);
 			if (skill1.baseData.value2 != 0) fprintf(pFile, "\t\t\t\t\t\t'value2' => %d,\n", skill1.baseData.value2);
 			if (skill1.baseData.duration != 0) fprintf(pFile, "\t\t\t\t\t\t'duration' => %d,\n", skill1.baseData.duration);

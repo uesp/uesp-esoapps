@@ -5,7 +5,7 @@ import math
 import errno
 import csv
 
-USE_COMMAND_ARGS = False
+USE_COMMAND_ARGS = True
 
 if (not USE_COMMAND_ARGS):
     FIRSTID = 2455

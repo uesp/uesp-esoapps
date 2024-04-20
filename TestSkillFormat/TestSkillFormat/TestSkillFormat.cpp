@@ -85,8 +85,8 @@ const size_t U13SIZE = 8;
 const size_t U15SIZE = 5; */
 
 	/* Update 37 */
-const size_t FLAGSIZE = 182;	// 188 in first 29pts version, 189 prior to update 30, 191 in update 31, 192 starting in update 34, 191 in update 35, 182 in update 37
-								// 183 in update 38 pts, 185 in update 38 PTS1, 186 in update 39pts, 190 in update 40pts, 182 in 41pts
+const size_t FLAGSIZE = 183;	// 188 in first 29pts version, 189 prior to update 30, 191 in update 31, 192 starting in update 34, 191 in update 35, 182 in update 37
+								// 183 in update 38 pts, 185 in update 38 PTS1, 186 in update 39pts, 190 in update 40pts, 182 in 41pts, 183 in update 42pts
 const size_t U2SIZE = 6;		// 5 in 40pts and earlier, 6 in 41pts
 const size_t U2ASIZE = 3;		//
 const size_t U4SIZE = 6;		//
@@ -95,12 +95,12 @@ const size_t U6ASIZE = 7;
 const size_t U7SIZE = 9;
 const size_t U8SIZE = 3;
 const size_t U9SIZE = 4;
-const size_t U10SIZE = 5;		//6 in update 40 and prior, 5 in update 41pts
+const size_t U10SIZE = 4;		//6 in update 40 and prior, 5 in update 41pts, 4 in update 42pts
 const size_t U11SIZE = 12;
 const size_t U12SIZE = 27;
 const size_t U13SIZE = 8;
 const size_t U15SIZE = 21;	//20 preupdate 40pts, 21 in update 40pts
-const size_t U18SIZE = 35;	//Added update 38 (10 bytes), 18 bytes in update 39pts, 23 in update 40pts, 35 in update 41pts
+const size_t U18SIZE = 39;	//Added update 38 (10 bytes), 18 bytes in update 39pts, 23 in update 40pts, 35 in update 41pts, 39 in update 42pts
 
 
 
@@ -351,6 +351,7 @@ struct skilldata34_t
 		dword dateTime;
 		dword z1;
 		dword z2;
+		dword z2a;			//Added update 42pts
 		dword coolDown;
 		dword value0;
 		dword value1;
@@ -1269,6 +1270,7 @@ bool ReadSkillRecord34(CFile& File)
 	result &= File.ReadDword(skill.baseData.dateTime, false);
 	result &= File.ReadDword(skill.baseData.z1, false);
 	result &= File.ReadDword(skill.baseData.z2, false);
+	result &= File.ReadDword(skill.baseData.z2a, false);
 	result &= File.ReadDword(skill.baseData.coolDown, false);
 	result &= File.ReadDword(skill.baseData.value0, false);
 	result &= File.ReadDword(skill.baseData.value1, false);

@@ -198,6 +198,8 @@ namespace eso {
 
 		bool FindZosftHash(dword& ZosftHash);
 
+		mnf_filetable_t* GetZosftFileEntry();
+
 		mnf_header_t&		GetHeader() { return m_Header; }
 		CMnfFileTableArray& GetFileTable() { return m_FileTable; }
 		CMnfFileHashMap&    GetFileHashMap() { return m_FileHashMap; }
@@ -210,6 +212,7 @@ namespace eso {
 
 		bool LoadZosft();
 		bool LoadZosft (const dword Hash, CZosftFile& ZosftFile);
+		bool LoadZosft(mnf_filetable_t* pFileEntry, CZosftFile& ZosftFile);
 		bool LinkToZosft (CZosftFile& ZosftFile);
 
 		bool Load (const char* pFilename);

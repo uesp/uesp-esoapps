@@ -238,6 +238,47 @@ namespace eso {
 		return true;
 	}
 
+	
+	mnf_filetable_t* CMnfFile::GetZosftFileEntry()
+	{
+		bool CheckEso = true;
+		bool CheckGame = true;
+
+		if (StringEndsWith(m_Filename, "eso.mnf"))
+		{
+			CheckEso = true;
+			CheckGame = false;
+		}
+		else if (StringEndsWith(m_Filename, "game.mnf"))
+		{
+			CheckEso = false;
+			CheckGame = true;
+		}
+
+		if (CheckEso)
+		{
+			if (m_FileIndexMap.find(0x00FFFFFF) != m_FileIndexMap.end()) return m_FileIndexMap[0x00FFFFFF];
+			if (m_FileIndexMap.find(0xFFFFF) != m_FileIndexMap.end()) return m_FileIndexMap[0xFFFFF];
+
+			if (HasFileHash(MNF_ESOZOSFT_HASH)) return m_FileHashMap[MNF_ESOZOSFT_HASH];
+			if (HasFileHash(0xF4FD2ECD)) return m_FileHashMap[0xF4FD2ECD];
+			if (HasFileHash(0x4C99266E)) return m_FileHashMap[0x4C99266E];
+			if (HasFileHash(0x8F2034EC)) return m_FileHashMap[0x8F2034EC];
+		}
+
+		if (CheckGame)
+		{
+			if (m_FileIndexMap.find(0) != m_FileIndexMap.end()) return m_FileIndexMap[0];
+
+			if (HasFileHash(MNF_GAMEZOSFT_HASH)) return m_FileHashMap[MNF_GAMEZOSFT_HASH];
+			if (HasFileHash(0xF969BEE8)) return m_FileHashMap[0xF969BEE8];
+			if (HasFileHash(0xA16BBD50)) return m_FileHashMap[0xA16BBD50];
+			if (HasFileHash(0x3001A8A2)) return m_FileHashMap[0x3001A8A2];
+		}
+
+		return nullptr;
+	}
+
 
 	bool CMnfFile::FindZosftHash(dword& ZosftHash)
 	{
@@ -288,11 +329,14 @@ namespace eso {
 
 		m_ZosftHash = 0;
 
-		if (!FindZosftHash(m_ZosftHash))
+		auto pFileEntry = GetZosftFileEntry();
+
+		//if (!FindZosftHash(m_ZosftHash))
+		if (pFileEntry == nullptr)
 		{
 			return PrintError("ERROR: Failed to find the ZOSFT entry in the MNF file!");
 		}
-		else if (!LoadZosft(m_ZosftHash, m_ZosftFile))
+		else if (!LoadZosft(pFileEntry, m_ZosftFile))
 		{
 			return PrintError("Failed to load the ZOSFT data from MNF file data!\nFiles will be exported but without any filenames set.");
 		}
@@ -313,7 +357,7 @@ namespace eso {
 			return false;
 		}
 
-		CZosftFile ZosftFile(m_Header.Version);
+		//CZosftFile ZosftFile(m_Header.Version);
 
 		PrintError("Trying to find and load ZOSFT entry from MNF file!");
 		if (LoadZosft()) PrintError("Successfully loaded the ZOSFT entry for MNF file!");
@@ -328,7 +372,7 @@ namespace eso {
 
 		if (!ExportOptions.ZosOutputFileTable.empty())
 		{
-			if (!ZosftFile.DumpFileTable(ExportOptions.ZosOutputFileTable.c_str())) 
+			if (!m_ZosftFile.DumpFileTable(ExportOptions.ZosOutputFileTable.c_str())) 
 				PrintError("Error: Failed to dump the ZOS filetable to a text file '%s'!", ExportOptions.ZosOutputFileTable.c_str());
 			else
 				PrintError("Saved the ZOSFT to %s!", ExportOptions.ZosOutputFileTable.c_str());
@@ -491,6 +535,36 @@ namespace eso {
 
 		double EndTime = GetTimerMS();
 		PrintLog("Loaded MNF file in %g ms!", EndTime - StartTime);
+		return true;
+	}
+
+
+	bool CMnfFile::LoadZosft(mnf_filetable_t* pFileEntry, CZosftFile& ZosftFile)
+	{
+		dat_subfileinfo_t DataInfo;
+
+		if (pFileEntry == nullptr)
+		{
+			PrintLog("Failed to load ZOSFT sub-file...missing file entry!");
+			return false;
+		}
+		
+		DataInfo.DeletePtrs = true;
+		PrintLog("Trying to load ZOSFT sub-file identified by hash 0x%08X...", pFileEntry->Hash);
+		
+		if (!ReadDataFile(*pFileEntry, DataInfo)) return false;
+
+		CMemoryFile File(DataInfo.pFileDataStart, DataInfo.FileDataSize);
+
+		if (!ZosftFile.Load(File))
+		{
+			PrintLog("Failed to load ZOSFT sub-file identified by hash 0x%08X!", pFileEntry->Hash);
+			return false;
+		}
+
+		LinkToZosft(ZosftFile);
+		CreateDuplicateMap(ZosftFile);
+
 		return true;
 	}
 

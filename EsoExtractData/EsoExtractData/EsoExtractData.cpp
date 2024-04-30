@@ -177,6 +177,10 @@
  *		- Adjusted tab levels of text output for a little neater visual output.
  *		- Introduced the EsoExtractDataGui program.
  *		- Fixed a memory leak when converting RIFF files to WAV.
+ *
+ * v0.53 -- 30 April 2024
+ *		- Fixed loading of ZOSFT from update 42pts patch 2.
+ *		- Fixed the export of ZOSFT text files.
  */
 
 #include "stdafx.h"
@@ -1691,9 +1695,9 @@ cmdparamdef_t g_Cmds[] =
 	{ "",   "", "", "", false, false, false, false, "" }
 };
 
-const char g_AppTitle[] = "EsoExtractData v0.52 (31 August 2022)";
+const char g_AppTitle[] = "EsoExtractData v0.53 (30 April 2024)";
 const char g_AppDescription[] = "\
-EsoExtractData v0.52 is a simple command line application to load and export files\n\
+EsoExtractData v0.53 is a simple command line application to load and export files\n\
 from Elder Scrolls Online's MNF and DAT files. Created by Daveh (dave@uesp.net).\n";
 
 

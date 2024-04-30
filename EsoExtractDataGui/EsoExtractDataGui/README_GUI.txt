@@ -1,4 +1,4 @@
-EsoExtractDataGui v0.01 (31 August 2022) by Dave Humphrey (dave@uesp.net)
+EsoExtractDataGui v0.02 (30 April 2024) by Dave Humphrey (dave@uesp.net)
 
 EsoExtractDataGui is a 64-bit Windows application that can perform basic extraction of data from the 
 Elder Scrolls Online MNF and DAT files. It uses the same extraction code as the command line

@@ -1685,7 +1685,7 @@ cmdparamdef_t g_Cmds[] =
 	{ "origlang",		"g", "origlang",		"Use this LANG/CSV/TXT file for source texts when comparing files.",false, true,  1, 0, false, "" },
 	{ "extractsubfile",	"",	 "extractsubfile",	"Extract compressed subfile data (none/combined/seperate).",        false, true,  1, 0, false, "" },
 	{ "noparsegr2",		"",	 "noparsegr2",		"Don't parse GR2 files for their original filename.",               false, true,  0, 0, false, "" },
-	{ "oodleoutput",	"",	 "oodleoutput",		"Output the raw/compressed Oodle files.",                           false, true,  0, 0, false, "" },
+	{ "oodleraw",	"",	 "oodleraw",		"Output the raw/compressed Oodle files.",                           false, true,  0, 0, false, "" },
 	{ "luafilelist",	"",	 "luafilelist",		"Output filenames to a LUA formatted array.",					    false, true,  1, 0, false, "" },
 	{ "luastartindex",	"",	 "luastartindex",	"Start index for the --luafilelist option.",						false, true,  1, 0, false, "1" },
 	{ "noriffconvert",	"",	 "noriffconvert",	"Don't convert RIFF files to WAV/OGG.",								false, true,  0, 0, false, "" },

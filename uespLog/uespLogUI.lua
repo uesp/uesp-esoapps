@@ -417,6 +417,18 @@ function uespLog.InitOptionControlsData()
 		text = "",
 	})
 	
+	uespLog.optionControlsData:insert({
+		type = "uespdescription",
+		title = "",
+		text = "",
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "uespdescription",
+		title = "",
+		text = "",
+	})
+	
 	
 	uespLog.optionControlsData:insert({
 		type = "header",
@@ -428,6 +440,18 @@ function uespLog.InitOptionControlsData()
 		title = "",
 		text =  uespLog.GetSettingsTimeText(),
 		getFunc = function() return uespLog.GetSettingsTimeText() end,
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "uespdescription",
+		title = "",
+		text = "",
+	})
+	
+	uespLog.optionControlsData:insert({
+		type = "uespdescription",
+		title = "",
+		text = "",
 	})
 	
 	uespLog.optionControlsData:insert({
@@ -550,6 +574,12 @@ function uespLog.InitOptionControlsData()
 		text = "",
 	})
 
+	uespLog.optionControlsData:insert({
+		type = "uespdescription",
+		title = "",
+		text = "",
+	})
+	
 	uespLog.optionControlsData:insert({
 		type = "uespdescription",
 		title = "",

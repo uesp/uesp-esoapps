@@ -1472,6 +1472,9 @@ function uespLog.CreateCharDataSkills()
 					
 					if (not channeled) then
 						channelTime = 0
+					else
+						channelTime = castTime
+						castTime = 0
 					end
 					
 					if (minRange > 0 and maxRange > 0) then
@@ -1753,9 +1756,14 @@ function uespLog.CreateActionBarData(barIndex)
 			local duration = GetAbilityDuration(id)
 			local cost, mechanic = uespLog.GetAbilityCost(id)
 			local targetDesc = GetAbilityTargetDescription(id) or ''
-			local costStr = tostring(cost) .. ' ' .. uespLog.GetCombatMechanicText(mechanic)
+			local mechanic = uespLog.GetCombatMechanicText(mechanic)
+			local costStr = ""
 			local rangeStr = ""
 			local areaStr = ""
+			
+			if (cost ~= nil and cost > 0 and mechanic ~= nil) then
+				costStr = tostring(cost) .. " " .. mechanic
+			end
 			
 			if (descHeader ~= "") then
 				description = descHeader .. "\n" .. description
@@ -1765,7 +1773,9 @@ function uespLog.CreateActionBarData(barIndex)
 				channelTime = 0
 			end
 			
-			if (minRange > 0 and maxRange > 0) then
+			if (minRange == nil or maxRange == nil) then
+				rangeStr = ""
+			elseif (minRange > 0 and maxRange > 0) then
 				rangeStr = tostring(minRange/100) .. " - " .. tostring(maxRange/100) .. " meters"
 			elseif (minRange <= 0 and maxRange > 0) then
 				rangeStr = tostring(maxRange/100) .. " meters"
@@ -1773,7 +1783,7 @@ function uespLog.CreateActionBarData(barIndex)
 				rangeStr = "Under " .. tostring(minRange/100) .. " meters"
 			end
 			
-			if (angleDistance > 0) then
+			if (angleDistance ~= nil and angleDistance > 0) then
 				areaStr = tostring(radius/100) .. " x " .. tostring(angleDistance/50) .. " meters"
 			end
 			

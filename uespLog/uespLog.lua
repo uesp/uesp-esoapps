@@ -1193,14 +1193,21 @@
 --			- Added function to mine all potion data.
 --			- Logging of NPCs/Mobs is improved and now includes non-combat NPCs as well. Logs unit type and dungeon difficulty.
 --
+--		-- v3.24 -- 12 June 2024 (update 42, Gold Road)
+--			- Disabled NPC logging when the DragonNamer addon is active.
+--			- Fixed skill logging channel times due to change in GetAbilityCastInfo().
+--			- Updated runebox collectible IDs.
+--			- Fixed issue with deleting mails causing errors.
+--			- Added more spacing in the settings menu between sections.
+--
 
 
 
 --	GLOBALS
 uespLog = uespLog or {}
 
-uespLog.version = "3.23"
-uespLog.releaseDate = "2 April 2024"
+uespLog.version = "3.24"
+uespLog.releaseDate = "12 June 2024"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -1285,6 +1292,8 @@ uespLog.lastConversationOption.Type = ""
 uespLog.lastConversationOption.Gold = ""
 uespLog.lastConversationOption.Index = ""
 uespLog.lastConversationOption.Important = ""
+
+uespLog.skipNpcLogging = false
 
 uespLog.lastLootUpdateCount = -1
 uespLog.lastLootTargetName = ""
@@ -2341,27 +2350,43 @@ uespLog.ITEMCHANGE_IGNORE_FIELDS = {
 
 
 uespLog.RUNEBOX_COLLECTIBLE_IDS = {
+[79329] = 148,  -- Xivkyn Dreadguard
+        [79330] = 147,  -- Xivkyn Tormentor
+        [79331] = 146,  -- Xivkyn Augur
+        [83516] = 439,  -- Pumpkin Spectre Mask
+        [83517] = 440,  -- Scarecrow Spectre Mask
+        [96391] = 601,  -- Mud Ball Pouch
+        [96392] = 597,  -- Sword-Swallower's Blade
+        [96393] = 598,  -- Juggler's Knives
+        [96395] = 600,  -- Fire-Breather's Torches
+        [96951] = 753,  -- Nordic Bather's Towel
+        [96952] = 755,  -- Colovian Fur Hood
+        [96953] = 754,  -- Colovian Filigreed Hood
+        [119692] = 1108,        -- Cherry Blossom Branch
+        [124658] = 1232,        -- Dwarven Theodolite
+        [124659] = 1230,        -- Sixth House Robe
+        [128359] = 1338,        -- Hollowjack Spectre Mask
+        [128360] = 1339,        -- Thicketman Spectre Mask
+        [133550] = 4660,        -- Clockwork Curator
+        [134678] = 4797,        -- Jester's Scintillator
+        [137962] = 149,         -- Stonefire Scamp
+        [137963] = 161,         -- Soul-Shriven
+        [138784] = 5019,        -- Arena Gladiator Helm
+        [139464] = 4996,        -- Big-Eared Ginger Kitten
+        [139465] = 5047,        -- Psijic Glowglobe
         [141749] = 5656,        -- Swamp Jelly
         [141750] = 5589,        -- Arena Gladiator
         [141915] = 5590,        -- Apple-Bobbing Cauldron
         [146041] = 5746,        -- Gladiator Taunt
         [147286] = 6064,        -- Elinhir Arena Lion
         [147499] = 6197,        -- Guar Stomp
-        [79329] = 148,  -- Xivkyn Dreadguard
-        [79330] = 147,  -- Xivkyn Tormentor
-        [79331] = 146,  -- Xivkyn Augur
         [151931] = 6493,        -- Aldmeri Dominion Banner
         [151932] = 6365,        -- Daggerfall Covenant Banner
         [151933] = 6494,        -- Ebonheart Pact Banner
         [151940] = 6438,        -- Siegemaster Close Helm
-        [83516] = 439,  -- Pumpkin Spectre Mask
-        [83517] = 440,  -- Scarecrow Spectre Mask
         [153537] = 6665,        -- Siegemaster's Uniform
         [156626] = 1338,        -- Hollowjack Spectre Mask
         [166468] = 7595,        -- Reach-Mage Ceremonial Skullcap
-        [96951] = 753,  -- Nordic Bather's Towel
-        [96952] = 755,  -- Colovian Fur Hood
-        [96953] = 754,  -- Colovian Filigreed Hood
         [167305] = 8043,        -- Timbercrow Wanderer
         [167937] = 439,         -- Pumpkin Spectre Mask
         [167938] = 440,         -- Scarecrow Spectre Mask
@@ -2376,30 +2401,14 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [171533] = 8655,        -- Rage of the Reach
         [178695] = 8654,        -- Marshmallow Toasty Treat
         [178696] = 9530,        -- Witch's Bonfire Dust
-        [119692] = 1108,        -- Cherry Blossom Branch
         [182487] = 8541,        -- Powderwhite Coney
         [182517] = 9402,        -- The Black Drake's Face Warpaint
         [182518] = 9403,        -- The Black Drake's Body Warpaint
         [182591] = 9401,        -- Gloam Gryphon Fledgling
         [183195] = 9718,        -- Siegestomper
-        [124658] = 1232,        -- Dwarven Theodolite
-        [124659] = 1230,        -- Sixth House Robe
         [187679] = 9877,        -- Battle-Scarred Visage
         [187680] = 9878,        -- Battle-Scarred Body
-        [128359] = 1338,        -- Hollowjack Spectre Mask
-        [128360] = 1339,        -- Thicketman Spectre Mask
-        [133550] = 4660,        -- Clockwork Curator
-        [134678] = 4797,        -- Jester's Scintillator
         [190035] = 10850,       -- Ghastly Visitation
-        [137962] = 149,         -- Stonefire Scamp
-        [137963] = 161,         -- Soul-Shriven
-        [138784] = 5019,        -- Arena Gladiator Helm
-        [139464] = 4996,        -- Big-Eared Ginger Kitten
-        [139465] = 5047,        -- Psijic Glowglobe
-        [96391] = 601,  -- Mud Ball Pouch
-        [96392] = 597,  -- Sword-Swallower's Blade
-        [96393] = 598,  -- Juggler's Knives
-        [96395] = 600,  -- Fire-Breather's Torches
         -- [198322] = ?,        -- Face-Eating Tome Memento
         [140308] = 5454,        -- Molag Kena Mask
         [140309] = 5455,        -- Molag Kena's Shoulder
@@ -2601,7 +2610,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [147544] = 6209,        -- Stormlord Battle Axe
         [147545] = 6210,        -- Stormlord Maul
         [147546] = 6211,        -- Stormlord Greatsword
-        [147547] = 6212,        -- Stormlord Axe
         [147548] = 6213,        -- Stormlord Bow
         [147549] = 6214,        -- Stormlord Dagger
         [147550] = 6215,        -- Stormlord Mace
@@ -3591,20 +3599,10 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [197999] = 11375,       -- Gravegrasp Sabatons
         [198000] = 11376,       -- Gravegrasp Gauntlets
         [198001] = 11377,       -- Gravegrasp Girdle
-        -- [198326] = ?,        -- Thane of Falkreath Cuirass
         [198327] = 11582,       -- Thane of Falkreath Helm
-        -- [198328] = ?,        -- Thane of Falkreath Greaves
         [198329] = 11584,       -- Thane of Falkreath Pauldrons
-        -- [198330] = ?,        -- Thane of Falkreath Sabatons
-        -- [198331] = ?,        -- Thane of Falkreath Gauntlets
-        -- [198332] = ?,        -- Thane of Falkreath Girdle
-        -- [198333] = ?,        -- Thane of Falkreath Cuirass
         [198334] = 11582,       -- Thane of Falkreath Helm
-        -- [198335] = ?,        -- Thane of Falkreath Greaves
         [198336] = 11584,       -- Thane of Falkreath Pauldrons
-        -- [198337] = ?,        -- Thane of Falkreath Sabatons
-        -- [198338] = ?,        -- Thane of Falkreath Gauntlets
-        -- [198339] = ?,        -- Thane of Falkreath Girdle
         [198340] = 11588,       -- Crowborne Hunter Jerkin
         [198341] = 11589,       -- Crowborne Hunter Hat
         [198342] = 11590,       -- Crowborne Hunter Breeches
@@ -3757,10 +3755,8 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [198921] = 11734,       -- Gardener of Seasons Bracers
         [198922] = 11735,       -- Gardener of Seasons Belt
         [198923] = 11729,       -- Gardener of Seasons Jack
-        [198924] = 11730,       -- Gardener of Seasons Helmet
         [198925] = 11731,       -- Gardener of Seasons Guards
         [198926] = 11732,       -- Gardener of Seasons Arm Cops
-        [198927] = 11733,       -- Gardener of Seasons Boots
         [198928] = 11734,       -- Gardener of Seasons Bracers
         [198929] = 11735,       -- Gardener of Seasons Belt
         [198930] = 11736,       -- Basalt-Blood Warrior Battle Axe
@@ -3987,6 +3983,34 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [203261] = 12014,       -- Aradros Mask
         [203262] = 12022,       -- The Blind Shoulder
         [203263] = 12021,       -- The Blind Mask
+        [203512] = 12181,       -- Gold Road Dragoon Jack 1
+        [203513] = 12182,       -- Gold Road Dragoon Helmet
+        [203514] = 12183,       -- Gold Road Dragoon Guards
+        [203515] = 12184,       -- Gold Road Dragoon Arm Cops
+        [203516] = 12185,       -- Gold Road Dragoon Boots
+        [203517] = 12186,       -- Gold Road Dragoon Bracers
+        [203518] = 12187,       -- Gold Road Dragoon Belt
+        [203519] = 12181,       -- Gold Road Dragoon Jack 1
+        [203520] = 12182,       -- Gold Road Dragoon Helmet
+        [203521] = 12183,       -- Gold Road Dragoon Guards
+        [203522] = 12184,       -- Gold Road Dragoon Arm Cops
+        [203523] = 12185,       -- Gold Road Dragoon Boots
+        [203524] = 12186,       -- Gold Road Dragoon Bracers
+        [203525] = 12187,       -- Gold Road Dragoon Belt
+        [203526] = 12188,       -- Ayleid Lich Jerkin
+        [203527] = 12189,       -- Ayleid Lich Hat
+        [203528] = 12190,       -- Ayleid Lich Breeches
+        [203529] = 12191,       -- Ayleid Lich Epaulets
+        [203530] = 12192,       -- Ayleid Lich Shoes
+        [203531] = 12193,       -- Ayleid Lich Gloves
+        [203532] = 12194,       -- Ayleid Lich Sash
+        [203533] = 12188,       -- Ayleid Lich Jerkin
+        [203534] = 12189,       -- Ayleid Lich Hat
+        [203535] = 12190,       -- Ayleid Lich Breeches
+        [203536] = 12191,       -- Ayleid Lich Epaulets
+        [203537] = 12192,       -- Ayleid Lich Shoes
+        [203538] = 12193,       -- Ayleid Lich Gloves
+        [203539] = 12194,       -- Ayleid Lich Sash
         [203545] = 5924,        -- Bloodspawn Mask
         [203546] = 5925,        -- Bloodspawn Shoulder
         [203547] = 6744,        -- Chokethorn Mask
@@ -4099,11 +4123,16 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [203713] = 11004,       -- Ozezan the Inferno Shoulder
         [203714] = 11010,       -- Roksa the Warped Mask
         [203715] = 11011,       -- Roksa the Warped Shoulder
+        [204461] = 12430,       -- Gold Road Dragoon Jack 2
+        [204468] = 12430,       -- Gold Road Dragoon Jack 2
         [204475] = 12437,       -- Trueflame Sword Replica
         [204476] = 12438,       -- Staff of Worms Replica
         [204477] = 12439,       -- Sunna'rah Replica
         [204478] = 12440,       -- Barbas Helmet Replica
         [204479] = 12441,       -- Ul'vor Staff Replica
+        [147547] = 6212,        -- Stormlord Axe
+        [198924] = 11730,       -- Gardener of Seasons Helmet
+        [198927] = 11733,       -- Gardener of Seasons Boots
 }
 
 function uespLog.BoolToOnOff(flag)
@@ -4746,24 +4775,20 @@ end
 
 function uespLog.NotifyDeleteMailAdded (self)
 
-	if not self.mailId or not self:IsMailDeletable() then
+	if not self.mailId then
 		return
 	end
 
 	local numAttachments, attachedMoney = GetMailAttachmentInfo(self.mailId)
 	self.pendingDelete = true
 
-	if numAttachments > 0 and attachedMoney > 0 then
-		ZO_Dialogs_ShowDialog("DELETE_MAIL_ATTACHMENTS_AND_MONEY", self.mailId)
-	elseif numAttachments > 0 then
-		ZO_Dialogs_ShowDialog("DELETE_MAIL_ATTACHMENTS", self.mailId)
-	elseif attachedMoney > 0 then
-		ZO_Dialogs_ShowDialog("DELETE_MAIL_MONEY", self.mailId)
+	if numAttachments > 0 or attachedMoney > 0 then
+		DeleteMail(self.mailId) 
 	elseif uespLog.IsMailDeleteNotify() then
-		ZO_Dialogs_ShowDialog("DELETE_MAIL", { callback = function(...) self:ConfirmDelete(...) end, mailId = self.mailId } )
+		ZO_Dialogs_ShowPlatformDialog("DELETE_MAIL", { confirmationCallback = function(...) DeleteMail(self.mailId) PlaySound(SOUNDS.MAIL_ITEM_DELETED) end, mailId = self.mailId, } )
 	else
-		self.confirmedDelete = false
-		self:ConfirmDelete(self.mailId)
+		DeleteMail(self.mailId) 
+		PlaySound(SOUNDS.MAIL_ITEM_DELETED) 
 	end
 		
 end
@@ -5427,6 +5452,11 @@ function uespLog.Initialize( self, addOnName )
 
 	uespLog.addonMemory[#uespLog.addonMemory + 1] = { ["name"] = addOnName, ["memory"] = collectgarbage('count'), ["index"] = uespLog.addonMemoryIndex }
 	uespLog.addonMemoryIndex = uespLog.addonMemoryIndex + 1
+	
+	if ( addOnName == "DragonNamer") then
+		uespLog.skipNpcLogging = true
+		uespLog.DebugExtraMsg("Found DragonNamer addon!")
+	end
 
 	if ( addOnName ~= "uespLog" ) then 
 		return 
@@ -8743,6 +8773,10 @@ function uespLog.ShouldLogTargetChange(name)
 	local gameTime = GetGameTimeMilliseconds()
 	local diffTime = gameTime - uespLog.lastTargetLogTime
 	
+	if (uespLog.skipNpcLogging) then
+		return false
+	end
+	
 	if (uespLog.lastTargetNameCounts[name] == nil) then
 		uespLog.lastTargetNameCounts[name] = 0
 		uespLog.lastTargetLogName = name
@@ -10187,6 +10221,7 @@ SLASH_COMMANDS["/uespmail"] = function (cmd)
 	if (displayHelp) then
 		uespLog.Msg("Turns the mail delete confirmation on/off. Command format is:")
 		uespLog.Msg(".      /uespmail deletenotify [on||off]")
+		uespLog.Msg("UESP delete mail notification is currently " .. uespLog.BoolToOnOff(uespLog.IsMailDeleteNotify()) .. ". Use 'on' or 'off' to set!")
 	end
 	
 end
@@ -10866,6 +10901,11 @@ function uespLog.DumpSkill(abilityId, extraData)
 		logData.buffType = GetAbilityBuffType(abilityId)
 	end
 	
+	if (channeled) then
+		channelTime = castTime
+		castTime = nil
+	end
+	
 	logData.cost, logData.mechanic = uespLog.DumpSkillCost(abilityId)
 	logData.costTime, logData.chargeFreqMS, logData.mechanicTime = uespLog.DumpSkillCostOverTime(abilityId)
 	
@@ -10957,6 +10997,26 @@ function uespLog.DumpSkill(abilityId, extraData)
 		logData.channel2, logData.castTime2, logData.channelTime2 = GetAbilityCastInfo(abilityId, 2)
 		logData.channel3, logData.castTime3, logData.channelTime3 = GetAbilityCastInfo(abilityId, 3)
 		logData.channel4, logData.castTime4, logData.channelTime4 = GetAbilityCastInfo(abilityId, 4)
+		
+		if (logData.channel1) then
+			logData.channelTime1 = logData.castTime1
+			logData.castTime1 = nil
+		end
+		
+		if (logData.channel2) then
+			logData.channelTime2 = logData.castTime2
+			logData.castTime2 = nil
+		end
+		
+		if (logData.channel3) then
+			logData.channelTime3 = logData.castTime3
+			logData.castTime3 = nil
+		end
+		
+		if (logData.channel4) then
+			logData.channelTime4 = logData.castTime4
+			logData.castTime4 = nil
+		end
 		
 		logData.minRange1, logData.maxRange1 = GetAbilityRange(abilityId, 1)
 		logData.minRange2, logData.maxRange2 = GetAbilityRange(abilityId, 2)
@@ -23320,4 +23380,62 @@ function uespLog.EndMineTestFunction()
 end
 
 
+function uespminetest1()
+        uespLog.MineItemSingle(54866, 1, 1)
+        uespLog.MineItemSingle(55706, 1, 1)
+        uespLog.MineItemSingle(55716, 1, 1)
+        uespLog.MineItemSingle(55726, 1, 1)
+        uespLog.MineItemSingle(55736, 1, 1)
+        uespLog.MineItemSingle(55756, 1, 1)
+        uespLog.MineItemSingle(55766, 1, 1)
+        uespLog.MineItemSingle(57706, 1, 1)
+        uespLog.MineItemSingle(57716, 1, 1)
+        uespLog.MineItemSingle(57726, 1, 1)
+        uespLog.MineItemSingle(57856, 1, 1)
+        uespLog.MineItemSingle(57866, 1, 1)
+        uespLog.MineItemSingle(57876, 1, 1)
+        uespLog.MineItemSingle(57886, 1, 1)
+        uespLog.MineItemSingle(57906, 1, 1)
+        uespLog.MineItemSingle(57916, 1, 1)
+        uespLog.MineItemSingle(57926, 1, 1)
+        uespLog.MineItemSingle(57936, 1, 1)
+        uespLog.MineItemSingle(57946, 1, 1)
+        uespLog.MineItemSingle(57956, 1, 1)
+        uespLog.MineItemSingle(57966, 1, 1)
+        uespLog.MineItemSingle(57976, 1, 1)
+        uespLog.MineItemSingle(57986, 1, 1)
+        uespLog.MineItemSingle(63706, 1, 1)
+        uespLog.MineItemSingle(63746, 1, 1)
+        uespLog.MineItemSingle(63756, 1, 1)
+        uespLog.MineItemSingle(63766, 1, 1)
+        uespLog.MineItemSingle(63776, 1, 1)
+        uespLog.MineItemSingle(63806, 1, 1)
+        uespLog.MineItemSingle(63906, 1, 1)
+        uespLog.MineItemSingle(73766, 1, 1)
+        uespLog.MineItemSingle(76826, 1, 1)
+        uespLog.MineItemSingle(76831, 1, 1)
+        uespLog.MineItemSingle(76836, 1, 1)
+        uespLog.MineItemSingle(76841, 1, 1)
+        uespLog.MineItemSingle(76846, 1, 1)
+        uespLog.MineItemSingle(76856, 1, 1)
+        uespLog.MineItemSingle(76864, 1, 1)
+        uespLog.MineItemSingle(76866, 1, 1)
+        uespLog.MineItemSingle(76871, 1, 1)
+        uespLog.MineItemSingle(99264, 1, 1)
+        uespLog.MineItemSingle(134721, 1, 1)
+        uespLog.MineItemSingle(175075, 1, 1)
+        uespLog.MineItemSingle(175175, 1, 1)
+        uespLog.MineItemSingle(175375, 1, 1)
+        uespLog.MineItemSingle(175475, 1, 1)
+        uespLog.MineItemSingle(187659, 1, 1)
+        uespLog.MineItemSingle(188259, 1, 1)
+        uespLog.MineItemSingle(190175, 1, 1)
+        uespLog.MineItemSingle(190176, 1, 1)
+        uespLog.MineItemSingle(190275, 1, 1)
+        uespLog.MineItemSingle(190276, 1, 1)
+        uespLog.MineItemSingle(197955, 1, 1)
+        uespLog.MineItemSingle(208041, 1, 1)
+        uespLog.MineItemSingle(208042, 1, 1)
+        uespLog.MineItemSingle(208043, 1, 1)
+end
 

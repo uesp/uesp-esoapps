@@ -352,6 +352,7 @@ struct skilldata34_t
 		dword z1;
 		dword z2;
 		dword z2a;			//Added update 42pts
+		dword z2b;			//Added update 43pts
 		dword coolDown;
 		dword value0;
 		dword value1;
@@ -1271,6 +1272,7 @@ bool ReadSkillRecord34(CFile& File)
 	result &= File.ReadDword(skill.baseData.z1, false);
 	result &= File.ReadDword(skill.baseData.z2, false);
 	result &= File.ReadDword(skill.baseData.z2a, false);
+	result &= File.ReadDword(skill.baseData.z2b, false);
 	result &= File.ReadDword(skill.baseData.coolDown, false);
 	result &= File.ReadDword(skill.baseData.value0, false);
 	result &= File.ReadDword(skill.baseData.value1, false);

@@ -1200,13 +1200,16 @@
 --			- Fixed issue with deleting mails causing errors.
 --			- Added more spacing in the settings menu between sections.
 --
+--		-- v3.25 -- 
+--			- Added 'isCrafted' to skill dumps for scribed skills.
+--
 
 
 
 --	GLOBALS
 uespLog = uespLog or {}
 
-uespLog.version = "3.24"
+uespLog.version = "3.25"
 uespLog.releaseDate = "12 June 2024"
 uespLog.DATA_VERSION = 3
 
@@ -10570,6 +10573,7 @@ function uespLog.DumpSkillTypes(note, classOnly, raceOnly, passiveOnly)
 				logData.skillIndex = skillIndex
 				logData.abilityIndex = abilityIndex
 				logData.name, logData.texture, logData.rank, logData.passive, logData.ultimate, logData.purchase, progressionIndex = GetSkillAbilityInfo(skillType, skillIndex, abilityIndex)
+				logData.isCrafted = IsCraftedAbilitySkill(skillType, skillIndex, abilityIndex)
 				logData.abilityId1 = GetSkillAbilityId(skillType, skillIndex, abilityIndex, false)
 				logData.abilityId2 = GetSkillAbilityId(skillType, skillIndex, abilityIndex, true)
 				logData.level, logData.maxLevel = GetSkillAbilityUpgradeInfo(skillType, skillIndex, abilityIndex)
@@ -10938,6 +10942,7 @@ function uespLog.DumpSkill(abilityId, extraData)
 		logData.rank = nil
 	else
 		_, _, logData.earnedLevel, _, logData.ultimate, _, progressionIndex, _ = GetSkillAbilityInfo(logData.skillType, logData.skillIndex, logData.abilityIndex)
+		logData.isCrafted = IsCraftedAbilitySkill(logData.skillType, logData.skillIndex, logData.abilityIndex)
 		
 		logData.skillLineName, _, _, logData.skillLineId = GetSkillLineInfo(logData.skillType, logData.skillIndex)
 		logData.currentLevel, logData.maxLevel = GetSkillAbilityUpgradeInfo(logData.skillType, logData.skillIndex, logData.abilityIndex)
@@ -23378,6 +23383,5 @@ end
 function uespLog.EndMineTestFunction()
 	zo_callLater(uespLog.DoNextMineTest, 2000)
 end
-
 
 

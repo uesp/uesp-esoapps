@@ -10926,7 +10926,6 @@ function uespLog.DumpSkill(abilityId, extraData)
 	logData.radius = radius
 	logData.angleDistance = angleDistance
 	logData.duration = duration
-	logData.cost = cost
 	logData.isToggle = isToggle
 	
 	logData.icon = GetAbilityIcon(abilityId)
@@ -23322,7 +23321,7 @@ function uespLog.TestMine(numItems)
 	local itemLink = uespLog.MakeItemLinkEx( { itemId = itemId, level = 1, quality = 1, style = 0 } )
 	local firstLog = uespLog.CreateItemLinkLog(itemLink) 
 	local mineTable = uespLog.MINEITEM_TABLE
-		
+	
 	firstLog.event = "mineitem2"
 	uespLog.AppendDataToLog("all", firstLog, extraData)
 	

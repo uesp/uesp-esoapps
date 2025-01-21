@@ -85,8 +85,8 @@ const size_t U13SIZE = 8;
 const size_t U15SIZE = 5; */
 
 	/* Update 37 */
-const size_t FLAGSIZE = 183;	// 188 in first 29pts version, 189 prior to update 30, 191 in update 31, 192 starting in update 34, 191 in update 35, 182 in update 37
-								// 183 in update 38 pts, 185 in update 38 PTS1, 186 in update 39pts, 190 in update 40pts, 182 in 41pts, 183 in update 42pts
+const size_t FLAGSIZE = 181;	// 188 in first 29pts version, 189 prior to update 30, 191 in update 31, 192 starting in update 34, 191 in update 35, 182 in update 37
+								// 183 in update 38 pts, 185 in update 38 PTS1, 186 in update 39pts, 190 in update 40pts, 182 in 41pts, 183 in update 42pts, 181 in 44pts
 const size_t U2SIZE = 6;		// 5 in 40pts and earlier, 6 in 41pts
 const size_t U2ASIZE = 3;		//
 const size_t U4SIZE = 6;		//
@@ -100,7 +100,8 @@ const size_t U11SIZE = 12;
 const size_t U12SIZE = 27;
 const size_t U13SIZE = 8;
 const size_t U15SIZE = 21;	//20 preupdate 40pts, 21 in update 40pts
-const size_t U18SIZE = 39;	//Added update 38 (10 bytes), 18 bytes in update 39pts, 23 in update 40pts, 35 in update 41pts, 39 in update 42pts
+const size_t U16SIZE = 5;	//44pts
+const size_t U18SIZE = 36;	//Added update 38 (10 bytes), 18 bytes in update 39pts, 23 in update 40pts, 35 in update 41pts, 39 in update 42pts, 32 in update 44pts, 36 in 45pts
 
 
 
@@ -482,8 +483,8 @@ struct skilldata34_t
 	dword size14;
 	byteidlist_t list14;
 
-	dword u16a;
-	dword u16b;
+	byte u16[U16SIZE];
+	//dword u16b;
 	byte mechanic;
 	byte u17;
 
@@ -1574,9 +1575,16 @@ bool ReadSkillRecord34(CFile& File)
 
 	if (!result) return ReportError("Error: Failed to read skill.list14 data!");
 
-	result &= File.ReadDword(skill.u16a, false);
-	result &= File.ReadDword(skill.u16b, false);
-	if (!result) return ReportError("Error: Failed to read skill.u16a/b data!");
+	//result &= File.ReadDword(skill.u16a, false);
+	//result &= File.ReadDword(skill.u16b, false);
+	//if (!result) return ReportError("Error: Failed to read skill.u16a/b data!");
+
+	for (dword i = 0; i < U16SIZE && result; ++i)
+	{
+		result &= File.ReadByte(skill.u16[i]);
+	}
+
+	if (!result) return ReportError("Error: Failed to read skill.u16 data!");
 
 	result &= File.ReadByte(skill.mechanic);
 	if (!result) return ReportError("Error: Failed to read skill.mechanic data!");

@@ -14,7 +14,7 @@ uespLog.SkillCoefDataPointCount = 0
 uespLog.SkillCoefDataIsCalculated = false
 
 uespLog.SkillCoefTryRecalculateTypes = true
-uespLog.SKILLCOEF_RECALC_MINR2 = 0.99
+uespLog.SKILLCOEF_RECALC_MINR2 = 0.995
 
 uespLog.SkillCoefArmorCountLA = 0
 uespLog.SkillCoefArmorCountMA = 0
@@ -70,6 +70,12 @@ uespLog.SKILLCOEF_ADDALL_MAXABILITYID = uespLog.SkillDump_lastAbilityId
 uespLog.SKILLCOEF_ADDALL_MAXABILITYCOUNT = 1000
 uespLog.SkillCoefAddStartAbilityIndex = 1
 uespLog.SKILLCOEF_ADDALL_DELAY = 500
+
+uespLog.SKILLCOEF_IDMOD_RANK1 = 10000000
+uespLog.SKILLCOEF_IDMOD_RANK2 = 20000000
+uespLog.SKILLCOEF_IDMOD_RANK3 = 30000000
+uespLog.SKILLCOEF_IDMOD_RANK4 = 40000000
+uespLog.SKILLCOEF_IDMOD_CRAFTED = 50000000
 
 
 uespLog.SKILLCOEF_MECHANIC_NAMES = {
@@ -4173,6 +4179,10 @@ SLASH_COMMANDS["/uespskillcoef"] = function(cmd)
 		uespLog.SkillCoefAddMissingSkills()
 	elseif (cmd1 == "addall") then
 		uespLog.SkillCoefAddAllSkills()
+	elseif (cmd1 == "addcrafted") then
+		uespLog.SkillCoefAddCraftedSkills()
+	elseif (cmd1 == "addcraftedclass") then
+		uespLog.SkillCoefAddCraftedClassSkills()
 	elseif (cmd1 == "savelist") then
 		uespLog.SkillCoefSaveSkillList()
 	elseif (cmd1 == "loadlist") then
@@ -4577,17 +4587,102 @@ function uespLog.InitPlayerSkill(abilityId)
 		result, isNew = uespLog.InitSkillCoefData(abilityId, 1)
 		if (isNew) then newSkills = newSkills + 1 end
 		
-		result, isNew = uespLog.InitSkillCoefData(abilityId + 20000000, 2)
+		result, isNew = uespLog.InitSkillCoefData(abilityId + uespLog.SKILLCOEF_IDMOD_RANK2, 2)
 		if (isNew) then newSkills = newSkills + 1 end
 		
-		result, isNew = uespLog.InitSkillCoefData(abilityId + 30000000, 3)
+		result, isNew = uespLog.InitSkillCoefData(abilityId + uespLog.SKILLCOEF_IDMOD_RANK3, 3)
 		if (isNew) then newSkills = newSkills + 1 end
 		
-		result, isNew = uespLog.InitSkillCoefData(abilityId + 40000000, 4)
+		result, isNew = uespLog.InitSkillCoefData(abilityId + uespLog.SKILLCOEF_IDMOD_RANK4, 4)
 		if (isNew) then newSkills = newSkills + 1 end
 	end
 	
 	return newSkills
+end
+
+
+function uespLog.SkillCoefAddCraftedClassSkills()
+
+	if (uespLog.isSkillCoefSaving) then
+		uespLog.Msg("Skill coeffiecient is busy saving data!")
+		return
+	end
+	
+	uespLog.Msg("Checking all *class* crafted skills for coefficient tracking...")
+	
+	local numCrafted = GetNumCraftedAbilities()
+	local numScripts = uespLog.FindMaxCraftedAbilityScriptId()
+	local i
+	local scriptId = 31
+	local count = 0
+	local classId = GetUnitClassId("player")
+	
+	for i = 1, numCrafted do
+		local craftId = GetCraftedAbilityIdAtIndex(i)
+		
+		SetCraftedAbilityScriptSelectionOverride(craftId, scriptId, 0, 0)
+		local desc = GetCraftedAbilityScriptDescription(craftId, scriptId)
+			
+		if (desc ~= "") then
+			local matchResult = desc:match("%d")
+
+			if (matchResult ~= nil) then
+				local result, isNew = uespLog.InitCraftedSkillCoefData(craftId, scriptId, classId)
+				if (isNew) then count = count + 1 end
+			end
+		end
+	end
+	
+	ResetCraftedAbilityScriptSelectionOverride()
+	
+	uespLog.Msg("Added " .. tostring(count) .. " crafted *class* ability scripts for coefficient tracking!")
+end
+
+
+function uespLog.SkillCoefAddCraftedSkills()
+	
+	if (uespLog.isSkillCoefSaving) then
+		uespLog.Msg("Skill coeffiecient is busy saving data!")
+		return
+	end
+	
+	uespLog.Msg("Checking all crafted skills for coefficient tracking...")
+	
+	local numCrafted = GetNumCraftedAbilities()
+	local numScripts = uespLog.FindMaxCraftedAbilityScriptId()
+	local i
+	local scriptId
+	local count = 0
+	local classId = GetUnitClassId("player")
+	
+	for i = 1, numCrafted do
+		local craftId = GetCraftedAbilityIdAtIndex(i)
+		
+		for scriptId = 1, numScripts do
+			local usedClassId = 0
+			
+				-- Only specify classId for the class mastery script
+			if (scriptId == 31) then
+				usedClassId = classId
+			end
+			
+			SetCraftedAbilityScriptSelectionOverride(craftId, scriptId, 0, 0)
+			local desc = GetCraftedAbilityScriptDescription(craftId, scriptId)
+			
+			if (desc ~= "") then
+				local matchResult = desc:match("%d")
+
+				if (matchResult ~= nil) then
+					local result, isNew = uespLog.InitCraftedSkillCoefData(craftId, scriptId, usedClassId)
+					if (isNew) then count = count + 1 end
+				end
+			end
+		end
+	end
+	
+	ResetCraftedAbilityScriptSelectionOverride()
+	
+	uespLog.Msg("Added " .. tostring(count) .. " crafted ability scripts for coefficient tracking!")
 end
 
 
@@ -4967,6 +5062,7 @@ function uespLog.ShowSkillCoef(name)
 	end
 	
 	local rank = tostring(coefData.rank)
+	if (coefData.rank <= 0) then rank = '' end
 	uespLog.Msg(""..tostring(coefData.name).." "..rank.." ("..tostring(coefData.id)..") has coefficient data for "..tostring(coefData.numVars).." variable(s):")
 	
 	for i,result in ipairs(calcData.result) do
@@ -5151,9 +5247,85 @@ function uespLog.IsSafetoSaveSkillCoef()
 end
 
 
+function uespLog.SplitSkillCoefCraftId(abilityId)
+	local craftId
+	local scriptId
+	local baseId
+	local classId
+		
+	if (abilityId < uespLog.SKILLCOEF_IDMOD_CRAFTED) then
+		return 0, 0, 0
+	end
+	
+	-- 50000000
+	-- 5XSSS00C
+	
+	baseId = abilityId % uespLog.SKILLCOEF_IDMOD_CRAFTED
+	craftId = baseId % 1000
+	scriptId = math.floor(baseId / 1000) % 1000
+	classId = math.floor(baseId / 1000000) % 10
+	
+	return craftId, scriptId, classId
+end
+
+
+function uespLog.InitCraftedSkillCoefData(craftId, scriptId, classId)
+
+	if (craftId <= 0 or scriptId <= 0 or classId < 0) then
+		return false, false
+	end
+	
+	local name = GetCraftedAbilityDisplayName(craftId)
+	local description = GetCraftedAbilityScriptDescription(craftId, scriptId)
+	local isNew = false
+	local abilityId = uespLog.SKILLCOEF_IDMOD_CRAFTED + classId * 1000000 + scriptId * 1000 + craftId
+	
+	if (name == "" or description == "") then
+		return false, false
+	end
+	
+	if (uespLog.SkillCoefData[abilityId] == nil) then
+		uespLog.SkillCoefData[abilityId] = {}
+	end
+	
+	if (uespLog.SkillCoefAbilityData[abilityId] == nil) then
+		isNew = true
+		
+		uespLog.SkillCoefAbilityData[abilityId] = 
+		{
+			["name"] = name,
+			["rank"] = -1,
+			["cost"] = -1,
+			["crafted"] = true,
+			["passive"] = false,
+			["cost"] = cost,
+			["id"]   = abilityId,
+			["desc"] = description,
+			["type"] = POWERTYPE_ULTIMATE,
+			["data"] = {},
+			["craftId"] = craftId,
+			["scriptId"] = scriptId,
+			["repId"] = GetCraftedAbilityRepresentativeAbilityId(craftId),
+			["numVars"] = -1,
+			["numbersVary"] = {},
+			["numbersIndex"] = {},
+		}
+		
+		uespLog.SkillCoefAbilityCount = uespLog.SkillCoefAbilityCount + 1
+	end
+	
+	return true, isNew
+end
+
+
 function uespLog.InitSkillCoefData(abilityId, rank)
 
-	if (rank ~= nil or rank < 0) then
+	if (abilityId > uespLog.SKILLCOEF_IDMOD_CRAFTED) then
+		local craftId, scriptId, classId = uespLog.SplitSkillCoefCraftId(abilityId)
+		return uespLog.InitCraftedSkillCoefData(craftId, scriptId, classId)
+	end
+
+	if (rank == nil or rank < 0) then
 		rank = uespLog.GetSkillCoefAbilityRank(abilityId)
 	end
 	
@@ -5174,6 +5346,10 @@ function uespLog.InitSkillCoefData(abilityId, rank)
 	
 	if (uespLog.SkillCoefAbilityData[abilityId] == nil) then
 		isNew = true
+		
+		if (mechanic == nil) then
+			mechanic = POWERTYPE_ULTIMATE
+		end
 		
 		uespLog.SkillCoefAbilityData[abilityId] = 
 		{
@@ -5203,8 +5379,11 @@ function uespLog.GetSkillCoefAbilityCost(abilityId, rank)
 	local cost, mechanic
 	local baseRankData = uespLog.SKILL_RANKDATA[abilityId]
 	
-	if (abilityId > 20000000) then
-		cost, mechanic = uespLog.GetAbilityCost(abilityId % 10000000, nil, rank)
+	if (abilityId > uespLog.SKILLCOEF_IDMOD_CRAFTED) then
+		cost = 0
+		mechanic = -1
+	elseif (abilityId > uespLog.SKILLCOEF_IDMOD_RANK2) then
+		cost, mechanic = uespLog.GetAbilityCost(abilityId % uespLog.SKILLCOEF_IDMOD_RANK1, nil, rank)
 	elseif (baseRankData ~= nil) then
 		cost, mechanic = uespLog.GetAbilityCost(baseRankData[1], nil, rank)
 	else
@@ -5217,8 +5396,8 @@ end
 
 function uespLog.DoesSkillCoefAbilityExist(abilityId)
 
-	if (abilityId > 20000000) then
-		return DoesAbilityExist(abilityId % 10000000)
+	if (abilityId > uespLog.SKILLCOEF_IDMOD_RANK2) then
+		return DoesAbilityExist(abilityId % uespLog.SKILLCOEF_IDMOD_RANK1)
 	end
 	
 	local baseRankData = uespLog.SKILL_RANKDATA[abilityId]
@@ -5233,8 +5412,8 @@ end
 
 function uespLog.GetSkillCoefAbilityName(abilityId)
 
-	if (abilityId > 20000000) then
-		return GetAbilityName(abilityId % 10000000)
+	if (abilityId > uespLog.SKILLCOEF_IDMOD_RANK2) then
+		return GetAbilityName(abilityId % uespLog.SKILLCOEF_IDMOD_RANK1)
 	end
 	
 	local baseRankData = uespLog.SKILL_RANKDATA[abilityId]
@@ -5249,8 +5428,8 @@ end
 
 function uespLog.GetSkillCoefAbilityRank(abilityId)
 
-	if (abilityId > 20000000) then
-		return math.floor(abilityId / 10000000)
+	if (abilityId > uespLog.SKILLCOEF_IDMOD_RANK2) then
+		return math.floor(abilityId / uespLog.SKILLCOEF_IDMOD_RANK1)
 	end
 	
 	local baseRankData = uespLog.SKILL_RANKDATA[abilityId]
@@ -5268,9 +5447,19 @@ function uespLog.GetSkillCoefAbilityDescription(abilityId, rank)
 	local descHeader = ""
 	local desc = ""
 	
-	if (abilityId > 20000000) then
-		desc = GetAbilityDescription(abilityId % 10000000, rank)
-		descHeader = tostring(GetAbilityDescriptionHeader(abilityId % 10000000))
+	if (abilityId > uespLog.SKILLCOEF_IDMOD_CRAFTED) then
+		local craftId, scriptId, classId = uespLog.SplitSkillCoefCraftId(abilityId)
+		
+		if (craftId <= 0 or scriptId <= 0 or classId < 0) then
+			return ""
+		end
+		
+		SetCraftedAbilityScriptSelectionOverride(craftId, scriptId, 0, 0)
+		desc = GetCraftedAbilityScriptDescription(craftId, scriptId)
+		ResetCraftedAbilityScriptSelectionOverride()
+	elseif (abilityId > uespLog.SKILLCOEF_IDMOD_RANK2) then
+		desc = GetAbilityDescription(abilityId % uespLog.SKILLCOEF_IDMOD_RANK1, rank)
+		descHeader = tostring(GetAbilityDescriptionHeader(abilityId % uespLog.SKILLCOEF_IDMOD_RANK1))
 	elseif (baseRankData ~= nil) then
 		desc = GetAbilityDescription(baseRankData[1], rank)
 		descHeader = tostring(GetAbilityDescriptionHeader(baseRankData[1]))
@@ -5755,7 +5944,9 @@ function uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 		if (capValue > 0 and z >= math.floor(skill.hea * capValue)) then
 			valid = false
 		end
-		
+	else
+		x = math.max(skill.mag, skill.sta)
+		y = math.max(skill.sd, skill.wd)
 	end
 	
 	return x, y, valid

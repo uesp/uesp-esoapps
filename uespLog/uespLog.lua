@@ -210,7 +210,7 @@
 --			- Shortened/tweaked the log message displayed in the chat window.
 --			- Fixed the trait known/unknown display for nirnhoned items.
 --
---		- v0.25 - 30 July 3015
+--		- v0.25 - 30 July 2015
 --			- Add "/uespdump skills".
 --			- Fix bug with negative xp values sometimes displayed.
 --			- Added the "/uespenl" command to show the character's enlightenment pool.
@@ -1201,16 +1201,18 @@
 --			- Added more spacing in the settings menu between sections.
 --
 --		-- v3.25 -- 
---			- Added 'isCrafted' to skill dumps for scribed skills.
+--			- Added the "/uespdump skills crafted" command to dump crafted ability data.
+--			- Fixed issue with crash on 45pts.
+--			- Added padding in equipment window for extended stats display.
+--			- Updated runebox collectible IDs.
 --
-
 
 
 --	GLOBALS
 uespLog = uespLog or {}
 
 uespLog.version = "3.25"
-uespLog.releaseDate = "12 June 2024"
+uespLog.releaseDate = "30 October 2024"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -1968,6 +1970,8 @@ uespLog.SkillDump_lastAbilityId = 250000
 uespLog.SkillDump_lastValidAbilityId = 0
 uespLog.SkillDump_delay = 1000
 
+uespLog.CRAFTEDABILITY_MAXSCRIPTID = 500
+
 uespLog.MASTERWRIT_MAX_CHANCE = 15
 uespLog.MASTERWRIT_MIN_CHANCE = 1
 uespLog.PROV_MASTERWRIT_RECIPELISTS = { 7, 14, 15, 16}
@@ -2353,18 +2357,18 @@ uespLog.ITEMCHANGE_IGNORE_FIELDS = {
 
 
 uespLog.RUNEBOX_COLLECTIBLE_IDS = {
-[79329] = 148,  -- Xivkyn Dreadguard
-        [79330] = 147,  -- Xivkyn Tormentor
-        [79331] = 146,  -- Xivkyn Augur
-        [83516] = 439,  -- Pumpkin Spectre Mask
-        [83517] = 440,  -- Scarecrow Spectre Mask
-        [96391] = 601,  -- Mud Ball Pouch
-        [96392] = 597,  -- Sword-Swallower's Blade
-        [96393] = 598,  -- Juggler's Knives
-        [96395] = 600,  -- Fire-Breather's Torches
-        [96951] = 753,  -- Nordic Bather's Towel
-        [96952] = 755,  -- Colovian Fur Hood
-        [96953] = 754,  -- Colovian Filigreed Hood
+        [79329] = 148, 			-- Xivkyn Dreadguard
+        [79330] = 147, 			-- Xivkyn Tormentor
+        [79331] = 146, 			-- Xivkyn Augur
+        [83516] = 439, 			-- Pumpkin Spectre Mask
+        [83517] = 440, 			-- Scarecrow Spectre Mask
+        [96391] = 601, 			-- Mud Ball Pouch
+        [96392] = 597, 			-- Sword-Swallower's Blade
+        [96393] = 598, 			-- Juggler's Knives
+        [96395] = 600, 			-- Fire-Breather's Torches
+        [96951] = 753, 			-- Nordic Bather's Towel
+        [96952] = 755, 			-- Colovian Fur Hood
+        [96953] = 754, 			-- Colovian Filigreed Hood
         [119692] = 1108,        -- Cherry Blossom Branch
         [124658] = 1232,        -- Dwarven Theodolite
         [124659] = 1230,        -- Sixth House Robe
@@ -2412,7 +2416,13 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [187679] = 9877,        -- Battle-Scarred Visage
         [187680] = 9878,        -- Battle-Scarred Body
         [190035] = 10850,       -- Ghastly Visitation
-        -- [198322] = ?,        -- Face-Eating Tome Memento
+        [198322] = 476,         -- Haj Mota Hatchling
+        [211127] = 12724,       -- Plunder Skull Blunder
+        [212177] = 10412,       -- Oak's Promise Face Marks
+        [212178] = 10413,       -- Oak's Promise Body Marks
+        [212179] = 10416,       -- Plant Yourself
+        [212199] = 13105,       -- Surprising Snowglobe
+        -- [214258] = ?,        -- Sword-To-The-Head Adornment
         [140308] = 5454,        -- Molag Kena Mask
         [140309] = 5455,        -- Molag Kena's Shoulder
         [140310] = 5457,        -- Shadowrend Shoulder
@@ -2490,20 +2500,20 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [141981] = 5625,        -- Pit Daemon Sabatons
         [141982] = 5626,        -- Pit Daemon Gauntlets
         [141983] = 5627,        -- Pit Daemon Girdle
-        [141984] = 5628,        -- Stormlord Cuirass
-        [141985] = 5629,        -- Stormlord Helm
-        [141986] = 5630,        -- Stormlord Greaves
-        [141987] = 5631,        -- Stormlord Pauldrons
-        [141988] = 5632,        -- Stormlord Sabatons
-        [141989] = 5633,        -- Stormlord Gauntlets
-        [141990] = 5634,        -- Stormlord Girdle
-        [141991] = 5645,        -- Firedrake Cuirass
-        [141992] = 5646,        -- Firedrake Helm
-        [141993] = 5647,        -- Firedrake Greaves
-        [141994] = 5648,        -- Firedrake Pauldrons
-        [141995] = 5649,        -- Firedrake Sabatons
-        [141996] = 5650,        -- Firedrake Gauntlets
-        [141997] = 5651,        -- Firedrake Girdle
+        [141984] = 5628,        -- Storm Lord Cuirass
+        [141985] = 5629,        -- Storm Lord Helm
+        [141986] = 5630,        -- Storm Lord Greaves
+        [141987] = 5631,        -- Storm Lord Pauldrons
+        [141988] = 5632,        -- Storm Lord Sabatons
+        [141989] = 5633,        -- Storm Lord Gauntlets
+        [141990] = 5634,        -- Storm Lord Girdle
+        [141991] = 5645,        -- Fire Drake Cuirass
+        [141992] = 5646,        -- Fire Drake Helm
+        [141993] = 5647,        -- Fire Drake Greaves
+        [141994] = 5648,        -- Fire Drake Pauldrons
+        [141995] = 5649,        -- Fire Drake Sabatons
+        [141996] = 5650,        -- Fire Drake Gauntlets
+        [141997] = 5651,        -- Fire Drake Girdle
         [142010] = 5615,        -- Iceheart Mask
         [142011] = 5616,        -- Iceheart Shoulder
         [142012] = 5546,        -- Grothdarr Shoulder
@@ -2610,25 +2620,26 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [147541] = 6236,        -- Pit Daemon Shield
         [147542] = 6237,        -- Pit Daemon Staff
         [147543] = 6238,        -- Pit Daemon Sword
-        [147544] = 6209,        -- Stormlord Battle Axe
-        [147545] = 6210,        -- Stormlord Maul
-        [147546] = 6211,        -- Stormlord Greatsword
-        [147548] = 6213,        -- Stormlord Bow
-        [147549] = 6214,        -- Stormlord Dagger
-        [147550] = 6215,        -- Stormlord Mace
-        [147551] = 6216,        -- Stormlord Shield
-        [147552] = 6217,        -- Stormlord Staff
-        [147553] = 6218,        -- Stormlord Sword
-        [147554] = 6219,        -- Firedrake Battle Axe
-        [147555] = 6220,        -- Firedrake Maul
-        [147556] = 6221,        -- Firedrake Greatsword
-        [147557] = 6222,        -- Firedrake Axe
-        [147558] = 6223,        -- Firedrake Bow
-        [147559] = 6224,        -- Firedrake Dagger
-        [147560] = 6225,        -- Firedrake Mace
-        [147561] = 6226,        -- Firedrake Shield
-        [147562] = 6227,        -- Firedrake Staff
-        [147563] = 6228,        -- Firedrake Sword
+        [147544] = 6209,        -- Storm Lord Battle Axe
+        [147545] = 6210,        -- Storm Lord Maul
+        [147546] = 6211,        -- Storm Lord Greatsword
+        [147547] = 6212,        -- Storm Lord Axe
+        [147548] = 6213,        -- Storm Lord Bow
+        [147549] = 6214,        -- Storm Lord Dagger
+        [147550] = 6215,        -- Storm Lord Mace
+        [147551] = 6216,        -- Storm Lord Shield
+        [147552] = 6217,        -- Storm Lord Staff
+        [147553] = 6218,        -- Storm Lord Sword
+        [147554] = 6219,        -- Fire Drake Battle Axe
+        [147555] = 6220,        -- Fire Drake Maul
+        [147556] = 6221,        -- Fire Drake Greatsword
+        [147557] = 6222,        -- Fire Drake Axe
+        [147558] = 6223,        -- Fire Drake Bow
+        [147559] = 6224,        -- Fire Drake Dagger
+        [147560] = 6225,        -- Fire Drake Mace
+        [147561] = 6226,        -- Fire Drake Shield
+        [147562] = 6227,        -- Fire Drake Staff
+        [147563] = 6228,        -- Fire Drake Sword
         [147601] = 6251,        -- Nightflame Mask
         [147602] = 6252,        -- Nightflame Shoulder
         [147660] = 6295,        -- Prophet's Breeches
@@ -3602,10 +3613,20 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [197999] = 11375,       -- Gravegrasp Sabatons
         [198000] = 11376,       -- Gravegrasp Gauntlets
         [198001] = 11377,       -- Gravegrasp Girdle
+        [198326] = 11581,       -- Thane of Falkreath Cuirass
         [198327] = 11582,       -- Thane of Falkreath Helm
+        [198328] = 11583,       -- Thane of Falkreath Greaves
         [198329] = 11584,       -- Thane of Falkreath Pauldrons
+        [198330] = 11585,       -- Thane of Falkreath Sabatons
+        [198331] = 11586,       -- Thane of Falkreath Gauntlets
+        [198332] = 11587,       -- Thane of Falkreath Girdle
+        [198333] = 11581,       -- Thane of Falkreath Cuirass
         [198334] = 11582,       -- Thane of Falkreath Helm
+        [198335] = 11583,       -- Thane of Falkreath Greaves
         [198336] = 11584,       -- Thane of Falkreath Pauldrons
+        [198337] = 11585,       -- Thane of Falkreath Sabatons
+        [198338] = 11586,       -- Thane of Falkreath Gauntlets
+        [198339] = 11587,       -- Thane of Falkreath Girdle
         [198340] = 11588,       -- Crowborne Hunter Jerkin
         [198341] = 11589,       -- Crowborne Hunter Hat
         [198342] = 11590,       -- Crowborne Hunter Breeches
@@ -3758,8 +3779,10 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [198921] = 11734,       -- Gardener of Seasons Bracers
         [198922] = 11735,       -- Gardener of Seasons Belt
         [198923] = 11729,       -- Gardener of Seasons Jack
+        [198924] = 11730,       -- Gardener of Seasons Helmet
         [198925] = 11731,       -- Gardener of Seasons Guards
         [198926] = 11732,       -- Gardener of Seasons Arm Cops
+        [198927] = 11733,       -- Gardener of Seasons Boots
         [198928] = 11734,       -- Gardener of Seasons Bracers
         [198929] = 11735,       -- Gardener of Seasons Belt
         [198930] = 11736,       -- Basalt-Blood Warrior Battle Axe
@@ -3982,8 +4005,8 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [203257] = 12006,       -- Jester's Seeker Suit Shoes
         [203258] = 12007,       -- Jester's Seeker Suit Gloves
         [203259] = 12008,       -- Jester's Seeker Suit Sash
-        [203260] = 12015,       -- Aradros Shoulder
-        [203261] = 12014,       -- Aradros Mask
+        [203260] = 12015,       -- Anthelmir's Construct Shoulder
+        [203261] = 12014,       -- Anthelmir's Construct Mask
         [203262] = 12022,       -- The Blind Shoulder
         [203263] = 12021,       -- The Blind Mask
         [203512] = 12181,       -- Gold Road Dragoon Jack 1
@@ -4026,8 +4049,8 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [203562] = 10534,       -- Red Rook Bandit Epaulets
         [203563] = 10535,       -- Red Rook Bandit Shoes
         [203564] = 10536,       -- Red Rook Bandit Gloves
-        [203578] = 12015,       -- Aradros Shoulder
-        [203579] = 12014,       -- Aradros Mask
+        [203578] = 12015,       -- Anthelmir's Construct Shoulder
+        [203579] = 12014,       -- Anthelmir's Construct Mask
         [203580] = 12022,       -- The Blind Shoulder
         [203581] = 12021,       -- The Blind Mask
         [203615] = 5545,        -- Grothdarr Mask
@@ -4126,6 +4149,34 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [203713] = 11004,       -- Ozezan the Inferno Shoulder
         [203714] = 11010,       -- Roksa the Warped Mask
         [203715] = 11011,       -- Roksa the Warped Shoulder
+        [203851] = 12320,       -- Eltheric Revenant Jerkin
+        [203852] = 12321,       -- Eltheric Revenant Hat
+        [203853] = 12322,       -- Eltheric Revenant Breeches
+        [203854] = 12323,       -- Eltheric Revenant Epaulets
+        [203855] = 12324,       -- Eltheric Revenant Shoes
+        [203856] = 12325,       -- Eltheric Revenant Gloves
+        [203857] = 12326,       -- Eltheric Revenant Sash
+        [203858] = 12320,       -- Eltheric Revenant Jerkin
+        [203859] = 12321,       -- Eltheric Revenant Hat
+        [203860] = 12322,       -- Eltheric Revenant Breeches
+        [203861] = 12323,       -- Eltheric Revenant Epaulets
+        [203862] = 12324,       -- Eltheric Revenant Shoes
+        [203863] = 12325,       -- Eltheric Revenant Gloves
+        [203864] = 12326,       -- Eltheric Revenant Sash
+        [203865] = 12327,       -- Tree-Sap Legion Jack
+        [203866] = 12328,       -- Tree-Sap Legion Helmet
+        [203867] = 12329,       -- Tree-Sap Legion Guards
+        [203868] = 12330,       -- Tree-Sap Legion Arm Cops
+        [203869] = 12331,       -- Tree-Sap Legion Boots
+        [203870] = 12332,       -- Tree-Sap Legion Bracers
+        [203871] = 12333,       -- Tree-Sap Legion Belt
+        [203872] = 12327,       -- Tree-Sap Legion Jack
+        [203873] = 12328,       -- Tree-Sap Legion Helmet
+        [203874] = 12329,       -- Tree-Sap Legion Guards
+        [203875] = 12330,       -- Tree-Sap Legion Arm Cops
+        [203876] = 12331,       -- Tree-Sap Legion Boots
+        [203877] = 12332,       -- Tree-Sap Legion Bracers
+        [203878] = 12333,       -- Tree-Sap Legion Belt
         [204461] = 12430,       -- Gold Road Dragoon Jack 2
         [204468] = 12430,       -- Gold Road Dragoon Jack 2
         [204475] = 12437,       -- Trueflame Sword Replica
@@ -4133,9 +4184,145 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [204477] = 12439,       -- Sunna'rah Replica
         [204478] = 12440,       -- Barbas Helmet Replica
         [204479] = 12441,       -- Ul'vor Staff Replica
-        [147547] = 6212,        -- Stormlord Axe
-        [198924] = 11730,       -- Gardener of Seasons Helmet
-        [198927] = 11733,       -- Gardener of Seasons Boots
+        [204839] = 12571,       -- Legacy of the Draoife Cuirass
+        [204840] = 12572,       -- Legacy of the Draoife Helm
+        [204841] = 12573,       -- Legacy of the Draoife Greaves
+        [204842] = 12574,       -- Legacy of the Draoife Pauldrons
+        [204843] = 12575,       -- Legacy of the Draoife Sabatons
+        [204844] = 12576,       -- Legacy of the Draoife Gauntlets
+        [204845] = 12577,       -- Legacy of the Draoife Girdle
+        [204846] = 12571,       -- Legacy of the Draoife Cuirass
+        [204847] = 12572,       -- Legacy of the Draoife Helm
+        [204848] = 12573,       -- Legacy of the Draoife Greaves
+        [204849] = 12574,       -- Legacy of the Draoife Pauldrons
+        [204850] = 12575,       -- Legacy of the Draoife Sabatons
+        [204851] = 12576,       -- Legacy of the Draoife Gauntlets
+        [204852] = 12577,       -- Legacy of the Draoife Girdle
+        [204853] = 12578,       -- Arkay Unending Cycle Cuirass
+        [204854] = 12579,       -- Arkay Unending Cycle Helm
+        [204855] = 12580,       -- Arkay Unending Cycle Greaves
+        [204856] = 12581,       -- Arkay Unending Cycle Pauldrons
+        [204857] = 12582,       -- Arkay Unending Cycle Sabatons
+        [204858] = 12583,       -- Arkay Unending Cycle Gauntlets
+        [204859] = 12584,       -- Arkay Unending Cycle Girdle
+        [204860] = 12578,       -- Arkay Unending Cycle Cuirass
+        [204861] = 12579,       -- Arkay Unending Cycle Helm
+        [204862] = 12580,       -- Arkay Unending Cycle Greaves
+        [204863] = 12581,       -- Arkay Unending Cycle Pauldrons
+        [204864] = 12582,       -- Arkay Unending Cycle Sabatons
+        [204865] = 12583,       -- Arkay Unending Cycle Gauntlets
+        [204866] = 12584,       -- Arkay Unending Cycle Girdle
+        [204867] = 12585,       -- Lion Guard Captain Cuirass
+        [204868] = 12586,       -- Lion Guard Captain Helm
+        [204869] = 12587,       -- Lion Guard Captain Greaves
+        [204870] = 12588,       -- Lion Guard Captain Pauldrons
+        [204871] = 12589,       -- Lion Guard Captain Sabatons
+        [204872] = 12590,       -- Lion Guard Captain Gauntlets
+        [204873] = 12591,       -- Lion Guard Captain Girdle
+        [204874] = 12585,       -- Lion Guard Captain Cuirass
+        [204875] = 12586,       -- Lion Guard Captain Helm
+        [204876] = 12587,       -- Lion Guard Captain Greaves
+        [204877] = 12588,       -- Lion Guard Captain Pauldrons
+        [204878] = 12589,       -- Lion Guard Captain Sabatons
+        [204879] = 12590,       -- Lion Guard Captain Gauntlets
+        [204880] = 12591,       -- Lion Guard Captain Girdle
+        [210898] = 11565,       -- Cumberland Cavalier Cuirass
+        [210899] = 11567,       -- Cumberland Cavalier Greaves
+        [210900] = 11569,       -- Cumberland Cavalier Sabatons
+        [210901] = 11570,       -- Cumberland Cavalier Gauntlets
+        [210902] = 11571,       -- Cumberland Cavalier Girdle
+        [210979] = 12830,       -- Jester's Aldmeri Mimicry Jack
+        [210980] = 12831,       -- Jester's Aldmeri Mimicry Helmet
+        [210981] = 12830,       -- Jester's Aldmeri Mimicry Jack
+        [210982] = 12831,       -- Jester's Aldmeri Mimicry Helmet
+        [210983] = 12832,       -- Jester's Pact Mimicry Jack
+        [210984] = 12833,       -- Jester's Pact Mimicry Helmet
+        [210985] = 12832,       -- Jester's Pact Mimicry Jack
+        [210986] = 12833,       -- Jester's Pact Mimicry Helmet
+        [210987] = 12834,       -- Jester's Covenant Mimicry Jack
+        [210988] = 12835,       -- Jester's Covenant Mimicry Helmet
+        [210989] = 12834,       -- Jester's Covenant Mimicry Jack
+        [210990] = 12835,       -- Jester's Covenant Mimicry Helmet
+        [210991] = 12836,       -- Worm Cult Hunter Jack
+        [210992] = 12837,       -- Worm Cult Hunter Helmet
+        [210993] = 12838,       -- Worm Cult Hunter Guards
+        [210994] = 12839,       -- Worm Cult Hunter Arm Cops
+        [210995] = 12840,       -- Worm Cult Hunter Boots
+        [210996] = 12841,       -- Worm Cult Hunter Bracers
+        [210997] = 12842,       -- Worm Cult Hunter Belt
+        [210998] = 12836,       -- Worm Cult Hunter Jack
+        [210999] = 12837,       -- Worm Cult Hunter Helmet
+        [211000] = 12838,       -- Worm Cult Hunter Guards
+        [211001] = 12839,       -- Worm Cult Hunter Arm Cops
+        [211002] = 12840,       -- Worm Cult Hunter Boots
+        [211003] = 12841,       -- Worm Cult Hunter Bracers
+        [211004] = 12842,       -- Worm Cult Hunter Belt
+        [211046] = 12875,       -- Squall of Retribution Shoulder
+        [211047] = 12874,       -- Squall of Retribution Mask
+        [211048] = 12874,       -- Squall of Retribution Mask
+        [211049] = 12875,       -- Squall of Retribution Shoulder
+        [211050] = 12877,       -- Orpheon the Tactician Shoulder
+        [211051] = 12876,       -- Orpheon the Tactician Mask
+        [211052] = 12876,       -- Orpheon the Tactician Mask
+        [211053] = 12877,       -- Orpheon the Tactician Shoulder
+        [211095] = 10420,       -- Opal Earthgore Maul
+        [211096] = 10421,       -- Opal Earthgore Bow
+        [211097] = 10422,       -- Opal Earthgore Shield
+        [211098] = 10423,       -- Opal Earthgore Staff
+        [211099] = 10424,       -- Opal Earthgore Mace
+        [211100] = 10426,       -- Opal Earthgore Shoulder
+        [211101] = 10425,       -- Opal Earthgore Mask
+        [211102] = 10420,       -- Opal Earthgore Maul
+        [211103] = 10421,       -- Opal Earthgore Bow
+        [211104] = 10422,       -- Opal Earthgore Shield
+        [211105] = 10423,       -- Opal Earthgore Staff
+        [211106] = 10424,       -- Opal Earthgore Mace
+        [211338] = 12564,       -- Psijic Psion Jerkin
+        [211339] = 12565,       -- Psijic Psion Hat
+        [211340] = 12566,       -- Psijic Psion Breeches
+        [211341] = 12567,       -- Psijic Psion Epaulets
+        [211342] = 12568,       -- Psijic Psion Shoes
+        [211343] = 12569,       -- Psijic Psion Gloves
+        [211344] = 12570,       -- Psijic Psion Sash
+        [211345] = 13079,       -- Psijic Psion Robe
+        [211460] = 12313,       -- Galeskirmish Gladiator Cuirass
+        [211461] = 12314,       -- Galeskirmish Gladiator Helm
+        [211462] = 12315,       -- Galeskirmish Gladiator Greaves
+        [211463] = 12316,       -- Galeskirmish Gladiator Pauldrons
+        [211464] = 12317,       -- Galeskirmish Gladiator Sabatons
+        [211465] = 12318,       -- Galeskirmish Gladiator Gauntlets
+        [211466] = 12319,       -- Galeskirmish Gladiator Girdle
+        [211467] = 12533,       -- Eld Angavar Battle Axe
+        [211468] = 12534,       -- Eld Angavar Bow
+        [211469] = 12535,       -- Eld Angavar Shield
+        [211470] = 12536,       -- Eld Angavar Staff
+        [211471] = 12537,       -- Eld Angavar Axe
+        [211472] = 12538,       -- Eld Angavar Maul
+        [211473] = 12539,       -- Eld Angavar Greatsword
+        [211474] = 12540,       -- Eld Angavar Mace
+        [211475] = 12541,       -- Eld Angavar Sword
+        [211476] = 12542,       -- Eld Angavar Dagger
+        [211477] = 12543,       -- Pit Daemon Jerkin
+        [211478] = 12544,       -- Pit Daemon Hat
+        [211479] = 12545,       -- Pit Daemon Breeches
+        [211480] = 12546,       -- Pit Daemon Epaulets
+        [211481] = 12547,       -- Pit Daemon Shoes
+        [211482] = 12548,       -- Pit Daemon Gloves
+        [211483] = 12549,       -- Pit Daemon Sash
+        [211484] = 12550,       -- Storm Lord Jerkin
+        [211485] = 12551,       -- Storm Lord Hat
+        [211486] = 12552,       -- Storm Lord Breeches
+        [211487] = 12553,       -- Storm Lord Epaulets
+        [211488] = 12554,       -- Storm Lord Shoes
+        [211489] = 12555,       -- Storm Lord Gloves
+        [211490] = 12556,       -- Storm Lord Sash
+        [211491] = 12557,       -- Fire Drake Jack
+        [211492] = 12558,       -- Fire Drake Helmet
+        [211493] = 12559,       -- Fire Drake Guards
+        [211494] = 12560,       -- Fire Drake Arm Cops
+        [211495] = 12561,       -- Fire Drake Boots
+        [211496] = 12562,       -- Fire Drake Bracers
+        [211497] = 12563,       -- Fire Drake Belt
 }
 
 function uespLog.BoolToOnOff(flag)
@@ -8510,7 +8697,7 @@ uespLog.WEAPONTYPE_TO_CRAFTBOOKCHAPTER = {
 	[WEAPONTYPE_HEALING_STAFF] = 13,
 	[WEAPONTYPE_LIGHTNING_STAFF] = 13,
 	[WEAPONTYPE_NONE] = nil,
-	[WEAPONTYPE_PROP] = nil,
+	--[WEAPONTYPE_PROP] = nil,	-- Update 45pts
 	[WEAPONTYPE_RUNE] = nil,
 	[WEAPONTYPE_SHIELD] = 11,
 	[WEAPONTYPE_SWORD] = 14,
@@ -10339,10 +10526,16 @@ function uespLog.DumpSkills(opt1, opt2)
 	elseif (opt1 == "missing") then
 		uespLog.DumpSkillMissing(opt2)
 		return true
+	elseif (opt1 == "crafted") then
+		uespLog.DumpCraftedAbilities(opt2)
+		return true
+	elseif (opt1 == "classcrafted" or opt1 == "craftedclass") then
+		uespLog.DumpCraftedClassAbilities(opt2)
+		return true
 	else
 		uespLog.Msg("Expected format:")
 		uespLog.Msg(".     /uespdump skills [type] [note]")
-		uespLog.Msg(".     [type] is one of basic, progression, abilities, character, race, class, learned, types, all, missing")
+		uespLog.Msg(".     [type] is one of basic, progression, abilities, character, race, class, learned, types, all, missing, crafted, craftedclass")
 	end
 	
 	return false
@@ -10882,6 +11075,227 @@ function uespLog.DumpSkillCostOverTime(abilityId, rank)
 end
 
 
+function uespLog.GetScriptsForCraftedAbility(craftedId, scribeSlot)
+	local numScripts = GetNumScriptsInSlotForCraftedAbility(craftedId, scribeSlot)
+	local i
+	local data = ""
+	
+	for i = 1, numScripts do
+		local scriptId = GetScriptIdAtSlotIndexForCraftedAbility(craftedId, scribeSlot, i)
+		
+		if (scriptId > 0) then
+			if (data ~= "") then
+				data = data .. ","
+			end
+			data = data .. tostring(scriptId)
+		end
+	end
+	
+	return data
+end
+
+
+function uespLog.DumpCraftedClassAbilityScripts()
+	local numCrafted = GetNumCraftedAbilities()
+	local numScripts = uespLog.FindMaxCraftedAbilityScriptId()
+	local id = 31
+	local scriptCount = 0
+	local logData = {}
+	local i = 0
+		
+	logData.event = "CraftedAbilityScript"
+	logData.id = id
+	logData.name = GetCraftedAbilityScriptDisplayName(id)
+	logData.classId = GetUnitClassId("player")
+		
+	if (logData.name ~= "") then
+		scriptCount = scriptCount + 1
+			
+		for i = 1, numCrafted do
+			SetCraftedAbilityScriptSelectionOverride(i, id, 0, 0)
+				
+			local repid = GetCraftedAbilityRepresentativeAbilityId(i)
+			logData["desc" .. tostring(i)] = GetCraftedAbilityScriptDescription(i, id)
+			logData["repid" .. tostring(i)] = repid
+			logData["name" .. tostring(i)] = GetAbilityName(repid)
+		end
+			
+		ResetCraftedAbilityScriptSelectionOverride()
+		
+		logData.numCrafted = numCrafted
+		logData.generelDesc = GetCraftedAbilityScriptGeneralDescription(id)
+		logData.icon = GetCraftedAbilityScriptIcon(id)
+		logData.hint = GetCraftedAbilityScriptAcquireHint(id)
+		logData.slot = GetCraftedAbilityScriptScribingSlot(id)
+		
+		uespLog.AppendDataToLog("all", logData)
+	end
+	
+	uespLog.Msg("Found and dumped "..tostring(scriptCount).." class crafted ability scripts!")
+end
+
+
+function uespLog.DumpCraftedAbilityScripts()
+	local numCrafted = GetNumCraftedAbilities()
+	local numScripts = uespLog.FindMaxCraftedAbilityScriptId()
+	local id = 0
+	local scriptCount = 0
+	local logData = {}
+	local i = 0
+	
+	--SetCraftedAbilityScriptSelectionOverride(self.craftedAbilityId, primaryScriptId, secondaryScriptId, tertiaryScriptId)
+			--GetCraftedAbilityScriptSelectionOverride
+			--ResetCraftedAbilityScriptSelectionOverride
+		--GetAbilityName
+		--GetCraftedAbilityScriptDescription
+		--GetCraftedAbilityRepresentativeAbilityId
+	
+	for id = 1, numScripts do
+		logData = {}
+		
+		logData.event = "CraftedAbilityScript"
+		logData.id = id
+		logData.name = GetCraftedAbilityScriptDisplayName(id)
+		logData.classId = GetUnitClassId("player")
+		
+		if (logData.name ~= "") then
+			scriptCount = scriptCount + 1
+			
+			for i = 1, numCrafted do
+				SetCraftedAbilityScriptSelectionOverride(i, id, 0, 0)
+				
+				local repid = GetCraftedAbilityRepresentativeAbilityId(i)
+				logData["desc" .. tostring(i)] = GetCraftedAbilityScriptDescription(i, id)
+				logData["repid" .. tostring(i)] = repid
+				logData["name" .. tostring(i)] = GetAbilityName(repid)
+			end
+			
+			ResetCraftedAbilityScriptSelectionOverride()
+			
+			logData.numCrafted = numCrafted
+			logData.generelDesc = GetCraftedAbilityScriptGeneralDescription(id)
+			logData.icon = GetCraftedAbilityScriptIcon(id)
+			logData.hint = GetCraftedAbilityScriptAcquireHint(id)
+			logData.slot = GetCraftedAbilityScriptScribingSlot(id)
+			
+			uespLog.AppendDataToLog("all", logData)
+		end
+	end
+	
+	uespLog.Msg("Found and dumped "..tostring(scriptCount).." crafted ability scripts!")
+end
+
+
+function uespLog.DumpCraftedAbility(craftedId)
+	local i
+	local logData = {}
+	
+	logData.event = "CraftedAbility"
+	logData.craftedId = craftedId
+	logData.skillType = GetSkillTypeForCraftedAbilityId(craftedId)
+	logData.displayName = GetCraftedAbilityDisplayName(craftedId)
+	logData.description = GetCraftedAbilityDescription(craftedId)
+	logData.icon = GetCraftedAbilityIcon(craftedId)
+	logData.hint = GetCraftedAbilityAcquireHint(craftedId)
+	logData.abilityId = GetCraftedAbilityRepresentativeAbilityId(craftedId)
+	
+	logData.slots1 = uespLog.GetScriptsForCraftedAbility(craftedId, SCRIBING_SLOT_PRIMARY)
+	logData.slots2 = uespLog.GetScriptsForCraftedAbility(craftedId, SCRIBING_SLOT_SECONDARY)
+	logData.slots3 = uespLog.GetScriptsForCraftedAbility(craftedId, SCRIBING_SLOT_TERTIARY)
+	
+	uespLog.AppendDataToLog("all", logData)
+end
+
+
+function uespLog.FindMaxCraftedAbilityScriptId()
+	local i 
+	local maxId = 0
+	
+	for i = 1, uespLog.CRAFTEDABILITY_MAXSCRIPTID do
+		local name = GetCraftedAbilityScriptDisplayName(i)
+		
+		if (name ~= "") then
+			maxId = i
+		end
+	end
+	
+	if (maxId == uespLog.CRAFTEDABILITY_MAXSCRIPTID) then
+		uespLog.DebugMsg("WARNING: Reached maximum crafted ability script ID of "..tostring(maxId).."! Possibly missed scripts past this value.")
+	end
+	
+	return maxId
+end
+
+
+function uespLog.DumpCraftedAbilities(note)
+	local numCrafted = GetNumCraftedAbilities()
+	local id
+	local logData = {}
+	
+	uespLog.Msg("Dumping "..tostring(numCrafted).." crafted abilities IDs and their scripts...")
+	uespLog.MAX_ABILITYCRAFTEDSCRIPT_ID = uespLog.FindMaxCraftedAbilityScriptId()
+		
+	logData.event = "CraftedAbility::Start"
+	logData.note = note
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
+	for id = 1, numCrafted do
+		local craftedId = GetCraftedAbilityIdAtIndex(id)
+		uespLog.DumpCraftedAbility(craftedId)
+	end
+	
+	uespLog.DumpCraftedAbilityScripts()
+	
+	logData.event = "CraftedAbility::End"
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
+	uespLog.Msg("Finished dumping crafted ability data!")	
+end
+
+
+function uespLog.DumpCraftedClassAbilities(note)
+	local numCrafted = GetNumCraftedAbilities()
+	local id
+	local logData = {}
+	
+	uespLog.Msg("Dumping "..tostring(numCrafted).." class crafted abilities IDs and their scripts...")
+	uespLog.MAX_ABILITYCRAFTEDSCRIPT_ID = uespLog.FindMaxCraftedAbilityScriptId()
+		
+	logData.event = "CraftedAbility::Start"
+	logData.note = note
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
+	uespLog.DumpCraftedClassAbilityScripts()
+	
+	logData.event = "CraftedAbility::End"
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
+	uespLog.Msg("Finished dumping class crafted ability data!")	
+end
+
+
+function uespLog.DumpSkillCraftedAbilityIds()
+	local craftedAbilityId
+	local tempData = uespLog.savedVars.tempData.data
+	local msg = ""
+
+	for abilityId = uespLog.SkillDump_startAbilityId, uespLog.SkillDump_lastAbilityId do
+		if (abilityId % 10000 == 0) then
+			uespLog.Msg("TempDumpSkills " .. tostring(abilityId))
+		end
+	
+		if (DoesAbilityExist(abilityId)) then
+			craftedAbilityId = GetAbilityCraftedAbilityId(abilityId)
+			
+			if (craftedAbilityId > 0) then
+				msg = "" .. tostring(abilityId) .. "," .. tostring(craftedAbilityId)
+				tempData[#tempData + 1] = msg
+			end
+		end
+	end
+end
+
+
 function uespLog.DumpSkill(abilityId, extraData)
 	local name = GetAbilityName(abilityId)
 	local isPassive = IsAbilityPassive(abilityId)
@@ -10910,8 +11324,10 @@ function uespLog.DumpSkill(abilityId, extraData)
 		castTime = nil
 	end
 	
-	logData.cost, logData.mechanic = uespLog.DumpSkillCost(abilityId)
-	logData.costTime, logData.chargeFreqMS, logData.mechanicTime = uespLog.DumpSkillCostOverTime(abilityId)
+	logData.chainedId = GetCurrentChainedAbility(abilityId)
+	logData.cost, logData.mechanic = uespLog.DumpSkillCost(logData.chainedId)
+	logData.costTime, logData.chargeFreqMS, logData.mechanicTime = uespLog.DumpSkillCostOverTime(logData.chainedId)
+	logData.abilityFreqMS = GetAbilityFrequencyMS(logData.chainedId, "player") -- Same data as prev call?
 	
 	logData.event = "skill"
 	logData.id = abilityId
@@ -10927,6 +11343,12 @@ function uespLog.DumpSkill(abilityId, extraData)
 	logData.angleDistance = angleDistance
 	logData.duration = duration
 	logData.isToggle = isToggle
+	logData.craftedAbilityId = GetAbilityCraftedAbilityId(abilityId)
+	logData.baseCost, logData.baseMechanic, logData.baseIsCostTime = GetAbilityBaseCostInfo(logData.chainedId, nil, "player")
+	
+	if (logData.craftedAbilityId <= 0) then
+		logData.craftedAbilityId = null
+	end
 	
 	logData.icon = GetAbilityIcon(abilityId)
 	logData.perm = IsAbilityPermanent(abilityId)
@@ -11001,6 +11423,11 @@ function uespLog.DumpSkill(abilityId, extraData)
 		logData.channel2, logData.castTime2, logData.channelTime2 = GetAbilityCastInfo(abilityId, 2)
 		logData.channel3, logData.castTime3, logData.channelTime3 = GetAbilityCastInfo(abilityId, 3)
 		logData.channel4, logData.castTime4, logData.channelTime4 = GetAbilityCastInfo(abilityId, 4)
+		
+		logData.baseCost1, logData.baseMechanic1, logData.baseIsCostTime1 = GetAbilityBaseCostInfo(abilityId, 1, "player")
+		logData.baseCost2, logData.baseMechanic2, logData.baseIsCostTime2 = GetAbilityBaseCostInfo(abilityId, 2, "player")
+		logData.baseCost3, logData.baseMechanic3, logData.baseIsCostTime3 = GetAbilityBaseCostInfo(abilityId, 3, "player")
+		logData.baseCost4, logData.baseMechanic4, logData.baseIsCostTime4 = GetAbilityBaseCostInfo(abilityId, 4, "player")
 		
 		if (logData.channel1) then
 			logData.channelTime1 = logData.castTime1
@@ -19166,7 +19593,7 @@ function uespLog.AddCharacterWindowStats()
 	
 	local parentControl = statsWindow:GetNamedChild("ScrollScrollChild")
     local lastControl = ZO_CharacterWindowStatsScrollScrollChildStatEntry24
-    local nextPaddingY = 25
+    local nextPaddingY = 70
 	
 	if (parentControl == nil or lastControl == nil) then
 		return
@@ -22835,15 +23262,38 @@ function uespLog.CreateMineItemSummary_Item(itemId)
 end
 
 
-uespLog.hasLoggedGoldenVendor = false
+--uespLog.hasLoggedGoldenVendor = false
+
+uespLog.vendorsToLog = {
+	["Adhazabi Aba-daro" ] = false,		-- Golden Vendor
+	["Zanil Theran" ]      = false,		-- Luxury Vendor
+}
+
+
+function uespLog.shouldLogVendor(vendorName)
+
+	for name, hasLogged in pairs(uespLog.vendorsToLog) do
+		if (vendorName == name) then
+			return not hasLogged
+		end
+	end
+	
+	return false
+end
 
 
 function uespLog.OnOpenStore(eventCode)
 	uespLog.DebugExtraMsg("OnOpenStore")
 	
-	if (uespLog.currentTargetData and uespLog.currentTargetData.name == "Adhazabi Aba-daro" and not uespLog.hasLoggedGoldenVendor) then
+	if (not uespLog.currentTargetData) then
+		return false
+	end
+	
+	if (uespLog.shouldLogVendor(uespLog.currentTargetData.name)) then
+	--if (uespLog.currentTargetData and uespLog.currentTargetData.name == "Adhazabi Aba-daro" and not uespLog.hasLoggedGoldenVendor) then
 	--if (uespLog.currentTargetData and uespLog.currentTargetData.name == "Gerielle Gidric" and not uespLog.hasLoggedGoldenVendor) then
-		uespLog.hasLoggedGoldenVendor = true
+		--uespLog.hasLoggedGoldenVendor = true
+		uespLog.vendorsToLog[uespLog.currentTargetData.name] = true
 		uespLog.LogAllVendorItems()
 	end
 	
@@ -23208,6 +23658,51 @@ function uespLog.MinePotionRatioForIndex(potionIndex)
 end
 
 
+
+function uespLog.DumpSkillCosts()
+	local tempData = uespLog.savedVars.tempData.data
+	local msg = ""
+
+	for abilityId = uespLog.SkillDump_startAbilityId, uespLog.SkillDump_lastAbilityId do
+		if (abilityId % 10000 == 0) then
+			uespLog.Msg("DumpSkillBaseCosts " .. tostring(abilityId))
+		end
+	
+		if (DoesAbilityExist(abilityId)) then
+			local chainedId = GetCurrentChainedAbility(abilityId)
+			local baseCost, baseMechanic, baseIsCostTime = GetAbilityBaseCostInfo(abilityId, nil, "player")
+			
+			local cost, mechanic = uespLog.DumpSkillCost(chainedId)
+			local costTime, chargeFreqMS, mechanicTime = uespLog.DumpSkillCostOverTime(chainedId)
+				
+			msg = "" .. tostring(abilityId) .. "," .. tostring(cost) .. "," .. tostring(mechanic)
+			msg = msg .. "," .. tostring(costTime) .. "," .. tostring(chargeFreqMS) .. "," .. tostring(mechanicTime)
+			msg = msg .. "," .. tostring(baseCost) .. "," .. tostring(baseMechanic) .. "," .. tostring(baseIsCostTime)
+			tempData[#tempData + 1] = msg
+		end
+	end
+end
+
+
+function uespLog.DumpSkillBaseCosts()
+	local tempData = uespLog.savedVars.tempData.data
+	local msg = ""
+
+	for abilityId = uespLog.SkillDump_startAbilityId, uespLog.SkillDump_lastAbilityId do
+		if (abilityId % 10000 == 0) then
+			uespLog.Msg("DumpSkillBaseCosts " .. tostring(abilityId))
+		end
+	
+		if (DoesAbilityExist(abilityId)) then
+			local chainedId = GetCurrentChainedAbility(abilityId)
+			local baseCost, baseMechanic, baseIsCostTime = GetAbilityBaseCostInfo(chainedId, nil, "player")
+			msg = "" .. tostring(abilityId) .. "," .. tostring(baseCost) .. "," .. tostring(baseMechanic) .. "," .. tostring(baseIsCostTime)
+			tempData[#tempData + 1] = msg
+		end
+	end
+end
+
+
 uespLog.MINETEST_RELOAD_COUNT = 100
 uespLog.mineTestCount = 0
 uespLog.mineTestStop = false
@@ -23382,5 +23877,6 @@ end
 function uespLog.EndMineTestFunction()
 	zo_callLater(uespLog.DoNextMineTest, 2000)
 end
+
 
 

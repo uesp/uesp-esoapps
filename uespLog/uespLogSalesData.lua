@@ -21,7 +21,8 @@ uespLog.SalesRequestId = -1
 uespLog.SalesScanSingleGuild = false
 uespLog.MAX_GUILD_INDEX = 5
 uespLog.SalesCurrentListingData = {}
-uespLog.SALES_MAX_LISTING_TIME = 30*86400
+uespLog.MAX_TRADER_DAYS = 14
+uespLog.SALES_MAX_LISTING_TIME = 14*86400
 uespLog.GuildHistoryLastReceivedTimestamp = GetTimeStamp()
 uespLog.IsSavingGuildSales = false
 uespLog.SalesBadScanCount = 0
@@ -1368,7 +1369,7 @@ function uespLog.StartGuildSearchSalesScan(startPage)
 			diffTime = tostring(diff) .. " secs"
 		end
 		
-		if (days > 30) then
+		if (days > uespLog.MAX_TRADER_DAYS) then
 			uespLog.Msg("Starting guild listing scan for "..tostring(guildName).." (all items)...do not leave trader until it is finished.")
 		else
 			uespLog.Msg("Starting guild listing scan for "..tostring(guildName).." (new items in the last "..diffTime..")...do not leave trader until it is finished.")

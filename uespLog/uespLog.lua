@@ -1200,9 +1200,18 @@
 --			- Fixed issue with deleting mails causing errors.
 --			- Added more spacing in the settings menu between sections.
 --
---		-- v3.25 -- 
+--		-- v3.25 -- 30 October 2024 (Update 44)
+--			- Added 'isCrafted' to skill dumps for scribed skills.
+--			- Improved logging of skills with cost over time.
+--			- Fixed logging of skill cost for non-player skills.
+--			- Items from Zanil Theran (weekly Luxury Vendor) are now logged.
+--			- Increased update version to 44.
+--			- Added baseCost/baseMechanic to the skill dumps.
+--			- Added chained ability to the skill dumps.
+--
+--		-- v3.26 -- 10 March 2025 (update 45)
 --			- Added the "/uespdump skills crafted" command to dump crafted ability data.
---			- Fixed issue with crash on 45pts.
+--			- Fixed issue with crash on update 45pts/45.
 --			- Added padding in equipment window for extended stats display.
 --			- Updated runebox collectible IDs.
 --
@@ -1211,8 +1220,8 @@
 --	GLOBALS
 uespLog = uespLog or {}
 
-uespLog.version = "3.25"
-uespLog.releaseDate = "30 October 2024"
+uespLog.version = "3.26"
+uespLog.releaseDate = "10 March 2025"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -7797,16 +7806,18 @@ uespLog.EQUIPTYPES = {
 	[12] = "Ring",
 	[13] = "Hand",
 	[14] = "Main Hand",
+	[15] = "Poison",
 }
 
 
 function uespLog.GetItemEquipTypeStr(equipType)
-
-	if (uespLog.EQUIPTYPES[equipType] ~= nil) then
-		return uespLog.EQUIPTYPES[equipType]
-	end
+	return GetString(SI_EQUIPTYPE1 + equipType - 1) or "Unknown"
 	
-	return "Unknown ("..tostring(equipType)..")"
+	--if (uespLog.EQUIPTYPES[equipType] ~= nil) then
+		--return uespLog.EQUIPTYPES[equipType]
+	--end
+	
+	--return "Unknown ("..tostring(equipType)..")"
 end
 
 
@@ -17668,6 +17679,36 @@ function uespLog.implodeKeys(tab, delim)
 end
 
 
+function uespLog.implodeKeysOrder(tab, delim)
+    local output = ""
+	local isFirst = true
+	local strDelim = tostring(delim)
+	local sortedTable = {}
+	
+	if (type(tab) ~= "table") then
+		return tostring(tab)
+	end
+	
+	for k, v in pairs(tab) do
+		table.insert(sortedTable, k)
+	end
+	
+	table.sort(sortedTable)
+	
+    for i, k in ipairs(sortedTable) do
+	
+		if (not isFirst) then
+			output = output .. strDelim
+		end
+		
+        output = output .. tostring(k)
+		isFirst = false
+    end
+	
+    return output
+end
+
+
 function uespLog.implodeOrder(tab, delim, startIndex)
 	local output = ""
 	local isFirst = true
@@ -23700,6 +23741,178 @@ function uespLog.DumpSkillBaseCosts()
 			tempData[#tempData + 1] = msg
 		end
 	end
+end
+
+
+function uespLog.GetSetSlotTypes(setId)
+	local numPieces = GetNumItemSetCollectionPieces(setId)
+	local slotTypes = ""
+	local i
+	local armorLight = {}
+	local countLight = 0
+	local armorMedium = {}
+	local countMedium = 0
+	local armorHeavy = {}
+	local countHeavy = 0
+	local weapons = {}
+	local countWeapons = 0
+	local other = {}
+	local otherCount = 0
+	
+	for i = 1, numPieces do
+		local pieceId, slot = GetItemSetCollectionPieceInfo(setId, i)
+		slot = Id64ToNumber(slot)
+		
+		local itemLink = GetItemSetCollectionPieceItemLink(pieceId)
+		local itemType, specialItemType = GetItemLinkItemType(itemLink)
+		local equipType = GetItemLinkEquipType(itemLink)
+		local equipTypeStr = uespLog.GetItemEquipTypeStr(equipType)
+		local armorType = GetItemLinkArmorType(itemLink)
+		local weaponType = GetItemLinkWeaponType(itemLink)
+		local weaponTypeStr = uespLog.GetWeaponTypeStr(weaponType)
+		
+		if (armorType == ARMORTYPE_HEAVY) then
+			armorHeavy[equipTypeStr] = 1
+			countHeavy = countHeavy + 1
+		elseif (armorType == ARMORTYPE_MEDIUM) then 
+			armorMedium[equipTypeStr] = 1
+			countMedium = countMedium + 1
+		elseif (armorType == ARMORTYPE_LIGHT) then
+			armorLight[equipTypeStr] = 1
+			countLight = countLight + 1
+		elseif (weaponType > 0) then
+			weapons[weaponTypeStr] = 1
+			countWeapons = countWeapons + 1
+		elseif (equipType == EQUIP_TYPE_RING) then
+			other["Ring"] = 1
+			otherCount = otherCount + 1
+		elseif (equipType == EQUIP_TYPE_NECK) then
+			other["Neck"] = 1
+			otherCount = otherCount + 1
+		end
+	end
+	
+	if (GetItemSetType(setId) == 1) then
+		return "All"
+	end
+	
+	if (countLight >= 7 and countMedium >= 7 and countHeavy >= 7 and countWeapons >= 13 and otherCount >= 2) then
+		return "All"
+	end
+	
+	if (countLight >= 7) then
+		slotTypes = slotTypes .. "Light(All) "
+	elseif (countLight > 0) then
+		slotTypes = slotTypes .. "Light("..uespLog.implodeKeysOrder(armorLight, ", ") .. ") "
+	end
+	
+	if (countMedium >= 7) then
+		slotTypes = slotTypes .. "Medium(All) "
+	elseif (countMedium > 0) then
+		slotTypes = slotTypes .. "Medium("..uespLog.implodeKeysOrder(armorMedium, ", ") .. ") "
+	end
+	
+	if (countHeavy >= 7) then
+		slotTypes = slotTypes .. "Heavy(All) "
+	elseif (countHeavy > 0) then
+		slotTypes = slotTypes .. "Heavy("..uespLog.implodeKeysOrder(armorHeavy, ", ") .. ") "
+	end
+	
+	if (countWeapons >= 13) then
+		slotTypes = slotTypes .. "Weapons(All) "
+	elseif (countWeapons > 0) then
+		slotTypes = slotTypes .. "Weapons("..uespLog.implodeKeysOrder(weapons, ", ") .. ") "
+	end
+	
+	if (otherCount > 0) then
+		slotTypes = slotTypes .. uespLog.implodeKeysOrder(other, " ")
+	end
+	
+	return slotTypes
+end
+
+
+function uespLog.DumpSetInfo(setId)
+	local logData = {}
+	
+	logData.event = "SetInfo"
+	logData.setId = setId
+	logData.setName = GetItemSetName(setId)
+	logData.categoryId = GetItemSetCollectionCategoryId(setId)
+	logData.category = GetItemSetCollectionCategoryName(logData.categoryId)
+	logData.parentId = GetItemSetCollectionCategoryParentId(logData.categoryId)
+	logData.parent = GetItemSetCollectionCategoryName(logData.parentId)
+	logData.setType = GetItemSetType(setId)
+	logData.setTypeStr = uespLog.GetItemSetTypeStr(logData.setType)
+	logData.unperfectId = GetItemSetUnperfectedSetId(setId)
+	logData.numPieces = GetNumItemSetCollectionPieces(setId)
+	logData.slots = uespLog.GetSetSlotTypes(setId)
+	logData.suppression = GetItemSetSuppressionName(setId)
+	_, _, logData.numBonus = GetItemSetInfo(setId)
+	logData.numItems = GetItemSetBonusInfo(setId, logData.numBonus)
+		
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+end
+
+
+uespLog.ITEMSETTYPES = {
+	[ITEM_SET_TYPE_NONE]    = "None",
+	[ITEM_SET_TYPE_CRAFTED] = "Crafted",
+	[ITEM_SET_TYPE_DUNGEON] = "Dungeon",
+	[ITEM_SET_TYPE_MONSTER] = "Monster",
+	[ITEM_SET_TYPE_WEAPON]  = "Weapon",
+	[ITEM_SET_TYPE_WORLD]   = "World",
+}
+
+function uespLog.GetItemSetTypeStr(itemSetType)
+
+	if (uespLog.ITEMSETTYPES[itemSetType] ~= nil) then
+		return uespLog.ITEMSETTYPES[itemSetType]
+	end
+	
+	return "Unknown ("..tostring(itemSetType)..")"
+end
+
+
+function uespLog.DumpSetInfos(comment)
+	local setId = GetNextItemSetCollectionId()
+	local logData = {}
+	local count = 0
+	local otherCount = 0
+	local foundSets = {}
+	
+	logData.event = "SetInfo::Start"
+	logData.comment = comment
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
+	uespLog.Msg("Dumping all Set Info Data...")
+	
+	while (setId ~= nil) do
+		uespLog.DumpSetInfo(setId)
+		foundSets[setId] = 1
+		
+		setId = GetNextItemSetCollectionId(setId)
+		count = count + 1
+	end
+	
+	for setId = 1, 1000 do
+		if (foundSets[setId] ~= 1) then
+			local setName = GetItemSetName(setId)
+			
+			if (setName ~= "") then
+				uespLog.DumpSetInfo(setId)
+				otherCount = otherCount + 1
+				count = count + 1
+			end
+		end
+	end
+	
+	uespLog.Msg("Found " .. tostring(count) .. " set infos ("..tostring(otherCount).." manually found)!")
+	
+	logData = {}
+	logData.event = "SetInfo::End"
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+
 end
 
 

@@ -175,12 +175,16 @@
  *		  Set a bunch of error/warning messages to debug only. Note that all messages are still saved to the log file.
  *		- Fixed the format of the subfile index which prevents a bunch of error messages from the ESO00000.DAT file.
  *		- Adjusted tab levels of text output for a little neater visual output.
- *		- Introduced the EsoExtractDataGui program.
+  *		- Introduced the EsoExtractDataGui program.
  *		- Fixed a memory leak when converting RIFF files to WAV.
  *
  * v0.53 -- 30 April 2024
  *		- Fixed loading of ZOSFT from update 42pts patch 2.
  *		- Fixed the export of ZOSFT text files.
+ *
+ * TODO:
+ *		- Option for only output of named files.
+ *		- Only output files matching a name (partial match instead of exact like -n).
  */
 
 #include "stdafx.h"

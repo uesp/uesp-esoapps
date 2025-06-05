@@ -1215,6 +1215,9 @@
 --			- Added padding in equipment window for extended stats display.
 --			- Updated runebox collectible IDs.
 --
+--		-- v 3.27 -- 2 June 2025
+--			- 
+--
 
 
 --	GLOBALS
@@ -1975,7 +1978,7 @@ uespLog.MINEITEM_ENCHANT_ENCHANTID = 26841
 uespLog.SkillDump_validAbilityCount = 0
 uespLog.SkillDump_startAbilityId = 0
 uespLog.SkillDump_countAbilityId = 1000
-uespLog.SkillDump_lastAbilityId = 250000
+uespLog.SkillDump_lastAbilityId = 270000
 uespLog.SkillDump_lastValidAbilityId = 0
 uespLog.SkillDump_delay = 1000
 
@@ -24090,5 +24093,4 @@ end
 function uespLog.EndMineTestFunction()
 	zo_callLater(uespLog.DoNextMineTest, 2000)
 end
-
 

@@ -87,7 +87,8 @@ const size_t U15SIZE = 5; */
 	/* Update 37 */
 const size_t FLAGSIZE = 182;	// 188 in first 29pts version, 189 prior to update 30, 191 in update 31, 192 starting in update 34, 191 in update 35, 182 in update 37
 								// 183 in update 38 pts, 185 in update 38 PTS1, 186 in update 39pts, 190 in update 40pts, 182 in 41pts, 183 in update 42pts, 181 in 44pts
-const size_t U2SIZE = 6;		// 5 in 40pts and earlier, 6 in 41pts, 182 in update 45
+								// 182 in 45
+const size_t U2SIZE = 6;		// 5 in 40pts and earlier, 6 in 41pts
 const size_t U2ASIZE = 3;		//
 const size_t U4SIZE = 6;		//
 const size_t U6SIZE = 33;		//
@@ -101,7 +102,8 @@ const size_t U12SIZE = 27;
 const size_t U13SIZE = 8;
 const size_t U15SIZE = 21;	//20 preupdate 40pts, 21 in update 40pts
 const size_t U16SIZE = 5;	//44pts
-const size_t U18SIZE = 37;	//Added update 38 (10 bytes), 18 bytes in update 39pts, 23 in update 40pts, 35 in update 41pts, 39 in update 42pts, 32 in update 44pts, 36 in 45pts, 37 in 45
+const size_t U18SIZE = 36;	// Added update 38 (10 bytes), 18 bytes in update 39pts, 23 in update 40pts, 35 in update 41pts, 39 in update 42pts, 32 in update 44pts, 36 in 45pts, 37 in 45
+							// 36 in 46pts
 
 
 

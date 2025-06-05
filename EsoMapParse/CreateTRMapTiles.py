@@ -14,7 +14,9 @@ MAKE_SMALLER_TILES = True
 
     # TR Map
 BASEPATH = "d:/EGD/uesp/TamrielRebuilt/TRMap-Feb2025/"
+BASEPATH = "d:/EGD/uesp/TamrielRebuilt/TRMap-May2025/"
 INPUTPATH = "e:/PTR_Maptiles/TR_Maptiles/"
+INPUTPATH = "e:/PTR_Maptiles/TR_May2025/"
 OUTPUTPATH = BASEPATH + "Tiles/"
 DEFAULTNULLTILE = BASEPATH + "troutofrange.jpg"
 LARGEMAPFILE = "LargeMap.jpg"
@@ -29,28 +31,28 @@ NORMALIZEOUTPUTZOOM = True
 MAPNAME = "tamrielrebuilt"
 
     # PC Map
-BASEPATH = "d:/EGD/uesp/TamrielRebuilt/PCMap-Feb2025/"
-INPUTPATH = "e:/PTR_Maptiles/PC_Maptiles/"
-OUTPUTPATH = BASEPATH + "Tiles/"
-DEFAULTNULLTILE = BASEPATH + "troutofrange.jpg"
+# BASEPATH = "d:/EGD/uesp/TamrielRebuilt/PCMap-Feb2025/"
+# INPUTPATH = "e:/PTR_Maptiles/PC_Maptiles/"
+# OUTPUTPATH = BASEPATH + "Tiles/"
+# DEFAULTNULLTILE = BASEPATH + "troutofrange.jpg"
 
-MAPXTILEOFFSET = 190
-MAPYTILEOFFSET = 10
-MAPXTILECOUNT = 96
-MAPYTILECOUNT = 96
-MAPNAME = "pc"
+# MAPXTILEOFFSET = 190
+# MAPYTILEOFFSET = 10
+# MAPXTILECOUNT = 96
+# MAPYTILECOUNT = 96
+# MAPNAME = "pc"
 
     # SHOTN Map 
-BASEPATH = "d:/EGD/uesp/TamrielRebuilt/SHotNMap-Feb2025/"
-INPUTPATH = "e:/PTR_Maptiles/SHotN_Maptiles/"
-OUTPUTPATH = BASEPATH + "Tiles/"
-DEFAULTNULLTILE = BASEPATH + "troutofrange.jpg"
+# BASEPATH = "d:/EGD/uesp/TamrielRebuilt/SHotNMap-Feb2025/"
+# INPUTPATH = "e:/PTR_Maptiles/SHotN_Maptiles/"
+# OUTPUTPATH = BASEPATH + "Tiles/"
+# DEFAULTNULLTILE = BASEPATH + "troutofrange.jpg"
 
-MAPXTILEOFFSET = 170
-MAPYTILEOFFSET = 70
-MAPXTILECOUNT = 96
-MAPYTILECOUNT = 96
-MAPNAME = "shotn" #'''
+# MAPXTILEOFFSET = 170
+# MAPYTILEOFFSET = 70
+# MAPXTILECOUNT = 96
+# MAPYTILECOUNT = 96
+# MAPNAME = "shotn" #'''
 
     # To disable warning about decompression bomb
 Image.MAX_IMAGE_PIXELS = 1000000000

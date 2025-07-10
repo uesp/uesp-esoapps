@@ -23850,7 +23850,7 @@ function uespLog.DumpSetInfo(setId)
 	logData.unperfectId = GetItemSetUnperfectedSetId(setId)
 	logData.numPieces = GetNumItemSetCollectionPieces(setId)
 	logData.slots = uespLog.GetSetSlotTypes(setId)
-	logData.suppression = GetItemSetSuppressionName(setId)
+	--logData.suppression = GetItemSetSuppressionName(setId) -- Removed in update 47pts
 	_, _, logData.numBonus = GetItemSetInfo(setId)
 	logData.numItems = GetItemSetBonusInfo(setId, logData.numBonus)
 		

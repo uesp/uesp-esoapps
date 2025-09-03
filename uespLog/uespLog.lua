@@ -1224,7 +1224,7 @@
 uespLog = uespLog or {}
 
 uespLog.version = "3.27"
-uespLog.releaseDate = "30 August 2025"
+uespLog.releaseDate = "2 September 2025"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

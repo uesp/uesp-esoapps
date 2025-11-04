@@ -1218,13 +1218,17 @@
 --		-- v3.27 -- 30 August 2025 (update 47)
 --			- Updated runebox data.
 --
+--		-- v3.28 -- 29 October 2025 (update 48)
+--			- Updated runebox data.
+--			- Fixed some skill coefficient calculations to not auto-recalculate.
+--
 
 
 --	GLOBALS
 uespLog = uespLog or {}
 
-uespLog.version = "3.27"
-uespLog.releaseDate = "2 September 2025"
+uespLog.version = "3.28"
+uespLog.releaseDate = "29 October 2025"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -1941,7 +1945,7 @@ uespLog.isAutoMiningItems = false
 uespLog.MINEITEMS_AUTODELAY = 500 -- Delay in ms
 uespLog.MINEITEMS_AUTOLOOPCOUNT = 400
 uespLog.MINEITEMS_AUTOMAXLOOPCOUNT = 400
-uespLog.MINEITEM_AUTO_MAXITEMID = 250000
+uespLog.MINEITEM_AUTO_MAXITEMID = 260000
 uespLog.mineItemsAutoNextItemId = 1
 uespLog.mineItemsAutoNextListIndex = 1
 uespLog.mineItemsAutoLastItemId = uespLog.MINEITEM_AUTO_MAXITEMID
@@ -24227,4 +24231,5 @@ end
 function uespLog.EndMineTestFunction()
 	zo_callLater(uespLog.DoNextMineTest, 2000)
 end
+
 

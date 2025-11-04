@@ -85,9 +85,9 @@ const size_t U13SIZE = 8;
 const size_t U15SIZE = 5; */
 
 	/* Update 37 */
-const size_t FLAGSIZE = 182;	// 188 in first 29pts version, 189 prior to update 30, 191 in update 31, 192 starting in update 34, 191 in update 35, 182 in update 37
+const size_t FLAGSIZE = 184;	// 188 in first 29pts version, 189 prior to update 30, 191 in update 31, 192 starting in update 34, 191 in update 35, 182 in update 37
 								// 183 in update 38 pts, 185 in update 38 PTS1, 186 in update 39pts, 190 in update 40pts, 182 in 41pts, 183 in update 42pts, 181 in 44pts
-								// 182 in 45
+								// 182 in 45, 184 in 48pts
 const size_t U2SIZE = 6;		// 5 in 40pts and earlier, 6 in 41pts
 const size_t U2ASIZE = 3;		//
 const size_t U4SIZE = 6;		//

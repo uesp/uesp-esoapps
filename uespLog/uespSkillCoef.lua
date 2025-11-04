@@ -135,6 +135,12 @@ uespLog.SKILLCOEF_RECALC_TYPES = {
 }
 
 
+uespLog.SKILLCOEF_IGNORE_RECALC = {
+	[55584] = 1,
+	[55676] = 1,
+}
+
+
 -- Some skills have different mechanics that what the game data says
 uespLog.SKILLCOEF_SPECIALTYPES = {
 
@@ -5896,6 +5902,9 @@ function uespLog.GetSkillCoefXY(skill, abilityData, numberIndex)
 	elseif (mechanic == POWERTYPE_STAMINA) then
 		x = skill.sta
 		y = skill.wd
+	elseif (mechanic == POWERTYPE_MAGICKA) then
+		x = skill.mag
+		y = skill.sd
 	elseif (mechanic == POWERTYPE_HEALTH) then
 		x = skill.hea
 		y = 0
@@ -6881,6 +6890,10 @@ function uespLog.RecalcSkillCoef(abilityId, numberIndex, resultData)
 	local bestR2 = -1
 	local bestCoefType = -1
 	local bestResult = nil
+	
+	if (uespLog.SKILLCOEF_IGNORE_RECALC[abilityId]) then
+		return recalcResults, bestResult, bestCoefType, bestR2, origCoefType
+	end
 		
 	for j,coefType in pairs(uespLog.SKILLCOEF_RECALC_TYPES) do
 	
@@ -6952,7 +6965,9 @@ function uespLog.TryRecalcAllBadSkillCoefs()
 		local calcData = uespLog.SkillCoefCalcData[id]
 		local hasOutputName = false
 		
-		if (calcData ~= nil and not calcData.isValid) then
+		if (uespLog.SKILLCOEF_IGNORE_RECALC[abilityId]) then
+		   -- Do Nothing
+		elseif (calcData ~= nil and not calcData.isValid) then
 			uespLog.SkillCoefRecalcData[id] = {}
 			
 			for i,result in ipairs(calcData.result) do
@@ -6988,7 +7003,9 @@ function uespLog.TryRecalcAllBadSkillCoefs()
 		
 		totalCount = totalCount + 1
 		
-		if (calcData ~= nil and calcData.isValid) then
+		if (uespLog.SKILLCOEF_IGNORE_RECALC[abilityId]) then
+		   -- Do Nothing
+		elseif (calcData ~= nil and calcData.isValid) then
 			uespLog.SkillCoefRecalcData[id] = {}
 		
 			for i,result in ipairs(calcData.result) do

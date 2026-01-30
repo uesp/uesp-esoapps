@@ -840,7 +840,7 @@ function uespLog.GetCharInfoText()
 	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_DAMAGE_RESIST_PHYSICAL, "Resist Physical") .. "\n"
 	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_DAMAGE_RESIST_POISON, "Resist Poison") .. "\n"
 	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_DAMAGE_RESIST_SHOCK, "Resist Shock") .. "\n"
-	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_DAMAGE_RESIST_START, "Resist Start") .. "\n"
+	--OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_DAMAGE_RESIST_START, "Resist Start") .. "\n"
 		
 	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_CRITICAL_STRIKE, "Critical Strike") .. "\n"
 	OutputText = OutputText .. "     " .. uespLog.GetStatText(STAT_WEAPON_POWER, "Weapon Power") .. "\n"

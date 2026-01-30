@@ -1218,9 +1218,14 @@
 --		-- v3.27 -- 30 August 2025 (update 47)
 --			- Updated runebox data.
 --
---		-- v3.28 -- 29 October 2025 (update 48)
+--		-- v3.28 -- 5 November 2025 (update 48)
 --			- Updated runebox data.
 --			- Fixed some skill coefficient calculations to not auto-recalculate.
+--			- Removed STAT_DAMAGE_RESIST_START from the stat display list.
+--
+--		-- v3.29
+--			- Set logNpcChat to false by default (will only affect new installations or if deleting your saved variable file).
+--			- Fixed removed endeavor API functions and replaced with new ones.
 --
 
 
@@ -1228,7 +1233,7 @@
 uespLog = uespLog or {}
 
 uespLog.version = "3.28"
-uespLog.releaseDate = "29 October 2025"
+uespLog.releaseDate = "5 November 2025"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -2050,7 +2055,7 @@ uespLog.DEFAULT_SETTINGS =
 		["debug"] = false,
 		["debugExtra"] = false,
 		["logData"] = false,
-		["logNpcChat"] = true,
+		["logNpcChat"] = false,
 		["color"] = true,
 		["totalInspiration"] = 0,
 		["craft"] = true,
@@ -2438,9 +2443,9 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [212178] = 10413,       -- Oak's Promise Body Marks
         [212179] = 10416,       -- Plant Yourself
         [212199] = 13105,       -- Surprising Snowglobe
-        [214258] = 12793,       -- Jester's Deadly Headband
         [219747] = 13607,       -- Hagmatron's Face Markings
         [219748] = 13608,       -- Hagmatron's Body Markings
+        [214258] = 12793,       -- Jester's Deadly Headband
         [140308] = 5454,        -- Molag Kena Mask
         [140309] = 5455,        -- Molag Kena's Shoulder
         [140310] = 5457,        -- Shadowrend Shoulder
@@ -2641,7 +2646,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [147544] = 6209,        -- Storm Lord Battle Axe
         [147545] = 6210,        -- Storm Lord Maul
         [147546] = 6211,        -- Storm Lord Greatsword
-        [147547] = 6212,        -- Storm Lord Axe
         [147548] = 6213,        -- Storm Lord Bow
         [147549] = 6214,        -- Storm Lord Dagger
         [147550] = 6215,        -- Storm Lord Mace
@@ -3705,34 +3709,34 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [198629] = 11674,       -- Reawakened Hierophant Mace
         [198630] = 11675,       -- Reawakened Hierophant Sword
         [198631] = 11676,       -- Reawakened Hierophant Dagger
-        [198632] = 11678,       -- Reawakened Hierophant jerkin
-        [198633] = 11679,       -- Reawakened Hierophant hat
-        [198634] = 11680,       -- Reawakened Hierophant breeches
-        [198635] = 11681,       -- Reawakened Hierophant epaulets
-        [198636] = 11682,       -- Reawakened Hierophant shoes
-        [198637] = 11683,       -- Reawakened Hierophant gloves
-        [198638] = 11684,       -- Reawakened Hierophant sash
-        [198639] = 11678,       -- Reawakened Hierophant jerkin
-        [198640] = 11679,       -- Reawakened Hierophant hat
-        [198641] = 11680,       -- Reawakened Hierophant breeches
-        [198642] = 11681,       -- Reawakened Hierophant epaulets
-        [198643] = 11682,       -- Reawakened Hierophant shoes
-        [198644] = 11683,       -- Reawakened Hierophant gloves
-        [198645] = 11684,       -- Reawakened Hierophant sash
+        [198632] = 11678,       -- Reawakened Hierophant Jerkin
+        [198633] = 11679,       -- Reawakened Hierophant Hat
+        [198634] = 11680,       -- Reawakened Hierophant Breeches
+        [198635] = 11681,       -- Reawakened Hierophant Epaulets
+        [198636] = 11682,       -- Reawakened Hierophant Shoes
+        [198637] = 11683,       -- Reawakened Hierophant Gloves
+        [198638] = 11684,       -- Reawakened Hierophant Sash
+        [198639] = 11678,       -- Reawakened Hierophant Jerkin
+        [198640] = 11679,       -- Reawakened Hierophant Hat
+        [198641] = 11680,       -- Reawakened Hierophant Breeches
+        [198642] = 11681,       -- Reawakened Hierophant Epaulets
+        [198643] = 11682,       -- Reawakened Hierophant Shoes
+        [198644] = 11683,       -- Reawakened Hierophant Gloves
+        [198645] = 11684,       -- Reawakened Hierophant Sash
         [198733] = 11694,       -- Basalt-Blood Warrior Jack
         [198734] = 11695,       -- Basalt-Blood Warrior Helmet
         [198735] = 11696,       -- Basalt-Blood Warrior Guards
         [198736] = 11697,       -- Basalt-Blood Warrior Arm Cops
         [198737] = 11698,       -- Basalt-Blood Warrior Boots
         [198738] = 11699,       -- Basalt-Blood Warrior Bracers
-        [198739] = 11700,       -- Basalt-Blood Warrior belt
+        [198739] = 11700,       -- Basalt-Blood Warrior Belt
         [198740] = 11694,       -- Basalt-Blood Warrior Jack
         [198741] = 11695,       -- Basalt-Blood Warrior Helmet
-        [198742] = 11696,       -- Basalt-Blood Warrior guards
-        [198743] = 11697,       -- Basalt-Blood Warrior arm cops
-        [198744] = 11698,       -- Basalt-Blood Warrior boots
-        [198745] = 11699,       -- Basalt-Blood Warrior bracers
-        [198746] = 11700,       -- Basalt-Blood Warrior belt
+        [198742] = 11696,       -- Basalt-Blood Warrior Guards
+        [198743] = 11697,       -- Basalt-Blood Warrior Arm Cops
+        [198744] = 11698,       -- Basalt-Blood Warrior Boots
+        [198745] = 11699,       -- Basalt-Blood Warrior Bracers
+        [198746] = 11700,       -- Basalt-Blood Warrior Belt
         [198748] = 11701,       -- Nobility in Decay Jack
         [198749] = 11702,       -- Nobility in Decay Helmet
         [198750] = 11703,       -- Nobility in Decay Guards
@@ -3797,10 +3801,8 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [198921] = 11734,       -- Gardener of Seasons Bracers
         [198922] = 11735,       -- Gardener of Seasons Belt
         [198923] = 11729,       -- Gardener of Seasons Jack
-        [198924] = 11730,       -- Gardener of Seasons Helmet
         [198925] = 11731,       -- Gardener of Seasons Guards
         [198926] = 11732,       -- Gardener of Seasons Arm Cops
-        [198927] = 11733,       -- Gardener of Seasons Boots
         [198928] = 11734,       -- Gardener of Seasons Bracers
         [198929] = 11735,       -- Gardener of Seasons Belt
         [198930] = 11736,       -- Basalt-Blood Warrior Battle Axe
@@ -4369,20 +4371,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [212160] = 13233,       -- Truth in Wisdom Boots
         [212161] = 13234,       -- Truth in Wisdom Bracers
         [212162] = 13235,       -- Truth in Wisdom Belt
-        -- [212458] = ?,        -- Roughhouse Mercenary Cuirass
-        -- [212459] = ?,        -- Roughhouse Mercenary Helm
-        -- [212460] = ?,        -- Roughhouse Mercenary Greaves
-        -- [212461] = ?,        -- Roughhouse Mercenary Pauldrons
-        -- [212462] = ?,        -- Roughhouse Mercenary Sabatons
-        -- [212463] = ?,        -- Roughhouse Mercenary Gauntlets
-        -- [212464] = ?,        -- Roughhouse Mercenary Girdle
-        -- [212465] = ?,        -- Roughhouse Mercenary Cuirass
-        -- [212466] = ?,        -- Roughhouse Mercenary Helm
-        -- [212467] = ?,        -- Roughhouse Mercenary Greaves
-        -- [212468] = ?,        -- Roughhouse Mercenary Pauldrons
-        -- [212469] = ?,        -- Roughhouse Mercenary Sabatons
-        -- [212470] = ?,        -- Roughhouse Mercenary Gauntlets
-        -- [212471] = ?,        -- Roughhouse Mercenary Girdle
         [212472] = 13380,       -- Wickerchain Soul Jerkin
         [212473] = 13381,       -- Wickerchain Soul Hat
         [212474] = 13382,       -- Wickerchain Soul Breeches
@@ -4397,26 +4385,6 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [212483] = 13384,       -- Wickerchain Soul Shoes
         [212484] = 13385,       -- Wickerchain Soul Gloves
         [212485] = 13386,       -- Wickerchain Soul Sash
-        -- [212486] = ?,        -- Roughhouse Mercenary Battle Axe
-        -- [212487] = ?,        -- Roughhouse Mercenary Bow
-        -- [212488] = ?,        -- Roughhouse Mercenary Shield
-        -- [212489] = ?,        -- Roughhouse Mercenary Staff
-        -- [212490] = ?,        -- Roughhouse Mercenary Axe
-        -- [212491] = ?,        -- Roughhouse Mercenary Maul
-        -- [212492] = ?,        -- Roughhouse Mercenary Greatsword
-        -- [212493] = ?,        -- Roughhouse Mercenary Mace
-        -- [212494] = ?,        -- Roughhouse Mercenary Sword
-        -- [212495] = ?,        -- Roughhouse Mercenary Dagger
-        -- [212496] = ?,        -- Roughhouse Mercenary Battle Axe
-        -- [212497] = ?,        -- Roughhouse Mercenary Bow
-        -- [212498] = ?,        -- Roughhouse Mercenary Shield
-        -- [212499] = ?,        -- Roughhouse Mercenary Staff
-        -- [212500] = ?,        -- Roughhouse Mercenary Axe
-        -- [212501] = ?,        -- Roughhouse Mercenary Maul
-        -- [212502] = ?,        -- Roughhouse Mercenary Greatsword
-        -- [212503] = ?,        -- Roughhouse Mercenary Mace
-        -- [212504] = ?,        -- Roughhouse Mercenary Sword
-        -- [212505] = ?,        -- Roughhouse Mercenary Dagger
         [212506] = 13397,       -- Wormwrithe Battle Axe
         [212507] = 13397,       -- Wormwrithe Battle Axe
         [212508] = 13398,       -- Wormwrithe Bow
@@ -4473,6 +4441,63 @@ uespLog.RUNEBOX_COLLECTIBLE_IDS = {
         [219718] = 9824,        -- Opal Scourge Harvester Shield
         [219719] = 9825,        -- Opal Scourge Harvester Staff
         [219720] = 9826,        -- Opal Scourge Harvester Sword
+        [215039] = 13634,       -- Heart's Day Duelist Jerkin
+        [215040] = 13635,       -- Heart's Day Duelist Hat
+        [215041] = 13636,       -- Heart's Day Duelist Breeches
+        [215043] = 13638,       -- Heart's Day Duelist Shoes
+        [215044] = 13639,       -- Heart's Day Duelist Gloves
+        [215045] = 13640,       -- Heart's Day Duelist Sash
+        [215046] = 13634,       -- Heart's Day Duelist Jerkin
+        [215047] = 13635,       -- Heart's Day Duelist Hat
+        [215048] = 13636,       -- Heart's Day Duelist Breeches
+        [215050] = 13638,       -- Heart's Day Duelist Shoes
+        [215051] = 13639,       -- Heart's Day Duelist Gloves
+        [215052] = 13640,       -- Heart's Day Duelist Sash
+        [215053] = 13641,       -- Fish Boon Pioneer Jack
+        [215054] = 13642,       -- Fish Boon Pioneer Hat
+        [215055] = 13643,       -- Fish Boon Pioneer Skirt
+        [215056] = 13644,       -- Fish Boon Pioneer Arm Cops
+        [215057] = 13645,       -- Fish Boon Pioneer Sandals
+        [215058] = 13646,       -- Fish Boon Pioneer Bracers
+        [215059] = 13647,       -- Fish Boon Pioneer Belt
+        [215060] = 13641,       -- Fish Boon Pioneer Jack
+        [215061] = 13642,       -- Fish Boon Pioneer Hat
+        [215062] = 13643,       -- Fish Boon Pioneer Skirt
+        [215063] = 13644,       -- Fish Boon Pioneer Arm Cops
+        [215064] = 13645,       -- Fish Boon Pioneer Sandals
+        [215065] = 13646,       -- Fish Boon Pioneer Bracers
+        [215066] = 13647,       -- Fish Boon Pioneer Belt
+        [215067] = 13648,       -- Light of Knowledge Jerkin
+        [215068] = 13649,       -- Light of Knowledge Hat
+        [215069] = 13650,       -- Light of Knowledge Skirt
+        [215070] = 13651,       -- Light of Knowledge Epaulets
+        [215071] = 13652,       -- Light of Knowledge Shoes
+        [215072] = 13653,       -- Light of Knowledge Gloves
+        [215073] = 13654,       -- Light of Knowledge Sash
+        [215074] = 13648,       -- Light of Knowledge Jerkin
+        [215075] = 13649,       -- Light of Knowledge Hat
+        [215076] = 13650,       -- Light of Knowledge Skirt
+        [215077] = 13651,       -- Light of Knowledge Epaulets
+        [215078] = 13652,       -- Light of Knowledge Shoes
+        [215079] = 13653,       -- Light of Knowledge Gloves
+        [215080] = 13654,       -- Light of Knowledge Sash
+        [215081] = 13655,       -- Tava's Goshawk Cuirass
+        [215082] = 13656,       -- Tava's Goshawk Helm
+        [215083] = 13657,       -- Tava's Goshawk Greaves
+        [215084] = 13658,       -- Tava's Goshawk Pauldrons
+        [215085] = 13659,       -- Tava's Goshawk Sabatons
+        -- [215086] = ?,        -- Tava's Goshawk Hands
+        [215087] = 13661,       -- Tava's Goshawk Girdle
+        [215088] = 13655,       -- Tava's Goshawk Cuirass
+        [215089] = 13656,       -- Tava's Goshawk Helm
+        [215090] = 13657,       -- Tava's Goshawk Greaves
+        [215091] = 13658,       -- Tava's Goshawk Pauldrons
+        [215092] = 13659,       -- Tava's Goshawk Sabatons
+        [215093] = 13660,       -- Tava's Goshawk Gauntlets
+        [215094] = 13661,       -- Tava's Goshawk Girdle
+        [147547] = 6212,        -- Storm Lord Axe
+        [198924] = 11730,       -- Gardener of Seasons Helmet
+        [198927] = 11733,       -- Gardener of Seasons Boots
 }
 
 function uespLog.BoolToOnOff(flag)
@@ -22919,18 +22944,23 @@ function uespLog.MineApiConstant(stringName, name, varName)
 	local data = uespLog.savedVars.tempData.data
 	local value = 0
 	local numBadValues = 0
+	local count = 0
 	
+	uespLog.Msg("Mining API constants for "..tostring(name).."...")
 	data[#data+1] = "API Constants for "..tostring(name)..": "..tostring(varName)
 	
-	while (numBadValues < 2) do
+	while (numBadValues < 5000) do
 	 
 		if (not uespLog.MineApiConstantValue(stringName, value)) then
 			numBadValues = numBadValues + 1
+		else
+			count = count + 1
 		end
 		
 		value = value + 1
 	end
 	
+	uespLog.Msg("Found "..tostring(count).." valid constants up to "..tostring(value).."!")
 	return true
 end
 
@@ -22939,7 +22969,9 @@ function uespLog.MineApiConstantsItemStyles()
 	local data = uespLog.savedVars.tempData.data
 	local maxStyleId = GetHighestItemStyleId()
 	local styleId
+	local count = 0
 	
+	uespLog.Msg("Mining API constants for "..tostring("Item Styles").."...")
 	data[#data+1] = "API Constants for "..tostring("Item Styles")..": "..tostring("$ESO_ITEMSTYLE_TEXTS")
 	
 	for styleId = 0, maxStyleId do
@@ -22947,9 +22979,11 @@ function uespLog.MineApiConstantsItemStyles()
 		
 		if (styleName ~= "") then
 			data[#data+1] = ""..tostring(styleId).." => '"..tostring(styleName).."',"
+			count = count + 1
 		end
 	end
 	
+	uespLog.Msg("Found "..tostring(count).." valid item styles up to "..tostring(maxStyleId).."!")
 end
 
 
@@ -22962,7 +22996,14 @@ function uespLog.MineApiConstants()
 	
 	uespLog.MineApiConstant("SI_ITEMTYPE", "Item Type", "$ESO_ITEMTYPE_TEXTS")
 	uespLog.MineApiConstant("SI_SPECIALIZEDITEMTYPE", "Specialized Item Type", "$ESO_ITEMSPECIALTYPE_TEXTS")
-	uespLog.MineApiConstant("SI_ITEMTYPEDISPLAYCATEGORY", "Display Category", "")
+	uespLog.MineApiConstant("SI_ITEMTYPEDISPLAYCATEGORY", "Display Category", "$ESO_ITEMDISPLAYCATEGORY_TEXTS")
+	
+	uespLog.MineApiConstant("SI_ITEMTRAITTYPE", "Item Trait", "$ESO_ITEMTRAIT15_TEXTS")
+	uespLog.MineApiConstant("SI_ARMORTYPE", "Armor Type", "$ESO_ITEMARMORTYPE_TEXTS")
+	uespLog.MineApiConstant("SI_WEAPONTYPE", "Weapon Type", "$ESO_ITEMWEAPONTYPE_TEXTS")
+	uespLog.MineApiConstant("SI_EQUIPTYPE", "Equip Type", "$ESO_ITEMEQUIPTYPE_TEXTS")
+	uespLog.MineApiConstant("SI_BINDTYPE", "Bind Type", "$ESO_ITEMBINDTYPE_TEXTS")
+	uespLog.MineApiConstant("SI_TRADESKILLTYPE", "Craft Type", "$ESO_CRAFTTYPES")
 	
 	uespLog.MineApiConstant("SI_QUESTTYPE", "Quest Type", "$ESO_QUESTTYPE_TEXTS")
 
@@ -23561,12 +23602,33 @@ function uespLog.LogEndeavor(i)
 	logData.event = "endeavor"
 	logData.actIndex = i
 	logData.type = GetTimedActivityType(i)
-	logData.timeRemain = GetTimedActivityTimeRemainingSeconds(i)
+	
+	if (_G["GetTimedActivityTimeRemainingSeconds"]) then
+		logData.timeRemain = GetTimedActivityTimeRemainingSeconds(i)  --Removed in update 49pts
+	elseif (_G["GetTimedActivityEndTimeS"]) then
+		logData.timeRemain = GetTimedActivityEndTimeS(i)  --Removed in update 49pts
+	else
+		logData.timeRemain = -1
+	end
+	
+	if (_G["GetTimedActivityEndTimeS"]) then
+		logData.resetTime = GetTimedActivityTypeResetTimeS(i)
+	else
+		logData.resetTime = -1
+	end
+	
 	logData.maxProgress = GetTimedActivityMaxProgress(i)
 	logData.name = GetTimedActivityName(i)
 	logData.desc = GetTimedActivityDescription(i)
 	logData.numRewards = GetNumTimedActivityRewards(i)
-	logData.limit = GetTimedActivityTypeLimit(logData.type)
+	
+	if (_G["GetTimedActivityTypeLimit"]) then
+		logData.limit = GetTimedActivityTypeLimit(logData.type)		--Removed in update 49pts
+	elseif (_G["GetTimedActivityTotalNumTimesClaimable"]) then
+		logData.limit = GetTimedActivityTotalNumTimesClaimable(i)
+	else
+		logData.limit = -1
+	end
 	
 	for rewardIndex = 1, logData.numRewards do
 		local rewardId, quantity = GetTimedActivityRewardInfo(i, rewardIndex)

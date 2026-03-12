@@ -1223,17 +1223,20 @@
 --			- Fixed some skill coefficient calculations to not auto-recalculate.
 --			- Removed STAT_DAMAGE_RESIST_START from the stat display list.
 --
---		-- v3.29
+--		-- v3.29 -- 11 March 2026 (update 49)
 --			- Set logNpcChat to false by default (will only affect new installations or if deleting your saved variable file).
 --			- Fixed removed endeavor API functions and replaced with new ones.
+--			- Added server string to most log entries.
+--			- Fixed the uespLogSalesPrices sub-addon. It does work now but may result in a noticeable pause when you first load up. It cannot
+--		      yet be updated automatically by uespLogMonitor or manually via downloading the file at esosales.uesp.net.
 --
 
 
 --	GLOBALS
 uespLog = uespLog or {}
 
-uespLog.version = "3.28"
-uespLog.releaseDate = "5 November 2025"
+uespLog.version = "3.29"
+uespLog.releaseDate = "11 March 2026"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)
@@ -5468,6 +5471,7 @@ function uespLog.AppendDataToLog(section, ...)
     end
 	
 	logString = logString .. "lang{".. GetCVar("Language.2") .."}  "
+	logString = logString .. "server{".. GetWorldName() .."}  "
 	
 	uespLog.AppendStringToLog(section, logString)
 end
@@ -22993,6 +22997,7 @@ function uespLog.MineApiConstants()
 	--uespLog.MineApiConstantIndex(SI_STAT_ATTACK_POWER - 1, "Stat Types", "$ESO_STATTYPES")
 	
 	uespLog.MineApiConstantsItemStyles()
+	uespLog.MineApiConstantsCurrencies()
 	
 	uespLog.MineApiConstant("SI_ITEMTYPE", "Item Type", "$ESO_ITEMTYPE_TEXTS")
 	uespLog.MineApiConstant("SI_SPECIALIZEDITEMTYPE", "Specialized Item Type", "$ESO_ITEMSPECIALTYPE_TEXTS")
@@ -23006,12 +23011,46 @@ function uespLog.MineApiConstants()
 	uespLog.MineApiConstant("SI_TRADESKILLTYPE", "Craft Type", "$ESO_CRAFTTYPES")
 	
 	uespLog.MineApiConstant("SI_QUESTTYPE", "Quest Type", "$ESO_QUESTTYPE_TEXTS")
+	
+	--CurrencyType
+	--ZO_SharedInteraction:IsCurrencyReward(rewardType)
+	--ZO_SharedInteraction:GetCurrencyTypeFromReward(rewardType)
+	--EndeavorType
 
 	-- $ESO_ABILITYTYPES : No SI text available
 	-- $ESO_BUFFTYPE_TEXTS : No SI text available
 	-- $ESO_MAPPINTYPE_TEXTS : No SI text available
 	-- $ESO_QUESTREWARDTYPE_TEXTS : No SI text available
 	-- $ESO_CURRENCYCHANGEREASON_TEXTS : No SI text available
+	-- $ESO_REWARDENTRYTYPE_TEXTS : No SI text available
+end
+
+
+function uespLog.MineApiConstantsCurrencies()
+	local data = uespLog.savedVars.tempData.data
+	local maxCurrencyId = 1000
+	local count = 0
+	local currencyType = 0
+	
+	uespLog.Msg("Mining API constants for "..tostring("Currencies").."...")
+	data[#data+1] = "API Constants for "..tostring("Currencies")..": "..tostring("$ESO_CURRENCYTYPE_TEXTS")
+	
+	for currencyType = 0, maxCurrencyId do
+		local name = GetCurrencyName(currencyType, true, true)
+		
+		if (name ~= "") then
+			local desc = GetCurrencyDescription(currencyType)
+			local iconPath, percentOfLineSize = GetCurrencyKeyboardIcon(currencyType)
+			local r, g, b = GetCurrencyKeyboardColor(currencyType)
+			local lootIconPath = GetCurrencyLootKeyboardIcon(currencyType)
+			local marketCurrency = GetMarketCurrencyTypeFromCurrencyType(currencyType)
+	
+			data[#data+1] = ""..tostring(currencyType).." => '"..tostring(name).."', // "..tostring(desc) .. " " .. tostring(iconPath).." #"..tostring(r)..tostring(g)..tostring(b)
+			count = count + 1
+		end
+	end
+
+	uespLog.Msg("Found "..tostring(count).." valid currencies up to "..tostring(maxCurrencyId).."!")
 end
 
 

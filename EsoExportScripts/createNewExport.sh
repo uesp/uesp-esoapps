@@ -1,9 +1,9 @@
 #!/bin/sh
 
-VERSION="48"
+VERSION="49"
 ISPTS=""
-LASTVERSION="47"
-LASTPTSVERSION="48pts"
+LASTVERSION="48"
+LASTPTSVERSION="49pts"
 
 MAKEPTSDIFF="1"
 MAKEDIFF="1"
@@ -145,6 +145,7 @@ makezipdiff () {
 	BASEPATH=`realpath $OUTPUTPATH`
 	pushd "$2"
 	zip -r@ "$BASEPATH/$1" < "$BASEPATH/$3"
+	zip "$BASEPATH/$1" "$BASEPATH/$3"
 	popd
 }
 

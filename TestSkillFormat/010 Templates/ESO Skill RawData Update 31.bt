@@ -1,0 +1,113 @@
+//------------------------------------------------
+//--- 010 Editor v11.0.1 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+struct SKILLFILE {
+    struct SKILLHEADER {
+        int Unknown1;
+        int Unknown2;
+        int RecordCount;
+        int Unknown3;
+    } skillHeader;
+    struct SKILLRECORD {
+        int Magic;
+        int Index;
+        int Length1;
+        int Length2;
+        int Unknown1;
+        int Unknown2;
+        int abilityId1;
+        int Length3;
+        int abilityId2;
+
+        short NameLength;
+        byte Name[NameLength];
+
+        byte zero1;
+        short zero2;
+        int zero3;
+
+        short u20a;
+        short u20b;
+
+        int zero4;
+
+        int u2[23];
+        byte flags[191];
+
+        int size1;
+        int list1[size1];
+        int size2;
+        int list2[size2];
+
+        int u6[6];
+
+        int size6a;
+        int list6a[size6a];
+
+        int u6a[7];
+
+        int size6aa;
+        int list6aa[size6aa];
+
+        int size6ab;
+        int list6ab[size6ab*5];
+
+        int size3;
+        int list3[size3];
+        int size4;
+        int list4[size4];
+
+        int u7[9];
+
+        int size6;
+        int list6[size6];
+        int size6b;
+        int list6b[size6b];
+
+        int coef[25];
+
+        int size7;
+        int list7[size7];
+
+        int u9[4];
+
+        int size8;
+        int list8[size8];
+
+        int u8a;
+        int u8b;
+
+        int size9;
+        int list9[size9];
+        int size10;
+        int list10[size10];
+
+        int u10[9];
+
+        int size11;
+        int list11[size11];
+        int size12;
+        int list12[size12];
+
+        int u11[16];
+
+        int size13;
+        int list13[size13*2];
+
+        int u12[22];
+
+        int size14;
+        int list14[size14*2];
+
+        int u13[2];
+    } skills[skillHeader.RecordCount]  <optimize=false>;
+} skillFile;

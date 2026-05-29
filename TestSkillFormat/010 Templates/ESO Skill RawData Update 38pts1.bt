@@ -1,0 +1,176 @@
+//------------------------------------------------
+//--- 010 Editor v11.0.1 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+struct SKILLFILE {
+    struct SKILLHEADER {
+        int Unknown1;
+        int Unknown2;
+        int RecordCount;
+        int Unknown3;
+    } skillHeader;
+    struct SKILLRECORD {
+        int Magic;
+        int Index;
+        int Length1;
+        int Length2;
+        int Unknown1;
+        int Unknown2;
+        int abilityId1;
+        int Length3;
+        int abilityId2;
+
+        short NameLength;
+        byte Name[NameLength];
+
+        byte zero1;
+        short zero2;
+        int zero3;
+
+        short u1a;
+        short u1b;
+
+        int zero4;
+
+        struct SKILLBASEDATE {
+            int dateTime;
+            int z1;
+            int z2;
+            int coolDown;
+            int value1;
+            int value2;
+            int z3;
+            byte u1;
+            byte u2;
+            short z4;
+            short z5;
+            short z6;
+            int duration;
+            int z7;
+            int tick;
+            short startTick;
+            short cost;
+            int radius;
+            int z8;
+            //int u3;
+            short u4;
+            int u5;
+            byte u9;
+        } baseData;
+
+        byte flags[185];
+
+        int size1;
+        byte list1[size1];
+        int size2;
+        int list2[size2];
+
+        byte u2[23];
+
+        int size3;
+        int list3[size3];
+
+        //short u3;
+        //byte u4[10];
+        short u4[6];
+
+        int size4;
+        int list4[size4];
+        int size5;
+        int list5[size5];
+        short u5;
+
+        short numTooltipTypes;
+        int tooltipTypes[numTooltipTypes];
+        int numTooltipIds;
+        int tooltipIds[numTooltipIds];
+
+        byte u6[33];
+      
+        int size6a;
+        int list6a[size6a];
+        int size6b;
+        short list6b[size6b];
+
+        struct SKILLCOEF {
+            int u1;
+            int u2;
+            int u3;
+            int u4;
+            int u5;
+            int u6;
+            byte u7;
+
+            byte type1;
+            int coef1;
+            byte type2;
+            int coef2;
+            byte type3;
+            int coef3;
+            byte type3;
+            int coef4;
+
+            int u8;
+            int u9;
+            byte u10;
+            int u11;
+            byte u12;
+            int u13;
+            short u14;
+        } coef;
+
+        short size7;
+        int list7[size7];
+
+        byte u7;
+        int u8[3];
+
+        int size8;
+        int list8[size8];
+
+        int u9a;
+        int u9b;
+
+        int size9;
+        int list9[size9];
+        int size10;
+        int list10[size10];
+
+        byte u10[24];
+
+        int size11;
+        int list11[size11];
+        int size12;
+        int list12[size12];
+
+        byte u11[12];
+        byte u12[27];
+
+        int size13;
+        byte list13[size13*6];
+
+        //byte u13[33];   
+        int u13[8];
+        byte u13a;
+        int u14;
+
+        byte u15[20];
+
+        int size14;
+        byte list14[size14*5];
+
+        int u16[2];
+        byte mechanic;
+        byte u17;
+
+        byte u18[10];
+    } skills[skillHeader.RecordCount]  <optimize=false>;
+} skillFile;

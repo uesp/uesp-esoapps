@@ -1,0 +1,239 @@
+//------------------------------------------------
+//--- 010 Editor v11.0.1 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+struct SKILLFILE {
+    struct SKILLHEADER {
+        int Unknown1;
+        int Unknown2;
+        int RecordCount;
+        int Unknown3;
+    } skillHeader;
+    struct SKILLRECORD {
+        local int64 StartOffset = FTell();
+        int Magic;
+        int Index;
+        int Length1;
+        int Length2;
+        local int64 EndOffset = StartOffset + Length1 + 32;
+        int Unknown1;
+
+        int abilityId1;     //Before 50pts swapped positions with Unknown2
+        int Unknown2;
+        
+        int Length3;
+        int abilityId2;
+
+        short NameLength;
+        byte Name[NameLength];
+
+        byte zero1;
+        short zero2;
+        int zero3;
+
+        short u1a;
+        short u1b;
+
+        int zero4;
+
+        struct SKILLBASEDATE {
+            int dateTime;
+            int z1;
+            int z2;
+            int z3;
+            int z4;             //43pts
+            int coolDown;
+            int value1;
+            int value2;
+            int value3;         //41
+            int z3;
+            byte u1;
+            byte u2;      
+            byte u4a;           //50pts
+            short z4;
+            short z5;
+            short z6;       
+            int duration;
+            int z7;
+            int tick;
+            short startTick;
+            short cost;
+            int radius;
+            int z8;
+            //int u3;           //36
+            short u4;
+            int u5;
+            byte u9;
+        } baseData;
+
+            // 188 in first 29pts version, 189 prior to update 30, 191 in update 31, 192 starting in update 34, 191 in update 35, 182 in update 37
+			// 183 in update 38 pts, 185 in update 38 PTS1, 186 in update 39pts, 190 in update 40pts, 182 in 41pts, 183 in update 42pts, 181 in 44pts
+			// 182 in 45, 184 in 48pts, 176 in 50pts
+        byte flags[176];
+
+        int size1;
+        byte list1[size1];
+        int size2;
+        int list2[size2];
+
+            //23 in 40pts and earlier, 27 in update 41pts, 17 in 50pts
+            //50pts: u2[9] = dmgType
+        byte u2[17];
+
+        int u5;                      //49pts
+        struct {
+            int s5a;
+            int d5a[s5a];
+            int s5b;
+            int d5b[s5b];
+        } u5data[u5];
+
+        int numTooltipIds;              //49pts
+        struct tooltip {
+                int t1Size;
+                int t1[t1Size];
+                int t2Size;
+                int t2[t2Size];
+        } tooltipIds[numTooltipIds];   
+
+        //int size4;            //49pts
+        //int list4[size4];     //49pts
+        //int size5;            //49pts  
+        //int list5[size5];     //49pts
+
+        //short numTooltipTypes;
+        //int tooltipTypes[numTooltipTypes*3];    //49pts
+       
+        byte u6[33];
+      
+        int size6a;
+        int list6a[size6a];
+        int size6b;
+        short list6b[size6b];
+
+        struct SKILLCOEF {
+            int u1;
+            int u2;
+            int u3;
+            int u4;
+            int u5;
+            int u6;           
+            
+            byte u6a;
+            byte u6b;
+            byte u6c;
+
+            int u9;
+            byte u10;
+            int u11;
+            byte u12;
+            int u13;
+            short u14;
+        } coef;
+
+        short size7;
+        int list7[size7];
+
+        //byte u7;              //41pts
+        int u8[3];
+
+        int size8;
+        int list8[size8];
+
+        int u9a;
+        int u9b;
+
+        int size9;                  //49pts
+        struct {
+            int s9a;
+            int d9a[s9a];
+            int s9b;
+            int d9b[s9b];
+        } data9[size9];
+
+            //6 in update 40 and prior, 5 in update 41pts, 4 in update 42pts
+        int u10[4];
+
+        //int size11;                   //49pts
+        //int list11[size11*2];
+        int size11;
+        struct {
+            int s11a;
+            int d11a[s11a];
+            int s11b;
+            int d11b[s11b];
+        } list11[size11];
+
+        byte u11[12];
+        byte u12[27];
+
+        int size13;
+        byte list13[size13*6];
+
+        int u13[8];
+        byte u13a;
+        int u14;
+
+        byte u15[13];               //49pts
+        int size13a;                //49pts
+        int list13a[size13a];
+
+        int u15a;                   //49pts
+
+        int size14;
+        byte list14[size14*5];
+
+        byte u16[5];                //44pts
+        byte mechanic;
+        byte u17;
+
+            // Added update 38 (10 bytes), 18 bytes in update 39pts, 23 in update 40pts, 35 in update 41pts, 39 in update 42pts, 32 in update 44pts, 36 in 45pts, 37 in 45
+			// 36 in 46pts, 33 in update 49pts, 27 in update 50pts
+        byte u18[27]; 
+
+        byte size15aa;
+        local byte size15aaReal = size15aa;
+        if (size15aaReal > 1) size15aaReal = 1;
+
+        struct {
+            int u15aa;
+            int size15a;
+            byte list15a[size15a*7]; 
+            int size15;
+            struct {
+                int lu15[4];
+                int size15b;
+                int list15b[size15b];
+            } list15[size15];
+
+            int sizeCoef2;
+            struct {
+                byte type1;
+                int coef1;
+                byte type2;
+                int coef2;
+                byte type3;
+                int coef3;
+                byte type4;
+                int coef4;
+                int u5;
+            } coef2[sizeCoef2]; 
+
+        } list15aa[size15aaReal]; 
+
+        int u17;
+
+        // Some records have unknown data after this point which have no obvious structure
+
+        FSeek(EndOffset);
+    } skills[skillHeader.RecordCount]  <optimize=false>;
+} skillFile;
+

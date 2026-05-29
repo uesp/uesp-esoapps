@@ -1,0 +1,120 @@
+//------------------------------------------------
+//--- 010 Editor v11.0.1 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+struct SKILLFILE {
+    struct SKILLHEADER {
+        int Unknown1;
+        int Unknown2;
+        int RecordCount;
+        int Unknown3;
+    } skillHeader;
+    struct SKILLRECORD {
+        int Unknown1;
+        int Unknown2;
+        int Length1;
+        int Length2;
+        int Unknown3;
+        int Unknown4;
+        int abilityId1;
+        int Length3;
+        int abilityId2;
+        short NameLength;
+        byte Name[NameLength];
+
+        byte u1;
+        short u1a;
+
+        int u2[25];
+        byte flags[188];
+
+        int c1;
+        int d1[c1];
+        int c2;
+        int d2[c2];
+
+        int u6[6];
+
+        int c3;
+        int d3[c3];
+
+        int u6a[7];
+
+        //int c4a;
+        //int d4a[c4a];
+        //int c4b;
+        //int d4b[c4b];
+
+        int c4;
+        int d4[c4];
+        int c5;
+        int d5[c5];
+        int c6;
+        int d6[c6];
+        int c7;
+        int d7[c7];
+
+        int u7[9];
+
+        //int c8a;
+        //int d8a[c8a];
+        //int c8;
+        //int d8[c8];
+        int c9;
+        int d9[c9];
+        int c9a;
+        int d9a[c9a];
+
+        int u8[25];
+
+        int c10;
+        int d10[c10];
+
+        int u9[4];
+
+        int c11;
+        int d11[c11];
+
+        int u8a;
+        int u8b;
+
+        int c12;
+        int d12[c12];
+        int c13;
+        int d13[c13];
+
+        int u10[9];
+
+        int c14;
+        int d14[c14];
+        int c15;
+        int d15[c15];
+
+        int u11[16];
+
+        int c16;
+        int d16[c16*2];
+        //int c17;
+        //int d17[c17];
+        //int c18;
+        //int d18[c18];
+
+        int u12[22];
+
+        int c17;
+        int d17[c17*2];
+
+        int u13[2];
+
+        //byte Data[Length3 - NameLength - 4 - 2];
+    } skills[skillHeader.RecordCount]  <optimize=false>;
+//skills[skillHeader.RecordCount]  <optimize=false>;
+} skillFile;

@@ -85,11 +85,11 @@ const size_t U13SIZE = 8;
 const size_t U15SIZE = 5; */
 
 	/* Update 37 */
-const size_t FLAGSIZE = 184;	// 188 in first 29pts version, 189 prior to update 30, 191 in update 31, 192 starting in update 34, 191 in update 35, 182 in update 37
+const size_t FLAGSIZE = 176;	// 188 in first 29pts version, 189 prior to update 30, 191 in update 31, 192 starting in update 34, 191 in update 35, 182 in update 37
 								// 183 in update 38 pts, 185 in update 38 PTS1, 186 in update 39pts, 190 in update 40pts, 182 in 41pts, 183 in update 42pts, 181 in 44pts
-								// 182 in 45, 184 in 48pts
-const size_t U2SIZE = 6;		// 5 in 40pts and earlier, 6 in 41pts
-const size_t U2ASIZE = 3;		//
+								// 182 in 45, 184 in 48pts, 176 in 50pts
+const size_t U2SIZE = 4;		// 5 in 40pts and earlier, 6 in 41pts, 4 in 50pts
+const size_t U2ASIZE = 1;		// 3 prior to 50pts, 1 in 50pts
 const size_t U4SIZE = 6;		//
 const size_t U6SIZE = 33;		//
 const size_t U6ASIZE = 7;
@@ -102,15 +102,12 @@ const size_t U12SIZE = 27;
 const size_t U13SIZE = 8;
 const size_t U15SIZE = 13;	//20 preupdate 40pts, 21 in update 40pts, 13 in 49pts
 const size_t U16SIZE = 5;	//44pts
-const size_t U18SIZE = 33;	// Added update 38 (10 bytes), 18 bytes in update 39pts, 23 in update 40pts, 35 in update 41pts, 39 in update 42pts, 32 in update 44pts, 36 in 45pts, 37 in 45
-							// 36 in 46pts, 33 in update 49pts
-
-
+const size_t U18SIZE = 27;	// Added update 38 (10 bytes), 18 bytes in update 39pts, 23 in update 40pts, 35 in update 41pts, 39 in update 42pts, 32 in update 44pts, 36 in 45pts, 37 in 45
+							// 36 in 46pts, 33 in update 49pts, 27 in update 50pts
 
 typedef std::vector<dword> idlist_t;
 typedef std::vector<word> wordidlist_t;
 typedef std::vector<byte> byteidlist_t;
-
 
 /*
 struct skilldata_21_t
@@ -215,7 +212,6 @@ std::vector<skilllist_t> g_AoeHealSkills;
 std::vector<skilllist_t> g_HotHealSkills;
 std::vector<skilllist_t> g_StHealSkills;
 std::vector<skilllist_t> g_AllHealSkills;
-
 
 struct skilldata_t
 {
@@ -334,8 +330,8 @@ struct skilldata34_t
 	dword recordLength1;		// Always the same as recordLength2 and recordLength3
 	dword recordLength2;
 	dword unknown1;
-	dword unknown2;
-	dword unknown3;			// Always the same as abilityId2 until update 36pts
+	dword unknown2;				// Same as abilityId after update 36pts?
+	dword unknown3;				// Always the same as abilityId until update 36pts
 	dword recordLength3;
 	dword abilityId1;
 
@@ -363,6 +359,7 @@ struct skilldata34_t
 		dword z3;
 		byte u1;
 		byte u2;
+		byte u4a;		// Added 50pts
 		word z4;
 		word z5;
 		word z6;
@@ -374,6 +371,7 @@ struct skilldata34_t
 		dword radius;
 		dword z8;
 		//dword u3;		// Removed in Update 36PTS
+		
 		word u4;
 		dword u5;
 		byte u6;
@@ -390,19 +388,7 @@ struct skilldata34_t
 	byte u2a[U2ASIZE];
 	dword u2[U2SIZE];
 
-	dword size3;
-	idlist_t list3;
-
-	//word u3;
-	word u4[U4SIZE];
-
-	//dword size4;		//Removed in 49pts
-	//idlist_t list4;
-	//dword size5;
-	//idlist_t list5;
-	//word u5;
-
-	dword size5;	//New in 49pts
+	dword size5;	//New in 49pts, moved in update 50pts
 
 	struct u5data_t {
 		dword s5a;
@@ -412,13 +398,6 @@ struct skilldata34_t
 	};
 
 	std::vector<u5data_t> list5;
-	
-	//word numTooltipTypes;		//Removed in 49pts
-	//idlist_t tooltipTypes;
-	//dword numTooltipIds;
-	//idlist_t tooltipIds;
-
-	dword numTooltips;		//Added in 49pts
 
 	struct tooltipdata_t {
 		dword numTooltipTypes;
@@ -427,7 +406,25 @@ struct skilldata34_t
 		idlist_t tooltipIds;
 	};
 
+	dword numTooltips;		//Added in 49pts, moved in update 50pts
 	std::vector<tooltipdata_t> tooltipData;
+
+	//dword size3;
+	//idlist_t list3;
+
+	//word u3;
+	//word u4[U4SIZE];
+
+	//dword size4;		//Removed in 49pts
+	//idlist_t list4;
+	//dword size5;
+	//idlist_t list5;
+	//word u5;
+
+	//word numTooltipTypes;		//Removed in 49pts
+	//idlist_t tooltipTypes;
+	//dword numTooltipIds;
+	//idlist_t tooltipIds;
 
 	byte u6[U6SIZE];
 
@@ -443,18 +440,21 @@ struct skilldata34_t
 		dword u4;
 		dword u5;
 		dword u6;
-		byte u7;
+		//byte u7;	//Update 50pts
+		byte u6a;	//Update 50pts
+		byte u6b;	//Update 50pts
+		byte u6c;	//Update 50pts
 
-		byte type1;
+		/* byte type1;
 		float coef1;
 		byte type2;
 		float coef2;
 		byte type3;
 		float coef3;
 		byte type4;
-		float coef4;
+		float coef4; */
 
-		dword u8;
+		//dword u8;
 		dword u9;
 		byte u10;
 		dword u11;
@@ -529,13 +529,50 @@ struct skilldata34_t
 	byteidlist_t list14;
 
 	byte u16[U16SIZE];
-	//dword u16b;
 	byte mechanic;
 	byte u17;
 
 	byte u18[U18SIZE];
-};
 
+	byte size19;
+
+	struct list19data_t {
+		dword u19a;
+		dword size19a;
+
+		struct list19adata_t {
+			byte data[7];
+		};
+		std::vector< list19adata_t> list19a;
+
+		dword size19b;
+		struct list19bdata_t {
+			dword u19b1[4];
+			dword size19b2;
+			idlist_t list19b2;
+		};
+		std::vector< list19bdata_t> list19b;
+
+		dword sizeCoef2;
+		struct coef2data_t {
+			byte type1;
+			float coef1;
+			byte type2;
+			float coef2;
+			byte type3;
+			float coef3;
+			byte type4;
+			float coef4;
+			dword u5;
+		};
+		std::vector< coef2data_t> coef2;
+
+	};
+	std::vector< list19data_t> list19;
+
+	dword u20;
+	//Some records have extra data here that cannot be perfectly resolved/explained
+};
 
 
 struct minedskill_t
@@ -1326,6 +1363,7 @@ bool ReadSkillRecord34(CFile& File)
 	result &= File.ReadDword(skill.baseData.z3, false);
 	result &= File.ReadByte(skill.baseData.u1);
 	result &= File.ReadByte(skill.baseData.u2);
+	result &= File.ReadByte(skill.baseData.u4a);			//50pts
 	result &= File.ReadWord(skill.baseData.z4, false);
 	result &= File.ReadWord(skill.baseData.z5, false);
 	result &= File.ReadWord(skill.baseData.z6, false);
@@ -1374,7 +1412,7 @@ bool ReadSkillRecord34(CFile& File)
 
 	if (!result) return ReportError("Error: Failed to read skill.u2 data!");
 
-	result &= File.ReadDword(skill.size3, false);
+	/* result &= File.ReadDword(skill.size3, false); //Removed in 50pts
 	skill.list3.resize(skill.size3, 0);
 
 	for (size_t i = 0; i < skill.size3 && result; ++i)
@@ -1382,14 +1420,14 @@ bool ReadSkillRecord34(CFile& File)
 		result &= File.ReadDword(skill.list3[i], false);
 	}
 
-	if (!result) return ReportError("Error: Failed to read skill.list3 data!");
+	if (!result) return ReportError("Error: Failed to read skill.list3 data!"); */
 
-	for (dword i = 0; i < U4SIZE && result; ++i)
+	/*for (dword i = 0; i < U4SIZE && result; ++i)	//Removed in 50pts
 	{
 		result &= File.ReadWord(skill.u4[i], false);
 	}
 
-	if (!result) return ReportError("Error: Failed to read skill.u4 data!");
+	if (!result) return ReportError("Error: Failed to read skill.u4 data!");*/
 
 /*	Removed/Changed in update 49pts
 	result &= File.ReadDword(skill.size4, false);
@@ -1520,18 +1558,21 @@ bool ReadSkillRecord34(CFile& File)
 	result &= File.ReadDword(skill.coef.u4, false);
 	result &= File.ReadDword(skill.coef.u5, false);
 	result &= File.ReadDword(skill.coef.u6, false);
-	result &= File.ReadByte(skill.coef.u7);
+	//result &= File.ReadByte(skill.coef.u7);
+	result &= File.ReadByte(skill.coef.u6a);
+	result &= File.ReadByte(skill.coef.u6b);
+	result &= File.ReadByte(skill.coef.u6c);
 
-	result &= File.ReadByte(skill.coef.type1);
-	result &= File.ReadFloat(skill.coef.coef1, true);
-	result &= File.ReadByte(skill.coef.type2);
-	result &= File.ReadFloat(skill.coef.coef2, true);
-	result &= File.ReadByte(skill.coef.type3);
-	result &= File.ReadFloat(skill.coef.coef3, true);
-	result &= File.ReadByte(skill.coef.type4);
-	result &= File.ReadFloat(skill.coef.coef4, true);
+	//result &= File.ReadByte(skill.coef.type1);
+	//result &= File.ReadFloat(skill.coef.coef1, true);
+	//result &= File.ReadByte(skill.coef.type2);
+	//result &= File.ReadFloat(skill.coef.coef2, true);
+	//result &= File.ReadByte(skill.coef.type3);
+	//result &= File.ReadFloat(skill.coef.coef3, true);
+	//result &= File.ReadByte(skill.coef.type4);
+	//result &= File.ReadFloat(skill.coef.coef4, true);
 
-	result &= File.ReadDword(skill.coef.u8, false);
+	//result &= File.ReadDword(skill.coef.u8, false);
 	result &= File.ReadDword(skill.coef.u9, false);
 	result &= File.ReadByte(skill.coef.u10);
 	result &= File.ReadDword(skill.coef.u11, false);
@@ -1757,6 +1798,78 @@ bool ReadSkillRecord34(CFile& File)
 		result &= File.ReadByte(skill.u18[i]);
 	}
 
+	result &= File.ReadByte(skill.size19);
+	if (!result) return ReportError("Error: Failed to read skill.size19 data!");
+
+	auto size19 = skill.size19 > 0 ? 1 : 0;
+	skill.list19.resize(size19);
+
+	for (int i = 0; i < size19; ++i)
+	{
+		result &= File.ReadDword(skill.list19[i].u19a, false);
+		if (!result) return ReportError("Error: Failed to read skill.list19.u19a data!");
+
+		result &= File.ReadDword(skill.list19[i].size19a, false);
+		if (!result) return ReportError("Error: Failed to read skill.list19.size19a data!");
+		skill.list19[i].list19a.resize(skill.list19[i].size19a);
+
+		for (size_t j = 0; j < skill.list19[i].size19a; ++j)
+		{
+			result &= File.ReadBytes(skill.list19[i].list19a[j].data, sizeof(skill.list19[i].list19a[j].data));
+			if (!result) {
+				return ReportError("Error: Failed to read skill.list19.list19a data!");
+			}
+		}
+
+		result &= File.ReadDword(skill.list19[i].size19b, false);
+		if (!result) return ReportError("Error: Failed to read skill.list19.size19b data!");
+		skill.list19[i].list19b.resize(skill.list19[i].size19b);
+
+		for (size_t j = 0; j < skill.list19[i].size19b; ++j)
+		{
+			result &= File.ReadDword(skill.list19[i].list19b[j].u19b1[0], false);
+			if (!result) return ReportError("Error: Failed to read skill.list19.list19b.u19b1[0] data!");
+			result &= File.ReadDword(skill.list19[i].list19b[j].u19b1[1], false);
+			if (!result) return ReportError("Error: Failed to read skill.list19.list19b.u19b1[1] data!");
+			result &= File.ReadDword(skill.list19[i].list19b[j].u19b1[2], false);
+			if (!result) return ReportError("Error: Failed to read skill.list19.list19b.u19b1[2] data!");
+			result &= File.ReadDword(skill.list19[i].list19b[j].u19b1[3], false);
+			if (!result) return ReportError("Error: Failed to read skill.list19.list19b.u19b1[3] data!");
+
+			result &= File.ReadDword(skill.list19[i].list19b[j].size19b2, false);
+			if (!result) return ReportError("Error: Failed to read skill.list19.list19b.size19b2 data!");
+			skill.list19[i].list19b[j].list19b2.resize(skill.list19[i].list19b[j].size19b2, 0);
+
+			for (size_t k = 0; k < skill.list19[i].list19b[j].size19b2 && result; ++k)
+			{
+				result &= File.ReadDword(skill.list19[i].list19b[j].list19b2[k], false);
+			}
+
+			if (!result) return ReportError("Error: Failed to read skill.list19.list19b.list19b2 data!");
+		}
+
+		result &= File.ReadDword(skill.list19[i].sizeCoef2, false);
+		skill.list19[i].coef2.resize(skill.list19[i].sizeCoef2);
+
+		for (size_t k = 0; k < skill.list19[i].sizeCoef2 && result; ++k)
+		{
+			result &= File.ReadByte(skill.list19[i].coef2[k].type1);
+			result &= File.ReadFloat(skill.list19[i].coef2[k].coef1, true);
+			result &= File.ReadByte(skill.list19[i].coef2[k].type2);
+			result &= File.ReadFloat(skill.list19[i].coef2[k].coef2, true);
+			result &= File.ReadByte(skill.list19[i].coef2[k].type3);
+			result &= File.ReadFloat(skill.list19[i].coef2[k].coef3, true);
+			result &= File.ReadByte(skill.list19[i].coef2[k].type4);
+			result &= File.ReadFloat(skill.list19[i].coef2[k].coef4, true);
+			result &= File.ReadDword(skill.list19[i].coef2[k].u5, false);
+		}
+
+		if (!result) return ReportError("Error: Failed to read skill.list19.coef2 data!");
+	}
+
+	result &= File.ReadDword(skill.u20);
+	if (!result) return ReportError("Error: Failed to read skill.u20 data!");
+
 	fpos_t curPos = File.Tell();
 
 	if (curPos == skill.endOffset)
@@ -1796,8 +1909,7 @@ bool ReadSkillRecords(CFile& File)
 		}
 
 		if (VERSION >= 34)
-			result = ReadSkillRecord34(File);
-		else
+			result = ReadSkillRecord34(File);		else
 			result = ReadSkillRecord(File);
 
 		if (result) ++recordCount;
@@ -1956,7 +2068,7 @@ void AnalyzeIdListSkill34(skilldata34_t& skill)
 	AnalyzeIdList("6a", skill.list6a);
 	//AnalyzeIdList("6aa", skill.list6aa);
 	//AnalyzeIdList("6ab", skill.list6ab);
-	AnalyzeIdList("3", skill.list3);
+	//AnalyzeIdList("3", skill.list3);
 	//AnalyzeIdList("4", skill.list4);
 	//AnalyzeIdList("5", skill.list6);
 	//AnalyzeIdList("6b", skill.list6b);
@@ -2256,7 +2368,7 @@ bool OutputSkill34(skilldata34_t& skill)
 	OutputSkillIdList(File, "List6a", skill.list6a);
 	//OutputSkillIdList(File, "List6aa", skill.list6aa);
 	//OutputSkillIdList(File, "List6ab", skill.list6ab);
-	OutputSkillIdList(File, "List3", skill.list3);
+	//OutputSkillIdList(File, "List3", skill.list3);
 	//OutputSkillIdList(File, "List4", skill.list4);
 	//OutputSkillIdList(File, "List6", skill.list6);
 	//OutputSkillIdList(File, "List6b", skill.list6b);
@@ -2431,7 +2543,7 @@ skilldata_t CompareSkills(std::vector<dword> skillIds)
 	compare.list6a.resize(firstSkill.list6a.size(), 0);
 	//compare.list6aa.resize(firstSkill.list6aa.size(), 0);
 	//compare.list6ab.resize(firstSkill.list6ab.size(), 0);
-	compare.list3.resize(firstSkill.list3.size(), 0);
+	//compare.list3.resize(firstSkill.list3.size(), 0);
 	//compare.list4.resize(firstSkill.list4.size(), 0);
 	//compare.list6.resize(firstSkill.list6.size(), 0);
 	compare.list6b.resize(firstSkill.list6b.size(), 0);
@@ -2525,7 +2637,7 @@ skilldata_t CompareSkills(std::vector<dword> skillIds)
 		if (skill.size6a == firstSkill.size6a) ++compare.size6a;
 		//if (skill.size6aa == firstSkill.size6aa) ++compare.size6aa;
 		//if (skill.size6ab == firstSkill.size6ab) ++compare.size6ab;
-		if (skill.size3 == firstSkill.size3) ++compare.size3;
+		//if (skill.size3 == firstSkill.size3) ++compare.size3;
 		//if (skill.size4 == firstSkill.size4) ++compare.size4;
 		//if (skill.size6 == firstSkill.size6) ++compare.size6;
 		if (skill.size6b == firstSkill.size6b) ++compare.size6b;
@@ -2563,10 +2675,10 @@ skilldata_t CompareSkills(std::vector<dword> skillIds)
 			//if (skill.list6ab[j] == firstSkill.list6ab[j]) ++compare.list6ab[j];
 		//}
 
-		for (size_t j = 0; j < firstSkill.list3.size(); ++j) {
-			if (j >= skill.list3.size()) break;
-			if (skill.list3[j] == firstSkill.list3[j]) ++compare.list3[j];
-		}
+		//for (size_t j = 0; j < firstSkill.list3.size(); ++j) {
+			//if (j >= skill.list3.size()) break;
+			//if (skill.list3[j] == firstSkill.list3[j]) ++compare.list3[j];
+		//}
 
 		//for (size_t j = 0; j < firstSkill.list4.size(); ++j) {
 			//if (j >= skill.list4.size()) break;
@@ -2732,12 +2844,12 @@ skilldata_t CompareSkills(std::vector<dword> skillIds)
 		//else compare.list6ab[j] = 0;
 	//}
 
-	if (compare.size3 == numCompares) printf("\t list3 size = %zd\n", firstSkill.list3.size());
-	else compare.size3 = 0;
-	for (size_t j = 0; j < firstSkill.list3.size(); ++j) {
-		if (compare.list3[j] == numCompares) printf("\t list3[%zd] = %d\n", j, firstSkill.list3[j]);
-		else compare.list3[j] = 0;
-}
+	//if (compare.size3 == numCompares) printf("\t list3 size = %zd\n", firstSkill.list3.size());
+	//else compare.size3 = 0;
+	//for (size_t j = 0; j < firstSkill.list3.size(); ++j) {
+		//if (compare.list3[j] == numCompares) printf("\t list3[%zd] = %d\n", j, firstSkill.list3[j]);
+		//else compare.list3[j] = 0;
+	//}
 
 	//if (compare.size4 == numCompares) printf("\t list4 size = %zd\n", firstSkill.list4.size());
 	//else compare.size4 = 0;
@@ -2956,7 +3068,7 @@ void DiffSkills34(skilldata34_t& skill1, skilldata34_t& skill2, int showDiff = 1
 	DiffIdList("list6a", skill1.list6a, skill2.list6a, showDiff);
 	//DiffIdList("list6aa", skill1.list6aa, skill2.list6aa, showDiff);
 	//DiffIdList("list6ab", skill1.list6ab, skill2.list6ab, showDiff);
-	DiffIdList("list3", skill1.list3, skill2.list3, showDiff);
+	//DiffIdList("list3", skill1.list3, skill2.list3, showDiff);
 	//DiffIdList("list4", skill1.list4, skill2.list4, showDiff);
 	//DiffIdList("list6", skill1.list6, skill2.list6, showDiff);
 	DiffIdList("list6a", skill1.list6a, skill2.list6a, showDiff);
@@ -3458,19 +3570,20 @@ void AnalyzeList1()
 
 void AnalyzeList3()
 {
+	/*
 	int minSize = 1000;
 	int maxSize = 0;
 
 	for (auto&& skill : g_Skills)
 	{
-		if (minSize > (int)skill.list3.size()) minSize = (int)skill.list3.size();
-		if (maxSize < (int)skill.list3.size()) maxSize = (int)skill.list3.size();
+		//if (minSize > (int)skill.list3.size()) minSize = (int)skill.list3.size();
+		//if (maxSize < (int)skill.list3.size()) maxSize = (int)skill.list3.size();
 
-		for (int i = 0; i < skill.list3.size(); ++i)
-		{
-			if (g_List3Values.size() <= i) g_List3Values.resize(i + 1);
-			g_List3Values[i][skill.list3[i]]++;
-		}
+		//for (int i = 0; i < skill.list3.size(); ++i)
+		//{
+			//if (g_List3Values.size() <= i) g_List3Values.resize(i + 1);
+			//g_List3Values[i][skill.list3[i]]++;
+		//}
 	}
 
 	printf("List3 Data: Size %d - %d\n", minSize, maxSize);
@@ -3484,7 +3597,7 @@ void AnalyzeList3()
 			printf("\t\t%d: x%d\n", j.first, j.second);
 		}
 	}
-
+	 */
 }
 
 
@@ -3642,7 +3755,7 @@ void CheckTooltipTypes()
 			{
 				//auto subMatch = m[i];
 				printf("\t\t%d: %s\n", i, m.str(i).c_str());
-
+				/*
 				if (i - 1 >= skill.list3.size())
 				{
 					printf("\t\tError: Missing tooltip #%d type/ID in data!\n", i);
@@ -3679,7 +3792,7 @@ void CheckTooltipTypes()
 					else if (m.str(i).find("Generic Damage") != std::string::npos) {
 						//GenericDamageIds.push_back(skill.list4[i - 1]);
 					}
-				}
+				} */
 			}
 		}
 		else
@@ -4138,8 +4251,40 @@ bool ExportPhpData(std::string Filename)
 		auto escSkillName = ReplaceStrings(skill.name, "\"", "\\\"");
 		escSkillName = ReplaceStrings(escSkillName, "\n", "\\n");
 
+		dword dmgType = (skill.u2[2] & 0xFF);
+
 		//if (escSkillDesc == "" && skill.u2[12] == 0 && skill.u2[14] == 0 && skill.u2[15] == 0 && skill.u2[3] == 0 && skill.u2[4] == 0 && skill.u2[5] == 0 && skill.u4[7] == 0) continue;
-		if (escSkillDesc == "" && skill.baseData.duration == 0 && skill.baseData.tick == 0 && skill.baseData.startTick == 0 && skill.baseData.coolDown == 0 && skill.baseData.value1 == 0 && skill.baseData.value2 == 0 && skill.u4[3] == 0) continue;
+		//if (escSkillDesc == "" && skill.baseData.duration == 0 && skill.baseData.tick == 0 && skill.baseData.startTick == 0 && skill.baseData.coolDown == 0 && skill.baseData.value1 == 0 && skill.baseData.value2 == 0 && skill.u4[3] == 0) continue; //Prior to 50pts
+		if (escSkillDesc == "" && skill.baseData.duration == 0 && skill.baseData.tick == 0 && skill.baseData.startTick == 0 && skill.baseData.coolDown == 0 && skill.baseData.value1 == 0 && skill.baseData.value2 == 0 && dmgType == 0) continue;
+
+		dword type1 = 0;
+		float coef1 = 0;
+		dword type2 = 0;
+		float coef2 = 0;
+		dword type3 = 0;
+		float coef3 = 0;
+		dword type4 = 0;
+		float coef4 = 0;
+
+		if (skill.list19.size() <= 0)
+		{
+			//fprintf(pFile, "\t\t//No list19/coef2 data\n");
+		}
+		else if (skill.list19[0].coef2.size() <= 0)
+		{
+			//fprintf(pFile, "\t\t//No coef2 data\n");
+		}
+		else {
+			auto coef2data = skill.list19[0].coef2[0];
+			type1 = coef2data.type1;
+			coef1 = coef2data.coef1;
+			type2 = coef2data.type2;
+			coef2 = coef2data.coef2;
+			type3 = coef2data.type3;
+			coef3 = coef2data.coef3;
+			type4 = coef2data.type4;
+			coef4 = coef2data.coef4;
+		}
 
 		fprintf(pFile, "\t%d => array(\n", abilityId);
 		if (escSkillName != "") fprintf(pFile, "\t\t'name' => \"%s\",\n", escSkillName.c_str());
@@ -4153,16 +4298,9 @@ bool ExportPhpData(std::string Filename)
 		if (skill.baseData.startTick != 0) fprintf(pFile, "\t\t'start' => %d,\n", skill.baseData.startTick);
 		if (skill.baseData.radius != 0) fprintf(pFile, "\t\t'radius' => %d,\n", skill.baseData.radius);
 		if (skill.mechanic != 0) fprintf(pFile, "\t\t'mechanic' => %d,\n", skill.mechanic);
-		if (skill.u4[3] != 0) fprintf(pFile, "\t\t'dmgtype' => %d,\n", skill.u4[3]);
+		//if (skill.u4[3] != 0) fprintf(pFile, "\t\t'dmgtype' => %d,\n", skill.u4[3]); //Prior to 50pts
+		if (dmgType != 0) fprintf(pFile, "\t\t'dmgtype' => %d,\n", dmgType);
 
-		dword type1 = skill.coef.type1;
-		float coef1 = skill.coef.coef1;
-		dword type2 = skill.coef.type2;
-		float coef2 = skill.coef.coef2;
-		dword type3 = skill.coef.type3;
-		float coef3 = skill.coef.coef3;
-		dword type4 = skill.coef.type4;
-		float coef4 = skill.coef.coef4;
 		dword sumTypes = type1 + type2 + type3 + type4;
 
 		if (sumTypes > 0)
@@ -4231,14 +4369,38 @@ bool ExportPhpData(std::string Filename)
 
 				auto skill1 = g_Skills[g_ValidSkillIds[tooltipId] - 1];
 
-				dword type1 = skill1.coef.type1;
-				float coef1 = skill1.coef.coef1;
-				dword type2 = skill1.coef.type2;
-				float coef2 = skill1.coef.coef2;
-				dword type3 = skill1.coef.type3;
-				float coef3 = skill1.coef.coef3;
-				dword type4 = skill1.coef.type4;
-				float coef4 = skill1.coef.coef4;
+				dword type1 = 0;
+				float coef1 = 0;
+				dword type2 = 0;
+				float coef2 = 0;
+				dword type3 = 0;
+				float coef3 = 0;
+				dword type4 = 0;
+				float coef4 = 0;
+
+				if (skill1.list19.size() <= 0)
+				{
+					//fprintf(pFile, "\t\t//No list19/coef2 data\n");
+				}
+				else if (skill1.list19[0].coef2.size() <= 0)
+				{
+					//fprintf(pFile, "\t\t//No coef2 data\n");
+				}
+				else
+				{
+					auto coef2data = skill1.list19[0].coef2[0];
+
+					type1 = coef2data.type1;
+					coef1 = coef2data.coef1;
+					type2 = coef2data.type2;
+					coef2 = coef2data.coef2;
+					type3 = coef2data.type3;
+					coef3 = coef2data.coef3;
+					type4 = coef2data.type4;
+					coef4 = coef2data.coef4;
+				}
+
+				dword dmgType = (skill1.u2[2] & 0xFF);
 
 				//dword isRankMod = skill1.u11[7];
 				//if (isRankMod != 0) fprintf(pFile, "\t\t\t\t\t\t'rankMod' => %d,\n", isRankMod);
@@ -4251,13 +4413,18 @@ bool ExportPhpData(std::string Filename)
 				if (skill1.baseData.tick != 0) fprintf(pFile, "\t\t\t\t\t\t'tick' => %d,\n", skill1.baseData.tick);
 				if (skill1.baseData.startTick != 0) fprintf(pFile, "\t\t\t\t\t\t'start' => %d,\n", skill1.baseData.startTick);
 				if (skill1.baseData.radius != 0) fprintf(pFile, "\t\t\t\t\t\t'radius' => %d,\n", skill1.baseData.radius);
-				if (skill1.u4[3] != 0) fprintf(pFile, "\t\t\t\t\t\t'dmgtype' => %d,\n", skill1.u4[3]);
+				//if (skill1.u4[3] != 0) fprintf(pFile, "\t\t\t\t\t\t'dmgtype' => %d,\n", skill1.u4[3]);
+				if (dmgType != 0) fprintf(pFile, "\t\t\t\t\t\t'dmgtype' => %d,\n", dmgType);
 
-				if (skill1.u2[4] != 0)
+				/* Unsure where this data went in update 50pts
+				int capType = skill1.u2[3];
+				int cap = skill1.u2[4];
+
+				if (cap != 0)
 				{
-					fprintf(pFile, "\t\t\t\t\t\t'captype' => %d,\n", skill1.u2[3]);
-					fprintf(pFile, "\t\t\t\t\t\t'cap' => %d,\n", skill1.u2[4]);
-				}
+					fprintf(pFile, "\t\t\t\t\t\t'captype' => %d,\n", capType);
+					fprintf(pFile, "\t\t\t\t\t\t'cap' => %d,\n", cap);
+				} */
 
 				int coefCount = 0;
 
@@ -4292,17 +4459,39 @@ bool ExportPhpData(std::string Filename)
 
 					if (g_ValidSkillIds.find(coefSkillId) != g_ValidSkillIds.end())
 					{
+						dword type1 = 0;
+						float coef1 = 0;
+						dword type2 = 0;
+						float coef2 = 0;
+						dword type3 = 0;
+						float coef3 = 0;
+						dword type4 = 0;
+						float coef4 = 0;
 						auto skill2 = g_Skills[g_ValidSkillIds[coefSkillId] - 1];
 
-						dword type1 = skill2.coef.type1;
-						float coef1 = skill2.coef.coef1;
-						dword type2 = skill2.coef.type2;
-						float coef2 = skill2.coef.coef2;
-						dword type3 = skill2.coef.type3;
-						float coef3 = skill2.coef.coef3;
-						dword type4 = skill2.coef.type4;
-						float coef4 = skill2.coef.coef4;
+						if (skill2.list19.size() <= 0)
+						{
+							//fprintf(pFile, "\t\t//No list19/coef2 data\n");
+						}
+						else if (skill2.list19[0].coef2.size() <= 0)
+						{
+							//fprintf(pFile, "\t\t//No coef2 data\n");
+						}
+						else
+						{
+							auto coef2data = skill2.list19[0].coef2[0];
 
+							type1 = coef2data.type1;
+							coef1 = coef2data.coef1;
+							type2 = coef2data.type2;
+							coef2 = coef2data.coef2;
+							type3 = coef2data.type3;
+							coef3 = coef2data.coef3;
+							type4 = coef2data.type4;
+							coef4 = coef2data.coef4;
+						}
+
+						dword dmgType = (skill2.u2[2] & 0xFF);
 						coefCount = 0;
 
 						if (type1 != 0)

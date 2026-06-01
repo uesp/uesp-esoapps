@@ -138,6 +138,10 @@ uespLog.SKILLCOEF_RECALC_TYPES = {
 uespLog.SKILLCOEF_IGNORE_RECALC = {
 	[55584] = 1,
 	[55676] = 1,
+	[40317] = 1,
+	[43071] = 1,
+	[43077] = 1,
+	[43083] = 1,
 }
 
 
@@ -1225,6 +1229,8 @@ uespLog.SKILLCOEF_SPECIALTYPES = {
 	-- Arcanist Wellspring of the Abyss
 	[185033] = { [2] = uespLog.UESP_POWERTYPE_SOLDIEROFAPOCRYPHA },
 	[185036] = { [2] = uespLog.UESP_POWERTYPE_SOLDIEROFAPOCRYPHA },
+	
+	-- Consuming Trap
 	
 -- CP
 

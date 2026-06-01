@@ -1230,12 +1230,14 @@
 --			- Fixed the uespLogSalesPrices sub-addon. It does work now but may result in a noticeable pause when you first load up. It cannot
 --		      yet be updated automatically by uespLogMonitor or manually via downloading the file at esosales.uesp.net.
 --
+--		-- v3.30 -- 
+--			- Changed sales logging back to 30 days.
 
 
 --	GLOBALS
 uespLog = uespLog or {}
 
-uespLog.version = "3.29"
+uespLog.version = "3.30"
 uespLog.releaseDate = "11 March 2026"
 uespLog.DATA_VERSION = 3
 

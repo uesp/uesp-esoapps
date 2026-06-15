@@ -23158,6 +23158,41 @@ function uespLog.MineApiConstantsCurrencies()
 end
 
 
+ -- GetQuestItemName(*integer* _questItemId_)
+ -- GetQuestItemTooltipText(*integer* _questItemId_)
+ -- GetQuestItemIcon(*integer* _questItemId_)
+uespLog.MINEQUESTITEM_STARTID = 1 
+uespLog.MINEQUESTITEM_ENDID = 20000
+ 
+ function uespLog.MineQuestItems()
+	local i
+	local name
+	local tooltip
+	local icon
+	local validCount = 0
+	local lastId = 0
+	local data = uespLog.savedVars.tempData.data
+ 
+	uespLog.Msg("Starting to mine for quest item information...")
+	data[#data+1] = "Quest Items"
+	
+	for id = uespLog.MINEQUESTITEM_STARTID, uespLog.MINEQUESTITEM_ENDID do
+		name = GetQuestItemName(id)
+		
+		if (name ~= "") then
+			tooltip = GetQuestItemTooltipText(id)
+			icon = GetQuestItemIcon(id)
+			validCount = validCount + 1
+			lastId = id
+			data[#data+1] = "" ..tostring(id) .. ",'"..tostring(name).."','"..tostring(tooltip).."','"..tostring(icon).."'"
+		end
+	end
+  
+	uespLog.Msg("Finished mining quest item from "..tostring(uespLog.MINEQUESTITEM_STARTID) .. " to " .. tostring(uespLog.MINEQUESTITEM_ENDID))
+	uespLog.Msg("Found " .. tostring(validCount) .. " valid quest items (last ID of " .. tostring(lastId) .. ").")
+ end
+
+
 uespLog.MINEANTIQUITY_MINID = 0
 uespLog.MINEANTIQUITY_MAXID = 2000
 uespLog.MineAntiquitySetData = {}

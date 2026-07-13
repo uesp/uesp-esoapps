@@ -178,6 +178,8 @@ namespace eso {
 		m_FileIndexMap.reserve(m_FileTable.size());
 		m_FileInternalIndexMap.reserve(m_FileTable.size());
 
+		PrintLog("File Index Count = %u", m_FileTable.size());
+
 		for (size_t i = 0; i < m_FileTable.size(); ++i)
 		{
 			m_FileHashMap[m_FileTable[i].Hash] = &m_FileTable[i];

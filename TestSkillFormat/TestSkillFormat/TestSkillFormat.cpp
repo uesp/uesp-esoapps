@@ -352,6 +352,7 @@ struct skilldata34_t
 		dword z2;
 		dword z2a;			//Added update 42pts
 		dword z2b;			//Added update 43pts
+		dword origAbilityId;//update 51pts, origin ability id
 		dword coolDown;
 		dword value0;
 		dword value1;
@@ -434,6 +435,7 @@ struct skilldata34_t
 	wordidlist_t list6b;
 
 	struct SKILLCOEF {
+		word u0;		//Update 51pts
 		dword u1;
 		dword u2;
 		dword u3;
@@ -537,6 +539,7 @@ struct skilldata34_t
 	byte size19;
 
 	struct list19data_t {
+		byte u190;		//51pts
 		dword u19a;
 		dword size19a;
 
@@ -1356,6 +1359,7 @@ bool ReadSkillRecord34(CFile& File)
 	result &= File.ReadDword(skill.baseData.z2, false);
 	result &= File.ReadDword(skill.baseData.z2a, false);
 	result &= File.ReadDword(skill.baseData.z2b, false);
+	result &= File.ReadDword(skill.baseData.origAbilityId, false);
 	result &= File.ReadDword(skill.baseData.coolDown, false);
 	result &= File.ReadDword(skill.baseData.value0, false);
 	result &= File.ReadDword(skill.baseData.value1, false);
@@ -1552,6 +1556,7 @@ bool ReadSkillRecord34(CFile& File)
 
 	if (!result) return ReportError("Error: Failed to read skill.list6 data!");
 
+	result &= File.ReadWord(skill.coef.u0, false);
 	result &= File.ReadDword(skill.coef.u1, false);
 	result &= File.ReadDword(skill.coef.u2, false);
 	result &= File.ReadDword(skill.coef.u3, false);
@@ -1806,6 +1811,9 @@ bool ReadSkillRecord34(CFile& File)
 
 	for (int i = 0; i < size19; ++i)
 	{
+		result &= File.ReadByte(skill.list19[i].u190);
+		if (!result) return ReportError("Error: Failed to read skill.list19.u190 data!");
+
 		result &= File.ReadDword(skill.list19[i].u19a, false);
 		if (!result) return ReportError("Error: Failed to read skill.list19.u19a data!");
 
@@ -4290,6 +4298,7 @@ bool ExportPhpData(std::string Filename)
 		if (escSkillName != "") fprintf(pFile, "\t\t'name' => \"%s\",\n", escSkillName.c_str());
 		if (escSkillDesc != "") fprintf(pFile, "\t\t'desc' => \"%s\",\n", escSkillDesc.c_str());
 		if (skill.baseData.coolDown != 0) fprintf(pFile, "\t\t'cooldown' => %d,\n", skill.baseData.coolDown);
+		if (skill.baseData.origAbilityId != 0) fprintf(pFile, "\t\t'origid' => %d,\n", skill.baseData.origAbilityId);
 		if (skill.baseData.value0 != 0) fprintf(pFile, "\t\t'value0' => %d,\n", skill.baseData.value0);
 		if (skill.baseData.value1 != 0) fprintf(pFile, "\t\t'value1' => %d,\n", skill.baseData.value1);
 		if (skill.baseData.value2 != 0) fprintf(pFile, "\t\t'value2' => %d,\n", skill.baseData.value2);
@@ -4406,6 +4415,7 @@ bool ExportPhpData(std::string Filename)
 				//if (isRankMod != 0) fprintf(pFile, "\t\t\t\t\t\t'rankMod' => %d,\n", isRankMod);
 
 				if (skill1.baseData.coolDown != 0) fprintf(pFile, "\t\t\t\t\t\t'cooldown' => %d,\n", skill1.baseData.coolDown);
+				if (skill1.baseData.origAbilityId != 0) fprintf(pFile, "\t\t\t\t\t\t'origid' => %d,\n", skill1.baseData.origAbilityId);
 				if (skill1.baseData.value0 != 0) fprintf(pFile, "\t\t\t\t\t\t'value0' => %d,\n", skill1.baseData.value0);
 				if (skill1.baseData.value1 != 0) fprintf(pFile, "\t\t\t\t\t\t'value1' => %d,\n", skill1.baseData.value1);
 				if (skill1.baseData.value2 != 0) fprintf(pFile, "\t\t\t\t\t\t'value2' => %d,\n", skill1.baseData.value2);

@@ -15,8 +15,10 @@ MAKE_SMALLER_TILES = True
     # TR Map
 BASEPATH = "d:/EGD/uesp/TamrielRebuilt/TRMap-Feb2025/"
 BASEPATH = "d:/EGD/uesp/TamrielRebuilt/TRMap-May2025/"
+BASEPATH = "d:/EGD/uesp/TamrielRebuilt/TRMap-Aug2026/"
 INPUTPATH = "e:/PTR_Maptiles/TR_Maptiles/"
 INPUTPATH = "e:/PTR_Maptiles/TR_May2025/"
+INPUTPATH = "f:/TamrielRebuilt/Aug2026/"
 OUTPUTPATH = BASEPATH + "Tiles/"
 DEFAULTNULLTILE = BASEPATH + "troutofrange.jpg"
 LARGEMAPFILE = "LargeMap.jpg"

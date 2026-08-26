@@ -38,6 +38,11 @@ string MNF_TEXT_FILE;
 string SET_OUTPUT_PHP_FILE;
 string SET_OUTPUT_TXT_FILE;
 
+string RUMOR_OUTPUT_PHP_FILE;
+string RUMOR_OUTPUT_TXT_FILE;
+string RUMORITEMS_OUTPUT_TXT_FILE;
+string RUMOR_OUTPUT_SQL_FILE;
+
 const dword BOOK_TITLE_ID = 0x030D11F5;
 const dword BOOK_TEXT_ID  = 0x014593B4;
 
@@ -47,6 +52,12 @@ const dword QUEST_NAME_ID = 52420949;
 const dword QUEST_JOURNAL_ID = 265851556;
 
 const dword SET_NAME_ID = 38727365;
+
+const dword RUMOR_BACKGROUND_ID = 131539092;
+const dword RUMOR_ITEMNAME_ID = 28090965;
+const dword RUMOR_ITEMDESC_ID = 235201604;
+const dword RUMOR_NAME_ID = 177455461;
+const dword RUMOR_STARTHINT_ID = 48548836;
 
 unordered_map<dword, bookdata_t> BookTexts;
 unordered_map<string, dword> BookUniqueTitles;
@@ -58,6 +69,12 @@ unordered_map<string, dword> QuestUniqueNames;
 unordered_map<dword, string> ZoneNames;
 
 map<dword, string> SetNames;
+
+map<dword, string> RumorStartHint;
+map<dword, string> RumorName;
+map<dword, string> RumorItemName;
+map<dword, string> RumorItemDesc;
+map<dword, map<dword, string>> RumorBackground;
 
 
 std::string EscapeSql(const std::string Input)
@@ -77,6 +94,19 @@ std::string EscapeSql(const std::string Input)
 std::string EscapePhp(const std::string Input)
 {
 	std::string escInput = ReplaceStrings(Input, "\"", "\\\"");
+
+	escInput = ReplaceStrings(escInput, "\n", "\\n");
+	escInput = ReplaceStrings(escInput, "\r", "\\r");
+	escInput = ReplaceStrings(escInput, "\t", "\\t");
+	escInput = ReplaceStrings(escInput, "—", "-");
+
+	return escInput;
+}
+
+
+std::string EscapeCsv(const std::string Input)
+{
+	std::string escInput = ReplaceStrings(Input, "\"", "\"\"");
 
 	escInput = ReplaceStrings(escInput, "\n", "\\n");
 	escInput = ReplaceStrings(escInput, "\r", "\\r");
@@ -561,6 +591,105 @@ bool ParseSets(CEsoLangFile& LangData)
 }
 
 
+bool ParseRumors(CEsoLangFile& LangData)
+{
+	int rumorItemNameCount = 0;
+	int rumorItemDescCount = 0;
+
+	printf("Parsing rumors...\n");
+
+	for (dword i = 0; i < LangData.GetNumRecords(); ++i)
+	{
+		lang_record_t& Record = LangData.GetRecord(i);
+
+		if (Record.Id == RUMOR_STARTHINT_ID)
+		{
+			RumorStartHint[Record.Index] = Record.Text;
+		}
+		else if (Record.Id == RUMOR_NAME_ID)
+		{
+			RumorName[Record.Index] = Record.Text;
+		}
+		else if (Record.Id == RUMOR_BACKGROUND_ID)
+		{
+			RumorBackground[Record.Index][Record.Unknown] = Record.Text;
+		}
+		else if (Record.Id == RUMOR_ITEMNAME_ID)
+		{
+			RumorItemName[Record.Index] = Record.Text;
+			++rumorItemNameCount;
+		}
+		else if (Record.Id == RUMOR_ITEMDESC_ID)
+		{
+			RumorItemDesc[Record.Index] = Record.Text;
+			++rumorItemDescCount;
+		}
+		
+	}
+
+	printf("Found %u rumor names...\n", RumorName.size());
+	printf("Found %u rumor start hints...\n", RumorStartHint.size());
+	printf("Found %u rumor backgrounds...\n", RumorBackground.size());
+	printf("Found %u rumor item names...\n", rumorItemNameCount);
+	printf("Found %u rumor item descriptions...\n", rumorItemDescCount);
+
+	//CFile PhpFile;
+	CFile TxtFile;
+	CFile SqlFile;
+
+	printf("Saving rumor data to %s...\n", RUMOR_OUTPUT_SQL_FILE.c_str());
+
+	//if (!PhpFile.Open(RUMOR_OUTPUT_PHP_FILE, "wb")) return false;
+	if (!TxtFile.Open(RUMOR_OUTPUT_TXT_FILE, "wb")) return false;
+	if (!SqlFile.Open(RUMOR_OUTPUT_SQL_FILE, "wb")) return false;
+		
+	TxtFile.Printf("RumorId, HintIndex, Name, StartHint, Background\n");
+
+	auto i_name = RumorItemName.begin();
+	auto i_desc = RumorItemDesc.begin();
+
+	for (auto it : RumorName)
+	{
+		dword id = it.first;
+		string name = it.second;
+		string hint = RumorStartHint[id];
+
+		for (auto j : RumorBackground[id])
+		{
+			dword index = j.first;
+			string background = EscapeCsv(j.second);
+
+			if (index == 0)
+			{
+				int numHints = RumorBackground[id].size() - 1;
+				TxtFile.Printf("%d,%d,\"%s\",\"%s\",\"%s\"\n", id, index, name.c_str(), hint.c_str(), background.c_str());
+				//SqlFile.Printf(" UPDATE rumors SET name='%s', startHint='%s', backgroundText='%s' WHERE id='%d';\n", EscapeSql(name).c_str(), EscapeSql(hint).c_str(), EscapeSql(j.second).c_str(), id);
+				SqlFile.Printf("INSERT INTO rumors(id, name, startHint, backgroundText, numHints) VALUES('%d','%s','%s','%s','%d') ON DUPLICATE KEY UPDATE name='%s', startHint='%s', backgroundText='%s', numHints='%d';\n", id, EscapeSql(name).c_str(), EscapeSql(hint).c_str(), EscapeSql(j.second).c_str(), numHints, EscapeSql(name).c_str(), EscapeSql(hint).c_str(), EscapeSql(j.second).c_str(), numHints);
+				//INSERT INTO users (user_id, name, status) VALUES(1, 'Alice', 'Premium') ON DUPLICATE KEY UPDATE name = VALUES(name), status = VALUES(status);
+			}
+			else
+			{
+				TxtFile.Printf("%d,%d,\"%s\",\"%s\",\"%s\"\n", id, index, name.c_str(), "", background.c_str());
+				//SqlFile.Printf("UPDATE rumorHints SET backgroundText='%s' WHERE rumorId='%d' AND hintIndex='%d';\n", EscapeSql(j.second).c_str(), id, index);
+				SqlFile.Printf("INSERT INTO rumorHints(rumorId, hintIndex, backgroundText) VALUES('%d','%d','%s') ON DUPLICATE KEY UPDATE backgroundText='%s';\n", id, index, EscapeSql(j.second).c_str(), EscapeSql(j.second).c_str());
+			}
+		}
+
+	}
+
+	if (!TxtFile.Open(RUMORITEMS_OUTPUT_TXT_FILE, "wb")) return false;
+	TxtFile.Printf("Id, Name, Description\n");
+
+	for (auto it : RumorItemName)
+	{
+		TxtFile.Printf("\"%s\",\"%s\"\n", it.second.c_str(), EscapeCsv((*i_desc).second.c_str()));
+		++i_desc;
+	}
+	
+	return true;
+}
+
+
 void MakeInputOutputFilenames()
 {
 	BASEPATH = TerminatePath(BASEPATH);
@@ -582,6 +711,11 @@ void MakeInputOutputFilenames()
 
 	SET_OUTPUT_PHP_FILE = OUTPUT_PATH_PREFIX + "Sets.php";
 	SET_OUTPUT_TXT_FILE = OUTPUT_PATH_PREFIX + "Sets.txt";
+
+	RUMOR_OUTPUT_PHP_FILE = OUTPUT_PATH_PREFIX + "Rumors.php";
+	RUMOR_OUTPUT_TXT_FILE = OUTPUT_PATH_PREFIX + "Rumors.txt";
+	RUMORITEMS_OUTPUT_TXT_FILE = OUTPUT_PATH_PREFIX + "RumorItems.txt";
+	RUMOR_OUTPUT_SQL_FILE = OUTPUT_PATH_PREFIX + "Rumors.sql";
 }
 
 
@@ -613,8 +747,9 @@ int main(int argc, char* argv[])
 	
 	ParseBooks(LangData);
 	ParseQuests(LangData);
-
+	ParseRumors(LangData);
 	ParseSets(LangData);
 	
     return 0;
 }
+

@@ -1233,6 +1233,9 @@
 --		-- v3.30 -- 10 June 2026 (update 50)
 --			- Changed sales logging back to 30 days.
 --			- Updated runebox data.
+--	
+--		-- v3.31 -- 10 August 2026 (update 51)
+--			- Fixed deleting guild mails.
 --
 
 
@@ -5248,21 +5251,42 @@ end
 function uespLog.NotifyDeleteMailAdded (self)
 
 	if not self.mailId then
-		return
+		return true
+	end
+	
+	if (self.isMailFromGuild) then
+		MAIL_MANAGER:MarkGuildMailDeleted(self.mailId)
+		return false
 	end
 
 	local numAttachments, attachedMoney = GetMailAttachmentInfo(self.mailId)
 	self.pendingDelete = true
 
 	if numAttachments > 0 or attachedMoney > 0 then
+		local currentNode = self.navigationTree:GetSelectedNode()
+		local nextNode = currentNode and currentNode:GetNextOrPreviousSiblingNode()
+		
+		if (nextNode) then
+			self.selectMailIdOnRefresh = nextNode.data.mailId
+		end
+		
 		DeleteMail(self.mailId) 
 	elseif uespLog.IsMailDeleteNotify() then
-		ZO_Dialogs_ShowPlatformDialog("DELETE_MAIL", { confirmationCallback = function(...) DeleteMail(self.mailId) PlaySound(SOUNDS.MAIL_ITEM_DELETED) end, mailId = self.mailId, } )
+		--ZO_Dialogs_ShowPlatformDialog("DELETE_MAIL", { confirmationCallback = function(...) DeleteMail(self.mailId) PlaySound(SOUNDS.MAIL_ITEM_DELETED) end, mailId = self.mailId, } )
+		return false
 	else
+		local currentNode = self.navigationTree:GetSelectedNode()
+		local nextNode = currentNode and currentNode:GetNextOrPreviousSiblingNode()
+		
+		if (nextNode) then
+			self.selectMailIdOnRefresh = nextNode.data.mailId
+		end
+		
 		DeleteMail(self.mailId) 
 		PlaySound(SOUNDS.MAIL_ITEM_DELETED) 
 	end
 		
+	return true
 end
 
 
@@ -6248,6 +6272,13 @@ function uespLog.Initialize( self, addOnName )
 	EVENT_MANAGER:RegisterForEvent( "uespLog", EVENT_TIMED_ACTIVITIES_UPDATED, uespLog.OnEndeavorUpdated)
 	
 	EVENT_MANAGER:RegisterForEvent( "uespLog", EVENT_OPEN_STORE, uespLog.OnOpenStore)
+	
+	EVENT_MANAGER:RegisterForEvent( "uespLog", EVENT_RUMORS_UPDATED, uespLog.OnRumorsUpdated)
+	EVENT_MANAGER:RegisterForEvent( "uespLog", EVENT_RUMOR_COMPLETED, uespLog.OnRumorCompleted)
+	EVENT_MANAGER:RegisterForEvent( "uespLog", EVENT_RUMOR_ENDING_INITIATED, uespLog.OnRumorEndingInit)
+	EVENT_MANAGER:RegisterForEvent( "uespLog", EVENT_RUMOR_STARTED, uespLog.OnRumorStarted)
+	EVENT_MANAGER:RegisterForEvent( "uespLog", EVENT_RUMOR_START_FAILED, uespLog.OnRumorStartFailed)
+	EVENT_MANAGER:RegisterForEvent( "uespLog", EVENT_RUMOR_UPDATED, uespLog.OnRumorUpdated)
 		
 	uespLog.InstallItemTooltip()
 	
@@ -6360,8 +6391,9 @@ function uespLog.Initialize( self, addOnName )
 	ENCHANTING.resultTooltip:GetNamedChild("Icon"):SetHandler("OnMouseUp", uespLog.OnTooltipMouseUp)
 	
 	uespLog.Old_NotifyDeleteMailAdded = MAIL_INBOX.Delete
-	MAIL_INBOX.Delete = uespLog.NotifyDeleteMailAdded 
-	MAIL_INBOX:RefreshData()
+	-- MAIL_INBOX.Delete = uespLog.NotifyDeleteMailAdded 
+	-- MAIL_INBOX:RefreshData()
+	ZO_PreHook(MAIL_INBOX, "Delete", uespLog.NotifyDeleteMailAdded)
 	
 	uespLog.SetupSlashCommands()
 	
@@ -6454,7 +6486,6 @@ end
 
 
 function uespLog.OnLLCCraftComplete(event, station, extraLLCResultInfo)
-
 	uespLog.DebugMsg("OnLLCCraftComplete")
 end
 
@@ -24276,7 +24307,7 @@ function uespLog.DumpSetInfos(comment)
 		count = count + 1
 	end
 	
-	for setId = 1, 1000 do
+	for setId = 1, 1500 do
 		if (foundSets[setId] ~= 1) then
 			local setName = GetItemSetName(setId)
 			
@@ -24294,6 +24325,122 @@ function uespLog.DumpSetInfos(comment)
 	logData.event = "SetInfo::End"
 	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
 
+end
+
+
+function uespLog.DumpRumors(comment)
+	local logData = {}
+	local count = 0
+	local numRumours = GetNumRumors()
+	local idx = 0
+	local tempData = uespLog.savedVars.tempData.data
+	
+	logData.event = "Rumor::Start"
+	logData.comment = comment
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	
+	for idx = 1, numRumours do
+		local id = GetRumorIdAtIndex(idx)
+	
+		logData = {}
+		logData.event = "Rumor"
+		logData.id = id
+		
+		if (logData.id > 0) then
+			count = count + 1
+			logData.name = GetRumorDisplayName(id)
+			logData.startHint = GetRumorStarterHint(id)
+			-- Background text will change depending on which hint you are on and in what order you find the rumors
+			-- logData.background = GetRumorBackgroundText(id)
+			logData.complete = GetRumorCompleteText(id)
+			logData.type = GetRumorType(id)
+			
+			tempData[#tempData + 1] = ""..tostring(logData.id)..",'"..tostring(logData.name).."','"..tostring(logData.startHint).."','"..tostring(logData.background).."','"..tostring(logData.complete).."',"..tostring(logData.type)..""
+			
+			uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+		end
+	end
+		
+	uespLog.Msg("Found " .. tostring(count) .. " rumors!")
+	
+	logData = {}
+	logData.event = "Rumor::End"
+	uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+end
+
+
+function uespLog.DumpAllPendingRumors()
+	local rumorId = GetNextPendingRumorId(nil)
+	
+	while (rumorId ~= nil) do
+		uespLog.DumpPendingRumor(rumorId)
+		rumorId = GetNextPendingRumorId(rumorId)
+	end
+	
+end
+
+
+function uespLog.DumpPendingRumor(rumorId)
+	local logData = {}
+	local numHints = GetNumHintsForPendingRumor(rumorId)
+	local i
+	
+	logData.event = "Rumor"
+	logData.id = rumorId
+	logData.name = GetRumorDisplayName(rumorId)
+	-- Background text will change depending on which hint you are on and in what order you find the rumors
+	-- logData.background = GetRumorBackgroundText(rumorId) 
+	logData.complete = GetRumorCompleteText(rumorId)
+	logData.numHints = numHints
+	
+	uespLog.AppendDataToLog("all", logData, uespLog.GetPlayerPositionData(), uespLog.GetTimeData())
+	
+	for i = 1, numHints do
+		logData = {}
+		logData.event = "RumorHint"
+		logData.id = rumorId
+		logData.hintindex = i
+		logData.name = GetRumorHintDisplayName(rumorId, i)
+		logData.desc = GetRumorHintDescription(rumorId, i)
+		logData.icon = GetRumorHintIcon(rumorId, i)
+		logData.book = GetRumorHintBook(rumorId, i)
+		
+		uespLog.AppendDataToLog("all", logData, uespLog.GetTimeData())
+	end
+
+end
+
+
+function uespLog.OnRumorsUpdated(eventCode)
+	uespLog.DebugMsg("OnRumorsUpdate")
+end
+
+
+function uespLog.OnRumorCompleted(eventCode, rumorId)
+	uespLog.DebugMsg("OnRumorCompleted - "..tostring(rumorId))
+end
+
+
+function uespLog.OnRumorEndingInit(eventCode, rumorId, endingId)
+	uespLog.DebugMsg("OnRumorEndingInit - "..tostring(rumorId)..", "..tostring(endingId))
+end
+
+
+function uespLog.OnRumorStarted(eventCode, rumorId)
+	uespLog.DebugMsg("OnRumorStarted - "..tostring(rumorId))
+end
+
+
+function uespLog.OnRumorStartFailed(eventCode, rumorId, failReason)
+	uespLog.DebugMsg("OnRumorStartFailed - "..tostring(rumorId)..", "..tostring(failReason))
+end
+
+
+function uespLog.OnRumorUpdated(eventCode, rumorId)
+	uespLog.DebugMsg("OnRumorUpdate - "..tostring(rumorId))
+	
+	uespLog.DumpPendingRumor(rumorId)
+	--uespLog.DumpAllPendingRumors()
 end
 
 

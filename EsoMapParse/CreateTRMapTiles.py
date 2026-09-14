@@ -34,7 +34,9 @@ MAPNAME = "tamrielrebuilt"
 
     # PC Map
 # BASEPATH = "d:/EGD/uesp/TamrielRebuilt/PCMap-Feb2025/"
+# BASEPATH = "d:/EGD/uesp/TamrielRebuilt/PCMap-Sept2026/"
 # INPUTPATH = "e:/PTR_Maptiles/PC_Maptiles/"
+# INPUTPATH = "f:/TamrielRebuilt/ProjectCyrodiil_Sept2026/"
 # OUTPUTPATH = BASEPATH + "Tiles/"
 # DEFAULTNULLTILE = BASEPATH + "troutofrange.jpg"
 
@@ -44,9 +46,11 @@ MAPNAME = "tamrielrebuilt"
 # MAPYTILECOUNT = 96
 # MAPNAME = "pc"
 
-    # SHOTN Map 
+#     # SHOTN Map 
 # BASEPATH = "d:/EGD/uesp/TamrielRebuilt/SHotNMap-Feb2025/"
+# BASEPATH = "d:/EGD/uesp/TamrielRebuilt/SHotNMap-Sept2026/"
 # INPUTPATH = "e:/PTR_Maptiles/SHotN_Maptiles/"
+# INPUTPATH = "f:/TamrielRebuilt/SHOTN_Sept2026/"
 # OUTPUTPATH = BASEPATH + "Tiles/"
 # DEFAULTNULLTILE = BASEPATH + "troutofrange.jpg"
 
@@ -54,7 +58,7 @@ MAPNAME = "tamrielrebuilt"
 # MAPYTILEOFFSET = 70
 # MAPXTILECOUNT = 96
 # MAPYTILECOUNT = 96
-# MAPNAME = "shotn" #'''
+# MAPNAME = "shotn"
 
     # To disable warning about decompression bomb
 Image.MAX_IMAGE_PIXELS = 1000000000

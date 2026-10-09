@@ -1234,7 +1234,7 @@
 --			- Changed sales logging back to 30 days.
 --			- Updated runebox data.
 --	
---		-- v3.31 -- 10 August 2026 (update 51)
+--		-- v3.31 -- 9 October 2026 (update 51)
 --			- Fixed deleting guild mails.
 --
 
@@ -1242,8 +1242,8 @@
 --	GLOBALS
 uespLog = uespLog or {}
 
-uespLog.version = "3.30"
-uespLog.releaseDate = "10 June 2026"
+uespLog.version = "3.31"
+uespLog.releaseDate = "9 October 2026"
 uespLog.DATA_VERSION = 3
 
 	-- Saved strings cannot exceed 1999 bytes in length (nil is output corrupting the log file)

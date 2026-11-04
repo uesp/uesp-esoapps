@@ -85,9 +85,9 @@ const size_t U13SIZE = 8;
 const size_t U15SIZE = 5; */
 
 	/* Update 37 */
-const size_t FLAGSIZE = 176;	// 188 in first 29pts version, 189 prior to update 30, 191 in update 31, 192 starting in update 34, 191 in update 35, 182 in update 37
+const size_t FLAGSIZE = 177;	// 188 in first 29pts version, 189 prior to update 30, 191 in update 31, 192 starting in update 34, 191 in update 35, 182 in update 37
 								// 183 in update 38 pts, 185 in update 38 PTS1, 186 in update 39pts, 190 in update 40pts, 182 in 41pts, 183 in update 42pts, 181 in 44pts
-								// 182 in 45, 184 in 48pts, 176 in 50pts
+								// 182 in 45, 184 in 48pts, 176 in 50pts, 177 in 52pts
 const size_t U2SIZE = 4;		// 5 in 40pts and earlier, 6 in 41pts, 4 in 50pts
 const size_t U2ASIZE = 1;		// 3 prior to 50pts, 1 in 50pts
 const size_t U4SIZE = 6;		//
@@ -353,6 +353,7 @@ struct skilldata34_t
 		dword z2a;			//Added update 42pts
 		dword z2b;			//Added update 43pts
 		dword origAbilityId;//update 51pts, origin ability id
+		dword64 uidskill;	//52pts
 		dword coolDown;
 		dword value0;
 		dword value1;
@@ -380,34 +381,36 @@ struct skilldata34_t
 
 	byte flags[FLAGSIZE];
 
-	dword size1;
+	byte size1;
 	byteidlist_t list1;
 
-	dword size2;
+	byte size2;
 	idlist_t list2;
 
 	byte u2a[U2ASIZE];
 	dword u2[U2SIZE];
 
-	dword size5;	//New in 49pts, moved in update 50pts
+	byte size5;	//New in 49pts, moved in update 50pts
 
 	struct u5data_t {
-		dword s5a;
+		dword64 uid5;		//52pts
+		byte s5a;
 		idlist_t d5a;
-		dword s5b;
+		byte s5b;
 		idlist_t d5b;
 	};
 
 	std::vector<u5data_t> list5;
 
 	struct tooltipdata_t {
-		dword numTooltipTypes;
+		dword64 uidtooltip;		//52pts
+		byte numTooltipTypes;
 		idlist_t tooltipTypes;
-		dword numTooltipIds;
+		byte numTooltipIds;
 		idlist_t tooltipIds;
 	};
 
-	dword numTooltips;		//Added in 49pts, moved in update 50pts
+	byte numTooltips;		//Added in 49pts, moved in update 50pts
 	std::vector<tooltipdata_t> tooltipData;
 
 	//dword size3;
@@ -429,9 +432,9 @@ struct skilldata34_t
 
 	byte u6[U6SIZE];
 
-	dword size6a;
+	byte size6a;
 	idlist_t list6a;
-	dword size6b;
+	byte size6b;
 	wordidlist_t list6b;
 
 	struct SKILLCOEF {
@@ -462,28 +465,29 @@ struct skilldata34_t
 		dword u11;
 		byte u12;
 		dword u13;
-		word u14;
+		//word u14;		//Removed in 52pts
 	} coef;
 
-	word size7;
+	byte size7;
 	idlist_t list7;
 
 	//byte u7;	//Removed in 41pts
 	dword u8[U8SIZE];
 		
-	dword size8;
+	byte size8;
 	idlist_t list8;
 
 	dword u9a;
 	dword u9b;
 
-	dword size9;		//Changed in 49pts
+	byte size9;		//Changed in 49pts
 	//idlist_t list9;
 
 	struct list9data_t {
-		dword size9a;
+		dword64 uid9;		//52pts
+		byte size9a;
 		idlist_t list9a;
-		dword size9b;
+		byte size9b;
 		idlist_t list9b;
 	};
 
@@ -499,12 +503,13 @@ struct skilldata34_t
 	//dword size12;
 	//idlist_t list12;
 
-	dword size11;
+	byte size11;
 
 	struct list11data_t {
-		dword size11a;
+		dword64 uid11;		//52pts
+		byte size11a;
 		idlist_t list11a;
-		dword size11b;
+		byte size11b;
 		idlist_t list11b;
 	};
 
@@ -513,7 +518,7 @@ struct skilldata34_t
 	byte u11[U11SIZE];
 	byte u12[U12SIZE];
 
-	dword size13;
+	byte size13;
 	byteidlist_t list13;
 
 	dword u13[U13SIZE];
@@ -522,12 +527,12 @@ struct skilldata34_t
 
 	byte u15[U15SIZE];
 
-	dword size13a;			//Added in 49pts
+	byte size13a;			//Added in 49pts
 	idlist_t list13a;
 
 	dword u15a;			//Added in 49pts
 
-	dword size14;
+	byte size14;
 	byteidlist_t list14;
 
 	byte u16[U16SIZE];
@@ -541,22 +546,22 @@ struct skilldata34_t
 	struct list19data_t {
 		byte u190;		//51pts
 		dword u19a;
-		dword size19a;
+		byte size19a;
 
 		struct list19adata_t {
 			byte data[7];
 		};
 		std::vector< list19adata_t> list19a;
 
-		dword size19b;
+		byte size19b;
 		struct list19bdata_t {
 			dword u19b1[4];
-			dword size19b2;
+			byte size19b2;
 			idlist_t list19b2;
 		};
 		std::vector< list19bdata_t> list19b;
 
-		dword sizeCoef2;
+		byte sizeCoef2;
 		struct coef2data_t {
 			byte type1;
 			float coef1;
@@ -1360,6 +1365,7 @@ bool ReadSkillRecord34(CFile& File)
 	result &= File.ReadDword(skill.baseData.z2a, false);
 	result &= File.ReadDword(skill.baseData.z2b, false);
 	result &= File.ReadDword(skill.baseData.origAbilityId, false);
+	result &= File.ReadDword64(skill.baseData.uidskill, false);
 	result &= File.ReadDword(skill.baseData.coolDown, false);
 	result &= File.ReadDword(skill.baseData.value0, false);
 	result &= File.ReadDword(skill.baseData.value1, false);
@@ -1387,7 +1393,7 @@ bool ReadSkillRecord34(CFile& File)
 	result &= File.ReadBytes((byte *)skill.flags, FLAGSIZE);
 	if (!result) return ReportError("Error: Failed to read skill.flags data!");
 
-	result &= File.ReadDword(skill.size1, false);
+	result &= File.ReadByte(skill.size1);
 	skill.list1.resize(skill.size1, 0);
 
 	for (size_t i = 0; i < skill.size1 && result; ++i)
@@ -1397,7 +1403,7 @@ bool ReadSkillRecord34(CFile& File)
 
 	if (!result) return ReportError("Error: Failed to read skill.list1 data!");
 
-	result &= File.ReadDword(skill.size2, false);
+	result &= File.ReadByte(skill.size2);
 	skill.list2.resize(skill.size2, 0);
 
 	for (size_t i = 0; i < skill.size2 && result; ++i)
@@ -1458,12 +1464,14 @@ bool ReadSkillRecord34(CFile& File)
 	if (!result) return ReportError("Error: Failed to read skill.u5 data!"); 
 */
 
-	result &= File.ReadDword(skill.size5, false);
+	result &= File.ReadByte(skill.size5);
 	skill.list5.resize(skill.size5);
 
 	for (size_t i = 0; i < skill.size5; ++i)
 	{
-		result &= File.ReadDword(skill.list5[i].s5a, false);
+		result &= File.ReadDword64(skill.list5[i].uid5, false);
+
+		result &= File.ReadByte(skill.list5[i].s5a);
 		skill.list5[i].d5a.resize(skill.list5[i].s5a, 0);
 
 		for (size_t j = 0; j < skill.list5[i].s5a && result; ++j)
@@ -1471,7 +1479,7 @@ bool ReadSkillRecord34(CFile& File)
 			result &= File.ReadDword(skill.list5[i].d5a[j], false);
 		}
 
-		result &= File.ReadDword(skill.list5[i].s5b, false);
+		result &= File.ReadByte(skill.list5[i].s5b);
 		skill.list5[i].d5b.resize(skill.list5[i].s5b, 0);
 
 		for (size_t j = 0; j < skill.list5[i].s5b && result; ++j)
@@ -1505,12 +1513,14 @@ bool ReadSkillRecord34(CFile& File)
 	if (!result) return ReportError("Error: Failed to read skill.tooltipIds data!");
 */
 
-	result &= File.ReadDword(skill.numTooltips, false);
+	result &= File.ReadByte(skill.numTooltips);
 	skill.tooltipData.resize(skill.numTooltips);
 
 	for (size_t i = 0; i < skill.numTooltips; ++i)
 	{
-		result &= File.ReadDword(skill.tooltipData[i].numTooltipTypes, false);
+		result &= File.ReadDword64(skill.tooltipData[i].uidtooltip, false);
+
+		result &= File.ReadByte(skill.tooltipData[i].numTooltipTypes);
 		skill.tooltipData[i].tooltipTypes.resize(skill.tooltipData[i].numTooltipTypes, 0);
 
 		for (size_t j = 0; j < skill.tooltipData[i].numTooltipTypes && result; ++j)
@@ -1518,7 +1528,7 @@ bool ReadSkillRecord34(CFile& File)
 			result &= File.ReadDword(skill.tooltipData[i].tooltipTypes[j], false);
 		}
 
-		result &= File.ReadDword(skill.tooltipData[i].numTooltipIds, false);
+		result &= File.ReadByte(skill.tooltipData[i].numTooltipIds);
 		skill.tooltipData[i].tooltipIds.resize(skill.tooltipData[i].numTooltipIds, 0);
 
 		for (size_t j = 0; j < skill.tooltipData[i].numTooltipIds && result; ++j)
@@ -1536,7 +1546,7 @@ bool ReadSkillRecord34(CFile& File)
 
 	if (!result) return ReportError("Error: Failed to read skill.u6 data!");
 	
-	result &= File.ReadDword(skill.size6a, false);
+	result &= File.ReadByte(skill.size6a);
 	skill.list6a.resize(skill.size6a, 0);
 
 	for (size_t i = 0; i < skill.size6a && result; ++i)
@@ -1546,7 +1556,7 @@ bool ReadSkillRecord34(CFile& File)
 
 	if (!result) return ReportError("Error: Failed to read skill.list6a data!");
 
-	result &= File.ReadDword(skill.size6b, false);
+	result &= File.ReadByte(skill.size6b);
 	skill.list6b.resize(skill.size6b, 0);
 
 	for (size_t i = 0; i < skill.size6b && result; ++i)
@@ -1583,11 +1593,11 @@ bool ReadSkillRecord34(CFile& File)
 	result &= File.ReadDword(skill.coef.u11, false);
 	result &= File.ReadByte(skill.coef.u12);
 	result &= File.ReadDword(skill.coef.u13, false);
-	result &= File.ReadWord(skill.coef.u14, false);
+	//result &= File.ReadWord(skill.coef.u14, false);
 	
 	if (!result) return ReportError("Error: Failed to read skill.coef section!");
 
-	result &= File.ReadWord(skill.size7, false);
+	result &= File.ReadByte(skill.size7);
 	skill.list7.resize(skill.size7, 0);
 
 	for (size_t i = 0; i < skill.size7 && result; ++i)
@@ -1607,7 +1617,7 @@ bool ReadSkillRecord34(CFile& File)
 
 	if (!result) return ReportError("Error: Failed to read skill.u8 data!");
 
-	result &= File.ReadDword(skill.size8, false);
+	result &= File.ReadByte(skill.size8);
 	skill.list8.resize(skill.size8, 0);
 
 	for (size_t i = 0; i < skill.size8 && result; ++i)
@@ -1621,7 +1631,7 @@ bool ReadSkillRecord34(CFile& File)
 	result &= File.ReadDword(skill.u9b, false);
 	if (!result) return ReportError("Error: Failed to read skill.u9a/b data!");
 
-	result &= File.ReadDword(skill.size9, false);
+	result &= File.ReadByte(skill.size9);
 	skill.list9.resize(skill.size9);
 
 /*	Changed in Update 49pts
@@ -1645,7 +1655,9 @@ bool ReadSkillRecord34(CFile& File)
 
 	for (size_t i = 0; i < skill.size9; ++i)
 	{
-		result &= File.ReadDword(skill.list9[i].size9a, false);
+		result &= File.ReadDword64(skill.list9[i].uid9, false);
+
+		result &= File.ReadByte(skill.list9[i].size9a);
 		skill.list9[i].list9a.resize(skill.list9[i].size9a, 0);
 
 		for (size_t j = 0; j < skill.list9[i].size9a && result; ++j)
@@ -1653,7 +1665,7 @@ bool ReadSkillRecord34(CFile& File)
 			result &= File.ReadDword(skill.list9[i].list9a[j], false);
 		}
 
-		result &= File.ReadDword(skill.list9[i].size9b, false);
+		result &= File.ReadByte(skill.list9[i].size9b);
 		skill.list9[i].list9b.resize(skill.list9[i].size9b, 0);
 
 		for (size_t j = 0; j < skill.list9[i].size9b && result; ++j)
@@ -1671,7 +1683,7 @@ bool ReadSkillRecord34(CFile& File)
 
 	if (!result) return ReportError("Error: Failed to read skill.u10 data!");
 
-	result &= File.ReadDword(skill.size11, false);
+	result &= File.ReadByte(skill.size11);
 	skill.list11.resize(skill.size11);
 
 /* Changed in update 49pts
@@ -1696,7 +1708,9 @@ bool ReadSkillRecord34(CFile& File)
 
 	for (size_t i = 0; i < skill.size11; ++i)
 	{
-		result &= File.ReadDword(skill.list11[i].size11a, false);
+		result &= File.ReadDword64(skill.list11[i].uid11, false);
+
+		result &= File.ReadByte(skill.list11[i].size11a);
 		skill.list11[i].list11a.resize(skill.list11[i].size11a, 0);
 
 		for (size_t j = 0; j < skill.list11[i].size11a && result; ++j)
@@ -1704,7 +1718,7 @@ bool ReadSkillRecord34(CFile& File)
 			result &= File.ReadDword(skill.list11[i].list11a[j], false);
 		}
 
-		result &= File.ReadDword(skill.list11[i].size11b, false);
+		result &= File.ReadByte(skill.list11[i].size11b);
 		skill.list11[i].list11b.resize(skill.list11[i].size11b, 0);
 
 		for (size_t j = 0; j < skill.list11[i].size11b && result; ++j)
@@ -1730,7 +1744,7 @@ bool ReadSkillRecord34(CFile& File)
 
 	if (!result) return ReportError("Error: Failed to read skill.u12 data!");
 
-	result &= File.ReadDword(skill.size13, false);
+	result &= File.ReadByte(skill.size13);
 	skill.list13.resize(skill.size13 * 6, 0);
 
 	for (size_t i = 0; i < skill.size13 * 6 && result; ++i)
@@ -1758,7 +1772,7 @@ bool ReadSkillRecord34(CFile& File)
 	if (!result) return ReportError("Error: Failed to read skill.u15 data!");
 
 		// Added in update 49pts
-	result &= File.ReadDword(skill.size13a, false);
+	result &= File.ReadByte(skill.size13a);
 	skill.list13a.resize(skill.size13a, 0);
 
 	for (size_t i = 0; i < skill.size13a && result; ++i)
@@ -1771,7 +1785,7 @@ bool ReadSkillRecord34(CFile& File)
 	result &= File.ReadDword(skill.u15a, false);
 	if (!result) return ReportError("Error: Failed to read skill.u15a data!");
 
-	result &= File.ReadDword(skill.size14, false);
+	result &= File.ReadByte(skill.size14);
 	skill.list14.resize(skill.size14 * 5, 0);
 
 	for (size_t i = 0; i < skill.size14 * 5 && result; ++i)
@@ -1817,7 +1831,7 @@ bool ReadSkillRecord34(CFile& File)
 		result &= File.ReadDword(skill.list19[i].u19a, false);
 		if (!result) return ReportError("Error: Failed to read skill.list19.u19a data!");
 
-		result &= File.ReadDword(skill.list19[i].size19a, false);
+		result &= File.ReadByte(skill.list19[i].size19a);
 		if (!result) return ReportError("Error: Failed to read skill.list19.size19a data!");
 		skill.list19[i].list19a.resize(skill.list19[i].size19a);
 
@@ -1829,7 +1843,7 @@ bool ReadSkillRecord34(CFile& File)
 			}
 		}
 
-		result &= File.ReadDword(skill.list19[i].size19b, false);
+		result &= File.ReadByte(skill.list19[i].size19b);
 		if (!result) return ReportError("Error: Failed to read skill.list19.size19b data!");
 		skill.list19[i].list19b.resize(skill.list19[i].size19b);
 
@@ -1844,7 +1858,7 @@ bool ReadSkillRecord34(CFile& File)
 			result &= File.ReadDword(skill.list19[i].list19b[j].u19b1[3], false);
 			if (!result) return ReportError("Error: Failed to read skill.list19.list19b.u19b1[3] data!");
 
-			result &= File.ReadDword(skill.list19[i].list19b[j].size19b2, false);
+			result &= File.ReadByte(skill.list19[i].list19b[j].size19b2);
 			if (!result) return ReportError("Error: Failed to read skill.list19.list19b.size19b2 data!");
 			skill.list19[i].list19b[j].list19b2.resize(skill.list19[i].list19b[j].size19b2, 0);
 
@@ -1856,7 +1870,7 @@ bool ReadSkillRecord34(CFile& File)
 			if (!result) return ReportError("Error: Failed to read skill.list19.list19b.list19b2 data!");
 		}
 
-		result &= File.ReadDword(skill.list19[i].sizeCoef2, false);
+		result &= File.ReadByte(skill.list19[i].sizeCoef2);
 		skill.list19[i].coef2.resize(skill.list19[i].sizeCoef2);
 
 		for (size_t k = 0; k < skill.list19[i].sizeCoef2 && result; ++k)
